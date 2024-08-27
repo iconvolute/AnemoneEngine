@@ -1,0 +1,4 @@
+add_library(AnemoneRuntime STATIC)
+add_subdirectory(AnemoneRuntime)
+target_link_libraries(AnemoneRuntime PUBLIC AnemoneGlobalOptions)
+target_include_directories(AnemoneRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

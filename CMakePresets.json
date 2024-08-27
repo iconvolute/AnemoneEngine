@@ -1,0 +1,261 @@
+{
+    "version": 4,
+    "configurePresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "installDir": "${sourceDir}/out/install/${presetName}",
+            "cacheVariables": {
+                "CMAKE_EXPORT_COMPILE_COMMANDS": true,
+                "CMAKE_UNITY_BUILD": true
+            }
+        },
+        {
+            "name": "config-debug",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "ANEMONE_BUILD_DEVELOPER": true
+            }
+        },
+        {
+            "name": "config-developer",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ANEMONE_BUILD_DEVELOPER": true
+            }
+        },
+        {
+            "name": "config-shipping",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ANEMONE_BUILD_SHIPPING": true,
+                "ANEMONE_BUILD_MONOLITHIC": true
+            }
+        },
+        {
+            "name": "config-profiling",
+            "hidden": true,
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Release",
+                "ANEMONE_BUILD_SHIPPING": true,
+                "ANEMONE_BUILD_MONOLITHIC": true,
+                "ANEMONE_BUILD_PROFILING": true
+            }
+        },
+        {
+            "name": "platform-linux",
+            "hidden": true,
+            "inherits": "base",
+            "vendor": {
+                "microsoft.com/VisualStudioRemoteSettings/CMake/2.0": {
+                    "remoteSourceRootDir": "$env{HOME}/.vs/$ms{projectDirName}"
+                }
+            },
+            "condition": {
+                "lhs": "${hostSystemName}",
+                "type": "equals",
+                "rhs": "Linux"
+            }
+        },
+        {
+            "name": "platform-linux-x64",
+            "hidden": true,
+            "inherits": "platform-linux",
+            "architecture": {
+                "value": "x86_64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "linux-gcc-x64"
+                }
+            },
+            "cacheVariables": {
+                "ANEMONE_ARCHITECTURE_X64": true
+            }
+        },
+        {
+            "name": "platform-linux-arm64",
+            "hidden": true,
+            "inherits": "platform-linux",
+            "architecture": {
+                "value": "arm64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "linux-gcc-arm"
+                }
+            },
+            "cacheVariables": {
+                "ANEMONE_ARCHITECTURE_ARM64": true
+            }
+        },
+        {
+            "name": "platform-android-arm64",
+            "description": "Target Android development environment.",
+            "hidden": true,
+            "inherits": [ "base" ],
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "$env{ANDROID_NDK_HOME}/build/cmake/android.toolchain.cmake",
+                "ANDROID_ABI": "arm64-v8a",
+                "ANDROID_PLATFORM": "android-34",
+                "ANEMONE_PLATFORM_ANDROID": true
+            },
+            "condition": {
+                "lhs": "$env{ANDROID_NDK_HOME}",
+                "type": "notEquals",
+                "rhs": ""
+            }
+        },
+        {
+            "name": "platform-windows",
+            "hidden": true,
+            "inherits": "base",
+            "condition": {
+                "type": "equals",
+                "lhs": "${hostSystemName}",
+                "rhs": "Windows"
+            },
+            "cacheVariables": {
+                "CMAKE_C_COMPILER": "cl.exe",
+                "CMAKE_CXX_COMPILER": "cl.exe"
+            }
+        },
+        {
+            "name": "platform-windows-x64",
+            "hidden": true,
+            "inherits": "platform-windows",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-msvc-x64"
+
+                }
+            },
+            "cacheVariables": {
+                "ANEMONE_ARCHITECTURE_X64": true
+            }
+        },
+        {
+            "name": "platform-windows-arm64",
+            "hidden": true,
+            "inherits": "platform-windows",
+            "architecture": {
+                "value": "arm64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "ANEMONE_ARCHITECTURE_ARM64": true
+            }
+        },
+        {
+            "name": "linux-arm64-debug",
+            "displayName": "Linux ARM64 Debug",
+            "inherits": [ "platform-linux-arm64", "config-debug" ]
+        },
+        {
+            "name": "linux-arm64-developer",
+            "displayName": "Linux ARM64 Developer",
+            "inherits": [ "platform-linux-arm64", "config-developer" ]
+        },
+        {
+            "name": "linux-arm64-shipping",
+            "displayName": "Linux ARM64 Shipping",
+            "inherits": [ "platform-linux-arm64", "config-shipping" ]
+        },
+        {
+            "name": "linux-arm64-profiling",
+            "displayName": "Linux ARM64 Profiling",
+            "inherits": [ "platform-linux-arm64", "config-profiling" ]
+        },
+        {
+            "name": "linux-x64-debug",
+            "displayName": "Linux x64 Debug",
+            "inherits": [ "platform-linux-x64", "config-debug" ]
+        },
+        {
+            "name": "linux-x64-developer",
+            "displayName": "Linux x64 Developer",
+            "inherits": [ "platform-linux-x64", "config-developer" ]
+        },
+        {
+            "name": "linux-x64-shipping",
+            "displayName": "Linux x64 Shipping",
+            "inherits": [ "platform-linux-x64", "config-shipping" ]
+        },
+        {
+            "name": "linux-x64-profiling",
+            "displayName": "Linux x64 Profiling",
+            "inherits": [ "platform-linux-x64", "config-profiling" ]
+        },
+        {
+            "name": "android-arm64-debug",
+            "displayName": "Android ARM64 Debug",
+            "inherits": [ "platform-android-arm64", "config-debug" ]
+        },
+        {
+            "name": "android-arm64-developer",
+            "displayName": "Android ARM64 Developer",
+            "inherits": [ "platform-android-arm64", "config-developer" ]
+        },
+        {
+            "name": "android-arm64-shipping",
+            "displayName": "Android ARM64 Shipping",
+            "inherits": [ "platform-android-arm64", "config-shipping" ]
+        },
+        {
+            "name": "android-arm64-profiling",
+            "displayName": "Android ARM64 Profiling",
+            "inherits": [ "platform-android-arm64", "config-profiling" ]
+        },
+        {
+            "name": "windows-arm64-debug",
+            "displayName": "Windows ARM64 Debug",
+            "inherits": [ "platform-windows-arm64", "config-debug" ]
+        },
+        {
+            "name": "windows-arm64-developer",
+            "displayName": "Windows ARM64 Developer",
+            "inherits": [ "platform-windows-arm64", "config-developer" ]
+        },
+        {
+            "name": "windows-arm64-shipping",
+            "displayName": "Windows ARM64 Shipping",
+            "inherits": [ "platform-windows-arm64", "config-shipping" ]
+        },
+        {
+            "name": "windows-arm64-profiling",
+            "displayName": "Windows ARM64 Profiling",
+            "inherits": [ "platform-windows-arm64", "config-profiling" ]
+        },
+        {
+            "name": "windows-x64-debug",
+            "displayName": "Windows x64 Debug",
+            "inherits": [ "platform-windows-x64", "config-debug" ]
+        },
+        {
+            "name": "windows-x64-developer",
+            "displayName": "Windows x64 Developer",
+            "inherits": [ "platform-windows-x64", "config-developer" ]
+        },
+        {
+            "name": "windows-x64-shipping",
+            "displayName": "Windows x64 Shipping",
+            "inherits": [ "platform-windows-x64", "config-shipping" ]
+        },
+        {
+            "name": "windows-x64-profiling",
+            "displayName": "Windows x64 Profiling",
+            "inherits": [ "platform-windows-x64", "config-profiling" ]
+        }
+    ]
+}
