@@ -1,0 +1,11 @@
+target_sources(AnemoneGraphics
+    PRIVATE
+        "DxgiFormat.hxx"
+        "Histogram.cxx"
+        "Histogram.hxx"
+        "Image.cxx"
+        "Image.hxx"
+        "ImageDDS.cxx"
+        "PixelFormat.cxx"
+        "PixelFormat.hxx"
+)
