@@ -53,13 +53,11 @@ namespace Anemone::Platform
 
     static void VerifyRequirements()
     {
-#if ANEMONE_ARCHITECTURE_X64
         if (IsProcessEmulated())
         {
             // VERIFY: AVX is not supported in WoA process emulation.
             ReportApplicationStop("Emulated process not supported.");
         }
-#endif
 
         if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
         {

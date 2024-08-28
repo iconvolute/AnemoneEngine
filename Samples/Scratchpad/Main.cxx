@@ -30,10 +30,7 @@ int main(int argc, char* argv[])
                 AE_PROFILE_SCOPE(Inner);
                 Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
 
-                volatile int* p = (int*)0x4242424242424242;
-                *p = 42;
-
-                fmt::println("Crashed!");
+                fmt::println("Crashed!?");
             }
             Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
         }
