@@ -1,0 +1,22 @@
+target_sources(TestRuntime
+    PRIVATE
+        "Checked.cxx"
+        "CommandLine.cxx"
+        "Flags.cxx"
+        "Float16.cxx"
+        "FNV.cxx"
+        "IpAddress.cxx"
+        "IpEndPoint.cxx"
+        "Main.cxx"
+        "MpmcQueue.cxx"
+        "Path.cxx"
+        "Sha256.cxx"
+        "Sha512.cxx"
+        "SpscQueue.cxx"
+        "Unicode.cxx"
+        "Uuid.cxx"
+        "String.cxx"
+)
+
+add_subdirectory("Numerics")
+add_subdirectory("Threading")
