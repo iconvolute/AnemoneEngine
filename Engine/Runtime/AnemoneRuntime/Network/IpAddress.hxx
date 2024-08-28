@@ -1,11 +1,25 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Network/Types.hxx"
+#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
 
 #include <span>
 #include <string>
 #include <string_view>
 #include <optional>
+
+namespace Anemone::Platform
+{
+#if ANEMONE_PLATFORM_WINDOWS
+    using NativeIpAddressStorage = UninitializedStorage<struct NativeIpAddress, 32, 8>;
+#elif ANEMONE_PLATFORM_LINUX
+    using NativeIpAddressStorage = UninitializedStorage<struct NativeIpAddress, 32, 8>;
+#elif ANEMONE_PLATFORM_ANDROID
+    using NativeIpAddressStorage = UninitializedStorage<struct NativeIpAddress, 32, 8>;
+#else
+#error "Not implemented"
+#endif
+}
 
 namespace Anemone::Network
 {

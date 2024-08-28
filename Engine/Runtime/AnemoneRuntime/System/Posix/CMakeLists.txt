@@ -3,6 +3,7 @@ target_sources(AnemoneRuntime
         "Allocator.cxx"
         "Crypto.cxx"
         "DirectoryEnumerator.cxx"
+        "Environment.cxx"
         "FileHandle.cxx"
         "NamedMutex.cxx"
         "Process.cxx"

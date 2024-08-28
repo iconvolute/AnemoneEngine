@@ -1,6 +1,36 @@
-#include "AnemoneRuntime/Profiler.hxx"
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
+#include "AnemoneRuntime/Hash/FNV.hxx"
 
 #if ANEMONE_BUILD_PROFILING
+
+namespace Anemone::Profiler
+{
+    static constexpr uint32_t ColorFromProfilerMarker(const char* name)
+    {
+        return Hash::FNV1A32{}.Update(name).Finalize();
+    }
+
+    ProfilerMarker::ProfilerMarker(const char* name, ProfilerLevel level)
+        : m_name{name}
+        , m_level{level}
+        , m_color{ColorFromProfilerMarker(name)}
+    {
+        ProfilerMarkerRegistry::Get().Register(this);
+    }
+
+    ProfilerMarker::ProfilerMarker(const char* name)
+        : m_name{name}
+        , m_level{ProfilerLevel::Default}
+        , m_color{ColorFromProfilerMarker(name)}
+    {
+        ProfilerMarkerRegistry::Get().Register(this);
+    }
+
+    ProfilerMarker::~ProfilerMarker()
+    {
+        ProfilerMarkerRegistry::Get().Unregister(this);
+    }
+}
 
 namespace Anemone::Profiler
 {
@@ -24,6 +54,11 @@ namespace Anemone::Profiler
         static ProfilerMarkerRegistry instance;
         return instance;
     }
+}
+
+namespace Anemone::Profiler
+{
+    Profiler* GProfiler = nullptr;
 }
 
 #endif

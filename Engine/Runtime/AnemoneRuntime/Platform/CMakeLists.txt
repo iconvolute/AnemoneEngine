@@ -8,4 +8,7 @@ target_sources(AnemoneRuntime
     PRIVATE
         "Detect.hxx"
         "Main.hxx"
+        "Runtime.cxx"
+        "Runtime.hxx"
+        "UninitializedStorage.hxx"
 )

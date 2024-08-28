@@ -41,8 +41,6 @@ target_sources(AnemoneRuntime
 
 if (WIN32)
 add_subdirectory("Windows")
-elseif(ANDROID)
-add_subdirectory("Android")
-elseif(LINUX)
-add_subdirectory("Linux")
+elseif(ANDROID OR LINUX)
+add_subdirectory("Posix")
 endif()

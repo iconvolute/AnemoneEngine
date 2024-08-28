@@ -142,7 +142,7 @@ namespace Anemone::System
                 }
 
                 // Create file handle for parent process.
-                fhWriteInput = FileHandle{Private::NativeFileHandle{fd[1]}};
+                fhWriteInput = FileHandle{Platform::NativeFileHandle{fd[1]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[0], STDIN_FILENO);
@@ -158,7 +158,7 @@ namespace Anemone::System
                 }
 
                 // Create file handle for parent process.
-                fhReadOutput = FileHandle{Private::NativeFileHandle{fd[0]}};
+                fhReadOutput = FileHandle{Platform::NativeFileHandle{fd[0]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDOUT_FILENO);
@@ -174,7 +174,7 @@ namespace Anemone::System
                 }
 
                 // Create file handle for parent process.
-                fhReadError = FileHandle{Private::NativeFileHandle{fd[0]}};
+                fhReadError = FileHandle{Platform::NativeFileHandle{fd[0]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDERR_FILENO);
@@ -210,7 +210,7 @@ namespace Anemone::System
                 *error = std::move(fhReadError);
             }
 
-            return Process{Private::NativeProcess{process_id}};
+            return Process{Platform::NativeProcess{process_id}};
         }
         else
         {

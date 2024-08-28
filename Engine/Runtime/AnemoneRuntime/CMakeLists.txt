@@ -31,7 +31,6 @@ target_sources(AnemoneRuntime
         "Int128.hxx"
         "KnownColor.hxx"
         "Memory.hxx"
-        "Profiler.hxx"
         "Reference.hxx"
         "Reflection.hxx"
         "Singleton.hxx"

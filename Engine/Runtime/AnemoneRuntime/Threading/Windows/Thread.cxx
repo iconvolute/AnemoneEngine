@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
-//#include "AnemoneRuntime/Diagnostic/ExceptionHandling.hxx"
+// #include "AnemoneRuntime/Diagnostic/ExceptionHandling.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <cmath>
@@ -38,21 +38,7 @@ namespace Anemone::Threading::Private
         }
 
         Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
-
-#if ANEMONE_FEATURE_SEH
-        //__try
-        {
-#endif
-
-            runnable->Run();
-
-#if ANEMONE_FEATURE_SEH
-        }
-        //__except (Anemone::Diagnostic::Private::ExceptionFilter(GetExceptionInformation()))
-        //{
-        //    Diagnostic::FastFail();
-        //}
-#endif
+        runnable->Run();
 
         return 0;
     }

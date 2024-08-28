@@ -40,7 +40,7 @@ namespace Anemone::Profiler
         RUNTIME_API static ProfilerMarkerRegistry& Get();
     };
 
-    class ProfilerMarker final
+    class RUNTIME_API ProfilerMarker final
         : private IntrusiveListNode<ProfilerMarker, class ProfilerMarkerRegistry>
     {
         friend struct IntrusiveList<ProfilerMarker, ProfilerMarkerRegistry>;
@@ -48,35 +48,30 @@ namespace Anemone::Profiler
     private:
         const char* m_name{};
         ProfilerLevel m_level{};
+        uint32_t m_color{};
+        void* m_handle{}; // additional handle for profiler-specific data.
 
     public:
-        explicit ProfilerMarker(const char* name, ProfilerLevel level) noexcept
-            : m_name{name}
-            , m_level{level}
+        explicit ProfilerMarker(const char* name, ProfilerLevel level);
+        explicit ProfilerMarker(const char* name);
+        ProfilerMarker(ProfilerMarker const&) = delete;
+        ProfilerMarker(ProfilerMarker&&) = delete;
+        ProfilerMarker& operator=(ProfilerMarker const&) = delete;
+        ProfilerMarker& operator=(ProfilerMarker&&) = delete;
+        ~ProfilerMarker();
+
+        const char* Name() const
         {
-            ProfilerMarkerRegistry::Get().Register(this);
+            return this->m_name;
         }
 
-        explicit ProfilerMarker(const char* name) noexcept
-            : m_name{name}
-            , m_level{ProfilerLevel::Default}
+        ProfilerLevel Level() const
         {
-            ProfilerMarkerRegistry::Get().Register(this);
+            return this->m_level;
         }
-
-        ~ProfilerMarker()
+        uint32_t Color() const
         {
-            ProfilerMarkerRegistry::Get().Unregister(this);
-        }
-
-        const char* Name() const noexcept
-        {
-            return m_name;
-        }
-
-        ProfilerLevel Level() const noexcept
-        {
-            return m_level;
+            return this->m_color;
         }
     };
 
@@ -87,28 +82,52 @@ namespace Anemone::Profiler
     //    - may be initialized lazily (singleton)
     //    - used to initialize profiling handle sections at runtime
 
-    RUNTIME_API void BeginFrame();
-    RUNTIME_API void EndFrame();
+    class Profiler
+    {
+    protected:
+        Profiler() = default;
 
-    RUNTIME_API void BeginMarker(ProfilerMarker& marker);
-    RUNTIME_API void EndMarker(ProfilerMarker& marker);
-    RUNTIME_API void Event(const char* name);
+    public:
+        Profiler(Profiler const&) = delete;
+        Profiler(Profiler&&) = delete;
+        Profiler& operator=(Profiler const&) = delete;
+        Profiler& operator=(Profiler&&) = delete;
+        virtual ~Profiler() = default;
+
+    public:
+        virtual void BeginMarker(ProfilerMarker& marker) = 0;
+        virtual void EndMarker(ProfilerMarker& marker) = 0;
+        virtual void Event(ProfilerMarker& marker) = 0;
+    };
+
+    extern Profiler* GProfiler;
 
     class ProfilerScope final
     {
     private:
-        ProfilerMarker& m_marker;
+        ProfilerMarker* m_marker;
 
     public:
         ProfilerScope(ProfilerMarker& marker)
-            : m_marker{marker}
+            : m_marker{&marker}
         {
-            BeginMarker(this->m_marker);
+            if (GProfiler)
+            {
+                GProfiler->BeginMarker(*this->m_marker);
+            }
         }
+
+        ProfilerScope(ProfilerScope const&) = delete;
+        ProfilerScope(ProfilerScope&&) = delete;
+        ProfilerScope& operator=(ProfilerScope const&) = delete;
+        ProfilerScope& operator=(ProfilerScope&&) = delete;
 
         ~ProfilerScope()
         {
-            EndMarker(this->m_marker);
+            if (GProfiler)
+            {
+                GProfiler->EndMarker(*this->m_marker);
+            }
         }
     };
 
@@ -124,10 +143,14 @@ namespace Anemone::Profiler
 #define AE_PROFILE_SCOPE(name) \
     Anemone::Profiler::ProfilerScope local_profiler_scope_##name { GProfilerMarker_##name }
 
+#define AE_PROFILE_EVENT(name) \
+    Anemone::Profiler::GProfiler->Event(GProfilerMarker_##name);
+
 #else
 
 #define AE_DECLARE_PROFILE(name)
 #define AE_PROFILE_SCOPE(name)
+#define AE_PROFILE_EVENT(name)
 
 #endif
 

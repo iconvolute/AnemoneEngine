@@ -3,7 +3,7 @@
 #include "TaskScheduler2.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Diagnostic/Log.hxx"
-#include "AnemoneRuntime/Profiler.hxx"
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone::Tasks::Private
 {

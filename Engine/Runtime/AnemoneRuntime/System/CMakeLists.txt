@@ -3,6 +3,7 @@ target_sources(AnemoneRuntime
         "Allocator.hxx"
         "Crypto.hxx"
         "DirectoryEnumerator.cxx"
+        "Environment.hxx"
         "ErrorCode.cxx"
         "FileHandle.hxx"
         "FileSystem.hxx"
