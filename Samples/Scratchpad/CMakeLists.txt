@@ -4,3 +4,5 @@ target_sources(Scratchpad
         "Main.cxx"
 )
 target_link_libraries(Scratchpad PUBLIC AnemoneRuntime)
+
+add_subdirectory("Resources")
