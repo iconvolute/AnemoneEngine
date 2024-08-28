@@ -9,11 +9,9 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Enable whole program optimization
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE TRUE)
-set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
 
 # Enable link time code generation
 set(CMAKE_OPTIMIZE_DEPENDENCIES_RELEASE TRUE)
-set(CMAKE_OPTIMIZE_DEPENDENCIES_RELWITHDEBINFO TRUE)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
@@ -32,10 +30,13 @@ include("CMake/Options.cmake")
 include("CMake/DetectToolchain.cmake")
 include("CMake/Engine.cmake")
 
+include("CMake/Modules/FindITT.cmake")
+
 add_subdirectory("Engine")
 add_subdirectory("Samples")
 add_subdirectory("Tests")
 add_subdirectory("ThirdParty")
+add_subdirectory("Tools")
 
 
 #[[
