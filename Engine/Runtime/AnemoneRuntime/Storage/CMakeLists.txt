@@ -1,0 +1,17 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "BinaryFormat.cxx"
+        "BinaryFormat.hxx"
+        "DataReader.cxx"
+        "DataReader.hxx"
+        "DataWriter.cxx"
+        "DataWriter.hxx"
+        "FileHandleReader.cxx"
+        "FileHandleReader.hxx"
+        "FileHandleWriter.cxx"
+        "FileHandleWriter.hxx"
+        "MemoryReader.cxx"
+        "MemoryReader.hxx"
+        "MemoryWriter.cxx"
+        "MemoryWriter.hxx"
+)

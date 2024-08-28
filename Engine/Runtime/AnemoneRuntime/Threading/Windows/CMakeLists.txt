@@ -1,0 +1,10 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "ConditionVariable.cxx"
+        "CriticalSection.cxx"
+        "Futex.cxx"
+        "ReaderWriterLock.cxx"
+        "Semaphore.cxx"
+        "Thread.cxx"
+        "Yielding.cxx"
+)

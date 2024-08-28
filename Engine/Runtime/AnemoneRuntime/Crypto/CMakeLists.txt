@@ -1,0 +1,9 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "AES.cxx"
+        "AES.hxx"
+        "Sha256.cxx"
+        "Sha256.hxx"
+        "Sha512.cxx"
+        "Sha512.hxx"
+)

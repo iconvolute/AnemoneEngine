@@ -1,0 +1,13 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "Dns.cxx"
+        "Dns.hxx"
+        "IpAddress.cxx"
+        "IpAddress.hxx"
+        "IpEndPoint.cxx"
+        "IpEndPoint.hxx"
+        "Private.hxx"
+        "Socket.cxx"
+        "Socket.hxx"
+        "Types.hxx"
+)

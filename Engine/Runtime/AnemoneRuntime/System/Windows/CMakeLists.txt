@@ -1,0 +1,11 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "Allocator.cxx"
+        "Crypto.cxx"
+        "DirectoryEnumerator.cxx"
+        "ErrorCode.cxx"
+        "FileHandle.cxx"
+        "NamedMutex.cxx"
+        "Process.cxx"
+        "SharedLibrary.cxx"
+)

@@ -1,6 +1,62 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Hello.cxx"
-    PUBLIC
-        "Hello.hxx"
+        "Bitwise.hxx"
+        "Branchless.hxx"
+        "Checked.cxx"
+        "Checked.hxx"
+        "CommandLine.cxx"
+        "CommandLine.hxx"
+        "Compression.cxx"
+        "Compression.hxx"
+        "ConsoleFunction.cxx"
+        "ConsoleFunction.hxx"
+        "ConsoleVariable.cxx"
+        "ConsoleVariable.hxx"
+        "DateTime.cxx"
+        "DateTime.hxx"
+        "Delegate.hxx"
+        "Duration.cxx"
+        "Duration.hxx"
+        "ErrorCode.hxx"
+        "Flags.cxx"
+        "Flags.hxx"
+        "Float.cxx"
+        "Float.hxx"
+        "FunctionRef.hxx"
+        "Geometry.hxx"
+        "Instant.cxx"
+        "Instant.hxx"
+        "Intrusive.hxx"
+        "Int128.cxx"
+        "Int128.hxx"
+        "KnownColor.hxx"
+        "Memory.hxx"
+        "Profiler.hxx"
+        "Reference.hxx"
+        "Reflection.hxx"
+        "Singleton.hxx"
+        "String.cxx"
+        "String.hxx"
+        "Types.cxx"
+        "Types.hxx"
+        "Unicode.cxx"
+        "Unicode.hxx"
+        "UninitializedObject.hxx"
+        "Uuid.cxx"
+        "Uuid.hxx"
+        "Version.cxx"
+        "Version.hxx"
 )
+
+add_subdirectory("Crypto")
+add_subdirectory("Diagnostic")
+add_subdirectory("Hash")
+add_subdirectory("Memory")
+add_subdirectory("Network")
+add_subdirectory("Numerics")
+add_subdirectory("Platform")
+add_subdirectory("Profiler")
+add_subdirectory("Storage")
+add_subdirectory("System")
+add_subdirectory("Tasks")
+add_subdirectory("Threading")

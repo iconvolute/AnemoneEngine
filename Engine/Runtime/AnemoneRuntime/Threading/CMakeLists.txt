@@ -1,0 +1,48 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "AutoResetEventSlim.cxx"
+        "AutoResetEventSlim.hxx"
+        "CancellationToken.cxx"
+        "CancellationToken.hxx"
+        "ConcurrentAccess.hxx"
+        "ConditionVariable.hxx"
+        "CriticalSection.hxx"
+        "CriticalSectionPool.hxx"
+        "CriticalSectionSlim.cxx"
+        "CriticalSectionSlim.hxx"
+        "Futex.hxx"
+        "Lock.hxx"
+        "ManualResetEventSlim.cxx"
+        "ManualResetEventSlim.hxx"
+        "MpmcQueue.cxx"
+        "MpmcQueue.hxx"
+        "MpscQueue.cxx"
+        "MpscQueue.hxx"
+        "ReaderWriterLock.hxx"
+        "ReaderWriterLockSlim.cxx"
+        "ReaderWriterLockSlim.hxx"
+        "Runnable.cxx"
+        "Runnable.hxx"
+        "Semaphore.hxx"
+        "SemaphoreSlim.cxx"
+        "SemaphoreSlim.hxx"
+        "SequenceIndex.hxx"
+        "SequentialLock.cxx"
+        "SequentialLock.hxx"
+        "Spinlock.cxx"
+        "Spinlock.hxx"
+        "SpscQueue.cxx"
+        "SpscQueue.hxx"
+        "ThisThread.hxx"
+        "Thread.hxx"
+        "Yielding.cxx"
+        "Yielding.hxx"
+)
+
+if (WIN32)
+add_subdirectory("Windows")
+elseif(ANDROID)
+add_subdirectory("Android")
+elseif(LINUX)
+add_subdirectory("Linux")
+endif()

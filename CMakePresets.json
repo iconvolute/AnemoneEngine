@@ -9,7 +9,7 @@
             "installDir": "${sourceDir}/out/install/${presetName}",
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
-                "CMAKE_UNITY_BUILD": true
+                "CMAKE_UNITY_BUILD": false
             }
         },
         {

@@ -1,7 +1,10 @@
-#include "AnemoneRuntime/Hello.hxx"
+#include "AnemoneRuntime/Instant.hxx"
+#include "AnemoneRuntime/Platform/Main.hxx"
+
+#include <fmt/format.h>
 
 int main()
 {
-    Anemone::Hello();
+    fmt::println("Hello at {}", Anemone::Instant::Now().SinceEpoch());
     return 0;
 }
