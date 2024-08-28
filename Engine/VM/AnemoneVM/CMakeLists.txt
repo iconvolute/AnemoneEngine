@@ -1,0 +1,9 @@
+target_sources(AnemoneVM
+    PRIVATE
+        "CodeGenerator.cxx"
+        "CodeGenerator.hxx"
+        "Label.cxx"
+        "Label.hxx"
+        "OpCode.cxx"
+        "OpCode.hxx"
+)
