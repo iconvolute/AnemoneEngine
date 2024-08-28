@@ -60,6 +60,9 @@
                 "lhs": "${hostSystemName}",
                 "type": "equals",
                 "rhs": "Linux"
+            },
+            "cacheVariables": {
+                "ANEMONE_PLATFORM_LINUX": true
             }
         },
         {
@@ -74,9 +77,6 @@
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "linux-gcc-x64"
                 }
-            },
-            "cacheVariables": {
-                "ANEMONE_ARCHITECTURE_X64": true
             }
         },
         {
@@ -91,9 +91,6 @@
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "linux-gcc-arm"
                 }
-            },
-            "cacheVariables": {
-                "ANEMONE_ARCHITECTURE_ARM64": true
             }
         },
         {
@@ -124,7 +121,8 @@
             },
             "cacheVariables": {
                 "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe"
+                "CMAKE_CXX_COMPILER": "cl.exe",
+                "ANEMONE_PLATFORM_WINDOWS": true
             }
         },
         {
@@ -140,9 +138,6 @@
                     "intelliSenseMode": "windows-msvc-x64"
 
                 }
-            },
-            "cacheVariables": {
-                "ANEMONE_ARCHITECTURE_X64": true
             }
         },
         {
@@ -152,9 +147,6 @@
             "architecture": {
                 "value": "arm64",
                 "strategy": "external"
-            },
-            "cacheVariables": {
-                "ANEMONE_ARCHITECTURE_ARM64": true
             }
         },
         {

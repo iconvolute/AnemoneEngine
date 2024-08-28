@@ -1,4 +1,5 @@
-add_library(AnemoneRuntime STATIC)
+anemone_add_module(AnemoneRuntime
+    ALIAS   Anemone::Runtime
+    EXPORT  "RUNTIME_API"
+)
 add_subdirectory(AnemoneRuntime)
-target_link_libraries(AnemoneRuntime PUBLIC AnemoneGlobalOptions)
-target_include_directories(AnemoneRuntime PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})

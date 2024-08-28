@@ -15,21 +15,18 @@ set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO TRUE)
 set(CMAKE_OPTIMIZE_DEPENDENCIES_RELEASE TRUE)
 set(CMAKE_OPTIMIZE_DEPENDENCIES_RELWITHDEBINFO TRUE)
 
-cmake_policy(SET CMP0141 NEW)
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
-if(MSVC)
-    if(ANEMONE_BUILD_ASAN)
-        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT Embedded)
-    else()
-        set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT ProgramDatabase)
-    endif()
-endif()
+cmake_policy(SET CMP0141 NEW)
 
 project(AnemoneEngine VERSION 1.0.0.0)
 
-
 enable_testing()
 enable_language(C CXX)
+
+include("CMake/Options.cmake")
+include("CMake/DetectToolchain.cmake")
+include("CMake/Engine.cmake")
 
 add_library(AnemoneGlobalOptions INTERFACE)
 

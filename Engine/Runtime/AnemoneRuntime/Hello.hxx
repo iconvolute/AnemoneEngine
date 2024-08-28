@@ -1,6 +1,7 @@
 #pragma once
+#include "AnemoneRuntime/Detect.hxx"
 
 namespace Anemone
 {
-    void Hello();
+    RUNTIME_API void Hello();
 }
