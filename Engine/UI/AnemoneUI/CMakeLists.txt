@@ -1,0 +1,18 @@
+target_sources(AnemoneUI
+    PRIVATE
+        "ColorF.cxx"
+        "ColorF.hxx"
+        "Enums.hxx"
+        "MarginsF.cxx"
+        "MarginsF.hxx"
+        "MatrixF.cxx"
+        "MatrixF.hxx"
+        "PointF.cxx"
+        "PointF.hxx"
+        "SizeF.cxx"
+        "SizeF.hxx"
+        "TransformF.cxx"
+        "TransformF.hxx"
+        "VectorF.cxx"
+        "VectorF.hxx"
+)
