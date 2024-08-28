@@ -37,6 +37,9 @@ endif()
 add_subdirectory("Engine")
 add_subdirectory("Samples")
 add_subdirectory("Tests")
+add_subdirectory("ThirdParty")
+
+
 #[[
 
 Layout: this way it would be the easiest to have transition to C++ modules later on.
