@@ -66,9 +66,40 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
+    static ProcessorProperties DetermineProcessorPropertiesOnce()
+    {
+        ProcessorProperties result{};
+
+        // Number of processors
+        {
+            // This may not be accurate on all systems.
+            result.PhysicalCores = sysconf(_SC_NPROCESSORS_CONF);
+
+            cpu_set_t mask;
+            CPU_ZERO(&mask);
+
+            if (sched_getaffinity(0, sizeof(mask), &mask) == 0)
+            {
+                result.LogicalCores = CPU_COUNT(&mask);
+            }
+            else
+            {
+                result.LogicalCores = result.PhysicalCores;
+            }
+
+            if (result.PerformanceCores == 0)
+            {
+                result.PerformanceCores = result.PhysicalCores;
+                result.EfficiencyCores = 0; 
+            }
+        }
+
+        return result;
+    }
+
     ProcessorProperties const& GetProcessorProperties()
     {
-        static ProcessorProperties const properties{};
+        static ProcessorProperties const properties = DetermineProcessorPropertiesOnce();
         return properties;
     }
 }
