@@ -124,6 +124,10 @@ namespace Anemone::Platform
 
     static void HandleCrash()
     {
+        static SRWLOCK lock = SRWLOCK_INIT;
+
+        AcquireSRWLockExclusive(&lock);
+
         HANDLE const hProcess = GetCurrentProcess();
         HANDLE const hThread = GetCurrentThread();
 
@@ -133,7 +137,7 @@ namespace Anemone::Platform
         wchar_t commandLine[512];
         if (swprintf_s(
                 commandLine,
-                L"--pid %u --tid %u",
+                L"AnemoneCrashReporter.exe --pid %u --tid %u",
                 static_cast<UINT>(dwProcessId),
                 static_cast<UINT>(dwThreadId)) < 0)
         {
@@ -188,6 +192,11 @@ namespace Anemone::Platform
             WaitForSingleObject(processInformation.hProcess, INFINITE);
             CloseHandle(processInformation.hProcess);
         }
+
+        ReleaseSRWLockExclusive(&lock);
+
+        // Terminate process immediately
+        TerminateProcess(hProcess, static_cast<UINT>(-1));
     }
 
     static LONG CALLBACK windows_OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS)
