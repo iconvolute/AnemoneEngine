@@ -1,13 +1,54 @@
 #include "AnemoneRuntime/Platform/Runtime.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneRuntime/Diagnostic/Log.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Profiler/ProfilerNvidia.hxx"
 #endif
 
-
 #include <fmt/format.h>
+
+#include "AnemoneRuntime/UninitializedObject.hxx"
+
+#if ANEMONE_PLATFORM_WINDOWS
+
+#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+
+namespace Anemone::Platform
+{
+    class DebugOutputLogListener final
+        : public Diagnostic::LogListener
+    {
+    public:
+        void Log(Diagnostic::LogLevel level, std::string_view message) override
+        {
+            (void)level;
+            Platform::win32_string_buffer<wchar_t, 512> buffer{};
+            Platform::win32_WidenString(buffer, message);
+            OutputDebugStringW(buffer.data());
+        }
+
+        void Flush() override
+        {
+            // Do nothing
+        }
+
+        DebugOutputLogListener()
+        {
+            Diagnostic::AddLogListener(this);
+        }
+
+        ~DebugOutputLogListener() override
+        {
+            Diagnostic::RemoveLogListener(this);
+        }
+    };
+
+    Anemone::UninitializedObject<DebugOutputLogListener> GDebugLog{};
+}
+
+#endif
 
 namespace Anemone::Platform
 {
@@ -20,6 +61,10 @@ namespace Anemone::Platform
         (void)argv;
 
         InitializeRuntime_PlatformSpecific();
+
+#if ANEMONE_PLATFORM_WINDOWS
+        GDebugLog.Create();
+#endif
 
         auto const& processor = System::GetProcessorProperties();
 
@@ -59,6 +104,10 @@ namespace Anemone::Platform
 
     void FinalizeRuntime()
     {
+#if ANEMONE_PLATFORM_WINDOWS
+        GDebugLog.Destroy();
+#endif
+
         FinalizeRuntime_PlatformSpecific();
     }
 }

@@ -122,7 +122,64 @@ namespace Anemone::Platform
         }
     }
 
-    static void HandleCrash()
+    struct CrashDetails
+    {
+        DWORD ProcessId;
+        DWORD ThreadId;
+        EXCEPTION_RECORD ExceptionRecord;
+        CONTEXT Context;
+    };
+
+    struct Mapping
+    {
+        HANDLE Handle;
+        void* Buffer;
+
+        Mapping(DWORD processId, DWORD threadId)
+        {
+            wchar_t name[MAX_PATH];
+            swprintf_s(name, L"AnemoneCrashDetails_pid%u_tid%u", static_cast<UINT>(processId), static_cast<UINT>(threadId));
+
+            Handle = CreateFileMappingW(
+                INVALID_HANDLE_VALUE,
+                nullptr,
+                PAGE_READWRITE,
+                0,
+                sizeof(CrashDetails),
+                name);
+            if (Handle == nullptr)
+            {
+                return;
+            }
+
+            Buffer = MapViewOfFile(Handle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CrashDetails));
+        }
+
+        ~Mapping()
+        {
+            if (Buffer != nullptr)
+            {
+                UnmapViewOfFile(Buffer);
+            }
+
+            if (Handle != nullptr)
+            {
+                CloseHandle(Handle);
+            }
+        }
+
+        void Write(CrashDetails const& crashDetails)
+        {
+            if (Buffer != nullptr)
+            {
+                CopyMemory(Buffer, &crashDetails, sizeof(CrashDetails));
+            }
+
+            FlushViewOfFile(Buffer, sizeof(CrashDetails));
+        }
+    };
+
+    static void HandleCrash(EXCEPTION_POINTERS* pExceptionPointers)
     {
         static SRWLOCK lock = SRWLOCK_INIT;
 
@@ -134,63 +191,78 @@ namespace Anemone::Platform
         DWORD const dwProcessId = GetProcessId(hProcess);
         DWORD const dwThreadId = GetThreadId(hThread);
 
-        wchar_t commandLine[512];
-        if (swprintf_s(
+        CrashDetails crashDetails{};
+        crashDetails.ProcessId = dwProcessId;
+        crashDetails.ThreadId = dwThreadId;
+
+        if (pExceptionPointers != nullptr)
+        {
+            crashDetails.ExceptionRecord = *pExceptionPointers->ExceptionRecord;
+            crashDetails.Context = *pExceptionPointers->ContextRecord;
+        }
+
+        {
+            Mapping mapping{dwProcessId, dwThreadId};
+            mapping.Write(crashDetails);
+
+            wchar_t commandLine[MAX_PATH + 1];
+
+            if (swprintf_s(
+                    commandLine,
+                    L"AnemoneCrashReporter.exe --pid %u --tid %u",
+                    static_cast<UINT>(dwProcessId),
+                    static_cast<UINT>(dwThreadId)) < 0)
+            {
+                // Terminate process immediately
+                ReportApplicationStop("Could not format command line");
+            }
+
+            STARTUPINFOW startupInfo{
+                .cb = sizeof(startupInfo),
+                .lpReserved = nullptr,
+                .lpDesktop = nullptr,
+                .lpTitle = nullptr,
+                .dwX = static_cast<DWORD>(CW_USEDEFAULT),
+                .dwY = static_cast<DWORD>(CW_USEDEFAULT),
+                .dwXSize = static_cast<DWORD>(CW_USEDEFAULT),
+                .dwYSize = static_cast<DWORD>(CW_USEDEFAULT),
+                .dwXCountChars = 0,
+                .dwYCountChars = 0,
+                .dwFillAttribute = 0,
+                .dwFlags = 0,
+                .wShowWindow = 0,
+                .cbReserved2 = 0,
+                .lpReserved2 = nullptr,
+                .hStdInput = nullptr,
+                .hStdOutput = nullptr,
+                .hStdError = nullptr,
+            };
+            PROCESS_INFORMATION processInformation{};
+
+            BOOL bCreated = CreateProcessW(
+                nullptr,
                 commandLine,
-                L"AnemoneCrashReporter.exe --pid %u --tid %u",
-                static_cast<UINT>(dwProcessId),
-                static_cast<UINT>(dwThreadId)) < 0)
-        {
-            // Terminate process immediately
-            ReportApplicationStop("Could not format command line");
-        }
+                nullptr,
+                nullptr,
+                FALSE,
+                CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT | NORMAL_PRIORITY_CLASS,
+                nullptr,
+                nullptr,
+                &startupInfo,
+                &processInformation);
 
-        STARTUPINFOW startupInfo{
-            .cb = sizeof(startupInfo),
-            .lpReserved = nullptr,
-            .lpDesktop = nullptr,
-            .lpTitle = nullptr,
-            .dwX = static_cast<DWORD>(CW_USEDEFAULT),
-            .dwY = static_cast<DWORD>(CW_USEDEFAULT),
-            .dwXSize = static_cast<DWORD>(CW_USEDEFAULT),
-            .dwYSize = static_cast<DWORD>(CW_USEDEFAULT),
-            .dwXCountChars = 0,
-            .dwYCountChars = 0,
-            .dwFillAttribute = 0,
-            .dwFlags = 0,
-            .wShowWindow = SW_SHOWDEFAULT,
-            .cbReserved2 = 0,
-            .lpReserved2 = nullptr,
-            .hStdInput = nullptr,
-            .hStdOutput = nullptr,
-            .hStdError = nullptr,
-        };
-        PROCESS_INFORMATION processInformation{};
-
-        BOOL bCreated = CreateProcessW(
-            L"AnemoneCrashReporter.exe",
-            commandLine,
-            nullptr,
-            nullptr,
-            FALSE,
-            CREATE_DEFAULT_ERROR_MODE | CREATE_UNICODE_ENVIRONMENT | NORMAL_PRIORITY_CLASS,
-            nullptr,
-            nullptr,
-            &startupInfo,
-            &processInformation);
-
-        if (not bCreated)
-        {
-            // Terminate process immediately
-            ReportApplicationStop("Could not start AnemoneCrashReporter");
-        }
-        else
-        {
-            CloseHandle(processInformation.hThread);
-
-            // Wait until crash reporter finishes
-            WaitForSingleObject(processInformation.hProcess, INFINITE);
-            CloseHandle(processInformation.hProcess);
+            if (not bCreated)
+            {
+                // Terminate process immediately
+                ReportApplicationStop("Could not start AnemoneCrashReporter");
+            }
+            else
+            {
+                // Wait until crash reporter finishes
+                WaitForSingleObject(processInformation.hProcess, INFINITE);
+                CloseHandle(processInformation.hThread);
+                CloseHandle(processInformation.hProcess);
+            }
         }
 
         ReleaseSRWLockExclusive(&lock);
@@ -199,9 +271,9 @@ namespace Anemone::Platform
         TerminateProcess(hProcess, static_cast<UINT>(-1));
     }
 
-    static LONG CALLBACK windows_OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS)
+    static LONG CALLBACK windows_OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
     {
-        HandleCrash();
+        HandleCrash(lpExceptionPointers);
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -209,7 +281,7 @@ namespace Anemone::Platform
     {
         if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
         {
-            HandleCrash();
+            HandleCrash(lpExceptionPointers);
         }
 
         return EXCEPTION_EXECUTE_HANDLER;
@@ -217,12 +289,12 @@ namespace Anemone::Platform
 
     static void __cdecl windows_OnTerminate()
     {
-        HandleCrash();
+        HandleCrash(nullptr);
     }
 
     static void __cdecl windows_OnPureCall()
     {
-        HandleCrash();
+        HandleCrash(nullptr);
     }
 
     static void __cdecl windows_OnInvalidParameter(
@@ -232,7 +304,7 @@ namespace Anemone::Platform
         [[maybe_unused]] unsigned int line,
         [[maybe_unused]] uintptr_t reserved)
     {
-        HandleCrash();
+        HandleCrash(nullptr);
     }
 
     void InitializeRuntime_PlatformSpecific()

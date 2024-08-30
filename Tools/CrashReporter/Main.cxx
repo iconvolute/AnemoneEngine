@@ -157,8 +157,80 @@ struct ParsedOptions
     std::optional<bool> FullDump{};
 };
 
+struct CrashDetails
+{
+    DWORD ProcessId;
+    DWORD ThreadId;
+    EXCEPTION_RECORD ExceptionRecord;
+    CONTEXT Context;
+};
+
+std::optional<CrashDetails> ReadCrashDetails(DWORD processId, DWORD threadId)
+{
+    wchar_t name[MAX_PATH];
+    swprintf_s(name, L"AnemoneCrashDetails_pid%u_tid%u", static_cast<UINT>(processId), static_cast<UINT>(threadId));
+
+    HANDLE hMapping = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, name);
+    if (hMapping == nullptr)
+    {
+        return std::nullopt;
+    }
+
+    void* buffer = MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CrashDetails));
+    if (buffer == nullptr)
+    {
+        CloseHandle(hMapping);
+        return std::nullopt;
+    }
+
+    CrashDetails crashDetails{};
+
+    CopyMemory(&crashDetails, buffer, sizeof(CrashDetails));
+
+    UnmapViewOfFile(buffer);
+
+    CloseHandle(hMapping);
+
+    if (crashDetails.ProcessId != processId || crashDetails.ThreadId != threadId)
+    {
+        std::println(stderr, "Invalid crash details\n");
+        abort();
+    }
+
+    return crashDetails;
+}
+void EnableDebugPrivileges()
+{
+    HANDLE hToken = NULL;
+    TOKEN_PRIVILEGES tkp = {0};
+
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken))
+    {
+        wprintf(L"Failed to open process token.\n");
+        return;
+    }
+
+    tkp.PrivilegeCount = 1;
+    tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
+
+    LPCWSTR lpwPriv = L"SeDebugPrivilege";
+    if (!LookupPrivilegeValueW(NULL, lpwPriv, &tkp.Privileges[0].Luid))
+    {
+        CloseHandle(hToken);
+        return;
+    }
+
+    if (!AdjustTokenPrivileges(hToken, FALSE, &tkp, sizeof(TOKEN_PRIVILEGES), nullptr, nullptr))
+    {
+        wprintf(L"Failed to adjust process token.\n");
+    }
+
+    CloseHandle(hToken);
+}
+
 int main(int argc, char* argv[])
 {
+    EnableDebugPrivileges();
     CommandLineEnumerator enumerator{argc, argv};
 
     ParsedOptions options{};
@@ -180,12 +252,25 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, *options.ProcessId);
+    HANDLE hProcess = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_VM_READ, FALSE, *options.ProcessId);
     if (hProcess == nullptr)
     {
         std::println(stderr, "Failed to open process: {}", GetLastError());
         return 1;
     }
+
+    std::fwprintf(stderr, L"Opened process");
+    // Read crash details from process.
+    auto crashDetails = ReadCrashDetails(*options.ProcessId, *options.ThreadId);
+
+    if (crashDetails == std::nullopt)
+    {
+        std::println(stderr, "Failed to read crash details: {}", GetLastError());
+        CloseHandle(hProcess);
+        return 1;
+    }
+
+    std::fwprintf(stderr, L"Got details\n");
 
     SYSTEMTIME st{};
     GetLocalTime(&st);
@@ -229,12 +314,45 @@ int main(int argc, char* argv[])
         ? (MiniDumpWithFullMemory | MiniDumpWithUnloadedModules | MiniDumpWithAvxXStateContext)
         : (MiniDumpNormal);
 
-    if (!MiniDumpWriteDump(hProcess, *options.ProcessId, hFile, static_cast<MINIDUMP_TYPE>(dumpType), nullptr, nullptr, nullptr))
+    EXCEPTION_POINTERS exceptionPointers;
+    exceptionPointers.ExceptionRecord = &crashDetails->ExceptionRecord;
+    exceptionPointers.ContextRecord = &crashDetails->Context;
+
+    MINIDUMP_EXCEPTION_INFORMATION exceptionInfo;
+    exceptionInfo.ThreadId = *options.ThreadId;
+    exceptionInfo.ExceptionPointers = &exceptionPointers;
+    exceptionInfo.ClientPointers = FALSE;
+
+    std::fwprintf(stderr, L"Writing dump to %s\n", wFileName);
+
+    for (size_t i = 0; i < 10; ++i)
     {
-        std::println(stderr, "Failed to write dump: {}", GetLastError());
-        CloseHandle(hFile);
-        CloseHandle(hProcess);
-        return 1;
+        if (!MiniDumpWriteDump(
+                hProcess,
+                *options.ProcessId,
+                hFile,
+                static_cast<MINIDUMP_TYPE>(dumpType),
+                &exceptionInfo,
+                nullptr,
+                nullptr))
+        {
+            if (static_cast<HRESULT>(GetLastError()) != HRESULT_FROM_WIN32(ERROR_PARTIAL_COPY))
+            {
+                std::fwprintf(stderr, L"Failed to write dump: %lx\n", GetLastError());
+                CloseHandle(hFile);
+                CloseHandle(hProcess);
+                return 1;
+            }
+            else
+            {
+                std::fwprintf(stderr, L"Partial copy error, retrying...\n");
+                Sleep(1000);
+            }
+        }
+        else
+        {
+            break;
+        }
     }
 
     CloseHandle(hFile);
