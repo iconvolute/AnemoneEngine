@@ -101,7 +101,7 @@ namespace Anemone::System
             {
                 if (not wpath.empty())
                 {
-                    Platform::win32_AddDirectorySeparator(wpath);
+                    Platform::win32_PathAddDirectorySeparator(wpath);
 
                     wpath += L'*';
 

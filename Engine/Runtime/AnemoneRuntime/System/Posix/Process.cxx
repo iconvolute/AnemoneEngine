@@ -222,7 +222,7 @@ namespace Anemone::System
     std::expected<int32_t, ErrorCode> Process::Wait() const
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::Wait not implemented");
+        AE_LOG(Fatal, "Process::Wait not implemented\n");
         return {};
 #else
         Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
@@ -255,7 +255,7 @@ namespace Anemone::System
     std::expected<std::optional<int32_t>, ErrorCode> Process::TryWait() const
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::TryWait not implemented");
+        AE_LOG(Fatal, "Process::TryWait not implemented\n");
         return {};
 #else
         Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
@@ -296,7 +296,7 @@ namespace Anemone::System
     std::expected<void, ErrorCode> Process::Terminate()
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::Terminate not implemented");
+        AE_LOG(Fatal, "Process::Terminate not implemented\n");
         return {};
 #else
         Platform::NativeProcess& nativeThis = Platform::Get(this->_native);

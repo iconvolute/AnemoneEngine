@@ -32,7 +32,7 @@ namespace Anemone::System
             {
                 if (not CloseHandle(nativeThis.Handle))
                 {
-                    AE_LOG(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
+                    AE_LOG(Error, "Failed to close file: handle = {}, error = {}\n", fmt::ptr(nativeThis.Handle), GetLastError());
                 }
             }
 
@@ -50,7 +50,7 @@ namespace Anemone::System
         {
             if (not CloseHandle(nativeThis.Handle))
             {
-                AE_LOG(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
+                AE_LOG(Error, "Failed to close file: handle = {}, error = {}\n", fmt::ptr(nativeThis.Handle), GetLastError());
             }
         }
 

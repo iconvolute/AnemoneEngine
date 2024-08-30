@@ -124,7 +124,7 @@ namespace Anemone::System
             .dwYCountChars = 0,
             .dwFillAttribute = 0,
             .dwFlags = 0,
-            .wShowWindow = SW_SHOWDEFAULT,
+            .wShowWindow = 0,
             .cbReserved2 = 0,
             .lpReserved2 = nullptr,
             .hStdInput = nullptr,

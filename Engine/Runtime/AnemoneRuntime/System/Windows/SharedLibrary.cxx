@@ -42,7 +42,7 @@ namespace Anemone::System
         {
             if (not FreeLibrary(nativeThis.Handle))
             {
-                AE_LOG(Error, "Failed to close shared library: {}", GetLastError());
+                AE_LOG(Error, "Failed to close shared library: {}\n", GetLastError());
             }
         }
 

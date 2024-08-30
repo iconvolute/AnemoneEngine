@@ -38,6 +38,6 @@ namespace Anemone::Tasks::Private
             });
         }
 
-        AE_LOG(Trace, "Worker completed\n");
+        AE_LOG(Debug, "Worker completed\n");
     }
 }

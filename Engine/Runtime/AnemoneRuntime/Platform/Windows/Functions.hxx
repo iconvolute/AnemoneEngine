@@ -115,6 +115,33 @@ namespace Anemone::Platform
             }
         }
 
+        constexpr void resize(size_t size)
+        {
+            // Test if need to copy data from static to dynamic buffer
+            if (size > StaticCapacityT)
+            {
+                size_t const capacity = size;
+
+                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity);
+                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Dynamic.get());
+                this->m_Data = this->m_Dynamic.get();
+                this->m_Capacity = capacity;
+            }
+            // Test if need to copy data from dynamic to static buffer
+            else if (this->m_Dynamic and (size <= StaticCapacityT))
+            {
+                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Static);
+                this->m_Dynamic = nullptr;
+                this->m_Data = this->m_Static;
+                this->m_Capacity = StaticCapacityT;
+            }
+            // Trim the buffer
+            else
+            {
+                this->m_Size = size;
+            }
+        }
+
         constexpr void trim(size_t size) noexcept
         {
             assert(size <= this->m_Capacity);
@@ -206,21 +233,6 @@ namespace Anemone::Platform
 
     using win32_FilePathW = win32_string_buffer<wchar_t, MAX_PATH>;
     using win32_FilePathA = win32_string_buffer<char, MAX_PATH>;
-
-    inline void win32_AddDirectorySeparator(std::wstring& path)
-    {
-        if (path.empty())
-        {
-            return;
-        }
-
-        wchar_t const last = path.back();
-
-        if ((last != L'/') and (last != L'\\'))
-        {
-            path.push_back(L'/');
-        }
-    }
 }
 
 namespace Anemone::Platform
@@ -731,6 +743,100 @@ namespace Anemone::Platform
 
     // SHGetFolderPathW; todo
     // GetModuleFileNameW
+}
+
+namespace Anemone::Platform
+{
+    constexpr wchar_t win32_DirectorySeparator = L'\\';
+
+    constexpr bool win32_IsDirectorySeparator(wchar_t c)
+    {
+        return (c == L'/') or (c == L'\\');
+    }
+
+    constexpr std::wstring_view::size_type win32_FindLastDirectorySeparator(std::wstring_view path)
+    {
+        return path.find_last_of(LR"(/\)");
+    }
+
+    anemone_forceinline void win32_PathAddDirectorySeparator(std::wstring& path)
+    {
+        if (path.empty() or not win32_IsDirectorySeparator(path.back()))
+        {
+            path.push_back(win32_DirectorySeparator);
+        }
+    }
+
+    anemone_forceinline void win32_PathRemoveDirectorySeparator(std::wstring& path)
+    {
+        if (not path.empty() and win32_IsDirectorySeparator(path.back()))
+        {
+            path.pop_back();
+        }
+    }
+
+    anemone_forceinline void win32_PathPushFragment(std::wstring& path, std::wstring_view part)
+    {
+        if (path.empty())
+        {
+            path = part;
+        }
+        else
+        {
+            win32_PathAddDirectorySeparator(path);
+            path.append(part);
+        }
+    }
+
+    anemone_forceinline bool win32_PathPopFragment(std::wstring& path)
+    {
+        if (not path.empty())
+        {
+            // Find directory separator and remove everything after it
+            auto const separator = win32_FindLastDirectorySeparator(path);
+
+            if (separator != std::string_view::npos)
+            {
+                path.resize(separator);
+            }
+            else
+            {
+                path.clear();
+            }
+
+            return true;
+        }
+
+        return false;
+    }
+
+    anemone_forceinline bool win32_PathPopFragment(std::wstring& path, std::wstring& tail)
+    {
+        if (not path.empty())
+        {
+            // Find directory separator and remove everything after it
+            auto const separator = win32_FindLastDirectorySeparator(path);
+
+            if (separator != std::string_view::npos)
+            {
+                // Tail is everything after the separator
+                tail = path.substr(separator + 1);
+                path.resize(separator);
+            }
+            else
+            {
+                // Path don't contain any directory separators, so the whole path is the tail
+                tail = std::move(path);
+                path.clear();
+            }
+
+            return true;
+        }
+
+        tail.clear();
+        return false;
+    }
+
 }
 
 namespace Anemone::Platform

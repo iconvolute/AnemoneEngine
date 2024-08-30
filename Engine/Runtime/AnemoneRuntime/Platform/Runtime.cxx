@@ -38,6 +38,19 @@ namespace Anemone::Platform
         fmt::println("Name:             '{}'", processor.Name);
         fmt::println("Vendor:           '{}'", processor.Vendor);
 
+        auto const& environment = System::GetEnvironment();
+        fmt::println("SystemVersionString: '{}'", environment.SystemVersion);
+        fmt::println("SystemId:            '{}'", environment.SystemId);
+        fmt::println("ExecutablePath:      '{}'", environment.ExecutablePath);
+        fmt::println("StartupPath:         '{}'", environment.StartupPath);
+        fmt::println("ComputerName:        '{}'", environment.ComputerName);
+        fmt::println("UserName:            '{}'", environment.UserName);
+        fmt::println("DesktopPath:         '{}'", environment.DesktopPath);
+        fmt::println("DocumentsPath:       '{}'", environment.DocumentsPath);
+        fmt::println("ProfilePath:         '{}'", environment.ProfilePath);
+        fmt::println("TempPath:            '{}'", environment.TempPath);
+        fmt::println("StartupTime:         '{}'", environment.StartupTime);
+
         // Initialize profiler
 #if ANEMONE_BUILD_PROFILING
         Anemone::Profiler::GProfiler = new Anemone::Profiler::ProfilerNvidia();

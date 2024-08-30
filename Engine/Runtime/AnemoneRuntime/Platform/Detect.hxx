@@ -530,6 +530,10 @@
 #define ANEMONE_FEATURE_JITDEBUGGER true
 #endif
 
+#ifndef ANEMONE_FEATURE_JITDEBUGGER
+#define ANEMONE_FEATURE_JITDEBUGGER false
+#endif
+
 //
 //--------------------------------------------------------------------------------------------------
 

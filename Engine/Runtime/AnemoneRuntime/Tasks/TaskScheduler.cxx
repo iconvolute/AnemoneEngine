@@ -33,17 +33,17 @@ namespace Anemone::Tasks::Private
 
     TaskScheduler::~TaskScheduler()
     {
-        AE_LOG(Trace, "Requesting cancellation\n");
+        AE_LOG(Debug, "Requesting cancellation\n");
         this->m_CancellationToken.Cancel();
         this->m_Semaphore.Release(static_cast<int32_t>(this->m_WorkerThreadsCount));
 
-        AE_LOG(Trace, "Joining threads\n");
+        AE_LOG(Debug, "Joining threads\n");
         for (auto& thread : this->m_Threads)
         {
             thread.Join();
         }
 
-        AE_LOG(Trace, "Queue length:            {}\n", this->m_Queue.GetCount());
+        AE_LOG(Debug, "Queue length:            {}\n", this->m_Queue.GetCount());
 
         while (Task* current = this->m_Queue.Pop())
         {
@@ -55,7 +55,7 @@ namespace Anemone::Tasks::Private
             Duration const totalTime = worker->m_WaitingTime + worker->m_ProcessingTime;
             [[maybe_unused]] double const utilization = static_cast<double>(worker->m_ProcessingTime.ToMicroseconds()) / static_cast<double>(totalTime.ToMicroseconds());
 
-            AE_LOG(Trace, "worker: {}, tasks: {}, waiting: {}, working: {}, utilization: {:.2f}%",
+            AE_LOG(Debug, "worker: {}, tasks: {}, waiting: {}, working: {}, utilization: {:.2f}%\n",
                 worker->m_Index,
                 worker->m_ProcessedTasks,
                 worker->m_WaitingTime,
@@ -63,9 +63,9 @@ namespace Anemone::Tasks::Private
                 utilization * 100.0);
         }
 
-        AE_LOG(Trace, "Drained queue length:    {}\n", this->m_Queue.GetCount());
-        AE_LOG(Trace, "Awaiters leaked:         {}\n", Awaiter::s_TotalAllocations.load());
-        AE_LOG(Trace, "Tasks leaked:            {}\n", Task::s_TotalAllocations.load());
+        AE_LOG(Debug, "Drained queue length:    {}\n", this->m_Queue.GetCount());
+        AE_LOG(Debug, "Awaiters leaked:         {}\n", Awaiter::s_TotalAllocations.load());
+        AE_LOG(Debug, "Tasks leaked:            {}\n", Task::s_TotalAllocations.load());
     }
 
 

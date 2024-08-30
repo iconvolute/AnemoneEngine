@@ -1,5 +1,9 @@
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/System/Path.hxx"
+
+#include <stacktrace>
+#include <print>
 
 namespace Anemone::System
 {
@@ -272,7 +276,7 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
-    static ProcessorProperties DetermineProcessorPropertiesOnce()
+    static ProcessorProperties GProcessorProperties = []() -> ProcessorProperties
     {
         ProcessorProperties result{};
 
@@ -283,15 +287,15 @@ namespace Anemone::System
 
             if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
             {
-                std::vector<std::byte> buffer{dwSize};
+                std::unique_ptr<std::byte[]> buffer = std::make_unique_for_overwrite<std::byte[]>(dwSize);
 
                 GetLogicalProcessorInformationEx(
                     RelationCache,
-                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.data()),
+                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.get()),
                     &dwSize);
 
-                std::byte const* first = buffer.data();
-                std::byte const* last = buffer.data() + dwSize;
+                std::byte const* first = buffer.get();
+                std::byte const* last = buffer.get() + dwSize;
                 std::byte const* it = first;
 
                 uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
@@ -336,22 +340,23 @@ namespace Anemone::System
 
         // Determine CPUs
         {
+            HANDLE hThisProcess = GetCurrentProcess();
             DWORD dwSize{};
-            GetSystemCpuSetInformation(nullptr, 0, &dwSize, GetCurrentProcess(), 0);
+            GetSystemCpuSetInformation(nullptr, 0, &dwSize, hThisProcess, 0);
 
             if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
             {
-                std::vector<std::byte> buffer{dwSize};
+                std::unique_ptr<std::byte[]> buffer = std::make_unique_for_overwrite<std::byte[]>(dwSize);
 
                 GetSystemCpuSetInformation(
-                    reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()),
+                    reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.get()),
                     dwSize,
                     &dwSize,
-                    GetCurrentProcess(),
+                    hThisProcess,
                     0);
 
-                std::byte const* first = buffer.data();
-                std::byte const* last = buffer.data() + dwSize;
+                std::byte const* first = buffer.get();
+                std::byte const* last = buffer.get() + dwSize;
                 std::byte const* it = first;
 
                 while (it < last)
@@ -403,11 +408,148 @@ namespace Anemone::System
         }
 
         return result;
-    }
+    }();
 
     ProcessorProperties const& GetProcessorProperties()
     {
-        static ProcessorProperties const properties = DetermineProcessorPropertiesOnce();
-        return properties;
+        return GProcessorProperties;
+    }
+}
+
+namespace Anemone::System
+{
+    static Environment GEnvironment = []() -> Environment
+    {
+        Environment result{};
+
+        Platform::win32_string_buffer<wchar_t, 512> buffer{};
+
+        // Determine system version
+        {
+            if (Platform::win32_GetSystemDirectory(buffer))
+            {
+                std::wstring kernelPath{buffer.as_view()};
+                Platform::win32_PathPushFragment(kernelPath, L"kernel32.dll");
+
+                DWORD const dwSize = GetFileVersionInfoSizeW(kernelPath.c_str(), nullptr);
+
+                if (dwSize != 0)
+                {
+                    std::unique_ptr<std::byte[]> versionInfo = std::make_unique_for_overwrite<std::byte[]>(dwSize);
+
+                    if (GetFileVersionInfoW(kernelPath.c_str(), 0, dwSize, versionInfo.get()) != FALSE)
+                    {
+                        VS_FIXEDFILEINFO* pFileInfo = nullptr;
+                        UINT uLen = 0;
+
+                        if (VerQueryValueW(versionInfo.get(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
+                        {
+                            result.SystemVersion = fmt::format(
+                                "{}.{}.{}.{}",
+                                HIWORD(pFileInfo->dwFileVersionMS),
+                                LOWORD(pFileInfo->dwFileVersionMS),
+                                HIWORD(pFileInfo->dwFileVersionLS),
+                                LOWORD(pFileInfo->dwFileVersionLS));
+                        }
+                    }
+                }
+            }
+
+            if (result.SystemVersion.empty())
+            {
+                result.SystemVersion = "Unknown";
+            }
+        }
+
+        // Determine system ID
+        {
+            Platform::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(Software\Microsoft\Cryptography)", LR"(MachineGuid)");
+            Platform::win32_NarrowString(result.SystemId, buffer.as_view());
+        }
+
+        // Executable path
+        {
+            Platform::win32_QueryFullProcessImageName(buffer);
+            Platform::win32_NarrowString(result.ExecutablePath, buffer.as_view());
+            Path::NormalizeDirectorySeparators(result.ExecutablePath);
+        }
+
+        // Startup path
+        {
+            Platform::win32_GetCurrentDirectory(buffer);
+            Platform::win32_NarrowString(result.StartupPath, buffer.as_view());
+            Path::NormalizeDirectorySeparators(result.StartupPath);
+        }
+
+        // Computer name
+        {
+            Platform::win32_GetComputerName(buffer);
+            Platform::win32_NarrowString(result.ComputerName, buffer.as_view());
+        }
+
+        // User name
+        {
+            Platform::win32_GetUserName(buffer);
+            Platform::win32_NarrowString(result.UserName, buffer.as_view());
+        }
+
+        // Profile path
+        {
+            Platform::win32_GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
+            {
+                Platform::win32_NarrowString(result.ProfilePath, value);
+            });
+            Path::NormalizeDirectorySeparators(result.ProfilePath);
+        }
+
+        // Desktop path
+        {
+            Platform::win32_GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
+            {
+                Platform::win32_NarrowString(result.DesktopPath, value);
+            });
+            Path::NormalizeDirectorySeparators(result.DesktopPath);
+        }
+
+        // Documents path
+        {
+            Platform::win32_GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
+            {
+                Platform::win32_NarrowString(result.DocumentsPath, value);
+            });
+            Path::NormalizeDirectorySeparators(result.DocumentsPath);
+        }
+
+        // Downloads path
+        {
+            Platform::win32_GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
+            {
+                Platform::win32_NarrowString(result.DownloadsPath, value);
+            });
+            Path::NormalizeDirectorySeparators(result.DownloadsPath);
+        }
+
+        // Temp path
+        {
+            Platform::win32_GetTempPath(buffer);
+            Platform::win32_NarrowString(result.TempPath, buffer.as_view());
+
+            Platform::win32_string_buffer<wchar_t, MAX_PATH + 1> tempPath{};
+            Platform::win32_GetLongPathName(tempPath, buffer.data());
+            Platform::win32_NarrowString(result.TempPath, tempPath.as_view());
+            Path::NormalizeDirectorySeparators(result.TempPath);
+        }
+
+        // Startup time
+        {
+            result.StartupTime = DateTime::Now();
+        }
+
+        return result;
+    }();
+
+    Environment const& GetEnvironment()
+    {
+        return GEnvironment;
     }
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Geometry.hxx"
+#include "AnemoneRuntime/DateTime.hxx"
 
 #include <string_view>
 #include <string>
@@ -66,7 +67,7 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
-    struct ProcessorProperties
+    struct ProcessorProperties final
     {
         uint32_t PhysicalCores{};
         uint32_t LogicalCores{};
@@ -80,9 +81,31 @@ namespace Anemone::System
 
         uint32_t CacheLineSize{};
 
-        std::string Name;
+        std::string Name;    // NOTE: Do we really need this?
         std::string Vendor;
     };
 
     RUNTIME_API ProcessorProperties const& GetProcessorProperties();
+
+    struct Environment final
+    {
+        std::string SystemVersion;
+        std::string SystemId;
+
+        std::string ExecutablePath;
+        std::string StartupPath;
+
+        std::string ComputerName;
+        std::string UserName;
+
+        std::string ProfilePath;
+        std::string DesktopPath;
+        std::string DocumentsPath;
+        std::string DownloadsPath;
+        std::string TempPath;
+
+        DateTime StartupTime;
+    };
+
+    RUNTIME_API Environment const& GetEnvironment();
 }
