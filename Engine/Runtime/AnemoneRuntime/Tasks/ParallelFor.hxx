@@ -92,7 +92,9 @@ namespace Anemone::Tasks
         };
 
         // Number of worker threads in pool.
-        auto workersCount = std::max<size_t>(1, GTaskScheduler->GetWorkerCount());
+        //
+        // This takes into account the main thread as a worker.
+        auto workersCount = std::max<size_t>(1, GTaskScheduler->GetWorkerCount() + 1);
 
         if (threads == 0)
         {
