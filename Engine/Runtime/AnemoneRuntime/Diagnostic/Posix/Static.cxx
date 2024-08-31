@@ -1,19 +1,19 @@
 #include "AnemoneRuntime/Diagnostic/Static.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Diagnostic/StandardOutputLogListener.hxx"
+#include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
 
 namespace Anemone::Diagnostic
 {
-    static UninitializedObject<StandardOutputLogListener> GStandardOutputLogListener{};
+    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
 
     void InitializeStatic()
     {
-        GStandardOutputLogListener.Create();
+        GStandardOutputTraceListener.Create();
     }
 
     void ShutdownStatic()
     {
-        GStandardOutputLogListener.Destroy();
+        GStandardOutputTraceListener.Destroy();
     }
 }

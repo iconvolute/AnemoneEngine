@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
 
-namespace Anemone::Tasks::Private
+namespace Anemone::Tasks
 {
     class alignas(64) TaskQueue final
     {

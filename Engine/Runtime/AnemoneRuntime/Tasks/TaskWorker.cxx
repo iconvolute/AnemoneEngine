@@ -1,11 +1,10 @@
-#include "TaskWorker.hxx"
-#include "TaskScheduler.hxx"
-#include "TaskScheduler2.hxx"
+#include "AnemoneRuntime/Tasks/TaskWorker.hxx"
+#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
-namespace Anemone::Tasks::Private
+namespace Anemone::Tasks
 {
     AE_DECLARE_PROFILE(TaskWorkerWait);
     AE_DECLARE_PROFILE(TaskWorkerExecute);
@@ -38,6 +37,6 @@ namespace Anemone::Tasks::Private
             });
         }
 
-        AE_LOG(Debug, "Worker completed\n");
+        AE_TRACE(Verbose, "Worker completed");
     }
 }

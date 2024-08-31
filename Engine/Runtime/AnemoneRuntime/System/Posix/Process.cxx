@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
@@ -222,7 +222,7 @@ namespace Anemone::System
     std::expected<int32_t, ErrorCode> Process::Wait() const
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::Wait not implemented\n");
+        AE_TRACE(Critical, "Process::Wait not implemented");
         return {};
 #else
         Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
@@ -255,7 +255,7 @@ namespace Anemone::System
     std::expected<std::optional<int32_t>, ErrorCode> Process::TryWait() const
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::TryWait not implemented\n");
+        AE_TRACE(Critical, "Process::TryWait not implemented");
         return {};
 #else
         Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
@@ -296,7 +296,7 @@ namespace Anemone::System
     std::expected<void, ErrorCode> Process::Terminate()
     {
 #if !ANEMONE_PLATFORM_LINUX
-        AE_LOG(Fatal, "Process::Terminate not implemented\n");
+        AE_TRACE(Critical, "Process::Terminate not implemented");
         return {};
 #else
         Platform::NativeProcess& nativeThis = Platform::Get(this->_native);

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Network/Dns.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Network/Private.hxx"
 
 #include <array>

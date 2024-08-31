@@ -10,6 +10,16 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
+// DDDDD
+
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
+
+AE_DECLARE_PROFILE(YieldAnyThreadOnAnyProcessor);
+AE_DECLARE_PROFILE(YieldSameOrHigherPriorityOnAnyProcessor);
+AE_DECLARE_PROFILE(YieldAnyThreadOnSameProcessor);
+
+// DDDDD
+
 namespace Anemone::Threading::ThisThread
 {
     void Yield(ThreadYieldTarget target)
@@ -23,6 +33,7 @@ namespace Anemone::Threading::ThisThread
 
         case ThreadYieldTarget::AnyThreadOnAnyProcessor:
             {
+                AE_PROFILE_SCOPE(YieldAnyThreadOnAnyProcessor);
                 timeBeginPeriod(1);
                 SleepEx(1, FALSE);
                 timeEndPeriod(1);
@@ -30,12 +41,14 @@ namespace Anemone::Threading::ThisThread
             }
         case ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor:
             {
+                AE_PROFILE_SCOPE(YieldSameOrHigherPriorityOnAnyProcessor);
                 SleepEx(0, FALSE);
                 break;
             }
 
         case ThreadYieldTarget::AnyThreadOnSameProcessor:
             {
+                AE_PROFILE_SCOPE(YieldAnyThreadOnSameProcessor);
                 SwitchToThread();
                 break;
             }

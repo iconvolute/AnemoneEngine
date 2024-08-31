@@ -5,6 +5,7 @@ namespace Anemone::Diagnostic
     void Abort(std::string_view message)
     {
         (void)message;
+        abort();
     }
 
     bool IsDebuggerAttached()

@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
 #include "AnemoneRuntime/Threading/ThisThread.hxx"
+#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 namespace Anemone::Tasks
 {
@@ -91,7 +92,7 @@ namespace Anemone::Tasks
         };
 
         // Number of worker threads in pool.
-        auto workersCount = std::max<size_t>(1, Tasks::GetWorkerCount());
+        auto workersCount = std::max<size_t>(1, GTaskScheduler->GetWorkerCount());
 
         if (threads == 0)
         {
@@ -130,12 +131,12 @@ namespace Anemone::Tasks
                 },
             };
 
-            Tasks::DispatchTask(*task, forkCounter, joinCounter, priority);
+            GTaskScheduler->Dispatch(*task, forkCounter, joinCounter, priority);
         }
 
         AwaiterHandle waitCounter = new Awaiter{};
-        Tasks::DispatchTask(*barrier, joinCounter, waitCounter, priority);
+        GTaskScheduler->Dispatch(*barrier, joinCounter, waitCounter, priority);
 
-        Tasks::Wait(waitCounter);
+        GTaskScheduler->Wait(waitCounter);
     }
 }

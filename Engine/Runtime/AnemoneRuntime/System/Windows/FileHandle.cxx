@@ -1,7 +1,7 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::System
@@ -32,7 +32,7 @@ namespace Anemone::System
             {
                 if (not CloseHandle(nativeThis.Handle))
                 {
-                    AE_LOG(Error, "Failed to close file: handle = {}, error = {}\n", fmt::ptr(nativeThis.Handle), GetLastError());
+                    AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
                 }
             }
 
@@ -50,7 +50,7 @@ namespace Anemone::System
         {
             if (not CloseHandle(nativeThis.Handle))
             {
-                AE_LOG(Error, "Failed to close file: handle = {}, error = {}\n", fmt::ptr(nativeThis.Handle), GetLastError());
+                AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
             }
         }
 

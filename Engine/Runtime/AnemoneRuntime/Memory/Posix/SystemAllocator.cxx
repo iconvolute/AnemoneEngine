@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Memory/SystemAllocator.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -56,7 +56,7 @@ namespace Anemone::Memory
             // Allocated buffer is not aligned. Return it to OS because it's too small for requested allocation.
             //
 
-            AE_LOG(Warning, "SystemAllocator: OS returned unaligned memory block, falling back to overallocation strategy.\n");
+            AE_TRACE(Warning, "SystemAllocator: OS returned unaligned memory block, falling back to overallocation strategy.");
             munmap(p, alignedSize);
         }
 
@@ -86,7 +86,7 @@ namespace Anemone::Memory
             size_t const prefixSize = reinterpret_cast<size_t>(result) - reinterpret_cast<size_t>(overallocated);
             munmap(overallocated, prefixSize);
 
-            AE_LOG(Warning, "SystemAllocator: OS returned unaligned memory block, trimmed leading part (ptr: {}, size: {}).\n", fmt::ptr(overallocated), prefixSize);
+            AE_TRACE(Warning, "SystemAllocator: OS returned unaligned memory block, trimmed leading part (ptr: {}, size: {}).", fmt::ptr(overallocated), prefixSize);
             suffixSize -= prefixSize;
         }
 
@@ -97,7 +97,7 @@ namespace Anemone::Memory
         void* suffix = reinterpret_cast<void*>(reinterpret_cast<char*>(result) + alignedSize);
         munmap(suffix, suffixSize);
 
-        AE_LOG(Warning, "SystemAllocator: OS returned unaligned memory block, trimmed trailing part (ptr: {}, size: {}).\n", fmt::ptr(suffix), suffixSize);
+        AE_TRACE(Warning, "SystemAllocator: OS returned unaligned memory block, trimmed trailing part (ptr: {}, size: {}).", fmt::ptr(suffix), suffixSize);
 
 #endif
         return Allocation{

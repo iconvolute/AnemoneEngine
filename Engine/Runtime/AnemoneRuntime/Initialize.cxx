@@ -4,6 +4,7 @@
 #include "AnemoneRuntime/Profiler/Static.hxx"
 #include "AnemoneRuntime/System/Static.hxx"
 #include "AnemoneRuntime/Network/Static.hxx"
+#include "AnemoneRuntime/Tasks/Static.hxx"
 
 namespace Anemone
 {
@@ -16,10 +17,12 @@ namespace Anemone
         Network::InitializeStatic();
         System::InitializeStatic();
         Profiler::InitializeStatic();
+        Tasks::InitializeStatic();
     }
 
     void ShutdownRuntime()
     {
+        Tasks::ShutdownStatic();
         Profiler::ShutdownStatic();
         System::ShutdownStatic();
         Network::ShutdownStatic();

@@ -3,12 +3,14 @@ target_sources(AnemoneRuntime
         "Assert.cxx"
         "Assert.hxx"
         "Debugger.hxx"
-        "Log.cxx"
-        "Log.hxx"
-        "LogLevel.hxx"
         "Performance.hxx"
         "StackTrace.hxx"
+        "Static.cxx"
         "Static.hxx"
+        "Trace.cxx"
+        "Trace.hxx"
+        "TraceLevel.hxx"
+        "TraceListener.hxx"
 )
 
 if(WIN32)

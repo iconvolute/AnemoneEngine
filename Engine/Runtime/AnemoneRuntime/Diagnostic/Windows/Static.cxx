@@ -1,9 +1,9 @@
 #include "AnemoneRuntime/Diagnostic/Static.hxx"
 #include "AnemoneRuntime/Diagnostic/Windows/Static.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/StandardOutputLogListener.hxx"
+#include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
@@ -19,28 +19,29 @@ namespace Anemone::Diagnostic
 
 namespace Anemone::Diagnostic
 {
-    class EtwLogListener : public LogListener
+    // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
+    class EtwLogListener : public TraceListener
     {
     public:
-        void Log(Diagnostic::LogLevel level, std::string_view message) override
+        void WriteLine(TraceLevel level, std::string_view message) override
         {
-            switch (level)  // NOLINT(clang-diagnostic-switch-enum)
+            switch (level) // NOLINT(clang-diagnostic-switch-enum)
             {
-            case LogLevel::Fatal:
+            case TraceLevel::Critical:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL),
                     TraceLoggingString(message.data(), "Message"));
                 break;
 
-            case LogLevel::Error:
+            case TraceLevel::Error:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
                     TraceLoggingString(message.data(), "Message"));
                 break;
 
-            case LogLevel::Warning:
+            case TraceLevel::Warning:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
@@ -60,58 +61,68 @@ namespace Anemone::Diagnostic
         {
             TraceLoggingRegister(GTraceLoggingProvider);
 
-            Diagnostic::AddLogListener(this);
+            GTrace->AddListener(*this);
         }
 
         ~EtwLogListener()
         {
-            Diagnostic::RemoveLogListener(this);
+            GTrace->RemoveListener(*this);
 
             TraceLoggingUnregister(GTraceLoggingProvider);
         }
     };
 
-    class DebugOutputLogListener : public LogListener
+    class DebugOutputTraceListener : public TraceListener
     {
     public:
-        void Log(Diagnostic::LogLevel level, std::string_view message) override
+        void WriteLine(TraceLevel level, std::string_view message) override
         {
             (void)level;
             Platform::win32_string_buffer<wchar_t, 512> buffer{};
             Platform::win32_WidenString(buffer, message);
             OutputDebugStringW(buffer.data());
+            OutputDebugStringW(L"\n");
         }
 
         void Flush() override
         {
         }
 
-        DebugOutputLogListener()
+        DebugOutputTraceListener()
         {
-            Diagnostic::AddLogListener(this);
+            GTrace->AddListener(*this);
         }
 
-        ~DebugOutputLogListener() override
+        ~DebugOutputTraceListener() override
         {
-            Diagnostic::RemoveLogListener(this);
+            GTrace->RemoveListener(*this);
         }
     };
+}
 
-    static UninitializedObject<DebugOutputLogListener> GDebugOutputLogListener{};
-    static UninitializedObject<StandardOutputLogListener> GStandardOutputLogListener{};
-    //static UninitializedObject<EtwLogListener> GEtwLogListener{};
+namespace Anemone::Diagnostic
+{
+    static UninitializedObject<DebugOutputTraceListener> GDebugOutputTraceListener{};
+    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
+    // static UninitializedObject<EtwLogListener> GEtwLogListener{};
 
     void InitializeStatic()
     {
-        GDebugOutputLogListener.Create();
-        GStandardOutputLogListener.Create();
-        //GEtwLogListener.Create();
+        GDiagnosticStatic.Create();
+        GTrace.Create();
+
+        GDebugOutputTraceListener.Create();
+        GStandardOutputTraceListener.Create();
+        // GEtwLogListener.Create();
     }
 
     void ShutdownStatic()
     {
-        //GEtwLogListener.Destroy();
-        GStandardOutputLogListener.Destroy();
-        GDebugOutputLogListener.Destroy();
+        // GEtwLogListener.Destroy();
+        GStandardOutputTraceListener.Destroy();
+        GDebugOutputTraceListener.Destroy();
+
+        GTrace.Destroy();
+        GDiagnosticStatic.Destroy();
     }
 }

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 
 #include <utility>
 #include <type_traits>
@@ -17,7 +17,7 @@ namespace Anemone::Tasks
 #endif
             ++s_TotalAllocations;
 #if ENABLE_LOGGING
-        AE_LOG(Warning, "Task::operator new(size={}, alignment={}, total={})\n", size, static_cast<std::size_t>(al), total);
+        AE_TRACE(Warning, "Task::operator new(size={}, alignment={}, total={})", size, static_cast<std::size_t>(al), total);
 #endif
         return ::operator new(size, al);
     }
@@ -29,7 +29,7 @@ namespace Anemone::Tasks
 #endif
             ++s_TotalAllocations;
 #if ENABLE_LOGGING
-        AE_LOG(Warning, "Task::operator new(size={}, total={})\n", size, total);
+        AE_TRACE(Warning, "Task::operator new(size={}, total={})", size, total);
 #endif
         return ::operator new(size);
     }
@@ -41,7 +41,7 @@ namespace Anemone::Tasks
 #endif
             --s_TotalAllocations;
 #if ENABLE_LOGGING
-        AE_LOG(Warning, "Task::operator delete(ptr={}, alignment={}, total={})\n", fmt::ptr(ptr), static_cast<std::size_t>(al), total);
+        AE_TRACE(Warning, "Task::operator delete(ptr={}, alignment={}, total={})", fmt::ptr(ptr), static_cast<std::size_t>(al), total);
 #endif
         ::operator delete(ptr, al);
     }
@@ -53,7 +53,7 @@ namespace Anemone::Tasks
 #endif
             --s_TotalAllocations;
 #if ENABLE_LOGGING
-        AE_LOG(Warning, "Task::operator delete(ptr={}, total={})\n", fmt::ptr(ptr), total);
+        AE_TRACE(Warning, "Task::operator delete(ptr={}, total={})", fmt::ptr(ptr), total);
 #endif
         ::operator delete(ptr);
     }

@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Threading/Runnable.hxx"
 #include "AnemoneRuntime/Instant.hxx"
 
-namespace Anemone::Tasks::Private
+namespace Anemone::Tasks
 {
     class TaskScheduler;
 

@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -122,7 +122,7 @@ namespace Anemone::System
             {
                 if (close(nativeThis.Descriptor))
                 {
-                    AE_LOG(Error, "Failed to close file: fd = {}, errno = {}\n", nativeThis.Descriptor, errno);
+                    AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", nativeThis.Descriptor, errno);
                 }
             }
 
@@ -140,7 +140,7 @@ namespace Anemone::System
         {
             if (close(nativeThis.Descriptor))
             {
-                AE_LOG(Error, "Failed to close file: fd = {}, errno = {}\n", nativeThis.Descriptor, errno);
+                AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", nativeThis.Descriptor, errno);
             }
         }
 

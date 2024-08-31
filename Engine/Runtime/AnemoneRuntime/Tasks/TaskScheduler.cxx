@@ -1,13 +1,12 @@
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler2.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-//#include "AnemoneRuntime/Platform/Statics.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Instant.hxx"
 
 #include "TaskScheduler.hxx"
 #include "TaskWorker.hxx"
 
-namespace Anemone::Tasks::Private
+namespace Anemone::Tasks
 {
     TaskScheduler::TaskScheduler(TaskSchedulerOptions const& options)
         : m_WorkerThreadsCount{options.WorkerThreadsCount}
@@ -33,17 +32,17 @@ namespace Anemone::Tasks::Private
 
     TaskScheduler::~TaskScheduler()
     {
-        AE_LOG(Debug, "Requesting cancellation\n");
+        AE_TRACE(Verbose, "Requesting cancellation");
         this->m_CancellationToken.Cancel();
         this->m_Semaphore.Release(static_cast<int32_t>(this->m_WorkerThreadsCount));
 
-        AE_LOG(Debug, "Joining threads\n");
+        AE_TRACE(Verbose, "Joining threads");
         for (auto& thread : this->m_Threads)
         {
             thread.Join();
         }
 
-        AE_LOG(Debug, "Queue length:            {}\n", this->m_Queue.GetCount());
+        AE_TRACE(Verbose, "Queue length:            {}", this->m_Queue.GetCount());
 
         while (Task* current = this->m_Queue.Pop())
         {
@@ -55,7 +54,7 @@ namespace Anemone::Tasks::Private
             Duration const totalTime = worker->m_WaitingTime + worker->m_ProcessingTime;
             [[maybe_unused]] double const utilization = static_cast<double>(worker->m_ProcessingTime.ToMicroseconds()) / static_cast<double>(totalTime.ToMicroseconds());
 
-            AE_LOG(Debug, "worker: {}, tasks: {}, waiting: {}, working: {}, utilization: {:.2f}%\n",
+            AE_TRACE(Verbose, "worker: {}, tasks: {}, waiting: {}, working: {}, utilization: {:.2f}%",
                 worker->m_Index,
                 worker->m_ProcessedTasks,
                 worker->m_WaitingTime,
@@ -63,9 +62,9 @@ namespace Anemone::Tasks::Private
                 utilization * 100.0);
         }
 
-        AE_LOG(Debug, "Drained queue length:    {}\n", this->m_Queue.GetCount());
-        AE_LOG(Debug, "Awaiters leaked:         {}\n", Awaiter::s_TotalAllocations.load());
-        AE_LOG(Debug, "Tasks leaked:            {}\n", Task::s_TotalAllocations.load());
+        AE_TRACE(Verbose, "Drained queue length:    {}", this->m_Queue.GetCount());
+        AE_TRACE(Verbose, "Awaiters leaked:         {}", Awaiter::s_TotalAllocations.load());
+        AE_TRACE(Verbose, "Tasks leaked:            {}", Task::s_TotalAllocations.load());
     }
 
 
@@ -145,22 +144,22 @@ namespace Anemone::Tasks::Private
 
         Threading::ThisThread::WaitForCompletion(
             [&]
-            {
-                return awaiter->IsCompleted();
-            },
+        {
+            return awaiter->IsCompleted();
+        },
             [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
             {
-                if (Task* current = this->m_Queue.Pop())
-                {
-                    this->Execute(*current);
-                }
-                else
-                {
-                    Threading::ThisThread::Sleep(s_DefaultTaskDelay);
-                }
+                this->Execute(*current);
+            }
+            else
+            {
+                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
+            }
 
-                return awaiter->IsCompleted();
-            });
+            return awaiter->IsCompleted();
+        });
     }
 
     bool TaskScheduler::TryWait(AwaiterHandle& awaiter, Duration const& timeout)
@@ -177,23 +176,23 @@ namespace Anemone::Tasks::Private
 
         Threading::ThisThread::WaitForCompletion(
             [&]
-            {
-                return (elapsed >= timeout) or awaiter->IsCompleted();
-            },
+        {
+            return (elapsed >= timeout) or awaiter->IsCompleted();
+        },
             [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
             {
-                if (Task* current = this->m_Queue.Pop())
-                {
-                    this->Execute(*current);
-                }
-                else
-                {
-                    Threading::ThisThread::Sleep(s_DefaultTaskDelay);
-                }
+                this->Execute(*current);
+            }
+            else
+            {
+                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
+            }
 
-                elapsed = started.QueryElapsed();
-                return (elapsed >= timeout) or awaiter->IsCompleted();
-            });
+            elapsed = started.QueryElapsed();
+            return (elapsed >= timeout) or awaiter->IsCompleted();
+        });
 
         return awaiter->IsCompleted();
     }
@@ -205,71 +204,54 @@ namespace Anemone::Tasks::Private
 
         Threading::ThisThread::WaitForCompletion(
             [&]
-            {
-                return elapsed >= timeout;
-            },
+        {
+            return elapsed >= timeout;
+        },
             [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
             {
-                if (Task* current = this->m_Queue.Pop())
-                {
-                    this->Execute(*current);
-                }
-                else
-                {
-                    Threading::ThisThread::Sleep(s_DefaultTaskDelay);
-                }
+                this->Execute(*current);
+            }
+            else
+            {
+                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
+            }
 
-                elapsed = started.QueryElapsed();
-                return elapsed >= timeout;
-            });
-    }
-}
-
-namespace Anemone::Tasks::Private
-{
-    static UninitializedObject<TaskScheduler> GTaskScheduler{};
-
-    RUNTIME_API void InitializeTaskScheduler()
-    {
-        GTaskScheduler.Create(TaskSchedulerOptions{
-            .WorkerThreadsCount = 4//Platform::GetProcessorProperties().LogicalCores,
+            elapsed = started.QueryElapsed();
+            return elapsed >= timeout;
         });
-    }
-
-    RUNTIME_API void FinalizeTaskScheduler()
-    {
-        GTaskScheduler.Destroy();
     }
 }
 
 namespace Anemone::Tasks
-{
-    RUNTIME_API void DispatchTask(
-        Task& task,
-        AwaiterHandle const& dependency,
-        AwaiterHandle const& awaiter,
-        TaskPriority priority)
-    {
-        Private::GTaskScheduler->Dispatch(task, dependency, awaiter, priority);
-    }
+{ /*
+     RUNTIME_API void DispatchTask(
+         Task& task,
+         AwaiterHandle const& dependency,
+         AwaiterHandle const& awaiter,
+         TaskPriority priority)
+     {
+         Private::GTaskScheduler->Dispatch(task, dependency, awaiter, priority);
+     }
 
-    RUNTIME_API void Wait(AwaiterHandle& awaiter)
-    {
-        Private::GTaskScheduler->Wait(awaiter);
-    }
+     RUNTIME_API void Wait(AwaiterHandle& awaiter)
+     {
+         Private::GTaskScheduler->Wait(awaiter);
+     }
 
-    RUNTIME_API bool TryWait(AwaiterHandle& awaiter, Duration const& timeout)
-    {
-        return Private::GTaskScheduler->TryWait(awaiter, timeout);
-    }
+     RUNTIME_API bool TryWait(AwaiterHandle& awaiter, Duration const& timeout)
+     {
+         return Private::GTaskScheduler->TryWait(awaiter, timeout);
+     }
 
-    RUNTIME_API void Delay(Duration const& timeout)
-    {
-        Private::GTaskScheduler->Delay(timeout);
-    }
+     RUNTIME_API void Delay(Duration const& timeout)
+     {
+         Private::GTaskScheduler->Delay(timeout);
+     }
 
-    RUNTIME_API uint32_t GetWorkerCount()
-    {
-        return Private::GTaskScheduler->GetWorkerCount();
-    }
+     RUNTIME_API uint32_t GetWorkerCount()
+     {
+         return Private::GTaskScheduler->GetWorkerCount();
+     }*/
 }

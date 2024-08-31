@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
-#include "AnemoneRuntime/Diagnostic/Log.hxx"
+#include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::System
@@ -42,7 +42,7 @@ namespace Anemone::System
         {
             if (not FreeLibrary(nativeThis.Handle))
             {
-                AE_LOG(Error, "Failed to close shared library: {}\n", GetLastError());
+                AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
             }
         }
 
