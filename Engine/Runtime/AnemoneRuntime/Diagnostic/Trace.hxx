@@ -61,6 +61,8 @@ namespace Anemone::Diagnostic
 #define AE_TRACE(level, format, ...) \
     do \
     { \
-        static_assert(not std::string_view{format}.ends_with('\n')); \
-        ::Anemone::Diagnostic::GTrace->WriteLine(::Anemone::Diagnostic::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+        if constexpr (::Anemone::Diagnostic::CanDispatch(::Anemone::Diagnostic::TraceLevel::level)) \
+        { \
+            ::Anemone::Diagnostic::GTrace->WriteLine(::Anemone::Diagnostic::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+        } \
     } while (false)
