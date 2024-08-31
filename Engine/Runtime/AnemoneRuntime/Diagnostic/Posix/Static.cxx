@@ -1,19 +1,14 @@
 #include "AnemoneRuntime/Diagnostic/Static.hxx"
 #include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
 
 namespace Anemone::Diagnostic
 {
-    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
-
-    void InitializeStatic()
+    void InitializePlatformStatic()
     {
-        GStandardOutputTraceListener.Create();
     }
 
-    void ShutdownStatic()
+    void ShutdownPlatformStatic()
     {
-        GStandardOutputTraceListener.Destroy();
     }
 }

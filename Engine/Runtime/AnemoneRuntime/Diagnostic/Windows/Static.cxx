@@ -103,26 +103,17 @@ namespace Anemone::Diagnostic
 namespace Anemone::Diagnostic
 {
     static UninitializedObject<DebugOutputTraceListener> GDebugOutputTraceListener{};
-    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
     // static UninitializedObject<EtwLogListener> GEtwLogListener{};
 
-    void InitializeStatic()
+    void InitializePlatformStatic()
     {
-        GDiagnosticStatic.Create();
-        GTrace.Create();
-
         GDebugOutputTraceListener.Create();
-        GStandardOutputTraceListener.Create();
         // GEtwLogListener.Create();
     }
 
-    void ShutdownStatic()
+    void ShutdownPlatformStatic()
     {
         // GEtwLogListener.Destroy();
-        GStandardOutputTraceListener.Destroy();
         GDebugOutputTraceListener.Destroy();
-
-        GTrace.Destroy();
-        GDiagnosticStatic.Destroy();
     }
 }

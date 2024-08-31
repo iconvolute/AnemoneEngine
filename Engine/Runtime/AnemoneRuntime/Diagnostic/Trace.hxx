@@ -21,7 +21,7 @@ namespace Anemone::Diagnostic
 
     constexpr bool CanDispatch(TraceLevel level)
     {
-        return std::to_underlying(level) <= std::to_underlying(GDefaultLogLevel);
+        return std::to_underlying(level) >= std::to_underlying(GDefaultLogLevel);
     }
 }
 
