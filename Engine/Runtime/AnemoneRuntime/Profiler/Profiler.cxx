@@ -56,9 +56,4 @@ namespace Anemone::Profiler
     }
 }
 
-namespace Anemone::Profiler
-{
-    Profiler* GProfiler = nullptr;
-}
-
 #endif

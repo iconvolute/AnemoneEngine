@@ -1,4 +1,11 @@
 #pragma once
+
+#if true
+namespace Anemone::Diagnostic
+{
+}
+#endif
+
 #include <cstdlib>
 
 #define AE_ASSERT(...)

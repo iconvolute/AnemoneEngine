@@ -41,10 +41,7 @@ namespace Anemone::Diagnostic
 }
 
 #define AE_LOG(level, format, ...) \
-    if (false) \
-    { \
-    } \
-    else \
+    do \
     { \
         ::Anemone::Diagnostic::Log(::Anemone::Diagnostic::LogLevel::level,format __VA_OPT__(,) __VA_ARGS__); \
-    }
+    } while (false)

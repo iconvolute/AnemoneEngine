@@ -1,9 +1,7 @@
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
-
-#include <sys/utsname.h>
-#include <pwd.h>
+#include "AnemoneRuntime/System/Static.hxx"
 
 namespace Anemone::System
 {
@@ -70,228 +68,16 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
-    static ProcessorProperties GProcessorProperties = []() -> ProcessorProperties
-    {
-        ProcessorProperties result{};
-
-        // Number of processors
-        {
-            // This may not be accurate on all systems.
-            result.PhysicalCores = sysconf(_SC_NPROCESSORS_CONF);
-
-            cpu_set_t mask;
-            CPU_ZERO(&mask);
-
-            if (sched_getaffinity(0, sizeof(mask), &mask) == 0)
-            {
-                result.LogicalCores = CPU_COUNT(&mask);
-            }
-            else
-            {
-                result.LogicalCores = result.PhysicalCores;
-            }
-
-            if (result.PerformanceCores == 0)
-            {
-                result.PerformanceCores = result.PhysicalCores;
-                result.EfficiencyCores = 0;
-            }
-        }
-
-        return result;
-    }();
-
     ProcessorProperties const& GetProcessorProperties()
     {
-        return GProcessorProperties;
+        return GProcessorProperties.Get();
     }
 }
 
 namespace Anemone::System
 {
-    static Environment GEnvironment = []() -> Environment
-    {
-        Environment result{};
-
-        // System version
-        {
-            if (struct utsname name{}; uname(&name) != -1)
-            {
-                // TODO: Determine OS version from '/etc/lsb-release'?
-                result.SystemVersion = fmt::format("{}-{}-{}", name.sysname, name.release, name.version);
-            }
-        }
-
-        // System ID
-        {
-            std::array<char, 128> buffer{};
-
-            if (int fd = open("/etc/machine-id", O_RDONLY); fd != -1)
-            {
-                ssize_t processed = read(fd, buffer.data(), buffer.size() - 1);
-
-                if (processed > 0)
-                {
-                    buffer[32] = 0;
-                    result.SystemId = buffer.data();
-                }
-
-                close(fd);
-            }
-            else if (int fd = open("/var/lib/dbus/machine-id", O_RDONLY); fd != -1)
-            {
-                ssize_t processed = read(fd, buffer.data(), buffer.size() - 1);
-
-                if (processed > 0)
-                {
-                    buffer[32] = 0;
-                    result.SystemId = buffer.data();
-                }
-
-                close(fd);
-            }
-            else
-            {
-                result.SystemId = "Unknown";
-            }
-        }
-
-        // Startup path
-        {
-            std::array<char, PATH_MAX> procpath{};
-
-            if (getcwd(procpath.data(), procpath.size()) != nullptr)
-            {
-                result.StartupPath.assign(procpath.data());
-            }
-        }
-
-        // Executable
-        {
-            std::array<char, PATH_MAX> procpath{};
-            std::array<char, PATH_MAX> execpath{};
-
-            pid_t pid = getpid();
-            snprintf(std::data(procpath), std::size(procpath), "/proc/%d/exe", pid);
-            ssize_t length = readlink(procpath.data(), execpath.data(), execpath.size());
-            AE_ASSERT(length >= 0);
-            length = std::max<ssize_t>(0, length);
-
-            result.ExecutablePath.assign(execpath.data(), static_cast<size_t>(length));
-        }
-
-        // Computer name
-        {
-            std::array<char, HOST_NAME_MAX> hostname{};
-            struct utsname name = {};
-
-            if (uname(&name) == 0)
-            {
-                result.ComputerName.assign(name.nodename);
-            }
-            else if (gethostname(hostname.data(), hostname.size()) == 0)
-            {
-                result.ComputerName.assign(hostname.data());
-            }
-            else
-            {
-                result.ComputerName.assign("Linux Machine");
-            }
-        }
-
-        // User name
-        {
-            uid_t uid = geteuid();
-            struct passwd* pw = getpwuid(uid);
-
-            if (pw != nullptr)
-            {
-                result.UserName = pw->pw_name;
-            }
-            else
-            {
-                result.UserName = "Unknown";
-            }
-        }
-
-        // Profile path
-        {
-#if !ANEMONE_PLATFORM_ANDROID
-            const char* value = secure_getenv("HOME");
-
-            if (value != nullptr)
-            {
-                result.ProfilePath.assign(value);
-            }
-            else
-            {
-                struct passwd* userinfo = getpwuid(geteuid());
-
-                if (userinfo != nullptr && userinfo->pw_dir != nullptr)
-                {
-                    result.ProfilePath.assign(userinfo->pw_dir);
-                }
-            }
-#endif
-        }
-
-        // UserDesktopPath
-        {
-            result.DesktopPath = result.ProfilePath;
-            Path::Push(result.DesktopPath, "Desktop");
-        }
-
-        // UserDocumentsPath
-        {
-            result.DocumentsPath = result.ProfilePath;
-            Path::Push(result.DocumentsPath, "Documents");
-        }
-
-        // UserDownloadsPath
-        {
-            result.DownloadsPath = result.ProfilePath;
-            Path::Push(result.DownloadsPath, "Downloads");
-        }
-
-        // Temp path
-        {
-#if !ANEMONE_PLATFORM_ANDROID
-            const char* value = secure_getenv("TMPDIR");
-
-            if (value == nullptr)
-            {
-                value = secure_getenv("TMP");
-            }
-
-            if (value == nullptr)
-            {
-                value = secure_getenv("TEMP");
-            }
-
-            if (value == nullptr)
-            {
-                value = secure_getenv("TEMPDIR");
-            }
-
-            if (value == nullptr)
-            {
-                value = "/tmp/";
-            }
-
-            result.TempPath.assign(value);
-#endif
-        }
-
-        // Startup time
-        {
-            result.StartupTime = DateTime::Now();
-        }
-
-        return result;
-    }();
-
     Environment const& GetEnvironment()
     {
-        return GEnvironment;
+        return GEnvironment.Get();
     }
 }

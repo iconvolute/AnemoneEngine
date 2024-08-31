@@ -8,4 +8,5 @@ target_sources(AnemoneRuntime
         "NamedMutex.cxx"
         "Process.cxx"
         "SharedLibrary.cxx"
+        "Static.cxx"
 )

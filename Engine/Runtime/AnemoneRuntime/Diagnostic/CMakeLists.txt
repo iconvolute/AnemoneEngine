@@ -8,6 +8,7 @@ target_sources(AnemoneRuntime
         "LogLevel.hxx"
         "Performance.hxx"
         "StackTrace.hxx"
+        "Static.hxx"
 )
 
 if(WIN32)

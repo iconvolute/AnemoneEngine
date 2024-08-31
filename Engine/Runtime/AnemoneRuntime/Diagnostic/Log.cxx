@@ -5,31 +5,39 @@
 
 namespace Anemone::Diagnostic
 {
-    struct Logger final
+    struct DiagnosticState final
     {
         Threading::CriticalSection Lock;
         IntrusiveList<LogListener> Listeners;
     };
 
-    static Logger GLogger{};
+    static DiagnosticState GDiagnosticState{};
+
+    RUNTIME_API bool AssertionFailed()
+    {
+        Threading::UniqueLock lock{GDiagnosticState.Lock};
+
+        // report assertion to the user
+        return true;
+    }
 
     RUNTIME_API void AddLogListener(LogListener* listener)
     {
-        Threading::UniqueLock lock{GLogger.Lock};
-        GLogger.Listeners.PushBack(listener);
+        Threading::UniqueLock lock{GDiagnosticState.Lock};
+        GDiagnosticState.Listeners.PushBack(listener);
     }
 
     RUNTIME_API void RemoveLogListener(LogListener* listener)
     {
-        Threading::UniqueLock lock{GLogger.Lock};
-        GLogger.Listeners.Remove(listener);
+        Threading::UniqueLock lock{GDiagnosticState.Lock};
+        GDiagnosticState.Listeners.Remove(listener);
     }
 
     RUNTIME_API void FlushLog()
     {
-        Threading::UniqueLock lock{GLogger.Lock};
+        Threading::UniqueLock lock{GDiagnosticState.Lock};
 
-        GLogger.Listeners.ForEach([](LogListener& listener)
+        GDiagnosticState.Listeners.ForEach([](LogListener& listener)
         {
             listener.Flush();
         });
@@ -45,8 +53,8 @@ namespace Anemone::Diagnostic
 
         std::string_view message{buffer.data(), buffer.size()};
 
-        Threading::UniqueLock lock{GLogger.Lock};
-        GLogger.Listeners.ForEach([&](LogListener& listener)
+        Threading::UniqueLock lock{GDiagnosticState.Lock};
+        GDiagnosticState.Listeners.ForEach([&](LogListener& listener)
         {
             listener.Log(level, message);
         });

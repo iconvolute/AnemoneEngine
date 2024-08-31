@@ -24,6 +24,8 @@ target_sources(AnemoneRuntime
         "Float.hxx"
         "FunctionRef.hxx"
         "Geometry.hxx"
+        "Initialize.cxx"
+        "Initialize.hxx"
         "Instant.cxx"
         "Instant.hxx"
         "Intrusive.hxx"
@@ -45,7 +47,7 @@ target_sources(AnemoneRuntime
         "Uuid.hxx"
         "Version.cxx"
         "Version.hxx"
-)
+ )
 
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostic")

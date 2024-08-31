@@ -1,17 +1,11 @@
-#include "AnemoneRuntime/Platform/Runtime.hxx"
+#include "AnemoneRuntime/Platform/Static.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <locale>
 
 namespace Anemone::Platform
 {
-    bool GEnableCrashReportHandling = true;
-
-    void SetCrashReportHandling(bool enable)
-    {
-        GEnableCrashReportHandling = enable;
-    }
-
     static void ReportApplicationStop(std::string_view reason)
     {
         Platform::win32_string_buffer<wchar_t, 128> buffer{};
@@ -306,15 +300,14 @@ namespace Anemone::Platform
     {
         HandleCrash(nullptr);
     }
+}
 
-    void InitializeRuntime_PlatformSpecific()
+namespace Anemone::Platform
+{
+    void InitializeStatic()
     {
         // Initialize COM
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
-        // Initialize Networking.
-        WSADATA wsaData{};
-        WSAStartup(MAKEWORD(2, 2), &wsaData);
 
         // Initialize DPI awareness.
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -331,23 +324,18 @@ namespace Anemone::Platform
 
         VerifyRequirements();
 
-        if (GEnableCrashReportHandling)
-        {
-            SetUnhandledExceptionFilter(windows_OnUnhandledExceptionFilter);
-            AddVectoredExceptionHandler(0, windows_OnUnhandledExceptionVEH);
+        // Setup crash handling callbacks.
+        SetUnhandledExceptionFilter(windows_OnUnhandledExceptionFilter);
+        AddVectoredExceptionHandler(0, windows_OnUnhandledExceptionVEH);
 
-            _set_error_mode(_OUT_TO_STDERR);
-            std::set_terminate(windows_OnTerminate);
-            _set_purecall_handler(windows_OnPureCall);
-            _set_invalid_parameter_handler(windows_OnInvalidParameter);
-        }
+        _set_error_mode(_OUT_TO_STDERR);
+        std::set_terminate(windows_OnTerminate);
+        _set_purecall_handler(windows_OnPureCall);
+        _set_invalid_parameter_handler(windows_OnInvalidParameter);
     }
 
-    void FinalizeRuntime_PlatformSpecific()
+    void ShutdownStatic()
     {
-        // Finalize Networking.
-        WSACleanup();
-
         // Finalize COM
         CoUninitialize();
     }

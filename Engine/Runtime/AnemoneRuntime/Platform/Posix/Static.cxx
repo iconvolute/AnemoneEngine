@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Runtime.hxx"
+#include "AnemoneRuntime/Platform/Static.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 #include <sys/resource.h>
@@ -23,12 +23,6 @@
 
 namespace Anemone::Platform
 {
-    void SetCrashReportHandling(bool enable)
-    {
-        // TODO: Implement this
-        (void)enable;
-    }
-
     static void ReportApplicationStop(std::string_view reason)
     {
         // TODO: Move this to diagnostics
@@ -132,7 +126,7 @@ namespace Anemone::Platform
 #endif
     }
 
-    void InitializeRuntime_PlatformSpecific()
+    void InitializeStatic()
     {
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
@@ -146,12 +140,9 @@ namespace Anemone::Platform
                 setrlimit64(RLIMIT_NOFILE, &rl);
             }
         }
-
-        VerifyRequirements();
     }
 
-    void FinalizeRuntime_PlatformSpecific()
+    void ShutdownStatic()
     {
-        // TODO: Implement this
     }
 }

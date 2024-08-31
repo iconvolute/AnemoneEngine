@@ -2,6 +2,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         "Functions.hxx"
         "Headers.hxx"
-        "Runtime.cxx"
+        "Static.cxx"
         "Types.hxx"
 )
