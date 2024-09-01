@@ -76,4 +76,9 @@ namespace Anemone::Platform
     {
         HANDLE Handle;
     };
+
+    struct NativeMemoryMappedFileHandle final
+    {
+        HANDLE Handle;
+    };
 }

@@ -5,6 +5,7 @@ target_sources(AnemoneRuntime
         "Debugger.hxx"
         "Performance.hxx"
         "StackTrace.hxx"
+        "StandardOutputTraceListener.hxx"
         "Static.cxx"
         "Static.hxx"
         "Trace.cxx"

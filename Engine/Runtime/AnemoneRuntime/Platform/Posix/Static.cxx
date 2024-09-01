@@ -128,6 +128,7 @@ namespace Anemone::Platform
 
     void PosixPlatformStatic::Initialize()
     {
+        GenericPlatformStatic::Initialize();
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
 
@@ -146,5 +147,6 @@ namespace Anemone::Platform
 
     void PosixPlatformStatic::Finalize()
     {
+        GenericPlatformStatic::Finalize();
     }
 }

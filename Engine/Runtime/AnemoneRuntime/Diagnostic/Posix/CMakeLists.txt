@@ -4,4 +4,5 @@ target_sources(AnemoneRuntime
         "Performance.cxx"
         "StackTrace.cxx"
         "Static.cxx"
+        "Static.hxx"
 )

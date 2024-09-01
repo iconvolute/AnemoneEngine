@@ -78,4 +78,9 @@ namespace Anemone::Platform
     {
         DIR* Handle;
     };
+
+    struct NativeMemoryMappedFileHandle final
+    {
+        int Descriptor;
+    };
 }

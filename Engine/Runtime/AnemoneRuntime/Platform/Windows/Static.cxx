@@ -306,6 +306,8 @@ namespace Anemone::Platform
 {
     void WindowsPlatformStatic::Initialize()
     {
+        GenericPlatformStatic::Initialize();
+        
         // Initialize COM
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
 
@@ -338,5 +340,7 @@ namespace Anemone::Platform
     {
         // Finalize COM
         CoUninitialize();
+
+        GenericPlatformStatic::Finalize();
     }
 }
