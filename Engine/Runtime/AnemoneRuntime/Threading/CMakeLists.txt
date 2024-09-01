@@ -33,7 +33,6 @@ target_sources(AnemoneRuntime
         "Spinlock.hxx"
         "SpscQueue.cxx"
         "SpscQueue.hxx"
-        "ThisThread.hxx"
         "Thread.hxx"
         "Yielding.cxx"
         "Yielding.hxx"

@@ -5,30 +5,30 @@
 #include <xmmintrin.h>
 #endif
 
-namespace Anemone::Threading::ThisThread
+namespace Anemone::Threading
 {
-    void Yield(ThreadYieldTarget target)
+    void YieldThread(ThreadYieldTarget target)
     {
         sched_yield();
         (void)target;
     }
 
-    void Yield()
+    void YieldThread()
     {
         sched_yield();
     }
 
-    void Sleep(int32_t milliseconds)
+    void SleepThread(int32_t milliseconds)
     {
         usleep(static_cast<useconds_t>(milliseconds * 1'000));
     }
 
-    void Sleep(Duration const& timeout)
+    void SleepThread(Duration const& timeout)
     {
         usleep(static_cast<useconds_t>(timeout.ToMicroseconds()));
     }
 
-    void Pause()
+    void PauseThread()
     {
 #if ANEMONE_ARCHITECTURE_X64
         _mm_pause();

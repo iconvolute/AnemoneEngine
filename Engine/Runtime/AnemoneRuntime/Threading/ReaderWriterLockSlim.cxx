@@ -5,7 +5,7 @@ namespace Anemone::Threading
 {
     void ReaderWriterLockSlim::EnterShared()
     {
-        ThisThread::WaitForCompletion([this]
+        WaitForCompletion([this]
         {
             return this->TryEnterShared();
         });
@@ -31,7 +31,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLockSlim::Enter()
     {
-        ThisThread::WaitForCompletion([this]
+        WaitForCompletion([this]
         {
             return this->TryEnter();
         });
@@ -57,7 +57,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLockSlim::EnterUpgrade()
     {
-        ThisThread::WaitForCompletion([this]
+        WaitForCompletion([this]
         {
             return this->TryEnterUpgrade();
         });
@@ -70,7 +70,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLockSlim::LeaveUpgradeAndEnter()
     {
-        ThisThread::WaitForCompletion([this]
+        WaitForCompletion([this]
         {
             return this->TryLeaveUpgradeAndEnter();
         });

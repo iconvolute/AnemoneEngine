@@ -10,19 +10,10 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
-// DDDDD
 
-#include "AnemoneRuntime/Profiler/Profiler.hxx"
-
-AE_DECLARE_PROFILE(YieldAnyThreadOnAnyProcessor);
-AE_DECLARE_PROFILE(YieldSameOrHigherPriorityOnAnyProcessor);
-AE_DECLARE_PROFILE(YieldAnyThreadOnSameProcessor);
-
-// DDDDD
-
-namespace Anemone::Threading::ThisThread
+namespace Anemone::Threading
 {
-    void Yield(ThreadYieldTarget target)
+    void YieldThread(ThreadYieldTarget target)
     {
         switch (target)
         {
@@ -33,7 +24,6 @@ namespace Anemone::Threading::ThisThread
 
         case ThreadYieldTarget::AnyThreadOnAnyProcessor:
             {
-                AE_PROFILE_SCOPE(YieldAnyThreadOnAnyProcessor);
                 timeBeginPeriod(1);
                 SleepEx(1, FALSE);
                 timeEndPeriod(1);
@@ -41,14 +31,12 @@ namespace Anemone::Threading::ThisThread
             }
         case ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor:
             {
-                AE_PROFILE_SCOPE(YieldSameOrHigherPriorityOnAnyProcessor);
                 SleepEx(0, FALSE);
                 break;
             }
 
         case ThreadYieldTarget::AnyThreadOnSameProcessor:
             {
-                AE_PROFILE_SCOPE(YieldAnyThreadOnSameProcessor);
                 SwitchToThread();
                 break;
             }
@@ -60,7 +48,7 @@ namespace Anemone::Threading::ThisThread
         }
     }
 
-    void Yield()
+    void YieldThread()
     {
         if (SwitchToThread() == FALSE)
         {
@@ -68,17 +56,17 @@ namespace Anemone::Threading::ThisThread
         }
     }
 
-    void Sleep(int32_t milliseconds)
+    void SleepThread(int32_t milliseconds)
     {
         SleepEx(Platform::win32_ValidateTimeoutDuration(milliseconds), TRUE);
     }
 
-    void Sleep(Duration const& timeout)
+    void SleepThread(Duration const& timeout)
     {
         SleepEx(Platform::win32_ValidateTimeoutDuration(timeout), TRUE);
     }
 
-    void Pause()
+    void PauseThread()
     {
 #if ANEMONE_ARCHITECTURE_X64
         _mm_pause();

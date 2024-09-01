@@ -60,13 +60,13 @@ int main(int argc, char* argv[])
             });
         }
 
-        Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
+        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
         {
             AE_PROFILE_SCOPE(Outer);
-            Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
+            Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
             {
                 AE_PROFILE_SCOPE(Inner);
-                Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
+                Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
 
                 TestTasking();
 
@@ -75,9 +75,9 @@ int main(int argc, char* argv[])
                 //p->store(42);
                 //AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
             }
-            Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
+            Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
         }
-        Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(500));
+        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
     }
 
     return 0;
@@ -100,7 +100,7 @@ void ReportTimeUsage(T t)
 AE_DECLARE_PROFILE(ParallelFor4);
 
 #if false
-#define TRACEPOINT(format, ...) AE_TRACE(Verbose, "({}): {} at {:x}: " format, Anemone::DateTime::Now(), __func__, Anemone::Threading::ThisThread::Id().Value __VA_OPT__(, ) __VA_ARGS__);
+#define TRACEPOINT(format, ...) AE_TRACE(Verbose, "({}): {} at {:x}: " format, Anemone::DateTime::Now(), __func__, Anemone::Threading::GetThisThreadId().Value __VA_OPT__(, ) __VA_ARGS__);
 
 #else
 #define TRACEPOINT(...)
@@ -147,7 +147,7 @@ public:
 
         this->m_Output = hash;
 #else
-        Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(100));
+        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(100));
 #endif
 
         TRACEPOINT("finished: ptr={}, id={}", fmt::ptr(this), this->GetId());
@@ -195,7 +195,7 @@ void TestTasking()
                     }
 #endif
                     TRACEPOINT("ParallelFor: [{}:{}): {}", first, last, last - first);
-                    Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(50));
+                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(50));
                 },
                     [&](size_t count)
                 {
@@ -205,7 +205,7 @@ void TestTasking()
                     AE_ASSERT(processed == count);
 #endif
                     TRACEPOINT("ParallelFor: done [0:{})", count);
-                    Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(10));
+                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(10));
                 });
             });
 #ifdef UNSYNCED1
@@ -229,7 +229,7 @@ void TestTasking()
                         UniqueLock lock{scs};
                         processed += (last - first);
                     }
-                    Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromMilliseconds(5));
+                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(5));
                 },
                     [&](size_t count)
                 {
@@ -260,7 +260,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromSeconds(10));
+        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(10));
         TRACEPOINT("<< waiting for workers to finish mid test");
 
         {
@@ -280,7 +280,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromSeconds(10));
+        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(10));
         TRACEPOINT("<< waiting for workers to finish mid test");
 
         {
@@ -302,7 +302,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::ThisThread::Sleep(Anemone::Duration::FromSeconds(2));
+        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(2));
         TRACEPOINT("<< waiting for workers to finish mid test");
         {
             AwaiterHandle root{new Awaiter{}};

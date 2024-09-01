@@ -1,7 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
-#include "AnemoneRuntime/Threading/ThisThread.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 namespace Anemone::Tasks

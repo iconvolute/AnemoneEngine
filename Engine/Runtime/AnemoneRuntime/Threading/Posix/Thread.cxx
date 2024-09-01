@@ -236,11 +236,8 @@ namespace Anemone::Threading
         nativeThis.Inner = {};
     }
 
-    namespace ThisThread
+    ThreadId GetThisThreadId()
     {
-        ThreadId Id()
-        {
-            return std::bit_cast<ThreadId>(pthread_self());
-        }
+        return std::bit_cast<ThreadId>(pthread_self());
     }
 }

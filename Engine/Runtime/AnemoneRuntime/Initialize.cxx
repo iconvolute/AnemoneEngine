@@ -14,7 +14,7 @@ namespace Anemone
         (void)argv;
         Platform::InitializeStatic();
         Diagnostic::InitializeStatic();
-        Network::InitializeStatic();
+        Network::NetworkStatic::Initialize();
         System::InitializeStatic();
         Profiler::InitializeStatic();
         Tasks::InitializeStatic();
@@ -25,7 +25,7 @@ namespace Anemone
         Tasks::ShutdownStatic();
         Profiler::ShutdownStatic();
         System::ShutdownStatic();
-        Network::ShutdownStatic();
+        Network::NetworkStatic::Finalize();
         Diagnostic::ShutdownStatic();
         Platform::ShutdownStatic();
     }

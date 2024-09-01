@@ -75,7 +75,7 @@ TEST_CASE("Threading / AutoResetEvent")
         ++state.PushSet;
         state.Push.Set();
 
-        ThisThread::Sleep(50);
+        SleepThread(50);
 
         ++state.PopWait;
         state.Pop.Wait();

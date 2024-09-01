@@ -10,15 +10,15 @@ namespace Anemone::Threading
 
             if ((count % 20) == 19)
             {
-                ThisThread::Yield(ThreadYieldTarget::AnyThreadOnAnyProcessor);
+                YieldThread(ThreadYieldTarget::AnyThreadOnAnyProcessor);
             }
             else if ((count % 5) == 4)
             {
-                ThisThread::Yield(ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor);
+                YieldThread(ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor);
             }
             else
             {
-                ThisThread::Yield(ThreadYieldTarget::AnyThreadOnSameProcessor);
+                YieldThread(ThreadYieldTarget::AnyThreadOnSameProcessor);
             }
         }
         else
@@ -27,7 +27,7 @@ namespace Anemone::Threading
 
             for (size_t i = 0; i < count; ++i)
             {
-                ThisThread::Pause();
+                PauseThread();
             }
         }
 

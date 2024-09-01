@@ -183,11 +183,8 @@ namespace Anemone::Threading
         nativeThis = {};
     }
 
-    namespace ThisThread
+    ThreadId GetThisThreadId()
     {
-        ThreadId Id()
-        {
-            return ThreadId{GetCurrentThreadId()};
-        }
+        return ThreadId{GetCurrentThreadId()};
     }
 }

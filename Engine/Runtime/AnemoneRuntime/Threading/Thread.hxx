@@ -2,7 +2,6 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
 #include "AnemoneRuntime/Threading/Runnable.hxx"
-#include "AnemoneRuntime/Threading/ThisThread.hxx"
 
 #include <optional>
 #include <string_view>
@@ -50,6 +49,18 @@ namespace Anemone::Threading
         Runnable* Callback{};
     };
 
+    struct ThreadId final
+    {
+        uintptr_t Value;
+
+        auto operator<=>(ThreadId const&) const = default;
+
+        static constexpr ThreadId Invalid()
+        {
+            return {};
+        }
+    };
+
     //! Represents a thread.
     class RUNTIME_API Thread final
     {
@@ -79,4 +90,6 @@ namespace Anemone::Threading
         [[nodiscard]] ThreadId GetId() const;
         void Detach();
     };
+
+    RUNTIME_API ThreadId GetThisThreadId();
 }

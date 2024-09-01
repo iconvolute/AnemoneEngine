@@ -24,8 +24,6 @@ namespace Anemone::Tasks
     private:
         std::atomic_uint32_t m_IdGenerator{};
 
-        static constexpr Duration s_DefaultTaskDelay{Duration::FromMilliseconds(5)};
-
     public:
         uint32_t GenerateTaskId();
 

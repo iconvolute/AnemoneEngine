@@ -142,7 +142,7 @@ namespace Anemone::Tasks
     {
         AE_ASSERT(awaiter);
 
-        Threading::ThisThread::WaitForCompletion(
+        Threading::WaitForCompletion(
             [&]
         {
             return awaiter->IsCompleted();
@@ -152,10 +152,6 @@ namespace Anemone::Tasks
             if (Task* current = this->m_Queue.Pop())
             {
                 this->Execute(*current);
-            }
-            else
-            {
-                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
             }
 
             return awaiter->IsCompleted();
@@ -174,7 +170,7 @@ namespace Anemone::Tasks
         Instant const started = Instant::Now();
         Duration elapsed{};
 
-        Threading::ThisThread::WaitForCompletion(
+        Threading::WaitForCompletion(
             [&]
         {
             return (elapsed >= timeout) or awaiter->IsCompleted();
@@ -184,10 +180,6 @@ namespace Anemone::Tasks
             if (Task* current = this->m_Queue.Pop())
             {
                 this->Execute(*current);
-            }
-            else
-            {
-                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
             }
 
             elapsed = started.QueryElapsed();
@@ -202,7 +194,7 @@ namespace Anemone::Tasks
         Instant const started = Instant::Now();
         Duration elapsed{};
 
-        Threading::ThisThread::WaitForCompletion(
+        Threading::WaitForCompletion(
             [&]
         {
             return elapsed >= timeout;
@@ -212,10 +204,6 @@ namespace Anemone::Tasks
             if (Task* current = this->m_Queue.Pop())
             {
                 this->Execute(*current);
-            }
-            else
-            {
-                // Threading::ThisThread::Sleep(s_DefaultTaskDelay);
             }
 
             elapsed = started.QueryElapsed();

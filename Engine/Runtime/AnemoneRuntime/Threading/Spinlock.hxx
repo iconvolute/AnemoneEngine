@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Threading/ThisThread.hxx"
+#include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
@@ -32,7 +32,7 @@ namespace Anemone::Threading
         void Enter()
         {
             // test_and_set() returns the previous value of the flag.
-            ThisThread::WaitForCompletion([this]
+            WaitForCompletion([this]
                 {
                     return !this->_flag.test_and_set(std::memory_order::acquire);
                 });
@@ -79,7 +79,7 @@ namespace Anemone::Threading
     public:
         void Enter()
         {
-            ThreadId const id = ThisThread::Id();
+            ThreadId const id = GetThisThreadId();
 
             if (this->m_Owner.load(std::memory_order::acquire) != id)
             {
@@ -90,7 +90,7 @@ namespace Anemone::Threading
                     // Reset 'expected' to 'ThreadId::Invalid()' to ensure that the loop will continue until the lock is acquired.
                     owner = ThreadId::Invalid();
 
-                    ThisThread::WaitForCompletion([&]
+                    WaitForCompletion([&]
                         {
                             return this->m_Owner.load(std::memory_order::acquire) == ThreadId::Invalid();
                         });
@@ -102,7 +102,7 @@ namespace Anemone::Threading
 
         bool TryEnter()
         {
-            ThreadId const id = ThisThread::Id();
+            ThreadId const id = GetThisThreadId();
 
             if (ThreadId owner = this->m_Owner.load(std::memory_order::acquire); owner == id)
             {
@@ -126,7 +126,7 @@ namespace Anemone::Threading
 
         void Leave()
         {
-            AE_ASSERT(this->m_Owner.load(std::memory_order::relaxed) == ThisThread::Id(), "Different thread owns this lock.");
+            AE_ASSERT(this->m_Owner.load(std::memory_order::relaxed) == GetThisThreadId(), "Different thread owns this lock.");
 
             if (--this->m_Count == 0)
             {
