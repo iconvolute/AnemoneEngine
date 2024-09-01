@@ -4,33 +4,26 @@
 
 namespace Anemone::Diagnostic
 {
-    UninitializedObject<DiagnosticStatic> GDiagnosticStatic{};
+    UninitializedObject<ErrorHandling> GErrorHandling{};
 }
 
 namespace Anemone::Diagnostic
 {
     static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
 
-    void InitializePlatformStatic();
-    void ShutdownPlatformStatic();
-
-    void InitializeStatic()
+    void GenericDiagnosticStatic::Initialize()
     {
-        GDiagnosticStatic.Create();
+        GErrorHandling.Create();
         GTrace.Create();
 
         GStandardOutputTraceListener.Create();
-
-        InitializePlatformStatic();
     }
 
-    void ShutdownStatic()
+    void GenericDiagnosticStatic::Finalize()
     {
-        ShutdownPlatformStatic();
-
         GStandardOutputTraceListener.Destroy();
 
         GTrace.Destroy();
-        GDiagnosticStatic.Destroy();
+        GErrorHandling.Destroy();
     }
 }

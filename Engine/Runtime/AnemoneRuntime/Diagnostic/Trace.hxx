@@ -31,6 +31,10 @@ namespace Anemone::Diagnostic
     {
     private:
         IntrusiveList<TraceListener, Trace> m_listeners{};
+        // TODO: Use this lock properly:
+        //   - shared lock for "reading" - writing data from multiple threads should be locked
+        //     internally by each of the trace listeners individually
+        //   - unique lock for modifying the list of listeners
         Threading::ReaderWriterLock m_lock{};
 
     private:

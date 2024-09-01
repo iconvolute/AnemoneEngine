@@ -9,4 +9,5 @@ target_sources(AnemoneRuntime
         "Process.cxx"
         "SharedLibrary.cxx"
         "Static.cxx"
+        "Static.hxx"
 )

@@ -4,11 +4,13 @@
 
 namespace Anemone::Diagnostic
 {
-    void InitializePlatformStatic()
+    void PosixDiagnosticStatic::Initialize()
     {
+        GenericDiagnosticStatic::Initialize();
     }
 
-    void ShutdownPlatformStatic()
+    void PosixDiagnosticStatic::Finalize()
     {
+        GenericDiagnosticStatic::Finalize();
     }
 }

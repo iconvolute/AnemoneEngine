@@ -304,7 +304,7 @@ namespace Anemone::Platform
 
 namespace Anemone::Platform
 {
-    void InitializeStatic()
+    void WindowsPlatformStatic::Initialize()
     {
         // Initialize COM
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -334,7 +334,7 @@ namespace Anemone::Platform
         _set_invalid_parameter_handler(windows_OnInvalidParameter);
     }
 
-    void ShutdownStatic()
+    void WindowsPlatformStatic::Finalize()
     {
         // Finalize COM
         CoUninitialize();

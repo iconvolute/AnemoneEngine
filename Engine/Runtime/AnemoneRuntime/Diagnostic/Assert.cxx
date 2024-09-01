@@ -8,12 +8,12 @@ namespace Anemone::Diagnostic
 {
     void SetErrorReportingMode(ErrorReportingMode mode)
     {
-        GDiagnosticStatic->ReportingMode = mode;
+        GErrorHandling->ReportingMode = mode;
     }
 
     ErrorReportingMode GetErrorReportingMode()
     {
-        return GDiagnosticStatic->ReportingMode;
+        return GErrorHandling->ReportingMode;
     }
 }
 
@@ -21,7 +21,7 @@ namespace Anemone::Diagnostic
 {
     void BugCheckCore(std::source_location const& location, std::string_view format, fmt::format_args args)
     {
-        Threading::UniqueLock lock{GDiagnosticStatic->ErrorLock};
+        Threading::UniqueLock lock{GErrorHandling->ErrorLock};
 
         fmt::memory_buffer message;
         fmt::vformat_to(std::back_inserter(message), format, args);
@@ -38,7 +38,7 @@ namespace Anemone::Diagnostic
 {
     bool AssertCore(std::source_location const& location, std::string_view condition, std::string_view format, fmt::format_args args)
     {
-        Threading::UniqueLock lock{GDiagnosticStatic->ErrorLock};
+        Threading::UniqueLock lock{GErrorHandling->ErrorLock};
 
         fmt::memory_buffer message;
         fmt::vformat_to(std::back_inserter(message), format, args);

@@ -13,6 +13,8 @@ target_sources(AnemoneRuntime
         "Process.cxx"
         "Process.hxx"
         "SharedLibrary.hxx"
+        "Static.cxx"
+        "Static.hxx"
 )
 
 if(WIN32)

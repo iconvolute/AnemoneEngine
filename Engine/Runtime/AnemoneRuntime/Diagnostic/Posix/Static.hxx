@@ -3,11 +3,11 @@
 
 namespace Anemone::Diagnostic
 {
-    struct WindowsDiagnosticStatic : GenericDiagnosticStatic
+    struct PosixDiagnosticStatic : GenericDiagnosticStatic
     {
         static void Initialize();
         static void Finalize();
     };
 
-    using DiagnosticStatic = WindowsDiagnosticStatic;
+    using DiagnosticStatic = PosixDiagnosticStatic;
 }

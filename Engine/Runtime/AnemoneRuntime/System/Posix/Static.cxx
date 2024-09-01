@@ -7,9 +7,6 @@
 
 namespace Anemone::System
 {
-    UninitializedObject<Environment> GEnvironment;
-    UninitializedObject<ProcessorProperties> GProcessorProperties;
-
     static void InitializeEnvironment(Environment& environment)
     {
         // System version
@@ -215,18 +212,16 @@ namespace Anemone::System
         }
     }
 
-    void InitializeStatic()
+    void PosixSystemStatic::Initialize()
     {
-        GEnvironment.Create();
-        InitializeEnvironment(GEnvironment.Get());
+        GenericSystemStatic::Initialize();
 
-        GProcessorProperties.Create();
+        InitializeEnvironment(GEnvironment.Get());
         InitializeProcessorProperties(GProcessorProperties.Get());
     }
 
-    void ShutdownStatic()
+    void PosixSystemStatic::Finalize()
     {
-        GProcessorProperties.Destroy();
-        GEnvironment.Destroy();
+        GenericSystemStatic::Finalize();
     }
 }

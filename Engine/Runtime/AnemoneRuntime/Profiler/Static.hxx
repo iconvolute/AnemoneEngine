@@ -3,6 +3,9 @@
 
 namespace Anemone::Profiler
 {
-    void InitializeStatic();
-    void ShutdownStatic();
+    struct ProfilerStatic
+    {
+        static void Initialize();
+        static void Finalize();
+    };
 }

@@ -2,11 +2,13 @@
 
 namespace Anemone::Network
 {
-    void InitializeStatic()
+    void PosixNetworkStatic::Initialize()
     {
+        GenericNetworkStatic::Initialize();
     }
 
-    void ShutdownStatic()
+    void PosixNetworkStatic::Finalize()
     {
+        GenericNetworkStatic::Finalize();
     }
 }

@@ -6,14 +6,14 @@ namespace Anemone::Tasks
 {
     UninitializedObject<TaskScheduler> GTaskScheduler{};
 
-    void InitializeStatic()
+    void TasksStatic::Initialize()
     {
         GTaskScheduler.Create(TaskSchedulerOptions{
             System::GetProcessorProperties().LogicalCores - 1,
         });
     }
 
-    void ShutdownStatic()
+    void TasksStatic::Finalize()
     {
         GTaskScheduler.Destroy();
     }

@@ -4,9 +4,6 @@
 
 namespace Anemone::System
 {
-    UninitializedObject<Environment> GEnvironment;
-    UninitializedObject<ProcessorProperties> GProcessorProperties;
-
     static void InitializeEnvironment(Environment& environment)
     {
         Platform::win32_string_buffer<wchar_t, 512> buffer{};
@@ -261,21 +258,18 @@ namespace Anemone::System
             Platform::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(VendorIdentifier)");
             Platform::win32_NarrowString(properties.Vendor, buffer.as_view());
         }
-        
     }
 
-    void InitializeStatic()
+    void WindowsSystemStatic::Initialize()
     {
-        GEnvironment.Create();
-        InitializeEnvironment(GEnvironment.Get());
+        GenericSystemStatic::Initialize();
 
-        GProcessorProperties.Create();
+        InitializeEnvironment(GEnvironment.Get());
         InitializeProcessorProperties(GProcessorProperties.Get());
     }
 
-    void ShutdownStatic()
+    void WindowsSystemStatic::Finalize()
     {
-        GProcessorProperties.Destroy();
-        GEnvironment.Destroy();
+        GenericSystemStatic::Finalize();
     }
 }

@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Network/Static.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <netlistmgr.h>
 #include <wrl/client.h>
@@ -9,12 +9,17 @@
 
 namespace Anemone::Network
 {
-    struct NetworkStatic final
+    struct WindowsNetworkStatic : GenericNetworkStatic
     {
         Microsoft::WRL::ComPtr<INetworkListManager> NetworkListManager;
 
         std::optional<bool> HasInternetConnection() const;
+
+        static void Initialize();
+        static void Finalize();
     };
 
-    extern UninitializedObject<NetworkStatic> GNetworkStatic;
+    extern UninitializedObject<WindowsNetworkStatic> GNetworkStatic;
+
+    using NetworkStatic = WindowsNetworkStatic;
 }

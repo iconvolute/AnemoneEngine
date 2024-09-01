@@ -6,14 +6,29 @@
 
 namespace Anemone::Diagnostic
 {
-    struct DiagnosticStatic final
+    // TODO Move to separate header
+    struct ErrorHandling final
     {
         Threading::CriticalSection ErrorLock{};
         ErrorReportingMode ReportingMode{ErrorReportingMode::Interactive};
     };
 
-    extern UninitializedObject<DiagnosticStatic> GDiagnosticStatic;
-
-    void InitializeStatic();
-    void ShutdownStatic();
+    extern UninitializedObject<ErrorHandling> GErrorHandling;
 }
+
+namespace Anemone::Diagnostic
+{
+    struct GenericDiagnosticStatic
+    {
+        static void Initialize();
+        static void Finalize();
+    };
+}
+
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Diagnostic/Windows/Static.hxx"
+#elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
+#include "AnemoneRuntime/Diagnostic/Posix/Static.hxx"
+#else
+#error "Unsupported platform"
+#endif

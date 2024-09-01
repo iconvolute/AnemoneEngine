@@ -4,32 +4,17 @@
 
 namespace Anemone::Network
 {
-    std::optional<bool> NetworkStatic::HasInternetConnection() const
+    UninitializedObject<WindowsNetworkStatic> GNetworkStatic{};
+
+    void WindowsNetworkStatic::Initialize()
     {
-        VARIANT_BOOL connected = VARIANT_FALSE;
+        GenericNetworkStatic::Initialize();
 
-        if (this->NetworkListManager)
-        {
-            if (FAILED(this->NetworkListManager->get_IsConnectedToInternet(&connected)))
-            {
-                AE_FATAL("Failed to check internet connection status.");
-            }
+        GNetworkStatic.Create();
 
-            return connected == VARIANT_TRUE;
-        }
-
-        return std::nullopt;
-    }
-
-    UninitializedObject<NetworkStatic> GNetworkStatic{};
-
-    void InitializeStatic()
-    {
         // Initialize Networking.
         WSADATA wsaData{};
         WSAStartup(MAKEWORD(2, 2), &wsaData);
-
-        GNetworkStatic.Create();
 
         // Create network manager.
         if (FAILED(CoCreateInstance(
@@ -38,15 +23,34 @@ namespace Anemone::Network
                 CLSCTX_INPROC_SERVER,
                 IID_PPV_ARGS(&GNetworkStatic->NetworkListManager))))
         {
-            AE_FATAL("Failed to create INetworkListManager instance.");
+            AE_BUGCHECK("Failed to create INetworkListManager instance.");
         }
     }
 
-    void ShutdownStatic()
+    void WindowsNetworkStatic::Finalize()
     {
-        GNetworkStatic.Destroy();
-
         // Finalize Networking.
         WSACleanup();
+
+        GNetworkStatic.Destroy();
+
+        GenericNetworkStatic::Finalize();
+    }
+
+    std::optional<bool> WindowsNetworkStatic::HasInternetConnection() const
+    {
+        VARIANT_BOOL connected = VARIANT_FALSE;
+
+        if (this->NetworkListManager)
+        {
+            if (FAILED(this->NetworkListManager->get_IsConnectedToInternet(&connected)))
+            {
+                AE_BUGCHECK("Failed to check internet connection status.");
+            }
+
+            return connected == VARIANT_TRUE;
+        }
+
+        return std::nullopt;
     }
 }

@@ -1,9 +1,11 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 namespace Anemone::Tasks
 {
-    void InitializeStatic();
-    void ShutdownStatic();
+    struct TasksStatic final
+    {
+        static void Initialize();
+        static void Finalize();
+    };
 }

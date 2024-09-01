@@ -11,7 +11,7 @@ namespace Anemone::Profiler
     Profiler* GProfiler = nullptr;
 #endif
 
-    void InitializeStatic()
+    void ProfilerStatic::Initialize()
     {
         // Initialize profiler
 #if ANEMONE_BUILD_PROFILING
@@ -19,7 +19,7 @@ namespace Anemone::Profiler
 #endif
     }
 
-    void ShutdownStatic()
+    void ProfilerStatic::Finalize()
     {
 #if ANEMONE_BUILD_PROFILING
         delete GProfiler;

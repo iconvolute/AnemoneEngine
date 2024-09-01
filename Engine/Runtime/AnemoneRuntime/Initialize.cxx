@@ -12,21 +12,21 @@ namespace Anemone
     {
         (void)argc;
         (void)argv;
-        Platform::InitializeStatic();
-        Diagnostic::InitializeStatic();
+        Platform::PlatformStatic::Initialize();
+        Diagnostic::DiagnosticStatic::Initialize();
         Network::NetworkStatic::Initialize();
-        System::InitializeStatic();
-        Profiler::InitializeStatic();
-        Tasks::InitializeStatic();
+        System::SystemStatic::Initialize();
+        Profiler::ProfilerStatic::Initialize();
+        Tasks::TasksStatic::Initialize();
     }
 
     void ShutdownRuntime()
     {
-        Tasks::ShutdownStatic();
-        Profiler::ShutdownStatic();
-        System::ShutdownStatic();
+        Tasks::TasksStatic::Finalize();
+        Profiler::ProfilerStatic::Finalize();
+        System::SystemStatic::Finalize();
         Network::NetworkStatic::Finalize();
-        Diagnostic::ShutdownStatic();
-        Platform::ShutdownStatic();
+        Diagnostic::DiagnosticStatic::Finalize();
+        Platform::PlatformStatic::Finalize();
     }
 }

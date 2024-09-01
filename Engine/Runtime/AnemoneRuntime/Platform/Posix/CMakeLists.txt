@@ -3,5 +3,6 @@ target_sources(AnemoneRuntime
         "Functions.hxx"
         "Headers.hxx"
         "Static.cxx"
+        "Static.hxx"
         "Types.hxx"
 )
