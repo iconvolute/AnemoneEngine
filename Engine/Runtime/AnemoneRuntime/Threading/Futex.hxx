@@ -19,7 +19,7 @@ namespace Anemone::Threading
     {
         int value = futex.load();
 
-        while (not predicate(value))
+        while (not std::forward<PredicateT>(predicate)(value))
         {
             FutexWait(futex, value);
             value = futex.load();

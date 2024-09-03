@@ -2,6 +2,9 @@
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 #include "AnemoneRuntime/Diagnostic/Assert.hxx"
 
+// https://www.remlab.net/op/futex-condvar.shtml
+// https://www.remlab.net/op/futex-misc.shtml
+
 namespace Anemone::Threading
 {
     void FutexWait(std::atomic<int>& futex, int expected)
