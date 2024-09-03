@@ -27,20 +27,25 @@ namespace Anemone::Diagnostic
 
     void Trace::WriteLineCore(TraceLevel level, std::string_view format, fmt::format_args args)
     {
-        fmt::memory_buffer buffer;
+        constexpr size_t DefaultBufferSize = 512;
+
+        fmt::basic_memory_buffer<char, DefaultBufferSize> buffer;
         auto out = std::back_inserter(buffer);
         (*out++) = '[';
         (*out++) = TraceLevelToCharacter(level);
         (*out++) = ']';
         out = fmt::vformat_to(out, format, args);
+
+        std::string_view bufferView{buffer.data(), buffer.size()};
+
+        // Ensure that the buffer is zero-terminated.
         (*out) = '\0';
 
-        std::string_view message{buffer.data(), buffer.size() - 1};
 
         Threading::UniqueLock lock{this->m_lock};
         this->m_listeners.ForEach([&](TraceListener& listener)
         {
-            listener.WriteLine(level, message);
+            listener.WriteLine(level, bufferView);
         });
     }
 

@@ -6,7 +6,8 @@ namespace Anemone::Diagnostic
     void Abort(std::string_view message)
     {
         (void)message;
-        __fastfail(FAST_FAIL_FATAL_APP_EXIT);
+        std::terminate();
+        //__fastfail(FAST_FAIL_FATAL_APP_EXIT);
     }
 
     bool IsDebuggerAttached()

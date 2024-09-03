@@ -33,6 +33,7 @@
 
 # Output directories
 .vs/
+.vscode/
 .idea/
 out/
 enc_temp_folder/

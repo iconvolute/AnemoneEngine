@@ -31,30 +31,26 @@ namespace Anemone::Diagnostic
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL),
-                    TraceLoggingString(message.data(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
                 break;
 
             case TraceLevel::Error:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
-                    TraceLoggingString(message.data(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
                 break;
 
             case TraceLevel::Warning:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingString(message.data(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
                 break;
 
             default:
                 break;
             }
-        }
-
-        void Flush() override
-        {
         }
 
         EtwLogListener()
@@ -78,14 +74,10 @@ namespace Anemone::Diagnostic
         void WriteLine(TraceLevel level, std::string_view message) override
         {
             (void)level;
-            Platform::win32_string_buffer<wchar_t, 512> buffer{};
-            Platform::win32_WidenString(buffer, message);
-            OutputDebugStringW(buffer.data());
-            OutputDebugStringW(L"\n");
-        }
+            // https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw
 
-        void Flush() override
-        {
+            OutputDebugStringA(message.data());
+            OutputDebugStringA("\r\n");
         }
 
         DebugOutputTraceListener()

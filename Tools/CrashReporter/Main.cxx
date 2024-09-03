@@ -201,8 +201,8 @@ std::optional<CrashDetails> ReadCrashDetails(DWORD processId, DWORD threadId)
 }
 void EnableDebugPrivileges()
 {
-    HANDLE hToken = NULL;
-    TOKEN_PRIVILEGES tkp = {0};
+    HANDLE hToken = nullptr;
+    TOKEN_PRIVILEGES tkp{};
 
     if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY | TOKEN_ADJUST_PRIVILEGES, &hToken))
     {
