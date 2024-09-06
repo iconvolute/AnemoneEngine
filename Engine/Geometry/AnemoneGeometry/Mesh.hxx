@@ -180,3 +180,65 @@ namespace Anemone::Geometry::EditableMesh
         std::vector<MeshPolygonGroup> PolygonGroupsCollection;
     };
 }
+
+namespace Anemone::Geometry::v2
+{
+    struct EdgeId final
+    {
+        uint32_t Inner;
+
+        static constexpr EdgeId Invalid() { return {~static_cast<uint32_t>(0)}; }
+
+        [[nodiscard]] friend constexpr auto operator<=>(EdgeId const& left, EdgeId const& right) = default;
+    };
+
+
+    struct VertexId final
+    {
+        uint32_t Inner;
+
+        static constexpr VertexId Invalid() { return {~static_cast<uint32_t>(0)}; }
+
+        [[nodiscard]] friend constexpr auto operator<=>(VertexId const& left, VertexId const& right) = default;
+    };
+
+    // Half-edge representation.
+    struct Edge final
+    {
+        // Index of vertex at the start of the edge.
+        VertexId Vertex;
+
+        // Index of the next edge. Forms a circular list of all edges going out of the vertex.
+        EdgeId NextOutgoing;
+
+        // Index of the edge going in the opposite direction. `Next->Vertex == this->Vertex`. Forms full edge.
+        EdgeId Twin;
+
+        // Index of the next edge in the polygon.
+        EdgeId Next;
+    };
+
+    struct Triangle final
+    {
+        VertexId Vertices[3];
+    };
+
+    struct Mesh final
+    {
+        std::vector<Edge> Edges{};
+
+        Triangle GetTriangle(EdgeId edge) const
+        {
+            EdgeId const& e1 = this->Edges[edge.Inner];
+            EdgeId const& e2 = this->Edges[e1.Next.Inner];
+
+            VertexId v0 = edge.Vertex;
+            VertexId v1 = e1.Vertex;
+            VertexId v2 = e2.Vertex;
+
+            return Triangle{
+                .Vertices = {v0, v1, v2},
+            };
+        }
+    };
+}
