@@ -49,7 +49,7 @@
 #include "AnemoneRuntime/Numerics/Functions.hxx"
 #include "AnemoneRuntime/Numerics/Numbers.hxx"
 #include "AnemoneRuntime/Numerics/Vector.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #if ANEMONE_BUILD_DISABLE_SIMD
 

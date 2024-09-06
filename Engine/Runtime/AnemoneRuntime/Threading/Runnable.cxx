@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Runnable.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Threading
 {
@@ -12,7 +12,7 @@ namespace Anemone::Threading
 
     void Runnable::OnRun()
     {
-        AE_BUGCHECK("Runnable::OnRun must be overridden");
+        AE_PANIC("Runnable::OnRun must be overridden");
     }
 
     void Runnable::OnFinish()

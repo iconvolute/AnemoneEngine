@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Futex.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::Threading
@@ -49,7 +49,7 @@ namespace Anemone::Threading
                 }
                 else
                 {
-                    AE_BUGCHECK("Futex wait failed: {}", dwError);
+                    AE_PANIC("Futex wait failed: {}", dwError);
                 }
             }
             else
@@ -88,7 +88,7 @@ namespace Anemone::Threading
                 }
                 else
                 {
-                    AE_BUGCHECK("Futex wait failed: {}", dwError);
+                    AE_PANIC("Futex wait failed: {}", dwError);
                 }
             }
             else

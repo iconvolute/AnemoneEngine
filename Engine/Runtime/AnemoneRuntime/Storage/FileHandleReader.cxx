@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Storage/FileHandleReader.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Storage
 {
@@ -108,7 +108,7 @@ namespace Anemone::Storage
             }
             else
             {
-                AE_BUGCHECK("Impossible situation");
+                AE_PANIC("Impossible situation");
             }
         }
 

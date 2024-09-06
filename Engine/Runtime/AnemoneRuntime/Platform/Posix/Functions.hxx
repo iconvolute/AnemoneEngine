@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Platform/Posix/Headers.hxx"

@@ -110,7 +110,7 @@ namespace Anemone::Threading
 
                 if (error != EAGAIN)
                 {
-                    AE_BUGCHECK("futex wait (rc: {}, `{}`", error, strerror(error));
+                    AE_PANIC("futex wait (rc: {}, `{}`", error, strerror(error));
                 }
             }
 

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::Threading

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Network/Static.hxx"
 #include "AnemoneRuntime/Network/Windows/Static.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Network
 {
@@ -23,7 +23,7 @@ namespace Anemone::Network
                 CLSCTX_INPROC_SERVER,
                 IID_PPV_ARGS(&GNetworkStatic->NetworkListManager))))
         {
-            AE_BUGCHECK("Failed to create INetworkListManager instance.");
+            AE_PANIC("Failed to create INetworkListManager instance.");
         }
     }
 
@@ -45,7 +45,7 @@ namespace Anemone::Network
         {
             if (FAILED(this->NetworkListManager->get_IsConnectedToInternet(&connected)))
             {
-                AE_BUGCHECK("Failed to check internet connection status.");
+                AE_PANIC("Failed to check internet connection status.");
             }
 
             return connected == VARIANT_TRUE;

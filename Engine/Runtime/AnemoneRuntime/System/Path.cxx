@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Path.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::System::Private
 {

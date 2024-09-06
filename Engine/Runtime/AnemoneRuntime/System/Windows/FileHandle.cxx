@@ -1,6 +1,6 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
@@ -87,7 +87,7 @@ namespace Anemone::System
             break;
 
         default:
-            AE_BUGCHECK("Unknown FileMode: {}", std::to_underlying(mode));
+            AE_PANIC("Unknown FileMode: {}", std::to_underlying(mode));
         }
 
         switch (access)
@@ -103,7 +103,7 @@ namespace Anemone::System
             break;
 
         default:
-            AE_BUGCHECK("Unknown FileMode: {}", std::to_underlying(mode));
+            AE_PANIC("Unknown FileMode: {}", std::to_underlying(mode));
         }
 
         if (options.Has(FileOptions::ShareRead))

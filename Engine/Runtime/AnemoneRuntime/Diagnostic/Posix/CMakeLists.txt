@@ -1,6 +1,6 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Debugger.cxx"
+        "Debug.cxx"
         "Performance.cxx"
         "StackTrace.cxx"
         "Static.cxx"

@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Tasks
 {

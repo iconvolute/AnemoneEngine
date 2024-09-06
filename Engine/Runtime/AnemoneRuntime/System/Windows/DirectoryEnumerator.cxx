@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/FileSystem.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
@@ -60,7 +60,7 @@ namespace Anemone::System
             {
                 if (not FindClose(nativeThis.Handle))
                 {
-                    AE_BUGCHECK("Failed to close directory enumerator");
+                    AE_PANIC("Failed to close directory enumerator");
                 }
             }
 
@@ -79,7 +79,7 @@ namespace Anemone::System
         {
             if (not FindClose(nativeThis.Handle))
             {
-                AE_BUGCHECK("Failed to close directory enumerator");
+                AE_PANIC("Failed to close directory enumerator");
             }
         }
 

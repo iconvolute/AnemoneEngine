@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Semaphore.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone::Threading
@@ -13,28 +13,28 @@ namespace Anemone::Threading
 
         if (pthread_mutex_init(&nativeThis.Mutex, nullptr))
         {
-            AE_BUGCHECK("pthread_mutex_init (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_init (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         pthread_condattr_t attr;
         if (pthread_condattr_init(&attr))
         {
-            AE_BUGCHECK("pthread_condattr_init (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_condattr_init (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (pthread_condattr_setclock(&attr, CLOCK_MONOTONIC))
         {
-            AE_BUGCHECK("pthread_condattr_setclock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_condattr_setclock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (pthread_cond_init(&nativeThis.Cond, &attr))
         {
-            AE_BUGCHECK("pthread_cond_init (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_cond_init (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (pthread_condattr_destroy(&attr))
         {
-            AE_BUGCHECK("pthread_condattr_destroy (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_condattr_destroy (rc: {}, `{}`)", errno, strerror(errno));
         }
     }
 
@@ -44,12 +44,12 @@ namespace Anemone::Threading
 
         if (pthread_cond_destroy(&nativeThis.Cond) != 0)
         {
-            AE_BUGCHECK("pthread_cond_destroy (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_cond_destroy (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (pthread_mutex_destroy(&nativeThis.Mutex) != 0)
         {
-            AE_BUGCHECK("pthread_mutex_destroy (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_destroy (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         Platform::Destroy(this->_native);
@@ -61,14 +61,14 @@ namespace Anemone::Threading
 
         if (pthread_mutex_lock(&nativeThis.Mutex))
         {
-            AE_BUGCHECK("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         while (nativeThis.Current < 1)
         {
             if (pthread_cond_wait(&nativeThis.Cond, &nativeThis.Mutex))
             {
-                AE_BUGCHECK("pthread_cond_wait (rc: {}, `{}`)", errno, strerror(errno));
+                AE_PANIC("pthread_cond_wait (rc: {}, `{}`)", errno, strerror(errno));
             }
         }
 
@@ -76,7 +76,7 @@ namespace Anemone::Threading
 
         if (pthread_mutex_unlock(&nativeThis.Mutex))
         {
-            AE_BUGCHECK("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
         }
     }
 
@@ -90,7 +90,7 @@ namespace Anemone::Threading
 
         if (pthread_mutex_lock(&nativeThis.Mutex))
         {
-            AE_BUGCHECK("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         int rc = 0;
@@ -104,7 +104,7 @@ namespace Anemone::Threading
                     break;
                 }
 
-                AE_BUGCHECK("pthread_cond_timedwait (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_cond_timedwait (rc: {}, `{}`)", rc, strerror(rc));
             }
         }
 
@@ -130,7 +130,7 @@ namespace Anemone::Threading
 
         if (pthread_mutex_lock(&nativeThis.Mutex))
         {
-            AE_BUGCHECK("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (nativeThis.Current < nativeThis.Max)
@@ -139,17 +139,17 @@ namespace Anemone::Threading
         }
         else
         {
-            AE_BUGCHECK("semaphore overflow");
+            AE_PANIC("semaphore overflow");
         }
 
         if (pthread_cond_signal(&nativeThis.Cond))
         {
-            AE_BUGCHECK("pthread_cond_signal (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         if (pthread_mutex_unlock(&nativeThis.Mutex))
         {
-            AE_BUGCHECK("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
+            AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
         }
     }
 }

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <utility>
@@ -9,7 +9,6 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 #include <timeapi.h>
 
 ANEMONE_EXTERNAL_HEADERS_END
-
 
 namespace Anemone::Threading
 {

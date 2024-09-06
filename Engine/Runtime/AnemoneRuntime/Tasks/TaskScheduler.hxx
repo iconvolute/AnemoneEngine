@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
 #include "AnemoneRuntime/Threading/SemaphoreSlim.hxx"

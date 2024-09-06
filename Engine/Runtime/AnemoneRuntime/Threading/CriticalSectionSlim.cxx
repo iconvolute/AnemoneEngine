@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/CriticalSectionSlim.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Threading/Futex.hxx"
 
 namespace Anemone::Threading

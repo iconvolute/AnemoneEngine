@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Storage/DataWriter.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #include <vector>
 

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/Futex.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 // https://www.remlab.net/op/futex-condvar.shtml
 // https://www.remlab.net/op/futex-misc.shtml
@@ -21,7 +21,7 @@ namespace Anemone::Threading
                 }
                 else
                 {
-                    AE_BUGCHECK("FutexWait (rc: {}, '{}')", errno, strerror(errno));
+                    AE_PANIC("FutexWait (rc: {}, '{}')", errno, strerror(errno));
                 }
             }
             else if (rc == 0)
@@ -64,7 +64,7 @@ namespace Anemone::Threading
 
                 if (error != EAGAIN)
                 {
-                    AE_BUGCHECK("FutexWaitTimeout (rc: {}, '{}')", error, strerror(error));
+                    AE_PANIC("FutexWaitTimeout (rc: {}, '{}')", error, strerror(error));
                 }
             }
 
@@ -86,7 +86,7 @@ namespace Anemone::Threading
 
         if (rc == -1)
         {
-            AE_BUGCHECK("FutexWakeOne (rc: {}, '{}')", errno, strerror(errno));
+            AE_PANIC("FutexWakeOne (rc: {}, '{}')", errno, strerror(errno));
         }
     }
 
@@ -96,7 +96,7 @@ namespace Anemone::Threading
 
         if (rc == -1)
         {
-            AE_BUGCHECK("FutexWakeAll (rc: {}, '{}')", errno, strerror(errno));
+            AE_PANIC("FutexWakeAll (rc: {}, '{}')", errno, strerror(errno));
         }
     }
 }

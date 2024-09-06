@@ -280,26 +280,6 @@ namespace Anemone::Platform
 
         return EXCEPTION_EXECUTE_HANDLER;
     }
-
-    static void __cdecl windows_OnTerminate()
-    {
-        HandleCrash(nullptr);
-    }
-
-    static void __cdecl windows_OnPureCall()
-    {
-        HandleCrash(nullptr);
-    }
-
-    static void __cdecl windows_OnInvalidParameter(
-        [[maybe_unused]] const wchar_t* expression,
-        [[maybe_unused]] const wchar_t* function,
-        [[maybe_unused]] const wchar_t* file,
-        [[maybe_unused]] unsigned int line,
-        [[maybe_unused]] uintptr_t reserved)
-    {
-        HandleCrash(nullptr);
-    }
 }
 
 namespace Anemone::Platform
@@ -331,9 +311,6 @@ namespace Anemone::Platform
         AddVectoredExceptionHandler(0, windows_OnUnhandledExceptionVEH);
 
         _set_error_mode(_OUT_TO_STDERR);
-        std::set_terminate(windows_OnTerminate);
-        _set_purecall_handler(windows_OnPureCall);
-        _set_invalid_parameter_handler(windows_OnInvalidParameter);
     }
 
     void WindowsPlatformStatic::Finalize()

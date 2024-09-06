@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostic/Performance.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <Psapi.h>
@@ -12,7 +12,7 @@ namespace Anemone::Diagnostic
 
         if (!GlobalMemoryStatusEx(&msex))
         {
-            AE_BUGCHECK("GlobalMemoryStatusEx: {}", GetLastError());
+            AE_PANIC("GlobalMemoryStatusEx: {}", GetLastError());
         }
 
         SYSTEM_INFO si{};
@@ -37,7 +37,7 @@ namespace Anemone::Diagnostic
         SYSTEM_POWER_STATUS sps{};
         if (!GetSystemPowerStatus(&sps))
         {
-            AE_BUGCHECK("GetSystemPowerStatus: {}", GetLastError());
+            AE_PANIC("GetSystemPowerStatus: {}", GetLastError());
         }
 
         PowerUsage result{
@@ -79,13 +79,13 @@ namespace Anemone::Diagnostic
 
         if (!GlobalMemoryStatusEx(&msex))
         {
-            AE_BUGCHECK("GlobalMemoryStatusEx: {}", GetLastError());
+            AE_PANIC("GlobalMemoryStatusEx: {}", GetLastError());
         }
 
         PROCESS_MEMORY_COUNTERS pmc{.cb = sizeof(pmc)};
         if (!GetProcessMemoryInfo(GetCurrentProcess(), &pmc, sizeof(pmc)))
         {
-            AE_BUGCHECK("GetProcessMemoryInfo: {}", GetLastError());
+            AE_PANIC("GetProcessMemoryInfo: {}", GetLastError());
         }
 
         return MemoryUsage{
@@ -107,7 +107,7 @@ namespace Anemone::Diagnostic
 
         if (!GetProcessTimes(GetCurrentProcess(), &ftCreation, &ftExit, &ftKernel, &ftUser))
         {
-            AE_BUGCHECK("GetProcessTimes: {}", GetLastError());
+            AE_PANIC("GetProcessTimes: {}", GetLastError());
         }
 
         return ProcessorUsageState{

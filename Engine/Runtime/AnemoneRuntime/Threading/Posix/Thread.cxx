@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 #include <cmath>
@@ -32,7 +32,7 @@ namespace Anemone::Threading::Private
     {
         if (context == nullptr)
         {
-            AE_BUGCHECK("Thread started without context.");
+            AE_PANIC("Thread started without context.");
         }
 
         Runnable* const runnable = static_cast<Runnable*>(context);
@@ -57,42 +57,42 @@ namespace Anemone::Threading
 
         if (start.Callback == nullptr)
         {
-            AE_BUGCHECK("Thread started without callback.");
+            AE_PANIC("Thread started without callback.");
         }
 
         pthread_attr_t attr{};
 
         if (int const rc = pthread_attr_init(&attr); rc != 0)
         {
-            AE_BUGCHECK("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (start.StackSize)
         {
             if (int const rc = pthread_attr_setstacksize(&attr, *start.StackSize); rc != 0)
             {
-                AE_BUGCHECK("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
             }
         }
 
         if (int const rc = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); rc != 0)
         {
-            AE_BUGCHECK("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (int const rc = pthread_create(&nativeThis.Inner, &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
         {
-            AE_BUGCHECK("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (int const rc = pthread_attr_destroy(&attr); rc != 0)
         {
-            AE_BUGCHECK("pthread_attr_destroy (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_attr_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (nativeThis.Inner == 0)
         {
-            AE_BUGCHECK("Failed to start thread");
+            AE_PANIC("Failed to start thread");
         }
 
 
@@ -118,7 +118,7 @@ namespace Anemone::Threading
 #else
             if (int const rc = pthread_setname_np(nativeThis.Inner, name.c_str()); rc != 0)
             {
-                AE_BUGCHECK("pthread_setname_np (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_setname_np (rc: {}, `{}`)", rc, strerror(rc));
             }
 #endif
         }
@@ -138,14 +138,14 @@ namespace Anemone::Threading
 #else
             if (int const rc = pthread_getschedparam(nativeThis.Inner, &policy, &sched); rc != 0)
             {
-                AE_BUGCHECK("pthread_getschedparam (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_getschedparam (rc: {}, `{}`)", rc, strerror(rc));
             }
 
             sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
 
             if (int const rc = pthread_setschedparam(nativeThis.Inner, policy, &sched); rc != 0)
             {
-                AE_BUGCHECK("pthread_setschedparam (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_setschedparam (rc: {}, `{}`)", rc, strerror(rc));
             }
 #endif
         }
@@ -189,17 +189,17 @@ namespace Anemone::Threading
 
         if (nativeThis.Inner == 0)
         {
-            AE_BUGCHECK("Cannot join non-started thread.");
+            AE_PANIC("Cannot join non-started thread.");
         }
 
         if (nativeThis.Inner == pthread_self())
         {
-            AE_BUGCHECK("Joining thread from itself");
+            AE_PANIC("Joining thread from itself");
         }
 
         if (int const rc = pthread_join(nativeThis.Inner, nullptr); rc != 0)
         {
-            AE_BUGCHECK("pthread_join (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_join (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         nativeThis.Inner = 0;
@@ -225,12 +225,12 @@ namespace Anemone::Threading
 
         if (nativeThis.Inner == 0)
         {
-            AE_BUGCHECK("Failed to detach from thread");
+            AE_PANIC("Failed to detach from thread");
         }
 
         if (int const rc = pthread_detach(nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_detach (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_detach (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         nativeThis.Inner = {};

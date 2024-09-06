@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/Headers.hxx"
 #include "AnemoneRuntime/Platform/Windows/Types.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Geometry.hxx"
@@ -747,6 +747,43 @@ namespace Anemone::Platform
 
 namespace Anemone::Platform
 {
+    anemone_forceinline bool win32_GetThreadContext(DWORD threadId, CONTEXT& context)
+    {
+        context = {};
+        context.ContextFlags = CONTEXT_ALL;
+
+        bool result = false;
+
+        if (threadId == GetCurrentThreadId())
+        {
+            RtlCaptureContext(&context);
+            result = true;
+        }
+        else
+        {
+            HANDLE const hThread = OpenThread(THREAD_GET_CONTEXT | THREAD_SUSPEND_RESUME, FALSE, threadId);
+
+            if (hThread != nullptr)
+            {
+                DWORD const dwSuspended = SuspendThread(hThread);
+
+                if (dwSuspended != static_cast<DWORD>(-1))
+                {
+                    GetThreadContext(hThread, &context);
+                    ResumeThread(hThread);
+                    result = true;
+                }
+
+                CloseHandle(hThread);
+            }
+        }
+
+        return result;
+    }
+}
+
+namespace Anemone::Platform
+{
     constexpr wchar_t win32_DirectorySeparator = L'\\';
 
     constexpr bool win32_IsDirectorySeparator(wchar_t c)
@@ -906,7 +943,7 @@ namespace Anemone::Platform
 
         if ((milliseconds < 0) || (milliseconds > std::numeric_limits<int32_t>::max()))
         {
-            AE_BUGCHECK("Duration timeout out of range");
+            AE_PANIC("Duration timeout out of range");
         }
 
         return static_cast<DWORD>(milliseconds);
@@ -916,7 +953,7 @@ namespace Anemone::Platform
     {
         if (milliseconds < 0)
         {
-            AE_BUGCHECK("Duration timeout out of range");
+            AE_PANIC("Duration timeout out of range");
         }
 
         return static_cast<DWORD>(milliseconds);

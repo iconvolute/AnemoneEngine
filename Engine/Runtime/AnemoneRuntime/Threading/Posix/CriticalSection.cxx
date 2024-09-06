@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone::Threading
@@ -12,22 +12,22 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_mutexattr_init(&attr); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutexattr_init (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutexattr_init (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (int const rc = pthread_mutexattr_settype(&attr, PTHREAD_MUTEX_RECURSIVE); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutexattr_settype (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutexattr_settype (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (int const rc = pthread_mutex_init(&nativeThis.Inner, &attr); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutex_init (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutex_init (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         if (int const rc = pthread_mutexattr_destroy(&attr); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutexattr_destroy (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutexattr_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
@@ -37,7 +37,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_mutex_destroy(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutex_destroy (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutex_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         Platform::Destroy(this->_native);
@@ -49,7 +49,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_mutex_lock(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutex_lock (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
@@ -65,7 +65,7 @@ namespace Anemone::Threading
             }
             else
             {
-                AE_BUGCHECK("pthread_mutex_trylock (rc: {}, `{}`)", rc, strerror(rc));
+                AE_PANIC("pthread_mutex_trylock (rc: {}, `{}`)", rc, strerror(rc));
             }
         }
 
@@ -78,7 +78,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_mutex_unlock(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_mutex_unlock (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 }

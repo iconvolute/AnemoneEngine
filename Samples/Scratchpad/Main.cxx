@@ -14,6 +14,8 @@ AE_DECLARE_PROFILE(Main);
 AE_DECLARE_PROFILE(Outer);
 AE_DECLARE_PROFILE(Inner);
 
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+
 void TestTasking();
 
 int main(int argc, char* argv[])

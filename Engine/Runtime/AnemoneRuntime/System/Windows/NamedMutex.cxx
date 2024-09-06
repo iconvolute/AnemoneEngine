@@ -16,7 +16,7 @@ namespace Anemone::System
 
         if (handle == nullptr)
         {
-            AE_BUGCHECK("Failed to create named mutex.");
+            AE_PANIC("Failed to create named mutex.");
         }
         else
         {
@@ -71,7 +71,7 @@ namespace Anemone::System
 
         if (rc != WAIT_OBJECT_0)
         {
-            AE_BUGCHECK("Failed to lock named mutex.");
+            AE_PANIC("Failed to lock named mutex.");
         }
     }
 
@@ -91,7 +91,7 @@ namespace Anemone::System
             return false;
         }
 
-        AE_BUGCHECK("Failed to lock mutex");
+        AE_PANIC("Failed to lock mutex");
     }
 
     void NamedMutex::Unlock()
@@ -101,7 +101,7 @@ namespace Anemone::System
 
         if (not ReleaseMutex(nativeThis.Handle))
         {
-            AE_BUGCHECK("Failed to unlock named mutex.");
+            AE_PANIC("Failed to unlock named mutex.");
         }
     }
 }

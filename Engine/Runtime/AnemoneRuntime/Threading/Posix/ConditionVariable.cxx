@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone::Threading
@@ -11,7 +11,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_cond_init(&nativeThis.Inner, nullptr); rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_init (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_init (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
@@ -21,7 +21,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_cond_destroy(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_destroy (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         Platform::Destroy(this->_native);
@@ -38,7 +38,7 @@ namespace Anemone::Threading
 
         if (rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_wait (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_wait (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
@@ -62,7 +62,7 @@ namespace Anemone::Threading
         }
         else if (rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_timedwait (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_timedwait (rc: {}, `{}`)", rc, strerror(rc));
         }
 
         return true;
@@ -74,7 +74,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_cond_signal(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
     void ConditionVariable::NotifyAll()
@@ -83,7 +83,7 @@ namespace Anemone::Threading
 
         if (int const rc = pthread_cond_broadcast(&nativeThis.Inner); rc != 0)
         {
-            AE_BUGCHECK("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
+            AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 }

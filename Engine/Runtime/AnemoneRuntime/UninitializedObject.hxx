@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #include <cstddef>
 #include <memory>
@@ -22,6 +22,11 @@ namespace Anemone
         ~UninitializedObject() = default;
 
     public:
+        [[nodiscard]] explicit operator bool() const
+        {
+            return this->_instance != nullptr;
+        }
+
         [[nodiscard]] T& Get()
         {
             return *this->_instance;
@@ -61,13 +66,20 @@ namespace Anemone
         template <typename... Args>
         void Create(Args&&... args)
         {
-            AE_FATAL(this->_instance == nullptr);
+            if (this->_instance != nullptr)
+            {
+                AE_PANIC("Object already initialized");
+            }
+
             this->_instance = std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
         }
 
         void Destroy()
         {
-            AE_FATAL(this->_instance != nullptr);
+            if (this->_instance == nullptr)
+            {
+                AE_PANIC("Object not initialized");
+            }
             std::destroy_at(this->_instance);
             this->_instance = nullptr;
         }

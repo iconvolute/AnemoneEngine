@@ -1,6 +1,5 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
-// #include "AnemoneRuntime/Diagnostic/ExceptionHandling.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <cmath>
@@ -34,7 +33,7 @@ namespace Anemone::Threading::Private
     {
         if (lpThreadParameter == nullptr)
         {
-            AE_BUGCHECK("Thread started without context.");
+            AE_PANIC("Thread started without context.");
         }
 
         Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
@@ -57,7 +56,7 @@ namespace Anemone::Threading
 
         if (start.Callback == nullptr)
         {
-            AE_BUGCHECK("Cannot create thread without runnable object");
+            AE_PANIC("Cannot create thread without runnable object");
         }
 
         size_t const stackSize = start.StackSize.value_or(0);
@@ -80,7 +79,7 @@ namespace Anemone::Threading
 
         if (nativeThis.Handle == nullptr)
         {
-            AE_BUGCHECK("Cannot create thread");
+            AE_PANIC("Cannot create thread");
         }
 
         if (start.Name)
@@ -98,7 +97,7 @@ namespace Anemone::Threading
 
         if (ResumeThread(nativeThis.Handle) == static_cast<DWORD>(-1))
         {
-            AE_BUGCHECK("Cannot resume thread");
+            AE_PANIC("Cannot resume thread");
         }
     }
 
@@ -140,12 +139,12 @@ namespace Anemone::Threading
 
         if (nativeThis.Handle == nullptr)
         {
-            AE_BUGCHECK("Failed to join thread");
+            AE_PANIC("Failed to join thread");
         }
 
         if (nativeThis.Id == GetCurrentThreadId())
         {
-            AE_BUGCHECK("Joining thread from itself");
+            AE_PANIC("Joining thread from itself");
         }
 
         WaitForSingleObject(nativeThis.Handle, INFINITE);
@@ -175,7 +174,7 @@ namespace Anemone::Threading
 
         if (nativeThis.Handle == nullptr)
         {
-            AE_BUGCHECK("Failed to detach from thread");
+            AE_PANIC("Failed to detach from thread");
         }
 
         CloseHandle(nativeThis.Handle);

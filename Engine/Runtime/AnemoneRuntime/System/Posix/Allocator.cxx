@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Allocator.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::System::Private
 {
@@ -44,7 +44,7 @@ namespace Anemone::System
 
         if (result == MAP_FAILED)
         {
-            AE_BUGCHECK("mmap: MAP_FAILED, errno = {}", errno);
+            AE_PANIC("mmap: MAP_FAILED, errno = {}", errno);
         }
 
         Private::DecommitVirtualMemory(result, size);
@@ -55,7 +55,7 @@ namespace Anemone::System
     {
         if (munmap(address, size) == -1)
         {
-            AE_BUGCHECK("munmap: errno = {}", errno);
+            AE_PANIC("munmap: errno = {}", errno);
         }
     }
 
@@ -65,7 +65,7 @@ namespace Anemone::System
 
         if (mprotect(address, size, protection) != 0)
         {
-            AE_BUGCHECK("mprotect: errno = {}", errno);
+            AE_PANIC("mprotect: errno = {}", errno);
         }
 
         Private::CommitVirtualMemory(address, size);
@@ -79,7 +79,7 @@ namespace Anemone::System
 
         if (mprotect(address, size, PROT_NONE))
         {
-            AE_BUGCHECK("mprotect: errno = {}", errno);
+            AE_PANIC("mprotect: errno = {}", errno);
         }
     }
 
@@ -92,7 +92,7 @@ namespace Anemone::System
 
         if (result == MAP_FAILED)
         {
-            AE_BUGCHECK("mmap: MAP_FAILED, errno = {}", errno);
+            AE_PANIC("mmap: MAP_FAILED, errno = {}", errno);
         }
 
         // N.B. Memory is commited by default on this platform. No additional work is needed.
@@ -111,7 +111,7 @@ namespace Anemone::System
     {
         if (munmap(address, size) == -1)
         {
-            AE_BUGCHECK("munmap: errno = {}", errno);
+            AE_PANIC("munmap: errno = {}", errno);
         }
     }
 

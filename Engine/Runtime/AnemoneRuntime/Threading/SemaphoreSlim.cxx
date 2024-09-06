@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/SemaphoreSlim.hxx"
 #include "AnemoneRuntime/Threading/Futex.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Threading
 {

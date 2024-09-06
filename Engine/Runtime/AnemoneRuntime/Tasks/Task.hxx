@@ -116,7 +116,7 @@ namespace Anemone::Tasks
             case TaskStatus::Executing:
             case TaskStatus::Completed:
             case TaskStatus::Created:
-                AE_BUGCHECK("Invalid task state");
+                AE_PANIC("Invalid task state");
             }
         }
 
@@ -136,7 +136,7 @@ namespace Anemone::Tasks
 
             case TaskStatus::Completed:
             case TaskStatus::Created:
-                AE_BUGCHECK("Invalid task state");
+                AE_PANIC("Invalid task state");
             }
         }
 
@@ -149,7 +149,7 @@ namespace Anemone::Tasks
             this->m_DependencyAwaiter = dependencyAwaiter;
 
             AE_ASSERT(this->m_Id == 0);
-            AE_FATAL(this->m_Status == TaskStatus::Created, "Invalid task state");
+            AE_ENSURE(this->m_Status == TaskStatus::Created, "Invalid task state");
 
             this->m_Status = TaskStatus::Dispatched;
             this->m_Id = id;
@@ -157,13 +157,13 @@ namespace Anemone::Tasks
 
         void DispatchedToPending()
         {
-            AE_FATAL(this->m_Status == TaskStatus::Dispatched, "Invalid task state");
+            AE_ENSURE(this->m_Status == TaskStatus::Dispatched, "Invalid task state");
             this->m_Status = TaskStatus::Pending;
         }
 
         void PendingToDispatched()
         {
-            AE_FATAL(this->m_Status == TaskStatus::Pending, "Invalid task state");
+            AE_ENSURE(this->m_Status == TaskStatus::Pending, "Invalid task state");
             this->m_Status = TaskStatus::Dispatched;
         }
 

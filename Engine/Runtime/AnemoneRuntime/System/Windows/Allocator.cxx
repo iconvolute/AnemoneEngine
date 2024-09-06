@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Allocator.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::System::Private
 {
@@ -46,7 +46,7 @@ namespace Anemone::System
         {
             if (not VirtualFree(address, size, MEM_RELEASE))
             {
-                AE_BUGCHECK("VirtualFree: {}", GetLastError());
+                AE_PANIC("VirtualFree: {}", GetLastError());
             }
         }
     }
@@ -64,7 +64,7 @@ namespace Anemone::System
         {
             if (not VirtualFree(address, size, MEM_DECOMMIT))
             {
-                AE_BUGCHECK("VirtualFree: {}", GetLastError());
+                AE_PANIC("VirtualFree: {}", GetLastError());
             }
         }
     }
@@ -90,7 +90,7 @@ namespace Anemone::System
         {
             if (not VirtualFree(address, 0, MEM_RELEASE))
             {
-                AE_BUGCHECK("VirtualFree: {}", GetLastError());
+                AE_PANIC("VirtualFree: {}", GetLastError());
             }
         }
     }
@@ -101,7 +101,7 @@ namespace Anemone::System
         {
             if (not VirtualAlloc(address, size, MEM_RESET, PAGE_READONLY))
             {
-                AE_BUGCHECK("VirtualFree: {}", GetLastError());
+                AE_PANIC("VirtualFree: {}", GetLastError());
             }
         }
     }

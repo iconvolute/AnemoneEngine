@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Numerics/Simd.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::Numerics::Private
 {

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Process.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 

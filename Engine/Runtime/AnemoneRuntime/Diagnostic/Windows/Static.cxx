@@ -31,21 +31,21 @@ namespace Anemone::Diagnostic
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL),
-                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), static_cast<ULONG>(message.size()), "Message"));
                 break;
 
             case TraceLevel::Error:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
-                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), static_cast<ULONG>(message.size()), "Message"));
                 break;
 
             case TraceLevel::Warning:
                 TraceLoggingWrite(GTraceLoggingProvider,
                     "Fatal",
                     TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingCountedUtf8String(message.data(), message.size(), "Message"));
+                    TraceLoggingCountedUtf8String(message.data(), static_cast<ULONG>(message.size()), "Message"));
                 break;
 
             default:

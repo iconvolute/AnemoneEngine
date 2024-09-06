@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <atomic>

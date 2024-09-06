@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/NamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 namespace Anemone::System
 {
@@ -14,7 +14,7 @@ namespace Anemone::System
 
         if (handle == SEM_FAILED)
         {
-            AE_BUGCHECK("Failed to create named mutex.");
+            AE_PANIC("Failed to create named mutex.");
         }
         else
         {
@@ -75,7 +75,7 @@ namespace Anemone::System
 
         if (rc)
         {
-            AE_BUGCHECK("Failed to lock named mutex.");
+            AE_PANIC("Failed to lock named mutex.");
         }
     }
 
@@ -94,7 +94,7 @@ namespace Anemone::System
 
         if (sem_post(nativeThis.Handle))
         {
-            AE_BUGCHECK("Failed to unlock named mutex.");
+            AE_PANIC("Failed to unlock named mutex.");
         }
     }
 }

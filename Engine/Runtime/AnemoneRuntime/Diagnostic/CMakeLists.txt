@@ -1,8 +1,7 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Assert.cxx"
-        "Assert.hxx"
-        "Debugger.hxx"
+        "Debug.cxx"
+        "Debug.hxx"
         "Performance.hxx"
         "StackTrace.hxx"
         "StandardOutputTraceListener.hxx"

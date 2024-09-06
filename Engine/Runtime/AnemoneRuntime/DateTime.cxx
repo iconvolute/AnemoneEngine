@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
@@ -370,7 +370,7 @@ namespace Anemone
         switch (GetDynamicTimeZoneInformation(&dtzi))
         {
         case TIME_ZONE_ID_INVALID:
-            AE_BUGCHECK("Cannot obtain timezone ID: {}", GetLastError());
+            AE_PANIC("Cannot obtain timezone ID: {}", GetLastError());
             break;
 
         default:

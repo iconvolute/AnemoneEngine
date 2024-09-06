@@ -1,20 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Diagnostic/Assert.hxx"
+#include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-
-namespace Anemone::Diagnostic
-{
-    // TODO Move to separate header
-    struct ErrorHandling final
-    {
-        Threading::CriticalSection ErrorLock{};
-        ErrorReportingMode ReportingMode{ErrorReportingMode::Interactive};
-    };
-
-    extern UninitializedObject<ErrorHandling> GErrorHandling;
-}
 
 namespace Anemone::Diagnostic
 {

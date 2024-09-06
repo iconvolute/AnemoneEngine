@@ -128,7 +128,7 @@ namespace Anemone::Tasks
 
             while (Task* child = list.PopFront())
             {
-                AE_FATAL(child->GetDependencyAwaiter()->IsCompleted());
+                AE_ENSURE(child->GetDependencyAwaiter()->IsCompleted());
                 child->PendingToDispatched();
                 this->m_Queue.Push(child);
                 this->m_Semaphore.Release();
