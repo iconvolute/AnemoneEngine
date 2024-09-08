@@ -1,8 +1,8 @@
 target_sources(AnemoneRuntime
     PRIVATE
+        "CrashHandler.hxx"
         "Functions.hxx"
         "Headers.hxx"
-        "Static.cxx"
-        "Static.hxx"
+        "Runtime.cxx"
         "Types.hxx"
 )

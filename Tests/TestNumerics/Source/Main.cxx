@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Initialize.hxx"
+#include "AnemoneRuntime/Runtime.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

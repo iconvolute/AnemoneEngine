@@ -11,17 +11,6 @@ namespace Anemone::Diagnostic
         FILE* m_output = stdout;
 
     public:
-        StandardOutputTraceListener()
-        {
-            GTrace->AddListener(*this);
-        }
-
-        ~StandardOutputTraceListener() override
-        {
-            GTrace->RemoveListener(*this);
-        }
-
-
         void WriteLine(TraceLevel level, std::string_view message) override
         {
             (void)level;

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Static.hxx"
+#include "AnemoneRuntime/Platform/Runtime.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 #include <sys/resource.h>
@@ -125,10 +125,14 @@ namespace Anemone::Platform
 
 #endif
     }
+}
 
-    void PosixPlatformStatic::Initialize()
+namespace Anemone::Platform
+{
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
-        GenericPlatformStatic::Initialize();
+        (void)context;
+
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
 
@@ -145,8 +149,8 @@ namespace Anemone::Platform
         VerifyRequirements();
     }
 
-    void PosixPlatformStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
-        GenericPlatformStatic::Finalize();
+        (void)context;
     }
 }

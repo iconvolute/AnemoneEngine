@@ -1,3 +1,4 @@
+#include "AnemoneRuntime/Runtime.hxx"
 #include "AnemoneRuntime/System/Static.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
@@ -260,16 +261,22 @@ namespace Anemone::System
         }
     }
 
-    void WindowsSystemStatic::Initialize()
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
-        GenericSystemStatic::Initialize();
+        (void)context;
 
+        GEnvironment.Create();
         InitializeEnvironment(GEnvironment.Get());
+
+        GProcessorProperties.Create();
         InitializeProcessorProperties(GProcessorProperties.Get());
     }
 
-    void WindowsSystemStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
-        GenericSystemStatic::Finalize();
+        (void)context;
+
+        GProcessorProperties.Destroy();
+        GEnvironment.Destroy();
     }
 }

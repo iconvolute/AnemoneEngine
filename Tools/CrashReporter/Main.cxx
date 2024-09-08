@@ -7,6 +7,7 @@
 #include <initguid.h>
 #include <Windows.h>
 #include <DbgHelp.h>
+#include <TlHelp32.h>
 
 struct CommandLineEnumerator
 {
@@ -165,6 +166,41 @@ struct CrashDetails
     CONTEXT Context;
 };
 
+HRESULT SuspendAllThreadsExcept(DWORD pid, DWORD tid)
+{
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPTHREAD, pid);
+    if (hSnapshot == INVALID_HANDLE_VALUE)
+    {
+        return E_FAIL;
+    }
+
+    THREADENTRY32 te{};
+    te.dwSize = sizeof(te);
+
+    if (!Thread32First(hSnapshot, &te))
+    {
+        CloseHandle(hSnapshot);
+        return E_FAIL;
+    }
+
+    do
+    {
+        if (te.th32OwnerProcessID == pid && te.th32ThreadID != tid)
+        {
+            HANDLE hThread = OpenThread(THREAD_SUSPEND_RESUME, FALSE, te.th32ThreadID);
+            if (hThread != nullptr)
+            {
+                SuspendThread(hThread);
+                CloseHandle(hThread);
+            }
+        }
+    } while (Thread32Next(hSnapshot, &te));
+
+    CloseHandle(hSnapshot);
+
+    return S_OK;
+}
+
 std::optional<CrashDetails> ReadCrashDetails(DWORD processId, DWORD threadId)
 {
     wchar_t name[MAX_PATH];
@@ -199,6 +235,7 @@ std::optional<CrashDetails> ReadCrashDetails(DWORD processId, DWORD threadId)
 
     return crashDetails;
 }
+
 void EnableDebugPrivileges()
 {
     HANDLE hToken = nullptr;
@@ -249,6 +286,19 @@ int main(int argc, char* argv[])
     if (!options.ThreadId)
     {
         std::println(stderr, "--tid is required.");
+        return 1;
+    }
+
+    while (not ::IsDebuggerPresent())
+    {
+        Sleep(100);
+    }
+
+    __debugbreak();
+
+    if (FAILED(SuspendAllThreadsExcept(*options.ProcessId, *options.ThreadId)))
+    {
+        std::println(stderr, "Failed to suspend threads: {}", GetLastError());
         return 1;
     }
 

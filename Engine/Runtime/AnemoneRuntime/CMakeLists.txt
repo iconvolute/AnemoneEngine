@@ -24,8 +24,6 @@ target_sources(AnemoneRuntime
         "Float.hxx"
         "FunctionRef.hxx"
         "Geometry.hxx"
-        "Initialize.cxx"
-        "Initialize.hxx"
         "Instant.cxx"
         "Instant.hxx"
         "Intrusive.hxx"
@@ -35,6 +33,8 @@ target_sources(AnemoneRuntime
         "Memory.hxx"
         "Reference.hxx"
         "Reflection.hxx"
+        "Runtime.cxx"
+        "Runtime.hxx"
         "Singleton.hxx"
         "String.cxx"
         "String.hxx"
@@ -47,8 +47,9 @@ target_sources(AnemoneRuntime
         "Uuid.hxx"
         "Version.cxx"
         "Version.hxx"
- )
+)
 
+#add_subdirectory("App")
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostic")
 add_subdirectory("Hash")

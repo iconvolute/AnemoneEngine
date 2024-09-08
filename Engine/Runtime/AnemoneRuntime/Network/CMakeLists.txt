@@ -13,9 +13,9 @@ target_sources(AnemoneRuntime
         "IpEndPoint.cxx"
         "IpEndPoint.hxx"
         "Private.hxx"
+        "Runtime.hxx"
         "Socket.cxx"
         "Socket.hxx"
-        "Static.cxx"
         "Static.hxx"
         "Types.hxx"
 )

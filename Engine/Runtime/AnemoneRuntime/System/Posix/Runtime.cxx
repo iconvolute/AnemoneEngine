@@ -1,9 +1,11 @@
-#include "AnemoneRuntime/System/Static.hxx"
+#include "AnemoneRuntime/System/Runtime.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
 
 #include <sys/utsname.h>
 #include <pwd.h>
+
+#include "../Static.hxx"
 
 namespace Anemone::System
 {
@@ -212,16 +214,22 @@ namespace Anemone::System
         }
     }
 
-    void PosixSystemStatic::Initialize()
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
-        GenericSystemStatic::Initialize();
+        (void)context;
 
+        GEnvironment.Create();
         InitializeEnvironment(GEnvironment.Get());
+
+        GProcessorProperties.Create();
         InitializeProcessorProperties(GProcessorProperties.Get());
     }
 
-    void PosixSystemStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
-        GenericSystemStatic::Finalize();
+        (void)context;
+
+        GProcessorProperties.Destroy();
+        GEnvironment.Destroy();
     }
 }

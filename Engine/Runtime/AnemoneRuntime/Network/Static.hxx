@@ -1,19 +1,9 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
 
+#include <optional>
+
 namespace Anemone::Network
 {
-    struct GenericNetworkStatic
-    {
-        static void Initialize();
-        static void Finalize();
-    };
+    RUNTIME_API std::optional<bool> HasInternetConnection();
 }
-
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Network/Windows/Static.hxx"
-#elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Network/Posix/Static.hxx"
-#else
-#error "Unsupported platform"
-#endif

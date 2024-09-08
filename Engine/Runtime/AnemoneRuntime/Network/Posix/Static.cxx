@@ -2,13 +2,8 @@
 
 namespace Anemone::Network
 {
-    void PosixNetworkStatic::Initialize()
+    std::optional<bool> HasInternetConnection()
     {
-        GenericNetworkStatic::Initialize();
-    }
-
-    void PosixNetworkStatic::Finalize()
-    {
-        GenericNetworkStatic::Finalize();
+        return std::nullopt;
     }
 }

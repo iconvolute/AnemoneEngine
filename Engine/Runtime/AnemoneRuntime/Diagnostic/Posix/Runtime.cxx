@@ -1,6 +1,7 @@
-#include "AnemoneRuntime/Diagnostic/Static.hxx"
+#include "AnemoneRuntime/Diagnostic/Runtime.hxx"
 #include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
 
 #if ANEMONE_PLATFORM_ANDROID
 
@@ -56,21 +57,39 @@ namespace Anemone::Diagnostic
 
 namespace Anemone::Diagnostic
 {
-    void PosixDiagnosticStatic::Initialize()
+    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
+
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
-        GenericDiagnosticStatic::Initialize();
+        (void)context;
+
+        GTrace.Create();
+
+        // if (context.UseStandardOutput)
+        {
+            GStandardOutputTraceListener.Create();
+            GTrace->AddListener(GStandardOutputTraceListener.Get());
+        }
 
 #if ANEMONE_PLATFORM_ANDROID
         GAndroidLogTraceListener.Create();
 #endif
     }
 
-    void PosixDiagnosticStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
+        (void)context;
+
+        // if (context.UseStandardOutput)
+        {
+            GTrace->RemoveListener(GStandardOutputTraceListener.Get());
+            GStandardOutputTraceListener.Destroy();
+        }
+
 #if ANEMONE_PLATFORM_ANDROID
         GAndroidLogTraceListener.Destroy();
 #endif
 
-        GenericDiagnosticStatic::Finalize();
+        GTrace.Destroy();
     }
 }

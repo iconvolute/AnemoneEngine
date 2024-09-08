@@ -1,5 +1,4 @@
-#include "AnemoneRuntime/Diagnostic/Static.hxx"
-#include "AnemoneRuntime/Diagnostic/Windows/Static.hxx"
+#include "AnemoneRuntime/Diagnostic/Runtime.hxx"
 #include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
@@ -56,14 +55,10 @@ namespace Anemone::Diagnostic
         EtwLogListener()
         {
             TraceLoggingRegister(GTraceLoggingProvider);
-
-            GTrace->AddListener(*this);
         }
 
         ~EtwLogListener()
         {
-            GTrace->RemoveListener(*this);
-
             TraceLoggingUnregister(GTraceLoggingProvider);
         }
     };
@@ -79,37 +74,56 @@ namespace Anemone::Diagnostic
             OutputDebugStringA(message.data());
             OutputDebugStringA("\r\n");
         }
+        DebugOutputTraceListener() = default;
 
-        DebugOutputTraceListener()
-        {
-            GTrace->AddListener(*this);
-        }
-
-        ~DebugOutputTraceListener() override
-        {
-            GTrace->RemoveListener(*this);
-        }
+        ~DebugOutputTraceListener() override = default;
     };
 }
 
 namespace Anemone::Diagnostic
 {
     static UninitializedObject<DebugOutputTraceListener> GDebugOutputTraceListener{};
+    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
     // static UninitializedObject<EtwLogListener> GEtwLogListener{};
 
-    void WindowsDiagnosticStatic::Initialize()
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
-        GenericDiagnosticStatic::Initialize();
+        (void)context;
 
-        GDebugOutputTraceListener.Create();
+        GTrace.Create();
+
+        // if (context.UseDebugOutput)
+        {
+            GDebugOutputTraceListener.Create();
+            GTrace->AddListener(GDebugOutputTraceListener.Get());
+        }
+
+        // if (context.UseStandardOutput)
+        {
+            GStandardOutputTraceListener.Create();
+            GTrace->AddListener(GStandardOutputTraceListener.Get());
+        }
+
         // GEtwLogListener.Create();
     }
 
-    void WindowsDiagnosticStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
+        (void)context;
         // GEtwLogListener.Destroy();
-        GDebugOutputTraceListener.Destroy();
 
-        GenericDiagnosticStatic::Finalize();
+        // if (context.UseStandardOutput)
+        {
+            GTrace->RemoveListener(GStandardOutputTraceListener.Get());
+            GStandardOutputTraceListener.Destroy();
+        }
+
+        // if (context.UseDebugOutput)
+        {
+            GTrace->RemoveListener(GDebugOutputTraceListener.Get());
+            GDebugOutputTraceListener.Destroy();
+        }
+
+        GTrace.Destroy();
     }
 }

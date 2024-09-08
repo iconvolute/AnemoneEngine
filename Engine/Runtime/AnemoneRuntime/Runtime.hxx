@@ -6,6 +6,9 @@ namespace Anemone
     RUNTIME_API void InitializeRuntime(int argc, char* argv[]);
     RUNTIME_API void ShutdownRuntime();
 
+    struct RuntimeInitializeContext;
+    struct RuntimeFinalizeContext;
+
     class RuntimeInitializer
     {
     public:

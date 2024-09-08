@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Profiler/Static.hxx"
+#include "AnemoneRuntime/Profiler/Runtime.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
@@ -11,16 +11,20 @@ namespace Anemone::Profiler
     Profiler* GProfiler = nullptr;
 #endif
 
-    void ProfilerStatic::Initialize()
+    void InitializeRuntime(RuntimeInitializeContext& context)
     {
+        (void)context;
+
         // Initialize profiler
 #if ANEMONE_BUILD_PROFILING
         GProfiler = new Anemone::Profiler::ProfilerNvidia();
 #endif
     }
 
-    void ProfilerStatic::Finalize()
+    void FinalizeRuntime(RuntimeFinalizeContext& context)
     {
+        (void)context;
+
 #if ANEMONE_BUILD_PROFILING
         delete GProfiler;
 #endif

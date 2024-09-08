@@ -34,6 +34,7 @@ namespace Anemone::Diagnostic
         (*out++) = '[';
         (*out++) = TraceLevelToCharacter(level);
         (*out++) = ']';
+        (*out++) = ' ';
         out = fmt::vformat_to(out, format, args);
 
         std::string_view bufferView{buffer.data(), buffer.size()};
