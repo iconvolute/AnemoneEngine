@@ -49,19 +49,28 @@ namespace Anemone::Tasks
             this->Execute(*current);
         }
 
+        Duration totalProcessingTime{};
+        Duration totalWaitingTime{};
+
         for (auto& worker : this->m_Workers)
         {
-            Duration const totalTime = worker->m_WaitingTime + worker->m_ProcessingTime;
-            [[maybe_unused]] double const utilization = static_cast<double>(worker->m_ProcessingTime.ToMicroseconds()) / static_cast<double>(totalTime.ToMicroseconds());
+            Duration const runningTime = worker->m_WaitingTime + worker->m_ProcessingTime;
+            [[maybe_unused]] double const utilization = static_cast<double>(worker->m_ProcessingTime.ToMicroseconds()) / static_cast<double>(runningTime.ToMicroseconds());
 
-            AE_TRACE(Verbose, "worker: {}, tasks: {}, waiting: {}, working: {}, utilization: {:.2f}%",
+            AE_TRACE(Verbose, "worker: {}, tasks: {}, waiting: {}, working: {}, running: {}, utilization: {:.2f}%",
                 worker->m_Index,
                 worker->m_ProcessedTasks,
                 worker->m_WaitingTime,
                 worker->m_ProcessingTime,
+                runningTime,
                 utilization * 100.0);
+
+            totalWaitingTime += worker->m_WaitingTime;
+            totalProcessingTime += worker->m_ProcessingTime;
         }
 
+        AE_TRACE(Verbose, "Total waiting time:      {}", totalWaitingTime);
+        AE_TRACE(Verbose, "Total processing time:   {}", totalProcessingTime);
         AE_TRACE(Verbose, "Drained queue length:    {}", this->m_Queue.GetCount());
         AE_TRACE(Verbose, "Awaiters leaked:         {}", Awaiter::s_TotalAllocations.load());
         AE_TRACE(Verbose, "Tasks leaked:            {}", Task::s_TotalAllocations.load());
