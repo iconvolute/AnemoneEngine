@@ -6,6 +6,7 @@
 #include "AnemoneRuntime/Network/Runtime.hxx"
 #include "AnemoneRuntime/Tasks/Runtime.hxx"
 #include "AnemoneRuntime/App/Runtime.hxx"
+#include "AnemoneRuntime/Memory/Runtime.hxx"
 
 namespace Anemone
 {
@@ -20,6 +21,8 @@ namespace Anemone
         (void)argv;
         Platform::InitializeRuntime(context);
         Diagnostic::InitializeRuntime(context);
+
+        Memory::InitializeRuntime(context);
         Network::InitializeRuntime(context);
         System::InitializeRuntime(context);
         App::InitializeRuntime(context);
@@ -36,6 +39,8 @@ namespace Anemone
         App::FinalizeRuntime(context);
         System::FinalizeRuntime(context);
         Network::FinalizeRuntime(context);
+        Memory::FinalizeRuntime(context);
+
         Diagnostic::FinalizeRuntime(context);
         Platform::FinalizeRuntime(context);
     }
