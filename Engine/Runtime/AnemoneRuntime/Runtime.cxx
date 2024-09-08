@@ -5,6 +5,7 @@
 #include "AnemoneRuntime/System/Runtime.hxx"
 #include "AnemoneRuntime/Network/Runtime.hxx"
 #include "AnemoneRuntime/Tasks/Runtime.hxx"
+#include "AnemoneRuntime/App/Runtime.hxx"
 
 namespace Anemone
 {
@@ -21,6 +22,7 @@ namespace Anemone
         Diagnostic::InitializeRuntime(context);
         Network::InitializeRuntime(context);
         System::InitializeRuntime(context);
+        App::InitializeRuntime(context);
         Profiler::InitializeRuntime(context);
         Tasks::InitializeRuntime(context);
     }
@@ -31,6 +33,7 @@ namespace Anemone
 
         Tasks::FinalizeRuntime(context);
         Profiler::FinalizeRuntime(context);
+        App::FinalizeRuntime(context);
         System::FinalizeRuntime(context);
         Network::FinalizeRuntime(context);
         Diagnostic::FinalizeRuntime(context);
