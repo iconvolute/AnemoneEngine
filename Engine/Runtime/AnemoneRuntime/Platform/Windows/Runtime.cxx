@@ -4,6 +4,8 @@
 
 #include <locale>
 
+#define ENABLE_HEAP_CORRUPTION_CRASHES false
+
 namespace Anemone::Platform
 {
     static void ReportApplicationStop(std::string_view reason)
@@ -214,6 +216,7 @@ namespace Anemone::Platform
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
+#if ENABLE_HEAP_CORRUPTION_CRASHES
     static LONG CALLBACK windows_OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
     {
         if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
@@ -223,6 +226,7 @@ namespace Anemone::Platform
 
         return EXCEPTION_EXECUTE_HANDLER;
     }
+#endif
 }
 
 namespace Anemone::Platform
@@ -251,7 +255,10 @@ namespace Anemone::Platform
 
         // Setup crash handling callbacks.
         SetUnhandledExceptionFilter(windows_OnUnhandledExceptionFilter);
+
+#if ENABLE_HEAP_CORRUPTION_CRASHES
         AddVectoredExceptionHandler(0, windows_OnUnhandledExceptionVEH);
+#endif
 
         _set_error_mode(_OUT_TO_STDERR);
     }
