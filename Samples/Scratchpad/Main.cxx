@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Platform/Main.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Initialize.hxx"
+#include "AnemoneRuntime/Runtime.hxx"
 #include "AnemoneRuntime/Diagnostic/StackTrace.hxx"
 #include "AnemoneRuntime/Diagnostic/Trace.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
