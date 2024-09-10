@@ -7,13 +7,13 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
-TEST_CASE("Vector4F_LoadFloat4")
+TEST_CASE("Vector4F_LoadUnalignedFloat4")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    SimdVector4F const v = Vector4F_LoadFloat4(data);
+    SimdVector4F const v = Vector4F_LoadUnalignedFloat4(data);
 
     REQUIRE_THAT(Vector4F_Extract<0>(v), WithinRel(1.0f));
     REQUIRE_THAT(Vector4F_Extract<1>(v), WithinRel(2.0f));
@@ -21,14 +21,14 @@ TEST_CASE("Vector4F_LoadFloat4")
     REQUIRE_THAT(Vector4F_Extract<3>(v), WithinRel(4.0f));
 }
 
-TEST_CASE("Vector4F_StoreFloat4")
+TEST_CASE("Vector4F_StoreUnalignedFloat4")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 0.0f, 0.0f};
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
-    Vector4F_StoreFloat4(data, v);
+    Vector4F_StoreUnalignedFloat4(data, v);
 
     REQUIRE_THAT(data[0], WithinRel(1.0f));
     REQUIRE_THAT(data[1], WithinRel(2.0f));
@@ -36,13 +36,13 @@ TEST_CASE("Vector4F_StoreFloat4")
     REQUIRE_THAT(data[3], WithinRel(4.0f));
 }
 
-TEST_CASE("Vector4F_LoadFloat3")
+TEST_CASE("Vector4F_LoadUnalignedFloat3")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    SimdVector4F const v = Vector4F_LoadFloat3(data);
+    SimdVector4F const v = Vector4F_LoadUnalignedFloat3(data);
 
     REQUIRE_THAT(Vector4F_Extract<0>(v), WithinRel(1.0f));
     REQUIRE_THAT(Vector4F_Extract<1>(v), WithinRel(2.0f));
@@ -50,14 +50,14 @@ TEST_CASE("Vector4F_LoadFloat3")
     REQUIRE_THAT(Vector4F_Extract<3>(v), WithinRel(0.0f));
 }
 
-TEST_CASE("Vector4F_StoreFloat3")
+TEST_CASE("Vector4F_StoreUnalignedFloat3")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 0.0f, 4.0f};
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 0.0f);
-    Vector4F_StoreFloat3(data, v);
+    Vector4F_StoreUnalignedFloat3(data, v);
 
     REQUIRE_THAT(data[0], WithinRel(1.0f));
     REQUIRE_THAT(data[1], WithinRel(2.0f));
@@ -65,13 +65,13 @@ TEST_CASE("Vector4F_StoreFloat3")
     REQUIRE_THAT(data[3], WithinRel(4.0f));
 }
 
-TEST_CASE("Vector4F_LoadFloat2")
+TEST_CASE("Vector4F_LoadUnalignedFloat2")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    SimdVector4F const v = Vector4F_LoadFloat2(data);
+    SimdVector4F const v = Vector4F_LoadUnalignedFloat2(data);
 
     REQUIRE_THAT(Vector4F_Extract<0>(v), WithinRel(1.0f));
     REQUIRE_THAT(Vector4F_Extract<1>(v), WithinRel(2.0f));
@@ -79,14 +79,14 @@ TEST_CASE("Vector4F_LoadFloat2")
     REQUIRE_THAT(Vector4F_Extract<3>(v), WithinRel(0.0f));
 }
 
-TEST_CASE("Vector4F_StoreFloat2")
+TEST_CASE("Vector4F_StoreUnalignedFloat2")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 3.0f, 4.0f};
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 0.0f, 0.0f);
-    Vector4F_StoreFloat2(data, v);
+    Vector4F_StoreUnalignedFloat2(data, v);
 
     REQUIRE_THAT(data[0], WithinRel(1.0f));
     REQUIRE_THAT(data[1], WithinRel(2.0f));
@@ -94,13 +94,13 @@ TEST_CASE("Vector4F_StoreFloat2")
     REQUIRE_THAT(data[3], WithinRel(4.0f));
 }
 
-TEST_CASE("Vector4F_LoadFloat1")
+TEST_CASE("Vector4F_LoadUnalignedFloat1")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
-    SimdVector4F const v = Vector4F_LoadFloat1(data);
+    SimdVector4F const v = Vector4F_LoadUnalignedFloat1(data);
 
     REQUIRE_THAT(Vector4F_Extract<0>(v), WithinRel(1.0f));
     REQUIRE_THAT(Vector4F_Extract<1>(v), WithinRel(0.0f));
@@ -108,14 +108,14 @@ TEST_CASE("Vector4F_LoadFloat1")
     REQUIRE_THAT(Vector4F_Extract<3>(v), WithinRel(0.0f));
 }
 
-TEST_CASE("Vector4F_StoreFloat1")
+TEST_CASE("Vector4F_StoreUnalignedFloat1")
 {
     using namespace Anemone::Numerics::Private;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 2.0f, 3.0f, 4.0f};
     SimdVector4F const v = Vector4F_Create(1.0f, 0.0f, 0.0f, 0.0f);
-    Vector4F_StoreFloat1(data, v);
+    Vector4F_StoreUnalignedFloat1(data, v);
 
     REQUIRE_THAT(data[0], WithinRel(1.0f));
     REQUIRE_THAT(data[1], WithinRel(2.0f));
@@ -628,9 +628,9 @@ TEST_CASE("Vector4F_MultiplyAdd")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_MultiplyAdd(va, vb, vc);
 
@@ -674,9 +674,9 @@ TEST_CASE("Vector4F_MultiplySubtract")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_MultiplySubtract(va, vb, vc);
 
@@ -720,9 +720,9 @@ TEST_CASE("Vector4F_NegateMultiplyAdd")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_NegateMultiplyAdd(va, vb, vc);
 
@@ -766,9 +766,9 @@ TEST_CASE("Vector4F_NegateMultiplySubtract")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_NegateMultiplySubtract(va, vb, vc);
 
@@ -803,8 +803,8 @@ TEST_CASE("Vector4F_Add")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Add(va, vb);
 
@@ -839,8 +839,8 @@ TEST_CASE("Vector4F_Subtract")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Subtract(va, vb);
 
@@ -877,8 +877,8 @@ TEST_CASE("Vector4F_Multiply")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Multiply(va, vb);
 
@@ -913,8 +913,8 @@ TEST_CASE("Vector4F_Divide")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Divide(va, vb);
 
@@ -942,7 +942,7 @@ TEST_CASE("Vector4F_Negate")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Negate(va);
 
@@ -970,7 +970,7 @@ TEST_CASE("Vector4F_Reciprocal")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Reciprocal(va);
 
@@ -1000,7 +1000,7 @@ TEST_CASE("Vector4F_ReciprocalEst")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_ReciprocalEst(va);
 
@@ -1035,8 +1035,8 @@ TEST_CASE("Vector4F_Min")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Min(va, vb);
 
@@ -1071,8 +1071,8 @@ TEST_CASE("Vector4F_Max")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Max(va, vb);
 
@@ -1100,7 +1100,7 @@ TEST_CASE("Vector4F_Abs")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Abs(va);
 
@@ -1128,7 +1128,7 @@ TEST_CASE("Vector4F_Square")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Square(va);
 
@@ -1156,7 +1156,7 @@ TEST_CASE("Vector4F_SignedSquare")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_SignedSquare(va);
 
@@ -1198,9 +1198,9 @@ TEST_CASE("Vector4F_Clamp")
             b[3] + r.NextFloat(10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_Clamp(va, vb, vc);
 
@@ -1228,7 +1228,7 @@ TEST_CASE("Vector4F_Saturate")
             r.NextFloat(-1.0f, 2.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Saturate(va);
 
@@ -1256,7 +1256,7 @@ TEST_CASE("Vector4F_SquareRoot")
             r.NextFloat(0.0f, 49.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_SquareRoot(va);
 
@@ -1286,7 +1286,7 @@ TEST_CASE("Vector4F_SquareRootEst")
             r.NextFloat(0.0f, 49.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_SquareRootEst(va);
 
@@ -1314,7 +1314,7 @@ TEST_CASE("Vector4F_ReciprocalSquareRoot")
             r.NextFloat(0.0f, 49.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_ReciprocalSquareRoot(va);
 
@@ -1344,7 +1344,7 @@ TEST_CASE("Vector4F_ReciprocalSquareRootEst")
             r.NextFloat(0.0f, 49.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_ReciprocalSquareRootEst(va);
 
@@ -1372,7 +1372,7 @@ TEST_CASE("Vector4F_Ceil")
             r.NextFloat(-50.0f, 50.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Ceil(va);
 
@@ -1400,7 +1400,7 @@ TEST_CASE("Vector4F_Floor")
             r.NextFloat(-50.0f, 50.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Floor(va);
 
@@ -1428,7 +1428,7 @@ TEST_CASE("Vector4F_Truncate")
             r.NextFloat(-50.0f, 50.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Truncate(va);
 
@@ -1456,7 +1456,7 @@ TEST_CASE("Vector4F_Round")
             r.NextFloat(-50.0f, 50.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Round(va);
 
@@ -1484,7 +1484,7 @@ TEST_CASE("Vector4F_Fraction")
             r.NextFloat(-50.0f, 50.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Fraction(va);
 
@@ -1519,8 +1519,8 @@ TEST_CASE("Vector4F_Remainder")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Remainder(va, vb);
 
@@ -1557,8 +1557,8 @@ TEST_CASE("Vector4F_Repeat")
             r.NextFloat(0.1f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Repeat(va, vb);
 
@@ -1602,9 +1602,9 @@ TEST_CASE("Vector4F_Wrap")
             b[3] + r.NextFloat(10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
-        SimdVector4F const vc = Vector4F_LoadFloat4(c);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+        SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
 
         SimdVector4F const result = Vector4F_Wrap(va, vb, vc);
 
@@ -1639,8 +1639,8 @@ TEST_CASE("Vector4F_Power")
             r.NextFloat(0.01f, 3.0f) * ((r.NextUInt32() & 1) ? 1.0f : -1.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Power(va, vb);
 
@@ -1668,7 +1668,7 @@ TEST_CASE("Vector4F_Exp")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Exp(va);
 
@@ -1696,7 +1696,7 @@ TEST_CASE("Vector4F_Exp2")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Exp2(va);
 
@@ -1724,7 +1724,7 @@ TEST_CASE("Vector4F_Exp10")
             r.NextFloat(-10.0f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Exp10(va);
 
@@ -1752,7 +1752,7 @@ TEST_CASE("Vector4F_Log")
             r.NextFloat(0.001f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Log(va);
 
@@ -1782,7 +1782,7 @@ TEST_CASE("Vector4F_Log with base")
 
         float const b = r.NextFloat(2.0f, 20.0f);
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
         SimdVector4F const vb = Vector4F_Replicate(b);
 
         SimdVector4F const result = Vector4F_Log(va, vb);
@@ -1811,7 +1811,7 @@ TEST_CASE("Vector4F_Log2")
             r.NextFloat(0.001f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Log2(va);
 
@@ -1839,7 +1839,7 @@ TEST_CASE("Vector4F_Log10")
             r.NextFloat(0.001f, 10.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Log10(va);
 
@@ -1867,7 +1867,7 @@ TEST_CASE("Vector4F_SinCos")
             r.NextFloat(-Pi2<float>, Pi2<float>),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F vSin;
         SimdVector4F vCos;
@@ -1903,7 +1903,7 @@ TEST_CASE("Vector4F_Sin")
             r.NextFloat(-Pi2<float>, Pi2<float>),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Sin(va);
 
@@ -1931,7 +1931,7 @@ TEST_CASE("Vector4F_Cos")
             r.NextFloat(-Pi2<float>, Pi2<float>),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Cos(va);
 
@@ -1959,7 +1959,7 @@ TEST_CASE("Vector4F_Tan")
             r.NextFloat(-Pi2<float>, Pi2<float>),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Tan(va);
 
@@ -1987,7 +1987,7 @@ TEST_CASE("Vector4F_Asin")
             r.NextFloat(-1.0f, 1.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Asin(va);
 
@@ -2015,7 +2015,7 @@ TEST_CASE("Vector4F_Acos")
             r.NextFloat(-1.0f, 1.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Acos(va);
 
@@ -2043,7 +2043,7 @@ TEST_CASE("Vector4F_Atan")
             r.NextFloat(-1.0f, 1.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
 
         SimdVector4F const result = Vector4F_Atan(va);
 
@@ -2078,8 +2078,8 @@ TEST_CASE("Vector4F_Atan2")
             r.NextFloat(-1.0f, 1.0f),
         };
 
-        SimdVector4F const va = Vector4F_LoadFloat4(a);
-        SimdVector4F const vb = Vector4F_LoadFloat4(b);
+        SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+        SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
         SimdVector4F const result = Vector4F_Atan2(va, vb);
 
@@ -2123,9 +2123,9 @@ TEST_CASE("Vector4F_PreciseLerp")
                 r.NextFloat(0.0f, 1.0f),
             };
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vt = Vector4F_LoadFloat4(t);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vt = Vector4F_LoadUnalignedFloat4(t);
 
             SimdVector4F const result = Vector4F_PreciseLerp(va, vb, vt);
 
@@ -2156,8 +2156,8 @@ TEST_CASE("Vector4F_PreciseLerp")
 
             float const t = r.NextFloat(0.0f, 1.0f);
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
             SimdVector4F const result = Vector4F_PreciseLerp(va, vb, t);
 
@@ -2204,9 +2204,9 @@ TEST_CASE("Vector4F_Lerp")
                 r.NextFloat(0.0f, 1.0f),
             };
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vt = Vector4F_LoadFloat4(t);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vt = Vector4F_LoadUnalignedFloat4(t);
 
             SimdVector4F const result = Vector4F_Lerp(va, vb, vt);
 
@@ -2237,8 +2237,8 @@ TEST_CASE("Vector4F_Lerp")
 
             float const t = r.NextFloat(0.0f, 1.0f);
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
 
             SimdVector4F const result = Vector4F_Lerp(va, vb, t);
 
@@ -2304,12 +2304,12 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
                 r.NextFloat(0.0f, 1.0f),
             };
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vc = Vector4F_LoadFloat4(c);
-            SimdVector4F const vd = Vector4F_LoadFloat4(d);
-            SimdVector4F const vu = Vector4F_LoadFloat4(u);
-            SimdVector4F const vv = Vector4F_LoadFloat4(v);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
+            SimdVector4F const vd = Vector4F_LoadUnalignedFloat4(d);
+            SimdVector4F const vu = Vector4F_LoadUnalignedFloat4(u);
+            SimdVector4F const vv = Vector4F_LoadUnalignedFloat4(v);
 
             SimdVector4F const result = Vector4F_PreciseBilinearLerp(va, vb, vc, vd, vu, vv);
 
@@ -2356,10 +2356,10 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
 
             float const v = r.NextFloat(0.0f, 1.0f);
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vc = Vector4F_LoadFloat4(c);
-            SimdVector4F const vd = Vector4F_LoadFloat4(d);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
+            SimdVector4F const vd = Vector4F_LoadUnalignedFloat4(d);
 
             SimdVector4F const result = Vector4F_PreciseBilinearLerp(va, vb, vc, vd, u, v);
 
@@ -2427,12 +2427,12 @@ TEST_CASE("Vector4F_BilinearLerp")
                 r.NextFloat(0.0f, 1.0f),
             };
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vc = Vector4F_LoadFloat4(c);
-            SimdVector4F const vd = Vector4F_LoadFloat4(d);
-            SimdVector4F const vu = Vector4F_LoadFloat4(u);
-            SimdVector4F const vv = Vector4F_LoadFloat4(v);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
+            SimdVector4F const vd = Vector4F_LoadUnalignedFloat4(d);
+            SimdVector4F const vu = Vector4F_LoadUnalignedFloat4(u);
+            SimdVector4F const vv = Vector4F_LoadUnalignedFloat4(v);
 
             SimdVector4F const result = Vector4F_BilinearLerp(va, vb, vc, vd, vu, vv);
 
@@ -2479,10 +2479,10 @@ TEST_CASE("Vector4F_BilinearLerp")
 
             float const v = r.NextFloat(0.0f, 1.0f);
 
-            SimdVector4F const va = Vector4F_LoadFloat4(a);
-            SimdVector4F const vb = Vector4F_LoadFloat4(b);
-            SimdVector4F const vc = Vector4F_LoadFloat4(c);
-            SimdVector4F const vd = Vector4F_LoadFloat4(d);
+            SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
+            SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
+            SimdVector4F const vc = Vector4F_LoadUnalignedFloat4(c);
+            SimdVector4F const vd = Vector4F_LoadUnalignedFloat4(d);
 
             SimdVector4F const result = Vector4F_BilinearLerp(va, vb, vc, vd, u, v);
 
@@ -2529,9 +2529,9 @@ TEST_CASE("Vector4F_Unlerp")
             r.NextFloat(lower[0], upper[0]),
         };
 
-        SimdVector4F const vLower = Vector4F_LoadFloat4(lower);
-        SimdVector4F const vUpper = Vector4F_LoadFloat4(upper);
-        SimdVector4F const vt = Vector4F_LoadFloat4(t);
+        SimdVector4F const vLower = Vector4F_LoadUnalignedFloat4(lower);
+        SimdVector4F const vUpper = Vector4F_LoadUnalignedFloat4(upper);
+        SimdVector4F const vt = Vector4F_LoadUnalignedFloat4(t);
 
         SimdVector4F const result = Vector4F_Unlerp(vt, vLower, vUpper);
 
@@ -2589,11 +2589,11 @@ TEST_CASE("Vector4F_Map")
             r.NextFloat(sourceLower[3], sourceUpper[3]),
         };
 
-        SimdVector4F vSourceLower = Vector4F_LoadFloat4(sourceLower);
-        SimdVector4F vSourceUpper = Vector4F_LoadFloat4(sourceUpper);
-        SimdVector4F vTargetLower = Vector4F_LoadFloat4(targetLower);
-        SimdVector4F vTargetUpper = Vector4F_LoadFloat4(targetUpper);
-        SimdVector4F vValue = Vector4F_LoadFloat4(value);
+        SimdVector4F vSourceLower = Vector4F_LoadUnalignedFloat4(sourceLower);
+        SimdVector4F vSourceUpper = Vector4F_LoadUnalignedFloat4(sourceUpper);
+        SimdVector4F vTargetLower = Vector4F_LoadUnalignedFloat4(targetLower);
+        SimdVector4F vTargetUpper = Vector4F_LoadUnalignedFloat4(targetUpper);
+        SimdVector4F vValue = Vector4F_LoadUnalignedFloat4(value);
 
         SimdVector4F result = Vector4F_Map(vValue, vSourceLower, vSourceUpper, vTargetLower, vTargetUpper);
 
@@ -2651,11 +2651,11 @@ TEST_CASE("Vector4F_PreciseMap")
             r.NextFloat(sourceLower[3], sourceUpper[3]),
         };
 
-        SimdVector4F vSourceLower = Vector4F_LoadFloat4(sourceLower);
-        SimdVector4F vSourceUpper = Vector4F_LoadFloat4(sourceUpper);
-        SimdVector4F vTargetLower = Vector4F_LoadFloat4(targetLower);
-        SimdVector4F vTargetUpper = Vector4F_LoadFloat4(targetUpper);
-        SimdVector4F vValue = Vector4F_LoadFloat4(value);
+        SimdVector4F vSourceLower = Vector4F_LoadUnalignedFloat4(sourceLower);
+        SimdVector4F vSourceUpper = Vector4F_LoadUnalignedFloat4(sourceUpper);
+        SimdVector4F vTargetLower = Vector4F_LoadUnalignedFloat4(targetLower);
+        SimdVector4F vTargetUpper = Vector4F_LoadUnalignedFloat4(targetUpper);
+        SimdVector4F vValue = Vector4F_LoadUnalignedFloat4(value);
 
         SimdVector4F result = Vector4F_PreciseMap(vValue, vSourceLower, vSourceUpper, vTargetLower, vTargetUpper);
 

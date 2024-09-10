@@ -38,17 +38,32 @@ namespace Anemone::Numerics::Private
 // Vector functions
 namespace Anemone::Numerics::Private
 {
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat4(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source)
     {
         return _mm_load_ps(source);
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat4(float* destination, SimdVector4F source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat3(float const* source)
     {
-        _mm_store_ps(destination, source);
+        return _mm_load_ps(source);
     }
 
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat3(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat2(float const* source)
+    {
+        return _mm_load_ps(source);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat1(float const* source)
+    {
+        return _mm_load_ps(source);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat4(float const* source)
+    {
+        return _mm_loadu_ps(source);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat3(float const* source)
     {
         // = [x, y, 0, 0]
         __m128 const v_xy00 = _mm_castsi128_ps(_mm_loadl_epi64(reinterpret_cast<__m128i const*>(source)));
@@ -57,7 +72,43 @@ namespace Anemone::Numerics::Private
         return _mm_movelh_ps(v_xy00, v_z000);
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat3(float* destination, SimdVector4F source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat2(float const* source)
+    {
+        // = [x, y, 0, 0]
+        return _mm_castsi128_ps(_mm_loadl_epi64(reinterpret_cast<__m128i const*>(source)));
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat1(float const* source)
+    {
+        return _mm_load_ss(source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat4(float* destination, SimdVector4F source)
+    {
+        _mm_store_ps(destination, source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat3(float* destination, SimdVector4F source)
+    {
+        _mm_store_ps(destination, source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat2(float* destination, SimdVector4F source)
+    {
+        _mm_store_ps(destination, source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat1(float* destination, SimdVector4F source)
+    {
+        _mm_store_ps(destination, source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat4(float* destination, SimdVector4F source)
+    {
+        _mm_storeu_ps(destination, source);
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat3(float* destination, SimdVector4F source)
     {
         // = [x, y, ...]
         _mm_storel_epi64(reinterpret_cast<__m128i*>(destination), _mm_castps_si128(source));
@@ -65,25 +116,13 @@ namespace Anemone::Numerics::Private
         _mm_store_ss(destination + 2, _mm_movehl_ps(source, source));
     }
 
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat2(float const* source)
-    {
-        // = [x, y, 0, 0]
-        return _mm_castsi128_ps(_mm_loadl_epi64(reinterpret_cast<__m128i const*>(source)));
-    }
-
-    inline void anemone_vectorcall Vector4F_StoreFloat2(float* destination, SimdVector4F source)
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat2(float* destination, SimdVector4F source)
     {
         // target[0] = source.0
         // target[1] = source.1
         _mm_storel_epi64(reinterpret_cast<__m128i*>(destination), _mm_castps_si128(source));
     }
-
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat1(float const* source)
-    {
-        return _mm_load_ss(source);
-    }
-
-    inline void anemone_vectorcall Vector4F_StoreFloat1(float* destination, SimdVector4F source)
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat1(float* destination, SimdVector4F source)
     {
         _mm_store_ss(destination, source);
     }

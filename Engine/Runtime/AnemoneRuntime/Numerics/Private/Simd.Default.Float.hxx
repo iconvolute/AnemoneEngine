@@ -10,7 +10,7 @@ namespace Anemone::Numerics::Private
 // Vector functions
 namespace Anemone::Numerics::Private
 {
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat4(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source)
     {
         return SimdVector4F{
             source[0],
@@ -20,15 +20,7 @@ namespace Anemone::Numerics::Private
         };
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat4(float* destination, SimdVector4F source)
-    {
-        destination[0] = source.Inner[0];
-        destination[1] = source.Inner[1];
-        destination[2] = source.Inner[2];
-        destination[3] = source.Inner[3];
-    }
-
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat3(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat3(float const* source)
     {
         return SimdVector4F{
             source[0],
@@ -38,14 +30,7 @@ namespace Anemone::Numerics::Private
         };
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat3(float* destination, SimdVector4F source)
-    {
-        destination[0] = source.Inner[0];
-        destination[1] = source.Inner[1];
-        destination[2] = source.Inner[2];
-    }
-
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat2(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat2(float const* source)
     {
         return SimdVector4F{
             source[0],
@@ -55,13 +40,7 @@ namespace Anemone::Numerics::Private
         };
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat2(float* destination, SimdVector4F source)
-    {
-        destination[0] = source.Inner[0];
-        destination[1] = source.Inner[1];
-    }
-
-    inline SimdVector4F anemone_vectorcall Vector4F_LoadFloat1(float const* source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat1(float const* source)
     {
         return SimdVector4F{
             source[0],
@@ -71,7 +50,94 @@ namespace Anemone::Numerics::Private
         };
     }
 
-    inline void anemone_vectorcall Vector4F_StoreFloat1(float* destination, SimdVector4F source)
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat4(float const* source)
+    {
+        return SimdVector4F{
+            source[0],
+            source[1],
+            source[2],
+            source[3],
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat3(float const* source)
+    {
+        return SimdVector4F{
+            source[0],
+            source[1],
+            source[2],
+            0.0f,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat2(float const* source)
+    {
+        return SimdVector4F{
+            source[0],
+            source[1],
+            0.0f,
+            0.0f,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat1(float const* source)
+    {
+        return SimdVector4F{
+            source[0],
+            0.0f,
+            0.0f,
+            0.0f,
+        };
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat4(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+        destination[2] = source.Inner[2];
+        destination[3] = source.Inner[3];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat3(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+        destination[2] = source.Inner[2];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat2(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreAlignedFloat1(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat4(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+        destination[2] = source.Inner[2];
+        destination[3] = source.Inner[3];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat3(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+        destination[2] = source.Inner[2];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat2(float* destination, SimdVector4F source)
+    {
+        destination[0] = source.Inner[0];
+        destination[1] = source.Inner[1];
+    }
+
+    inline void anemone_vectorcall Vector4F_StoreUnalignedFloat1(float* destination, SimdVector4F source)
     {
         destination[0] = source.Inner[0];
     }
@@ -2348,13 +2414,13 @@ namespace Anemone::Numerics::Private
 
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_NaN()
     {
-        SimdVector4F const lane = Vector4F_LoadFloat4(F32x4_PositiveQNaN_XXXX.As<float>());
+        SimdVector4F const lane = Vector4F_LoadAlignedFloat4(F32x4_PositiveQNaN_XXXX.As<float>());
         return SimdMatrix4x4F{lane, lane, lane, lane};
     }
 
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_Infinity()
     {
-        SimdVector4F const lane = Vector4F_LoadFloat4(F32x4_PositiveInfinity_XXXX.As<float>());
+        SimdVector4F const lane = Vector4F_LoadAlignedFloat4(F32x4_PositiveInfinity_XXXX.As<float>());
         return SimdMatrix4x4F{lane, lane, lane, lane};
     }
 

@@ -140,14 +140,23 @@ namespace Anemone::Numerics::Private
 // Vector functions
 namespace Anemone::Numerics::Private
 {
-    SimdVector4F anemone_vectorcall Vector4F_LoadFloat4(float const* source);
-    void anemone_vectorcall Vector4F_StoreFloat4(float* destination, SimdVector4F source);
-    SimdVector4F anemone_vectorcall Vector4F_LoadFloat3(float const* source);
-    void anemone_vectorcall Vector4F_StoreFloat3(float* destination, SimdVector4F source);
-    SimdVector4F anemone_vectorcall Vector4F_LoadFloat2(float const* source);
-    void anemone_vectorcall Vector4F_StoreFloat2(float* destination, SimdVector4F source);
-    SimdVector4F anemone_vectorcall Vector4F_LoadFloat1(float const* source);
-    void anemone_vectorcall Vector4F_StoreFloat1(float* destination, SimdVector4F source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat3(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat2(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat1(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat4(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat3(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat2(float const* source);
+    SimdVector4F anemone_vectorcall Vector4F_LoadUnalignedFloat1(float const* source);
+
+    void anemone_vectorcall Vector4F_StoreAlignedFloat4(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreAlignedFloat3(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreAlignedFloat2(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreAlignedFloat1(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreUnalignedFloat4(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreUnalignedFloat3(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreUnalignedFloat2(float* destination, SimdVector4F source);
+    void anemone_vectorcall Vector4F_StoreUnalignedFloat1(float* destination, SimdVector4F source);
 
     SimdVector4F anemone_vectorcall Vector4F_Create(float x, float y, float z, float w);
     SimdVector4F anemone_vectorcall Vector4F_Replicate(float f);
