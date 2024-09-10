@@ -1,0 +1,19 @@
+
+target_sources(AnemoneRuntime
+    PRIVATE
+        "Aligned.hxx"
+        "Margins.hxx"
+        "Margins.inl"
+        "Matrix3x2.hxx"
+        "Matrix3x2.inl"
+        "Packed.hxx"
+        "Point.hxx"
+        "Point.inl"
+        "Rect.hxx"
+        "Rect.inl"
+        "Size.hxx"
+        "Size.inl"
+        "Transform2.hxx"
+        "Transform2.inl"
+        "Types.hxx"
+)

@@ -1,4 +1,3 @@
-#pragma once
 #include "AnemoneRuntime/Runtime.hxx"
 
 namespace Anemone::Memory

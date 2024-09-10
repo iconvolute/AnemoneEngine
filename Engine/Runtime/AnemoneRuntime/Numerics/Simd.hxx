@@ -96,7 +96,7 @@ namespace Anemone::Numerics::Private
 
     using SimdMask4F = __m128;
 
-    using SimdMasK4D = __m256d;
+    using SimdMask4D = __m256d;
 
     struct SimdMatrix4x4F final
     {
@@ -122,7 +122,7 @@ namespace Anemone::Numerics::Private
 
     using SimdMask4F = uint32x4_t;
 
-    struct SimdMasK4D final
+    struct SimdMask4D final
     {
         uint64x2_t Inner[2];
     };

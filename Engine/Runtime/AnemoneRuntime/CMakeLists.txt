@@ -23,7 +23,6 @@ target_sources(AnemoneRuntime
         "Float.cxx"
         "Float.hxx"
         "FunctionRef.hxx"
-        "Geometry.hxx"
         "Instant.cxx"
         "Instant.hxx"
         "Intrusive.hxx"
@@ -53,6 +52,7 @@ add_subdirectory("App")
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostic")
 add_subdirectory("Hash")
+add_subdirectory("Math")
 add_subdirectory("Memory")
 add_subdirectory("Network")
 add_subdirectory("Numerics")

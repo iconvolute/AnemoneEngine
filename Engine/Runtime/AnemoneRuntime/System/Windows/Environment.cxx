@@ -148,9 +148,9 @@ namespace Anemone::System
         displayMetrics.Displays.clear();
 
         // Get display size.
-        displayMetrics.PrimaryDisplaySize = {
-            .Width = GetSystemMetrics(SM_CXSCREEN),
-            .Height = GetSystemMetrics(SM_CYSCREEN),
+        displayMetrics.PrimaryDisplaySize = Math::SizeF{
+            .Width = static_cast<float>(GetSystemMetrics(SM_CXSCREEN)),
+            .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
         };
 
         RECT workArea = {-1, -1, -1, -1};
@@ -161,19 +161,19 @@ namespace Anemone::System
         }
 
         // Get workspace area.
-        displayMetrics.PrimaryDisplayWorkArea = {
-            .X = workArea.left,
-            .Y = workArea.top,
-            .Width = workArea.right - workArea.left,
-            .Height = workArea.bottom - workArea.top,
+        displayMetrics.PrimaryDisplayWorkArea = Math::RectF{
+            .X = static_cast<float>(workArea.left),
+            .Y = static_cast<float>(workArea.top),
+            .Width = static_cast<float>(workArea.right - workArea.left),
+            .Height = static_cast<float>(workArea.bottom - workArea.top),
         };
 
         // Virtual display rect
-        displayMetrics.VirtualDisplayRect = {
-            .X = GetSystemMetrics(SM_XVIRTUALSCREEN),
-            .Y = GetSystemMetrics(SM_YVIRTUALSCREEN),
-            .Width = GetSystemMetrics(SM_CXVIRTUALSCREEN),
-            .Height = GetSystemMetrics(SM_CYVIRTUALSCREEN),
+        displayMetrics.VirtualDisplayRect = Math::RectF{
+            .X = static_cast<float>(GetSystemMetrics(SM_XVIRTUALSCREEN)),
+            .Y = static_cast<float>(GetSystemMetrics(SM_YVIRTUALSCREEN)),
+            .Width = static_cast<float>(GetSystemMetrics(SM_CXVIRTUALSCREEN)),
+            .Height = static_cast<float>(GetSystemMetrics(SM_CYVIRTUALSCREEN)),
         };
 
         // Get displays
@@ -253,9 +253,9 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
-    ColorRef GetScreenPixel(Point<int32_t> position, float gamma)
+    ColorRef GetScreenPixel(Math::PointF position, float gamma)
     {
-        COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), position.X, position.Y);
+        COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), static_cast<int>(position.X), static_cast<int>(position.Y));
 
         float const r = static_cast<float>(static_cast<uint8_t>(color)) / 255.0f;
         float const g = static_cast<float>(static_cast<uint8_t>(color >> 8)) / 255.0f;

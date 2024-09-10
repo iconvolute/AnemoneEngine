@@ -975,7 +975,7 @@ namespace Anemone::Numerics
     }
 
     template <typename T>
-    bool IsNearZero(T x)
+    constexpr bool IsNearZero(T x)
         requires(std::is_floating_point_v<T>)
     {
         T const epsilon = std::numeric_limits<T>::epsilon();

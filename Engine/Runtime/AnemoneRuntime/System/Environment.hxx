@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Geometry.hxx"
+#include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 
 #include <string_view>
@@ -37,16 +37,16 @@ namespace Anemone::System
         std::string Id;
         bool Primary;
         DisplayOrientation Orientation;
-        Rectangle<int32_t> DisplayRectangle;
-        Rectangle<int32_t> WorkAreaRectangle;
+        Math::RectF DisplayRectangle;
+        Math::RectF WorkAreaRectangle;
     };
 
     struct DisplayMetrics final
     {
         std::vector<DisplayInfo> Displays;
-        Rectangle<int32_t> VirtualDisplayRect;
-        Rectangle<int32_t> PrimaryDisplayWorkArea;
-        Size<int32_t> PrimaryDisplaySize;
+        Math::RectF VirtualDisplayRect;
+        Math::RectF PrimaryDisplayWorkArea;
+        Math::SizeF PrimaryDisplaySize;
     };
 
     RUNTIME_API void GetDisplayMetrics(DisplayMetrics& displayMetrics);
@@ -62,7 +62,7 @@ namespace Anemone::System
         float Alpha;
     };
 
-    [[nodiscard]] RUNTIME_API ColorRef GetScreenPixel(Point<int32_t> position, float gamma);
+    [[nodiscard]] RUNTIME_API ColorRef GetScreenPixel(Math::PointF position, float gamma);
 }
 
 namespace Anemone::System

@@ -4,7 +4,9 @@
 #include "AnemoneRuntime/Diagnostic/Debug.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Geometry.hxx"
+#include "AnemoneRuntime/Math/Point.hxx"
+#include "AnemoneRuntime/Math/Size.hxx"
+#include "AnemoneRuntime/Math/Rect.hxx"
 
 #include <span>
 #include <string_view>
@@ -987,63 +989,63 @@ namespace Anemone::Platform
 
 namespace Anemone::Platform
 {
-    constexpr Point<int32_t> win32_into_Point(POINT const& value) noexcept
+    constexpr Math::PointF win32_into_Point(POINT const& value) noexcept
     {
         return {
-            .X = value.x,
-            .Y = value.y,
+            .X = static_cast<float>(value.x),
+            .Y = static_cast<float>(value.y),
         };
     }
 
-    constexpr POINT win32_into_POINT(Point<int32_t> const& value) noexcept
+    constexpr POINT win32_into_POINT(Math::PointF const& value) noexcept
     {
         return {
-            .x = value.X,
-            .y = value.Y,
+            .x = static_cast<LONG>(value.X),
+            .y = static_cast<LONG>(value.Y),
         };
     }
 
-    constexpr Size<int32_t> win32_into_Size(SIZE const& value) noexcept
+    constexpr Math::SizeF win32_into_Size(SIZE const& value) noexcept
     {
         return {
-            .Width = value.cx,
-            .Height = value.cy,
+            .Width = static_cast<float>(value.cx),
+            .Height = static_cast<float>(value.cy),
         };
     }
 
-    constexpr Size<int32_t> win32_into_Size(RECT const& value) noexcept
+    constexpr Math::SizeF win32_into_Size(RECT const& value) noexcept
     {
         return {
-            .Width = value.right - value.left,
-            .Height = value.bottom - value.top,
+            .Width = static_cast<float>(value.right - value.left),
+            .Height = static_cast<float>(value.bottom - value.top),
         };
     }
 
-    constexpr SIZE win32_into_SIZE(Size<int32_t> const& value) noexcept
+    constexpr SIZE win32_into_SIZE(Math::SizeF const& value) noexcept
     {
         return {
-            .cx = value.Width,
-            .cy = value.Height,
+            .cx = static_cast<LONG>(value.Width),
+            .cy = static_cast<LONG>(value.Height),
         };
     }
 
-    constexpr Rectangle<int32_t> win32_into_Rectangle(RECT const& value) noexcept
+    constexpr Math::RectF win32_into_Rectangle(RECT const& value) noexcept
     {
         return {
-            .X = value.left,
-            .Y = value.top,
-            .Width = value.right - value.left,
-            .Height = value.bottom - value.top,
+            .X = static_cast<float>(value.left),
+            .Y = static_cast<float>(value.top),
+            .Width = static_cast<float>(value.right - value.left),
+            .Height = static_cast<float>(value.bottom - value.top),
         };
     }
 
-    constexpr RECT win32_into_RECT(Rectangle<int32_t> const& value) noexcept
+    constexpr RECT win32_into_RECT(Math::RectF const& value) noexcept
     {
         return {
-            .left = value.X,
-            .top = value.Y,
-            .right = value.X + value.Width,
-            .bottom = value.Y + value.Height,
+            .left = static_cast<LONG>(value.X),
+            .top = static_cast<LONG>(value.Y),
+            .right = static_cast<LONG>(value.X + value.Width),
+            .bottom = static_cast<LONG>(value.Y + value.Height),
         };
     }
 }

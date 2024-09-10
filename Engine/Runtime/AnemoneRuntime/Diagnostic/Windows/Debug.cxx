@@ -91,10 +91,12 @@ namespace Anemone::Diagnostic::Debug
 
     void Crash()
     {
+#if !ANEMONE_BUILD_SHIPPING
         Debug::WaitForDebugger();
 
         // Break into debugger. This will also generate a crash if no debugger is attached.
         anemone_debugbreak();
+#endif
 
         // But even so, if we're still here, terminate the process.
         std::terminate();

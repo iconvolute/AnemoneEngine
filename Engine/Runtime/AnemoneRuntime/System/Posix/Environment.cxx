@@ -58,7 +58,7 @@ namespace Anemone::System
 
 namespace Anemone::System
 {
-    ColorRef GetScreenPixel(Point<int32_t> position, float gamma)
+    ColorRef GetScreenPixel(Math::PointF position, float gamma)
     {
         (void)position;
         (void)gamma;
