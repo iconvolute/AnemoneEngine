@@ -535,6 +535,7 @@ namespace Anemone::Numerics::Private
 {
     SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar);
     SimdVector4F anemone_vectorcall RotorF_Create(SimdVector4F bv, float scalar);
+    SimdVector4F anemone_vectorcall RotorF_Identity();
     SimdVector4F anemone_vectorcall RotorF_FromAxisAngle(SimdVector4F axis, float angle);
     SimdVector4F anemone_vectorcall RotorF_FromNormalAngle(SimdVector4F normal, float angle);
     SimdVector4F anemone_vectorcall RotorF_RotationBetween(SimdVector4F from, SimdVector4F to);

@@ -3807,6 +3807,11 @@ namespace Anemone::Numerics::Private
         return Vector4F_Insert<3>(bv, scalar);
     }
 
+    inline SimdVector4F anemone_vectorcall RotorF_Identity()
+    {
+        return vld1q_f32(F32x4_PositiveUnitW.As<float>());
+    }
+
     inline SimdVector4F anemone_vectorcall RotorF_FromAxisAngle(SimdVector4F axis, float angle)
     {
         SimdVector4F const normal = Vector4F_Normalize3(axis);
