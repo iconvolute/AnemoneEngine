@@ -3220,6 +3220,193 @@ namespace Anemone::Numerics::Private
         return mResult;
     }
 
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookAtLH(SimdVector4F eye, SimdVector4F focus, SimdVector4F up)
+    {
+        SimdVector4F const direction = Vector4F_Subtract(focus, eye);
+        return Matrix4x4F_CreateLookToLH(eye, direction, up);
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookAtRH(SimdVector4F eye, SimdVector4F focus, SimdVector4F up)
+    {
+        SimdVector4F const direction = Vector4F_Subtract(eye, focus);
+        return Matrix4x4F_CreateLookToRH(eye, direction, up);
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookToLH(SimdVector4F eye, SimdVector4F direction, SimdVector4F up)
+    {
+        SimdVector4F const r2 = Vector4F_Normalize3(direction);
+        SimdVector4F const r0 = Vector4F_Normalize3(Vector4F_Cross3(up, r2));
+        SimdVector4F const r1 = Vector4F_Cross3(r2, r0);
+        SimdVector4F const negEye = Vector4F_Negate(eye);
+
+        SimdVector4F const d0 = Vector4F_Dot3(r0, negEye);
+        SimdVector4F const d1 = Vector4F_Dot3(r1, negEye);
+        SimdVector4F const d2 = Vector4F_Dot3(r2, negEye);
+
+        SimdMatrix4x4F result;
+
+        result.val[0] = Vector4F_Select<true, true, true, false>(d0, r0);
+        result.val[1] = Vector4F_Select<true, true, true, false>(d1, r1);
+        result.val[2] = Vector4F_Select<true, true, true, false>(d2, r2);
+        result.val[3] = Vector4F_PositiveUnitW();
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookToRH(SimdVector4F eye, SimdVector4F direction, SimdVector4F up)
+    {
+        SimdVector4F const negDirection = Vector4F_Negate(direction);
+        return Matrix4x4F_CreateLookToLH(eye, negDirection, up);
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveLH(float width, float height, float near, float far)
+    {
+        float const fRange = far / (far - near);
+        float const fTwoNearZ = near + near;
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [fTwoNearZ / width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(fTwoNearZ / width, zero, 0);
+        // = [fTwoNearZ / height, 0, 0, 0]
+        result.val[1] = vsetq_lane_f32(fTwoNearZ / height, zero, 1);
+        // = [fRange, 0, 0, 1]
+        result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
+        // = [0, 0, fRange * near, 0]
+        result.val[3] = vsetq_lane_f32(-fRange * near, zero, 2);
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveRH(float width, float height, float near, float far)
+    {
+        float const fRange = far / (near - far);
+        float const fTwoNearZ = near + near;
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_NegativeUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [fTwoNearZ / width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(fTwoNearZ / width, zero, 0);
+        // = [0, fTwoNearZ / height, 0, 0]
+        result.val[1] = vsetq_lane_f32(fTwoNearZ / height, zero, 1);
+        // = [0, 0, fRange, -1]
+        result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
+        // = [0, 0, fRange * near, 0]
+        result.val[3] = vsetq_lane_f32(fRange * near, zero, 2);
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovLH(float fov, float aspect, float near, float far)
+    {
+        auto [fSin, fCos] = SinCos<float>(0.5f * fov);
+
+        float const fRange = far / (far - near);
+        float const height = fCos / fSin;
+        float const width = height / aspect;
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(width, zero, 0);
+
+        // = [0, height, 0, 0]
+        result.val[1] = vsetq_lane_f32(height, zero, 1);
+
+        // = [0, 0, fRange, 1]
+        result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
+
+        // = [0, 0, -fRange * near, 0]
+        result.val[3] = vsetq_lane_f32(-fRange * near, zero, 2);
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovRH(float fov, float aspect, float near, float far)
+    {
+        auto [fSin, fCos] = SinCos<float>(0.5f * fov);
+
+        float const fRange = far / (near - far);
+        float const height = fCos / fSin;
+        float const width = height / aspect;
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_NegativeUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(width, zero, 0);
+
+        // = [0, height, 0, 0]
+        result.val[1] = vsetq_lane_f32(height, zero, 1);
+
+        // = [0, 0, fRange, -1]
+        result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
+
+        // = [0, 0, fRange * near, 0]
+        result.val[3] = vsetq_lane_f32(fRange * near, zero, 2);
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float near, float far)
+    {
+        float const fRange = 1.0f / (far - near);
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [2 / width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(2.0f / width, zero, 0);
+
+        // = [0, 2 / height, 0, 0]
+        result.val[1] = vsetq_lane_f32(2.0f / height, zero, 1);
+
+        // = [0, 0, fRange, 0]
+        result.val[2] = vsetq_lane_f32(fRange, zero, 2);
+
+        // = [0, 0, -fRange * near, 1]
+        result.val[3] = vsetq_lane_f32(-fRange * near, unitW, 2);
+
+        return result;
+    }
+
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float near, float far)
+    {
+        float const fRange = 1.0f / (near - far);
+
+        float32x4_t const zero = vdupq_n_f32(0.0f);
+        float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
+
+        SimdMatrix4x4F result;
+
+        // = [2 / width, 0, 0, 0]
+        result.val[0] = vsetq_lane_f32(2.0f / width, zero, 0);
+
+        // = [0, 2 / height, 0, 0]
+        result.val[1] = vsetq_lane_f32(2.0f / height, zero, 1);
+
+        // = [0, 0, fRange, 0]
+        result.val[2] = vsetq_lane_f32(fRange, zero, 2);
+
+        // = [0, 0, fRange * near, 1]
+        result.val[3] = vsetq_lane_f32(fRange * near, unitW, 2);
+
+        return result;
+    }
+
     // TODO: Use proper structs instead of arrays
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadFloat4x4(float const* source)
     {
