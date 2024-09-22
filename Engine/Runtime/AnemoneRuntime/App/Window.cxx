@@ -1,10 +1,19 @@
 #include "AnemoneRuntime/App/Window.hxx"
 
+#include "Application.hxx"
+
 namespace Anemone::App
 {
-    Window::Window() = default;
+    Window::Window(Application* application)
+        : m_application{application}
+    {
+        this->m_application->AddWindow(*this);
+    }
 
-    Window::~Window() = default;
+    Window::~Window()
+    {
+        this->m_application->RemoveWindow(*this);
+    }
 
     void Window::AcquireReference()
     {

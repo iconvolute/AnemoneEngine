@@ -299,7 +299,7 @@ namespace Anemone::App
 
     struct GamepadButtonEventArgs
     {
-        VirtualKey Key;
+        GamepadButton Button;
     };
 
     struct GamepadAnalogEventArgs
@@ -357,8 +357,11 @@ namespace Anemone::App
     // NOTE: Rename this to `ApplicationView`?
     class RUNTIME_API Application
     {
+        friend class Window;
+
     private:
         static Application* GCurrent;
+        IntrusiveList<Window, Application> m_windows;
 
     public:
         static Application* GetCurrent()
@@ -374,9 +377,13 @@ namespace Anemone::App
         Application& operator=(Application&&) = delete;
         virtual ~Application();
 
+    private:
+        void AddWindow(Window& window);
+        void RemoveWindow(Window& window);
+
     public:
-        static Reference<Window> MakeWindow(WindowType type);
-        static void ProcessMessages();
+        Reference<Window> MakeWindow(WindowType type);
+        void ProcessMessages();
 
     public:
         virtual void OnWindowClose(

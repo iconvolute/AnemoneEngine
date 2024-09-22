@@ -7,13 +7,11 @@ namespace Anemone::App
 {
     Reference<Window> Application::MakeWindow(WindowType type)
     {
-        return new WindowsWindow(type);
+        return new WindowsWindow(this, type);
     }
 
     void Application::ProcessMessages()
     {
-        AE_ENSURE(GCurrent != nullptr);
-
         MSG message{};
 
         while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE) != FALSE)

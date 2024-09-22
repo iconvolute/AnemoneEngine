@@ -15,34 +15,32 @@ namespace Anemone::App
     private:
         struct GamepadButtonState final
         {
-            bool A;
-            bool B;
-            bool X;
-            bool Y;
-            bool LeftShoulder;
-            bool RightShoulder;
-            bool LeftTrigger;
-            bool RightTrigger;
-            bool DPadUp;
-            bool DPadDown;
-            bool DPadLeft;
-            bool DPadRight;
-            bool Menu;
-            bool View;
-            bool LeftStick;
-            bool RightStick;
-            bool LeftStickUp;
-            bool LeftStickDown;
-            bool LeftStickLeft;
-            bool LeftStickRight;
-            bool RightStickUp;
-            bool RightStickDown;
-            bool RightStickLeft;
-            bool RightStickRight;
+            uint64_t Value{};
+
+            bool Get(GamepadButton button) const
+            {
+                uint64_t const mask = uint64_t{1} << static_cast<size_t>(button);
+                return (this->Value & mask) != 0;
+            }
+
+            void Set(GamepadButton button, bool state)
+            {
+                uint64_t const mask = uint64_t{1} << static_cast<size_t>(button);
+
+                if (state)
+                {
+                    this->Value |= mask;
+                }
+                else
+                {
+                    this->Value &= ~mask;
+                }
+            }
         };
 
         struct GamepadState final
         {
+            InputDeviceId DeviceId{};
             DWORD PacketId{};
             bool Connected{};
             GamepadButtonState ButtonsPressed{};
@@ -76,7 +74,8 @@ namespace Anemone::App
 
         static VirtualKeyModifiers CaptureModifiers();
 
-        void HandleGamepadButton(InputDeviceId device, VirtualKey key, bool pressed, bool held) const;
+    private:
+        void HandleGamepadButton(GamepadState& state, GamepadButton button) const;
 
         bool HandleKeyboardMessage(WindowsWindow& window, UINT message, WPARAM wparam, LPARAM lparam);
         bool HandleMouseMessage(WindowsWindow& window, UINT message, WPARAM wparam, LPARAM lparam);

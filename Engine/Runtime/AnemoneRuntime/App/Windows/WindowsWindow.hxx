@@ -22,7 +22,7 @@ namespace Anemone::App
         std::optional<Math::SizeF> m_maximumSize;
 
     public:
-        WindowsWindow(WindowType type);
+        WindowsWindow(Application* application, WindowType type);
         WindowsWindow(WindowsWindow const&) = delete;
         WindowsWindow(WindowsWindow&&) = delete;
         WindowsWindow& operator=(WindowsWindow const&) = delete;

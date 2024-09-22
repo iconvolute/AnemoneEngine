@@ -16,4 +16,15 @@ namespace Anemone::App
         AE_ENSURE(GCurrent == this);
         GCurrent = nullptr;
     }
+
+    
+    void Application::AddWindow(Window& window)
+    {
+        this->m_windows.PushBack(&window);
+    }
+
+    void Application::RemoveWindow(Window& window)
+    {
+        this->m_windows.Remove(&window);
+    }
 }

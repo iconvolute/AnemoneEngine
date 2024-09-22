@@ -4,6 +4,7 @@
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Point.hxx"
+#include "AnemoneRuntime/Intrusive.hxx"
 
 #include <atomic>
 #include <string_view>
@@ -46,12 +47,16 @@ namespace Anemone::App
         PointerActivated,
     };
 
+    class Application;
+
     class RUNTIME_API Window
+        : public IntrusiveListNode<Window, Application>
     {
         friend class Reference<Window>;
+        friend struct IntrusiveList<Window, Application>;
 
     public:
-        Window();
+        Window(Application* application);
         Window(Window const&) = delete;
         Window(Window&&) = delete;
         Window& operator=(Window const&) = delete;
@@ -63,6 +68,9 @@ namespace Anemone::App
 
         void AcquireReference();
         void ReleaseReference();
+
+    private:
+        Application* m_application{};
 
     public:
         struct NativeHandle final

@@ -58,8 +58,9 @@ namespace Anemone::App
 {
     // Detail:
     //  WindowsWindow::m_handle is set in the first message sent to the window procedure.
-    WindowsWindow::WindowsWindow(WindowType type)
-        : m_type{type}
+    WindowsWindow::WindowsWindow(Application* application, WindowType type)
+        : Window{application}
+        , m_type{type}
     {
         auto [dwStyle, dwExStyle] = MapNativeWindowStyle(this->m_type, this->m_mode);
 

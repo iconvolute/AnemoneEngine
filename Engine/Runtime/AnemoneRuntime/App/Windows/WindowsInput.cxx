@@ -98,14 +98,33 @@ namespace Anemone::App
         this->StopTracking(this->TrackMouseWindowHandle);
     }
 
+    static constexpr struct WindowsXInputButtonMapping
+    {
+        WORD Source;
+        GamepadButton Button;
+    } GWindowsXInputButtonMapping[]{
+        {XINPUT_GAMEPAD_A, GamepadButton ::A},
+        {XINPUT_GAMEPAD_B, GamepadButton ::B},
+        {XINPUT_GAMEPAD_X, GamepadButton ::X},
+        {XINPUT_GAMEPAD_Y, GamepadButton ::Y},
+        {XINPUT_GAMEPAD_LEFT_SHOULDER, GamepadButton ::LeftShoulder},
+        {XINPUT_GAMEPAD_RIGHT_SHOULDER, GamepadButton ::RightShoulder},
+        {XINPUT_GAMEPAD_DPAD_UP, GamepadButton ::DPadUp},
+        {XINPUT_GAMEPAD_DPAD_DOWN, GamepadButton ::DPadDown},
+        {XINPUT_GAMEPAD_DPAD_LEFT, GamepadButton ::DPadLeft},
+        {XINPUT_GAMEPAD_DPAD_RIGHT, GamepadButton ::DPadRight},
+        {XINPUT_GAMEPAD_START, GamepadButton ::Menu},
+        {XINPUT_GAMEPAD_BACK, GamepadButton ::View},
+        {XINPUT_GAMEPAD_LEFT_THUMB, GamepadButton ::LeftStick},
+        {XINPUT_GAMEPAD_RIGHT_THUMB, GamepadButton ::RightStick},
+    };
+
     void WindowsInput::Poll()
     {
         XINPUT_STATE state;
 
         for (DWORD dwUserIndex = 0; dwUserIndex < XUSER_MAX_COUNT; ++dwUserIndex)
         {
-            InputDeviceId const inputDeviceId{dwUserIndex};
-
             bool const connected = XInputGetState(dwUserIndex, &state) == ERROR_SUCCESS;
 
             GamepadState& gamepad = this->m_gamepads[dwUserIndex];
@@ -116,6 +135,7 @@ namespace Anemone::App
                 {
                     // Device was connected.
                     gamepad = {};
+                    gamepad.DeviceId = InputDeviceId{dwUserIndex};
                 }
                 else if (gamepad.PacketId == state.dwPacketNumber)
                 {
@@ -126,56 +146,54 @@ namespace Anemone::App
                 gamepad.PacketId = state.dwPacketNumber;
 
                 // Capture buttons state.
-                gamepad.ButtonsPressed.A = (state.Gamepad.wButtons & XINPUT_GAMEPAD_A) != 0;
-                gamepad.ButtonsPressed.B = (state.Gamepad.wButtons & XINPUT_GAMEPAD_B) != 0;
-                gamepad.ButtonsPressed.X = (state.Gamepad.wButtons & XINPUT_GAMEPAD_X) != 0;
-                gamepad.ButtonsPressed.Y = (state.Gamepad.wButtons & XINPUT_GAMEPAD_Y) != 0;
-                gamepad.ButtonsPressed.LeftShoulder = (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER) != 0;
-                gamepad.ButtonsPressed.RightShoulder = (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) != 0;
-                gamepad.ButtonsPressed.LeftTrigger = (state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-                gamepad.ButtonsPressed.RightTrigger = (state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
-                gamepad.ButtonsPressed.DPadUp = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP) != 0;
-                gamepad.ButtonsPressed.DPadDown = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN) != 0;
-                gamepad.ButtonsPressed.DPadLeft = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) != 0;
-                gamepad.ButtonsPressed.DPadRight = (state.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) != 0;
-                gamepad.ButtonsPressed.Menu = (state.Gamepad.wButtons & XINPUT_GAMEPAD_START) != 0;
-                gamepad.ButtonsPressed.View = (state.Gamepad.wButtons & XINPUT_GAMEPAD_BACK) != 0;
-                gamepad.ButtonsPressed.LeftStick = (state.Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB) != 0;
-                gamepad.ButtonsPressed.RightStick = (state.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB) != 0;
-                gamepad.ButtonsPressed.LeftStickUp = state.Gamepad.sThumbLY > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.LeftStickDown = state.Gamepad.sThumbLY < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.LeftStickLeft = state.Gamepad.sThumbLX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.LeftStickRight = state.Gamepad.sThumbLX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.RightStickUp = state.Gamepad.sThumbRY > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.RightStickDown = state.Gamepad.sThumbRY < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.RightStickLeft = state.Gamepad.sThumbRX < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
-                gamepad.ButtonsPressed.RightStickRight = state.Gamepad.sThumbRX > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE;
+
+                gamepad.ButtonsPressed = [&]
+                {
+                    GamepadButtonState result{};
+
+                    for (auto const mapping : GWindowsXInputButtonMapping)
+                    {
+                        result.Set(mapping.Button, state.Gamepad.wButtons & mapping.Source);
+                    }
+
+                    result.Set(GamepadButton::LeftTrigger, state.Gamepad.bLeftTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+                    result.Set(GamepadButton::RightTrigger, state.Gamepad.bRightTrigger > XINPUT_GAMEPAD_TRIGGER_THRESHOLD);
+                    result.Set(GamepadButton::LeftStickUp, state.Gamepad.sThumbLY > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::LeftStickDown, state.Gamepad.sThumbLY < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::LeftStickLeft, state.Gamepad.sThumbLX < -XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::LeftStickRight, state.Gamepad.sThumbLX > XINPUT_GAMEPAD_LEFT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::RightStickUp, state.Gamepad.sThumbRY > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::RightStickDown, state.Gamepad.sThumbRY < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::RightStickLeft, state.Gamepad.sThumbRX < -XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+                    result.Set(GamepadButton::RightStickRight, state.Gamepad.sThumbRX > XINPUT_GAMEPAD_RIGHT_THUMB_DEADZONE);
+                    return result;
+                }();
 
                 // Emit events
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadA, gamepad.ButtonsPressed.A, gamepad.ButtonsHeld.A);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadB, gamepad.ButtonsPressed.B, gamepad.ButtonsHeld.B);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadX, gamepad.ButtonsPressed.X, gamepad.ButtonsHeld.X);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadY, gamepad.ButtonsPressed.Y, gamepad.ButtonsHeld.Y);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftShoulder, gamepad.ButtonsPressed.LeftShoulder, gamepad.ButtonsHeld.LeftShoulder);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightShoulder, gamepad.ButtonsPressed.RightShoulder, gamepad.ButtonsHeld.RightShoulder);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftTrigger, gamepad.ButtonsPressed.LeftTrigger, gamepad.ButtonsHeld.LeftTrigger);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightTrigger, gamepad.ButtonsPressed.RightTrigger, gamepad.ButtonsHeld.RightTrigger);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadDPadUp, gamepad.ButtonsPressed.DPadUp, gamepad.ButtonsHeld.DPadUp);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadDPadDown, gamepad.ButtonsPressed.DPadDown, gamepad.ButtonsHeld.DPadDown);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadDPadLeft, gamepad.ButtonsPressed.DPadLeft, gamepad.ButtonsHeld.DPadLeft);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadDPadRight, gamepad.ButtonsPressed.DPadRight, gamepad.ButtonsHeld.DPadRight);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadMenu, gamepad.ButtonsPressed.Menu, gamepad.ButtonsHeld.Menu);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadView, gamepad.ButtonsPressed.View, gamepad.ButtonsHeld.View);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftThumbstickButton, gamepad.ButtonsPressed.LeftStick, gamepad.ButtonsHeld.LeftStick);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightThumbstickButton, gamepad.ButtonsPressed.RightStick, gamepad.ButtonsHeld.RightStick);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftThumbstickUp, gamepad.ButtonsPressed.LeftStickUp, gamepad.ButtonsHeld.LeftStickUp);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftThumbstickDown, gamepad.ButtonsPressed.LeftStickDown, gamepad.ButtonsHeld.LeftStickDown);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftThumbstickLeft, gamepad.ButtonsPressed.LeftStickLeft, gamepad.ButtonsHeld.LeftStickLeft);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadLeftThumbstickRight, gamepad.ButtonsPressed.LeftStickRight, gamepad.ButtonsHeld.LeftStickRight);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightThumbstickUp, gamepad.ButtonsPressed.RightStickUp, gamepad.ButtonsHeld.RightStickUp);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightThumbstickDown, gamepad.ButtonsPressed.RightStickDown, gamepad.ButtonsHeld.RightStickDown);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightThumbstickLeft, gamepad.ButtonsPressed.RightStickLeft, gamepad.ButtonsHeld.RightStickLeft);
-                this->HandleGamepadButton(inputDeviceId, VirtualKey::GamepadRightThumbstickRight, gamepad.ButtonsPressed.RightStickRight, gamepad.ButtonsHeld.RightStickRight);
+                this->HandleGamepadButton(gamepad, GamepadButton::A);
+                this->HandleGamepadButton(gamepad, GamepadButton::B);
+                this->HandleGamepadButton(gamepad, GamepadButton::X);
+                this->HandleGamepadButton(gamepad, GamepadButton::Y);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftShoulder);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightShoulder);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftTrigger);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightTrigger);
+                this->HandleGamepadButton(gamepad, GamepadButton::DPadUp);
+                this->HandleGamepadButton(gamepad, GamepadButton::DPadDown);
+                this->HandleGamepadButton(gamepad, GamepadButton::DPadLeft);
+                this->HandleGamepadButton(gamepad, GamepadButton::DPadRight);
+                this->HandleGamepadButton(gamepad, GamepadButton::Menu);
+                this->HandleGamepadButton(gamepad, GamepadButton::View);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftStick);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightStick);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftStickUp);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftStickDown);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftStickLeft);
+                this->HandleGamepadButton(gamepad, GamepadButton::LeftStickRight);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightStickUp);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightStickDown);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightStickLeft);
+                this->HandleGamepadButton(gamepad, GamepadButton::RightStickRight);
 
                 if (float const value = ApplyLinearDeadzone(static_cast<float>(state.Gamepad.bLeftTrigger), 255.0f, static_cast<float>(XINPUT_GAMEPAD_TRIGGER_THRESHOLD)); value != gamepad.LeftTrigger)
                 {
@@ -184,7 +202,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftTrigger = value;
                 }
@@ -196,7 +214,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightTrigger = value;
                 }
@@ -208,7 +226,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftStick.X = value;
                 }
@@ -220,7 +238,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftStick.Y = value;
                 }
@@ -232,7 +250,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightStick.X = value;
                 }
@@ -244,7 +262,7 @@ namespace Anemone::App
                         .Value = value,
                     };
 
-                    Application::GetCurrent()->OnGamepadAnalog(inputDeviceId, e);
+                    Application::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightStick.Y = value;
                 }
@@ -256,21 +274,24 @@ namespace Anemone::App
         }
     }
 
-    void WindowsInput::HandleGamepadButton(InputDeviceId device, VirtualKey key, bool pressed, bool held) const
+    void WindowsInput::HandleGamepadButton(WindowsInput::GamepadState& state, GamepadButton button) const
     {
+        bool const pressed = state.ButtonsPressed.Get(button);
+        bool const held = state.ButtonsHeld.Get(button);
+
         if (pressed != held)
         {
             GamepadButtonEventArgs e{
-                .Key = key,
+                .Button = button,
             };
 
             if (pressed)
             {
-                Application::GetCurrent()->OnGamepadButtonDown(device, e);
+                Application::GetCurrent()->OnGamepadButtonDown(state.DeviceId, e);
             }
             else
             {
-                Application::GetCurrent()->OnGamepadButtonUp(device, e);
+                Application::GetCurrent()->OnGamepadButtonUp(state.DeviceId, e);
             }
         }
     }
