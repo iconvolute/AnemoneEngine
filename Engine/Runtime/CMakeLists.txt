@@ -21,11 +21,19 @@ target_link_libraries(AnemoneRuntime
         "Iphlpapi.lib"
         "onecore.lib"
         "Xinput.lib"
+        "dwmapi.lib"
+        "Faultrep.lib"
+        "advapi32.lib"
+        "Appnotify.lib"
+        #"DbgHelp.lib"
+        "xaudio2.lib"
 )
 elseif(LINUX)
 target_link_libraries(AnemoneRuntime
     PRIVATE
         "unwind"
+        "uuid"
+        "dl"
 )
 elseif(ANDROID)
 target_link_libraries(AnemoneRuntime
