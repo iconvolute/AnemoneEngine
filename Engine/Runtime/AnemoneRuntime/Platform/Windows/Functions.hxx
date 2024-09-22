@@ -22,11 +22,22 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 namespace Anemone::Platform
 {
-    constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
+    anemone_forceinline HCURSOR win32_LoadSystemCursor(LPCWSTR id)
+    {
+        return static_cast<HCURSOR>(LoadImageW(nullptr, id, IMAGE_CURSOR, 0, 0, LR_SHARED));
+    }
 
     inline constexpr UINT win32_GetKeyState_None = 0u;
     inline constexpr UINT win32_GetKeyState_Down = 0x8000u;
     inline constexpr UINT win32_GetKeyState_Locked = 0x0001u;
+
+    constexpr uint32_t win32_DecodeSurrogatePair(uint16_t high, uint16_t low)
+    {
+        uint32_t code = 0x10000u;
+        code += (high & 0x03FFu) << 10u;
+        code += (low & 0x03FFu);
+        return code;
+    }
 
     anemone_forceinline void win32_RestoreUI() noexcept
     {
@@ -38,6 +49,13 @@ namespace Anemone::Platform
         ReleaseCapture();
 
         ClipCursor(nullptr);
+    }
+
+    anemone_forceinline bool win32_IsForeground()
+    {
+        DWORD dwProcessId{};
+        GetWindowThreadProcessId(GetForegroundWindow(), &dwProcessId);
+        return dwProcessId == GetCurrentProcessId();
     }
 
     [[nodiscard]] anemone_forceinline bool win32_IsSystemVersion(
@@ -994,6 +1012,14 @@ namespace Anemone::Platform
         return {
             .X = static_cast<float>(value.x),
             .Y = static_cast<float>(value.y),
+        };
+    }
+
+    constexpr Math::PointF win32_into_Point(RECT const& value) noexcept
+    {
+        return {
+            .X = static_cast<float>(value.left),
+            .Y = static_cast<float>(value.top),
         };
     }
 

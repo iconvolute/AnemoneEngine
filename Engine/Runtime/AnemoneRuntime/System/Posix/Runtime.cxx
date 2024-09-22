@@ -5,7 +5,7 @@
 #include <sys/utsname.h>
 #include <pwd.h>
 
-#include "../Static.hxx"
+#include "AnemoneRuntime/System/Static.hxx"
 
 namespace Anemone::System
 {

@@ -20,6 +20,7 @@ target_link_libraries(AnemoneRuntime
         "Bcrypt.lib"
         "Iphlpapi.lib"
         "onecore.lib"
+        "Xinput.lib"
 )
 elseif(LINUX)
 target_link_libraries(AnemoneRuntime

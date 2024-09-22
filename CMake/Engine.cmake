@@ -119,6 +119,13 @@ function(_anemone_target_add_options target_name)
                 /utf-8                                      # Set source and execution character set to UTF-8
                 /MP                                         # multicore compilation
         )
+
+        target_compile_definitions(${target_name}
+            PUBLIC
+                UNICODE
+                _UNICODE
+        )
+
     else()
         target_compile_options(${target_name}
             PRIVATE

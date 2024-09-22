@@ -1,4 +1,11 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Runtime.cxx"
+        "WindowsApplication.cxx"
+        "WindowsApplication.hxx"
+        "WindowsRuntime.cxx"
+        "WindowsRuntime.hxx"
+        "WindowsWindow.cxx"
+        "WindowsWindow.hxx"
+        "WindowsInput.cxx"
+        "WindowsInput.hxx"
 )
