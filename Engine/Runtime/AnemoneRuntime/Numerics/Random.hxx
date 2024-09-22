@@ -2,6 +2,11 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Types.hxx"
 
+#include "AnemoneRuntime/Math/Types.hxx"
+
+#include "AnemoneRuntime/Numerics/Numbers.hxx"
+#include "AnemoneRuntime/Numerics/Functions.hxx"
+
 #include <array>
 #include <span>
 #include <vector>
@@ -63,6 +68,42 @@ namespace Anemone::Numerics
 
     [[nodiscard]] RUNTIME_API Float3 InsideUnitCircle(Random& generator);
     [[nodiscard]] RUNTIME_API Float3 OnUnitCircle(Random& generator);
+
+    [[nodiscard]] inline Math::Vector3F NextVector3F(Random& generator)
+    {
+        float const x = generator.NextFloat();
+        float const y = generator.NextFloat();
+        float const z = generator.NextFloat();
+        return Math::Vector3F::Create(x, y, z);
+    }
+
+    [[nodiscard]] inline Math::Vector3F NextInsideUnitSphere(Random& generator)
+    {
+        float const theta = generator.NextFloat(Pi2<float>);
+        float const v = generator.NextFloat(-1.0f, 1.0f);
+        float const phi = Acos(v);
+        float const r = Power(generator.NextFloat(), 1.0f / 3.0f);
+
+        auto [sin_phi, cos_phi] = SinCos(phi);
+        auto [sin_theta, cos_theta] = SinCos(theta);
+
+        return Math::Vector3F::Create(
+            r * sin_phi * cos_theta,
+            r * sin_phi * sin_theta,
+            r * cos_phi);
+    }
+
+    template <typename T>
+    [[nodiscard]] T Next(Random& generator) = delete;
+
+    template <>
+    [[nodiscard]] inline Math::Packed::Vector2F Next<Math::Packed::Vector2F>(Random& generator)
+    {
+        float const x = generator.NextFloat();
+        float const y = generator.NextFloat();
+
+        return Math::Packed::Vector2F{x, y};
+    }
 }
 
 namespace Anemone::Numerics
