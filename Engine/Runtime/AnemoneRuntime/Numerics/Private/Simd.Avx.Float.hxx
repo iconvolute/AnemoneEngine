@@ -2099,8 +2099,7 @@ namespace Anemone::Numerics::Private
 
     inline SimdMask4F anemone_vectorcall QuaternionF_CompareIdentity(SimdVector4F q)
     {
-        __m128 const identity = _mm_load_ps(F32x4_PositiveUnitW.As<float>());
-        return Vector4F_CompareEqual(q, identity);
+        return Vector4F_CompareEqual(q, _mm_load_ps(F32x4_PositiveUnitW.As<float>()));
     }
 
     inline bool anemone_vectorcall QuaternionF_IsIdentity(SimdVector4F q)
@@ -3491,6 +3490,56 @@ namespace Anemone::Numerics::Private
 
 namespace Anemone::Numerics::Private
 {
+    inline SimdMask4F anemone_vectorcall RotorF_CompareEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareNotEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsNotEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareNaN(SimdVector4F q)
+    {
+        return Vector4F_CompareNaN(q);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsNaN(SimdVector4F q)
+    {
+        return Vector4F_IsNaN4(q);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareInfinite(SimdVector4F q)
+    {
+        return Vector4F_CompareInfinite(q);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsInfinite(SimdVector4F q)
+    {
+        return Vector4F_IsInfinite4(q);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareIdentity(SimdVector4F q)
+    {
+        return Vector4F_CompareEqual(q, _mm_load_ps(F32x4_PositiveUnitW.As<float>()));
+    }
+
+    inline bool anemone_vectorcall RotorF_IsIdentity(SimdVector4F q)
+    {
+        return Vector4F_IsEqual4(q, _mm_load_ps(F32x4_PositiveUnitW.As<float>()));
+    }
+
     inline SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar)
     {
         return Vector4F_Create(xy, xz, yz, scalar);

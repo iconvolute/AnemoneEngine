@@ -531,8 +531,24 @@ namespace Anemone::Numerics::Private
     bool anemone_vectorcall Matrix4x4F_IsInfinite(SimdMatrix4x4F m);
 }
 
+// Rotor functions.
 namespace Anemone::Numerics::Private
 {
+    SimdMask4F anemone_vectorcall RotorF_CompareEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall RotorF_IsEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall RotorF_IsNotEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareNaN(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsNaN(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareInfinite(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsInfinite(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareIdentity(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsIdentity(SimdVector4F q);
+
     SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar);
     SimdVector4F anemone_vectorcall RotorF_Create(SimdVector4F bv, float scalar);
     SimdVector4F anemone_vectorcall RotorF_Identity();

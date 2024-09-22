@@ -3605,52 +3605,52 @@ namespace Anemone::Numerics::Private
         d1x_d1y_d1z_d1w = Vector4F_NegateMultiplyAdd(m02_m03_m02_m03, m10_m10_m11_m11, d1x_d1y_d1z_d1w);
         d2x_d2y_d2z_d2w = Vector4F_NegateMultiplyAdd(m21_m23_m01_m03, m30_m32_m10_m12, d2x_d2y_d2z_d2w);
 
-        SimdVector4F const d0y_d0w_d2y_d2y = Vector4F_Permute<1,3,5,5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
+        SimdVector4F const d0y_d0w_d2y_d2y = Vector4F_Permute<1, 3, 5, 5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
         SimdVector4F const m11_m12_m10_m11 = Vector4F_Permute<1, 2, 0, 1>(r1);
-        SimdVector4F const d2y_d0y_d0w_d0x = Vector4F_Permute<2,0,7,4>(d0y_d0w_d2y_d2y, d0x_d0y_d0z_d0w);
-        SimdVector4F const m02_m00_m01_m00 = Vector4F_Permute<2,0,1,0>(r0);
-        SimdVector4F const d0w_d2y_d0y_d0z = Vector4F_Permute<1,2,5,6>(d0y_d0w_d2y_d2y, d0x_d0y_d0z_d0w);
+        SimdVector4F const d2y_d0y_d0w_d0x = Vector4F_Permute<2, 0, 7, 4>(d0y_d0w_d2y_d2y, d0x_d0y_d0z_d0w);
+        SimdVector4F const m02_m00_m01_m00 = Vector4F_Permute<2, 0, 1, 0>(r0);
+        SimdVector4F const d0w_d2y_d0y_d0z = Vector4F_Permute<1, 2, 5, 6>(d0y_d0w_d2y_d2y, d0x_d0y_d0z_d0w);
 
-        SimdVector4F const d1y_d1w_d2w_d2w = Vector4F_Permute<1,3,7,7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
-        SimdVector4F const m31_m32_m30_m31 = Vector4F_Permute<1,2,0,1>(r3);
-        SimdVector4F const d2w_d1y_d1w_d1x = Vector4F_Permute<2,0,7,4>(d1y_d1w_d2w_d2w, d1x_d1y_d1z_d1w);
-        SimdVector4F const m22_m20_m21_m20 = Vector4F_Permute<2,0,1,0>(r2);
-        SimdVector4F const d1w_d2w_d1y_d1z = Vector4F_Permute<1,2,5,6>(d1y_d1w_d2w_d2w, d1x_d1y_d1z_d1w);
+        SimdVector4F const d1y_d1w_d2w_d2w = Vector4F_Permute<1, 3, 7, 7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
+        SimdVector4F const m31_m32_m30_m31 = Vector4F_Permute<1, 2, 0, 1>(r3);
+        SimdVector4F const d2w_d1y_d1w_d1x = Vector4F_Permute<2, 0, 7, 4>(d1y_d1w_d2w_d2w, d1x_d1y_d1z_d1w);
+        SimdVector4F const m22_m20_m21_m20 = Vector4F_Permute<2, 0, 1, 0>(r2);
+        SimdVector4F const d1w_d2w_d1y_d1z = Vector4F_Permute<1, 2, 5, 6>(d1y_d1w_d2w_d2w, d1x_d1y_d1z_d1w);
 
         SimdVector4F c0x_c0y_c0z_c0w = Vector4F_Multiply(m11_m12_m10_m11, d2y_d0y_d0w_d0x);
         SimdVector4F c2x_c2y_c2z_c2w = Vector4F_Multiply(m02_m00_m01_m00, d0w_d2y_d0y_d0z);
         SimdVector4F c4x_c4y_c4z_c4w = Vector4F_Multiply(m31_m32_m30_m31, d2w_d1y_d1w_d1x);
         SimdVector4F c6x_c6y_c6z_c6w = Vector4F_Multiply(m22_m20_m21_m20, d1w_d2w_d1y_d1z);
 
-        SimdVector4F const d0x_d0y_d2x_d2x = Vector4F_Permute<0,1,4,4>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
-        SimdVector4F const m12_m13_m11_m12 = Vector4F_Permute<2,3,1,2>(r1);
-        SimdVector4F const d0w_d0x_d0y_d2x = Vector4F_Permute<3,0,5,6>(d0x_d0y_d0z_d0w, d0x_d0y_d2x_d2x);
-        SimdVector4F const m03_m02_m03_m01 = Vector4F_Permute<3,2,3,1>(r0);
-        SimdVector4F const d0z_d0y_d2x_d0x = Vector4F_Permute<2,1,6,4>(d0x_d0y_d0z_d0w, d0x_d0y_d2x_d2x);
+        SimdVector4F const d0x_d0y_d2x_d2x = Vector4F_Permute<0, 1, 4, 4>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
+        SimdVector4F const m12_m13_m11_m12 = Vector4F_Permute<2, 3, 1, 2>(r1);
+        SimdVector4F const d0w_d0x_d0y_d2x = Vector4F_Permute<3, 0, 5, 6>(d0x_d0y_d0z_d0w, d0x_d0y_d2x_d2x);
+        SimdVector4F const m03_m02_m03_m01 = Vector4F_Permute<3, 2, 3, 1>(r0);
+        SimdVector4F const d0z_d0y_d2x_d0x = Vector4F_Permute<2, 1, 6, 4>(d0x_d0y_d0z_d0w, d0x_d0y_d2x_d2x);
 
-        SimdVector4F const d1x_d1y_d2z_d2z = Vector4F_Permute<0,1,6,6>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
-        SimdVector4F const m32_m33_m31_m32 = Vector4F_Permute<2,3,1,2>(r3);
-        SimdVector4F const d1w_d1x_d1y_d2z = Vector4F_Permute<3,0,5,6>(d1x_d1y_d1z_d1w, d1x_d1y_d2z_d2z);
-        SimdVector4F const m23_m22_m23_m21 = Vector4F_Permute<3,2,3,1>(r2);
-        SimdVector4F const d1z_d1y_d2z_d1x = Vector4F_Permute<2,1,6,4>(d1x_d1y_d1z_d1w, d1x_d1y_d2z_d2z);
+        SimdVector4F const d1x_d1y_d2z_d2z = Vector4F_Permute<0, 1, 6, 6>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
+        SimdVector4F const m32_m33_m31_m32 = Vector4F_Permute<2, 3, 1, 2>(r3);
+        SimdVector4F const d1w_d1x_d1y_d2z = Vector4F_Permute<3, 0, 5, 6>(d1x_d1y_d1z_d1w, d1x_d1y_d2z_d2z);
+        SimdVector4F const m23_m22_m23_m21 = Vector4F_Permute<3, 2, 3, 1>(r2);
+        SimdVector4F const d1z_d1y_d2z_d1x = Vector4F_Permute<2, 1, 6, 4>(d1x_d1y_d1z_d1w, d1x_d1y_d2z_d2z);
 
         c0x_c0y_c0z_c0w = Vector4F_NegateMultiplyAdd(m12_m13_m11_m12, d0w_d0x_d0y_d2x, c0x_c0y_c0z_c0w);
         c2x_c2y_c2z_c2w = Vector4F_NegateMultiplyAdd(m03_m02_m03_m01, d0z_d0y_d2x_d0x, c2x_c2y_c2z_c2w);
         c4x_c4y_c4z_c4w = Vector4F_NegateMultiplyAdd(m32_m33_m31_m32, d1w_d1x_d1y_d2z, c4x_c4y_c4z_c4w);
         c6x_c6y_c6z_c6w = Vector4F_NegateMultiplyAdd(m23_m22_m23_m21, d1z_d1y_d2z_d1x, c6x_c6y_c6z_c6w);
 
-        SimdVector4F const m13_m10_m13_m10 = Vector4F_Permute<3,0,3,0>(r1);
-        SimdVector4F const d0z_d0z_d2x_d2y = Vector4F_Permute<2,2,4,5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
-        SimdVector4F const d0z_d2y_d2x_d0z = Vector4F_Permute<0,3,2,0>(d0z_d0z_d2x_d2y);
-        SimdVector4F const m01_m03_m00_m02 = Vector4F_Permute<1,3,0,2>(r0);
-        SimdVector4F const d0x_d0w_d2x_d2y = Vector4F_Permute<0,3,4,5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
-        SimdVector4F const d2y_d0x_d0w_d2x = Vector4F_Permute<3,0,1,2>(d0x_d0w_d2x_d2y);
-        SimdVector4F const m33_m30_m33_m30 = Vector4F_Permute<3,0,3,0>(r3);
-        SimdVector4F const d1z_d1z_d2z_d2w = Vector4F_Permute<2,2,6,7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
-        SimdVector4F const d1z_d2w_d2z_d1z = Vector4F_Permute<0,3,2,0>(d1z_d1z_d2z_d2w);
-        SimdVector4F const m21_m23_m20_m22 = Vector4F_Permute<1,3,0,2>(r2);
-        SimdVector4F const d1x_d1w_d2z_d2w = Vector4F_Permute<0,3,6,7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
-        SimdVector4F const d2w_d1x_d1w_d2z = Vector4F_Permute<3,0,1,2>(d1x_d1w_d2z_d2w);
+        SimdVector4F const m13_m10_m13_m10 = Vector4F_Permute<3, 0, 3, 0>(r1);
+        SimdVector4F const d0z_d0z_d2x_d2y = Vector4F_Permute<2, 2, 4, 5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
+        SimdVector4F const d0z_d2y_d2x_d0z = Vector4F_Permute<0, 3, 2, 0>(d0z_d0z_d2x_d2y);
+        SimdVector4F const m01_m03_m00_m02 = Vector4F_Permute<1, 3, 0, 2>(r0);
+        SimdVector4F const d0x_d0w_d2x_d2y = Vector4F_Permute<0, 3, 4, 5>(d0x_d0y_d0z_d0w, d2x_d2y_d2z_d2w);
+        SimdVector4F const d2y_d0x_d0w_d2x = Vector4F_Permute<3, 0, 1, 2>(d0x_d0w_d2x_d2y);
+        SimdVector4F const m33_m30_m33_m30 = Vector4F_Permute<3, 0, 3, 0>(r3);
+        SimdVector4F const d1z_d1z_d2z_d2w = Vector4F_Permute<2, 2, 6, 7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
+        SimdVector4F const d1z_d2w_d2z_d1z = Vector4F_Permute<0, 3, 2, 0>(d1z_d1z_d2z_d2w);
+        SimdVector4F const m21_m23_m20_m22 = Vector4F_Permute<1, 3, 0, 2>(r2);
+        SimdVector4F const d1x_d1w_d2z_d2w = Vector4F_Permute<0, 3, 6, 7>(d1x_d1y_d1z_d1w, d2x_d2y_d2z_d2w);
+        SimdVector4F const d2w_d1x_d1w_d2z = Vector4F_Permute<3, 0, 1, 2>(d1x_d1w_d2z_d2w);
 
         SimdVector4F const t0 = Vector4F_Multiply(m13_m10_m13_m10, d0z_d2y_d2x_d0z);
         SimdVector4F const t1 = Vector4F_Multiply(m01_m03_m00_m02, d2y_d0x_d0w_d2x);
@@ -3797,6 +3797,56 @@ namespace Anemone::Numerics::Private
 
 namespace Anemone::Numerics::Private
 {
+    inline SimdMask4F anemone_vectorcall RotorF_CompareEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareNotEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsNotEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareNaN(SimdVector4F q)
+    {
+        return Vector4F_CompareNaN(q);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsNaN(SimdVector4F q)
+    {
+        return Vector4F_IsNaN4(q);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareInfinite(SimdVector4F q)
+    {
+        return Vector4F_CompareInfinite(q);
+    }
+
+    inline bool anemone_vectorcall RotorF_IsInfinite(SimdVector4F q)
+    {
+        return Vector4F_IsInfinite4(q);
+    }
+
+    inline SimdMask4F anemone_vectorcall RotorF_CompareIdentity(SimdVector4F q)
+    {
+        return Vector4F_CompareEqual(q, vld1q_f32(F32x4_PositiveUnitW.As<float>()));
+    }
+
+    inline bool anemone_vectorcall RotorF_IsIdentity(SimdVector4F q)
+    {
+        return Vector4F_IsEqual4(q, vld1q_f32(F32x4_PositiveUnitW.As<float>()));
+    }
+
     inline SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar)
     {
         return Vector4F_Create(xy, xz, yz, scalar);
