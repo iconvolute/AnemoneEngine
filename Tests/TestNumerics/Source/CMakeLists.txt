@@ -1,9 +1,10 @@
 target_sources(TestNumerics
     PRIVATE
-        "Vector4F.cxx"
-        "QuaternionF.cxx"
-        "Matrix4x4F.cxx"
-        "Scalar.cxx"
         "Main.cxx"
+        "Matrix4x4F.cxx"
+        "QuaternionF.cxx"
+        "Rect.cxx"
         "RotorF.cxx"
+        "Scalar.cxx"
+        "Vector4F.cxx"
 )
