@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Instant.hxx"
 #include "AnemoneRuntime/Platform/Main.hxx"
+#include "AnemoneRuntime/Instant.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Runtime.hxx"
@@ -10,17 +10,118 @@
 #include <fmt/format.h>
 #include <atomic>
 
+#include "AnemoneRuntime/Unicode.hxx"
+
 AE_DECLARE_PROFILE(Main);
 AE_DECLARE_PROFILE(Outer);
 AE_DECLARE_PROFILE(Inner);
 
+#include "AnemoneRuntime/Numerics/Simd.hxx"
 #include "AnemoneRuntime/Diagnostic/Debug.hxx"
+
+#include "AnemoneRuntime/Math/Types.hxx"
+#include "AnemoneRuntime/Math/Transform2.hxx"
+
+struct VertexPacked
+{
+    Anemone::Math::Packed::Vector3F Position;
+    Anemone::Math::Packed::Vector3F Normal;
+    Anemone::Math::Packed::Vector2F TexCoord;
+};
+static_assert(sizeof(VertexPacked) == (sizeof(float) * 8));
+
+struct VertexAligned
+{
+    Anemone::Math::Aligned::Vector3F Position;
+    Anemone::Math::Aligned::Vector3F Normal;
+    Anemone::Math::Aligned::Vector2F TexCoord;
+};
+static_assert(sizeof(VertexAligned) == (sizeof(float) * 12));
+
+struct VertexNatural
+{
+    Anemone::Math::Vector3F Position;
+    Anemone::Math::Vector3F Normal;
+    Anemone::Math::Vector2F TexCoord;
+};
+
+static_assert(sizeof(VertexNatural) == (sizeof(float) * 12));
+
+anemone_noinline Anemone::Math::Matrix3x2F Too(Anemone::Math::Transform2F const& xform)
+{
+    return ToMatrix3x2(xform);
+}
+
+#include "AnemoneRuntime/App/Application.hxx"
 
 void TestTasking();
 
 int main(int argc, char* argv[])
 {
     Anemone::RuntimeInitializer runtime{argc, argv};
+    Anemone::Math::Matrix3x2F fd = Too({});
+    AE_TRACE(Info, "{}", fd.M12);
+
+    {
+        class App : public Anemone::App::Application
+        {
+        public:
+            bool Closing = false;
+
+        public:
+            void OnWindowClose(Anemone::App::Window& window, Anemone::App::WindowCloseEventArgs& args) override
+            {
+                (void)window;
+                (void)args;
+                this->Closing = true;
+            }
+
+            void OnGamepadButtonDown(Anemone::App::InputDeviceId device, Anemone::App::GamepadButtonEventArgs& args) override
+            {
+                AE_TRACE(Info, "GamepadButtonDown: device={}, button={}", device.Inner, std::to_underlying(args.Button));
+
+                if (args.Button == Anemone::App::GamepadButton::Menu)
+                {
+                    this->Closing = true;
+                }
+            }
+
+            void OnGamepadButtonUp(Anemone::App::InputDeviceId& device, Anemone::App::GamepadButtonEventArgs& args) override
+            {
+                AE_TRACE(Info, "GamepadButtonUp: device={}, button={}", device.Inner, std::to_underlying(args.Button));
+            }
+
+            void OnGamepadAnalog(Anemone::App::InputDeviceId device, Anemone::App::GamepadAnalogEventArgs& args) override
+            {
+                AE_TRACE(Info, "GamepadAnalog: device={}, axis={}, value={}", device.Inner, std::to_underlying(args.Axis), args.Value);
+            }
+
+            void OnCharacterReceived(Anemone::App::Window& window, Anemone::App::CharacterReceivedEventArgs& args) override
+            {
+                (void)window;
+                std::u32string_view sv{&args.Character, 1};
+                std::string u{};
+                Anemone::Unicode::Convert(u, sv, Anemone::Unicode::ConversionType::None);
+                AE_TRACE(Info, "CharacterReceived: codepoint={} ({}), repat={}", static_cast<uint32_t>(args.Character), u, args.Repeat);
+
+                if (args.Character == 'q')
+                {
+                    this->Closing = true;
+                    AE_PANIC("This is not fine");
+                }
+            }
+        };
+
+        App app{};
+
+        auto win = app.MakeWindow(Anemone::App::WindowType::Form);
+        win->SetInputEnabled(true);
+
+        while (not app.Closing)
+        {
+            app.ProcessMessages();
+        }
+    }
 
     auto const& processor = Anemone::System::GetProcessorProperties();
 
@@ -70,12 +171,13 @@ int main(int argc, char* argv[])
                 AE_PROFILE_SCOPE(Inner);
                 Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
 
+                // AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
+
                 TestTasking();
 
-                AE_TRACE(Critical, "Crashed!?");
-                //std::atomic<int>* p = nullptr;
-                //p->store(42);
-                //AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
+                // AE_TRACE(Critical, "Crashed!?");
+                // std::atomic<int>* p = nullptr;
+                // p->store(42);
             }
             Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
         }
