@@ -7,14 +7,6 @@
 
 namespace Anemone::Diagnostic
 {
-    // Rationale:
-    // - UE5 uses `FDebug` class
-    // - O3DE
-    // - POCO uses `Bugcheck` and `Debugger` classes with static methods
-    // - Diligent Core - static class
-    // - Flax Engine - static classes
-    // - wicked engine - namespaces + free functions
-    // - Stroika - namespaces
     enum class AssertAction : uint8_t
     {
         Abort,

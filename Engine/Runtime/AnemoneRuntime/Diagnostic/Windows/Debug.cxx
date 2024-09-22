@@ -117,8 +117,6 @@ namespace Anemone::Diagnostic::Debug
         {
             Threading::SleepThread(Duration::FromMilliseconds(100));
         }
-
-        anemone_debugbreak();
     }
 
     bool AttachDebugger()

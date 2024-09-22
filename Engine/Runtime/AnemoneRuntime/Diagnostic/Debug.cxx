@@ -78,7 +78,7 @@ namespace Anemone::Diagnostic::Debug
         if (GTrace)
             [[likely]]
         {
-            GTrace->WriteLine(TraceLevel::Error, "=== bugcheck ===");
+            GTrace->WriteLine(TraceLevel::Error, "=== panic ===");
             GTrace->WriteLine(TraceLevel::Error, "location: {}:{}", location.file_name(), location.line());
             GTrace->WriteLine(TraceLevel::Error, "message: {}", messageView);
             GTrace->Flush();
