@@ -9,7 +9,7 @@
 
 namespace Anemone::Numerics
 {
-    #if false
+#if false
     using bool32 = uint32_t;
 
     struct Mask1F
@@ -128,7 +128,7 @@ namespace Anemone::Numerics
     {
         //Private::SimdVector4F V;
     };
-    #endif
+#endif
 
     struct FMask2
     {

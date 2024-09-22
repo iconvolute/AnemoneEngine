@@ -3940,7 +3940,7 @@ TEST_CASE("Vector4F_CompareNaN")
     using namespace Catch::Matchers;
 
     {
-        SimdVector4F const v = Vector4F_Create((rand()&1)?std::numeric_limits<float>::quiet_NaN() : 0.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
+        SimdVector4F const v = Vector4F_Create((rand() & 1) ? std::numeric_limits<float>::quiet_NaN() : 0.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
         SimdMask4F const r = Vector4F_CompareNaN(v);
 
         REQUIRE(Mask4F_Extract<0>(r) != 0);

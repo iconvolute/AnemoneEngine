@@ -388,7 +388,7 @@ namespace Anemone::App
     public:
         virtual void OnWindowClose(
             [[maybe_unused]] Window& window,
-            [[maybe_unused]] WindowCloseEventArgs& args){}
+            [[maybe_unused]] WindowCloseEventArgs& args) { }
 
         virtual void OnWindowActivated(
             [[maybe_unused]] Window& window,

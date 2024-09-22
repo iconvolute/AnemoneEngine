@@ -555,8 +555,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             1.0f, 2.0f, 3.0f, 4.0f,
             2.0f, 4.0f, 6.0f, 8.0f,
             0.0f, 0.0f, 1.0f, 0.0f,
-            0.0f, 0.0f, 0.0f, 1.0f
-        };
+            0.0f, 0.0f, 0.0f, 1.0f};
 
         SimdMatrix4x4F const matrix = Matrix4x4F_LoadFloat4x4(source);
 
@@ -601,8 +600,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             1.0f, 2.0f, 0.0f, 0.0f,
             2.0f, 4.0f, 0.0f, 0.0f,
             3.0f, 6.0f, 1.0f, 0.0f,
-            4.0f, 8.0f, 0.0f, 1.0f,
-        };
+            4.0f, 8.0f, 0.0f, 1.0f};
         SimdMatrix4x4F const matrix = Matrix4x4F_LoadFloat4x4(source);
 
         SimdVector4F determinant;
@@ -726,7 +724,6 @@ TEST_CASE("Matrix4x4F_Inverse")
                     CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(0.0f, tolerance));
                     CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
                 }
-
             }
         }
     }

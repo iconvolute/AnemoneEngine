@@ -74,4 +74,3 @@ namespace Anemone::App
         static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
     };
 }
-

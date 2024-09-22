@@ -26,7 +26,7 @@ namespace Anemone::Profiler
     void ProfilerNvidia::EndMarker(ProfilerMarker& marker)
     {
         (void)marker;
-        nvtxRangePop();        
+        nvtxRangePop();
     }
 
     void ProfilerNvidia::Event(ProfilerMarker& marker)
@@ -39,7 +39,7 @@ namespace Anemone::Profiler
         attributes.color = marker.Color();
         attributes.messageType = NVTX_MESSAGE_TYPE_ASCII;
         attributes.message.ascii = marker.Name();
-        nvtxMarkEx(&attributes);        
+        nvtxMarkEx(&attributes);
     }
 }
 

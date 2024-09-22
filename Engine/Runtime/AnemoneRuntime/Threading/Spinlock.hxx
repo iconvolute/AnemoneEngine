@@ -33,9 +33,9 @@ namespace Anemone::Threading
         {
             // test_and_set() returns the previous value of the flag.
             WaitForCompletion([this]
-                {
-                    return !this->_flag.test_and_set(std::memory_order::acquire);
-                });
+            {
+                return !this->_flag.test_and_set(std::memory_order::acquire);
+            });
         }
 
         bool TryEnter()
@@ -91,9 +91,9 @@ namespace Anemone::Threading
                     owner = ThreadId::Invalid();
 
                     WaitForCompletion([&]
-                        {
-                            return this->m_Owner.load(std::memory_order::acquire) == ThreadId::Invalid();
-                        });
+                    {
+                        return this->m_Owner.load(std::memory_order::acquire) == ThreadId::Invalid();
+                    });
                 } while (!this->m_Owner.compare_exchange_weak(owner, id, std::memory_order::acquire));
             }
 

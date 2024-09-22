@@ -19,7 +19,6 @@ namespace Anemone::Numerics
     }
 
 
-
     inline FVector4A anemone_vectorcall FVector4A::Create(float x, float y, float z, float w)
     {
         return FVector4A{Private::Vector4F_Create(x, y, z, w)};

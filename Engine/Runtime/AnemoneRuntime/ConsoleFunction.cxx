@@ -15,17 +15,17 @@ namespace Anemone
     void ConsoleFunctionRegistry::Enumerate(FunctionRef<void(IConsoleFunction&)> callback)
     {
         this->m_functions.ForEach([&callback](IConsoleFunction& function)
-            {
-                callback(function);
-            });
+        {
+            callback(function);
+        });
     }
 
     IConsoleFunction* ConsoleFunctionRegistry::FindByName(std::string_view name) const
     {
         return this->m_functions.Find([&name](IConsoleFunction const& function)
-            {
-                return function.Name() == name;
-            });
+        {
+            return function.Name() == name;
+        });
     }
 
     ConsoleFunctionRegistry& ConsoleFunctionRegistry::Get()

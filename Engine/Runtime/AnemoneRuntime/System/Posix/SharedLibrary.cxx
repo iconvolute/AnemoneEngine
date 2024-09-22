@@ -49,7 +49,7 @@ namespace Anemone::System
         {
             return SharedLibrary{
                 Platform::NativeSharedLibrary{
-                    .Handle = h
+                    .Handle = h,
                 }};
         }
 

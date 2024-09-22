@@ -62,25 +62,25 @@ namespace Anemone::Network
         bool IsAny() const;
         bool IsBroadcast() const;
         bool IsLoopback() const;
-        //bool IsMulticast() const;
-        //bool IsUnicast() const;
-        //bool IsLinkLocal() const;
-        //bool IsSiteLocal() const;
-        //bool IsV4Compatible() const;
-        //bool IsV4Mapped() const;
-        //bool IsWellKnownMulticast() const;
-        //bool IsNodeLocalMulticast() const;
-        //bool IsLinkLocalMulticast() const;
-        //bool IsSiteLocalMulticast() const;
-        //bool IsOrgLocalMulticast() const;
-        //bool IsGlobalMulticast() const;
+        // bool IsMulticast() const;
+        // bool IsUnicast() const;
+        // bool IsLinkLocal() const;
+        // bool IsSiteLocal() const;
+        // bool IsV4Compatible() const;
+        // bool IsV4Mapped() const;
+        // bool IsWellKnownMulticast() const;
+        // bool IsNodeLocalMulticast() const;
+        // bool IsLinkLocalMulticast() const;
+        // bool IsSiteLocalMulticast() const;
+        // bool IsOrgLocalMulticast() const;
+        // bool IsGlobalMulticast() const;
 
-        //IpAddress MapToV4() const;
-        //IpAddress MapToV6() const;
+        // IpAddress MapToV4() const;
+        // IpAddress MapToV6() const;
 
         std::span<std::byte const> ToBytes() const;
         std::span<std::byte> ToBytes();
-        //uint32_t PrefixLength() const;
+        // uint32_t PrefixLength() const;
 
         static IpAddress Mask(const IpAddress& address, const IpAddress& mask);
         static IpAddress Mask(const IpAddress& address, const IpAddress& mask, const IpAddress& set);

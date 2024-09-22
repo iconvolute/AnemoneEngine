@@ -325,7 +325,7 @@ namespace Anemone::Network
         return false;
     }
 
-    IpAddress IpAddress::Any(AddressFamily family) 
+    IpAddress IpAddress::Any(AddressFamily family)
     {
         if (family == AddressFamily::IPv4)
         {
@@ -340,7 +340,7 @@ namespace Anemone::Network
         return {};
     }
 
-    IpAddress IpAddress::Broadcast(AddressFamily family) 
+    IpAddress IpAddress::Broadcast(AddressFamily family)
     {
         if (family == AddressFamily::IPv4)
         {
@@ -350,7 +350,7 @@ namespace Anemone::Network
         return {};
     }
 
-    IpAddress IpAddress::Loopback(AddressFamily family) 
+    IpAddress IpAddress::Loopback(AddressFamily family)
     {
         if (family == AddressFamily::IPv4)
         {
@@ -365,7 +365,7 @@ namespace Anemone::Network
         return {};
     }
 
-    IpAddress IpAddress::None(AddressFamily family) 
+    IpAddress IpAddress::None(AddressFamily family)
     {
         if (family == AddressFamily::IPv4)
         {
@@ -403,7 +403,7 @@ namespace Anemone::Network
 
             if (nativeThis.ScopeId != 0)
             {
-                auto[ptr, ec] = std::to_chars(buffer.data(), buffer.data() + buffer.size(), nativeThis.ScopeId);
+                auto [ptr, ec] = std::to_chars(buffer.data(), buffer.data() + buffer.size(), nativeThis.ScopeId);
 
                 if (ec != std::errc{})
                 {
@@ -447,7 +447,7 @@ namespace Anemone::Network
         if (auto n = s.find_last_of('%'); n != std::string::npos)
         {
             // Parse ScopeId
-            if (auto[ptr, ec] = std::from_chars(s.data() + n + 1, s.data() + s.size(), scope_id); (ec != std::errc{}) or (*ptr != 0))
+            if (auto [ptr, ec] = std::from_chars(s.data() + n + 1, s.data() + s.size(), scope_id); (ec != std::errc{}) or (*ptr != 0))
             {
                 return false;
             }
@@ -493,7 +493,7 @@ namespace Anemone::Network
             if (auto n = s.find_last_of('%'); n != std::string::npos)
             {
                 // Parse ScopeId
-                if (auto[ptr, ec] = std::from_chars(s.data() + n + 1, s.data() + s.size(), nativeResult.ScopeId); (ec != std::errc{}) or (*ptr != 0))
+                if (auto [ptr, ec] = std::from_chars(s.data() + n + 1, s.data() + s.size(), nativeResult.ScopeId); (ec != std::errc{}) or (*ptr != 0))
                 {
                     return false;
                 }

@@ -32,7 +32,7 @@ namespace Anemone::Storage
     inline DataReader& operator>>(DataReader& reader, std::byte& value)
     {
         (void)reader.Read({&value, 1});
-        return reader;        
+        return reader;
     }
 
     inline DataReader& operator>>(DataReader& reader, std::span<std::byte> buffer)

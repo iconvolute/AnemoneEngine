@@ -17,9 +17,9 @@ TEST_CASE("String Split")
             str,
             ',',
             [&result](std::string_view token)
-            {
-                result.push_back(std::string{token});
-            });
+        {
+            result.push_back(std::string{token});
+        });
 
         REQUIRE(result.size() == 2);
         REQUIRE(result[0] == "Hello");
@@ -34,9 +34,9 @@ TEST_CASE("String Split")
             str,
             std::string_view{", "},
             [&result](std::string_view token)
-            {
-                result.push_back(std::string{token});
-            });
+        {
+            result.push_back(std::string{token});
+        });
 
         REQUIRE(result.size() == 2);
         REQUIRE(result[0] == "Hello");

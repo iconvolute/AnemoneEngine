@@ -3333,7 +3333,7 @@ namespace Anemone::Numerics::Private
         __m128 const m30_m30_m31_m31 = _mm_permute_ps(m30_m31_m32_m33, _MM_SHUFFLE(1, 1, 0, 0));
         __m128 const m02_m03_m02_m03 = _mm_permute_ps(m00_m01_m02_m03, _MM_SHUFFLE(3, 2, 3, 2));
         __m128 const m10_m10_m11_m11 = _mm_permute_ps(m10_m11_m12_m13, _MM_SHUFFLE(1, 1, 0, 0));
-        __m128 const m21_m23_m01_m03 = _mm_shuffle_ps(m20_m21_m22_m23, m00_m01_m02_m03, _MM_SHUFFLE(3,1,3,1));
+        __m128 const m21_m23_m01_m03 = _mm_shuffle_ps(m20_m21_m22_m23, m00_m01_m02_m03, _MM_SHUFFLE(3, 1, 3, 1));
         __m128 const m30_m32_m10_m12 = _mm_shuffle_ps(m30_m31_m32_m33, m10_m11_m12_m13, _MM_SHUFFLE(2, 0, 2, 0));
 
         d0x_d0y_d0z_d0w = Vector4F_NegateMultiplyAdd(m22_m23_m22_m23, m30_m30_m31_m31, d0x_d0y_d0z_d0w);

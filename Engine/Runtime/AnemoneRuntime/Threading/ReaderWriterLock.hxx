@@ -51,7 +51,8 @@ namespace Anemone::Threading
         void Leave();
 
         template <typename F>
-        auto With(F&& f) -> std::invoke_result_t<F&&> {
+        auto With(F&& f) -> std::invoke_result_t<F&&>
+        {
             UniqueLock lock{*this};
             return std::forward<F>(f)();
         }

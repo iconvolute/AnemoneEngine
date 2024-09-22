@@ -54,18 +54,18 @@ namespace Anemone
         static constexpr Delegate FromFunction()
         {
             return Delegate{nullptr, [](void*, Ts... args)
-                {
-                    return FunctionT(args...);
-                }};
+            {
+                return FunctionT(args...);
+            }};
         }
 
         template <auto Method, typename Self>
         static constexpr Delegate FromMethod(Self* self)
         {
             return Delegate{self, [](void* object, Ts... args)
-                {
-                    return (static_cast<Self*>(object)->*Method)(args...);
-                }};
+            {
+                return (static_cast<Self*>(object)->*Method)(args...);
+            }};
         }
 
         template <typename Lambda>
@@ -73,9 +73,9 @@ namespace Anemone
         {
             return Delegate{
                 &lambda, [](void* object, Ts... args)
-                {
-                    return (*static_cast<Lambda*>(object))(args...);
-                }};
+            {
+                return (*static_cast<Lambda*>(object))(args...);
+            }};
         }
     };
 }

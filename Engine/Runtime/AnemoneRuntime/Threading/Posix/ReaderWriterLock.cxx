@@ -98,7 +98,7 @@ namespace Anemone::Threading
     {
         Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
 
-        if (int const rc  = pthread_rwlock_unlock(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_unlock(&nativeThis.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }

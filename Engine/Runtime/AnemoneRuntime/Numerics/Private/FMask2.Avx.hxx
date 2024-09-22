@@ -71,7 +71,7 @@ namespace Anemone::Numerics
     template <bool X, bool Y>
     FMask2A anemone_vectorcall Select(FMask2A whenFalse, FMask2A whenTrue)
     {
-        return FMask2A{Private::Mask4F_Select<X,Y,X,Y>(whenFalse.Inner, whenTrue.Inner)};
+        return FMask2A{Private::Mask4F_Select<X, Y, X, Y>(whenFalse.Inner, whenTrue.Inner)};
     }
 
     inline bool anemone_vectorcall All(FMask2A a)

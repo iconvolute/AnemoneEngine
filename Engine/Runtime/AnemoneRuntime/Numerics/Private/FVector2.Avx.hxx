@@ -375,17 +375,17 @@ namespace Anemone::Numerics
 
     inline FVector2A anemone_vectorcall Acos(FVector2A v)
     {
-                return FVector2A{Private::Vector4F_Acos(v.Inner)};
+        return FVector2A{Private::Vector4F_Acos(v.Inner)};
     }
 
     inline FVector2A anemone_vectorcall Atan(FVector2A v)
     {
-                return FVector2A{Private::Vector4F_Atan(v.Inner)};
+        return FVector2A{Private::Vector4F_Atan(v.Inner)};
     }
 
     inline FVector2A anemone_vectorcall Atan2(FVector2A y, FVector2A x)
     {
-                        return FVector2A{Private::Vector4F_Atan2(y.Inner, x.Inner)};
+        return FVector2A{Private::Vector4F_Atan2(y.Inner, x.Inner)};
     }
 }
 

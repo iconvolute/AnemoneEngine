@@ -289,13 +289,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-    while (not ::IsDebuggerPresent())
-    {
-        Sleep(100);
-    }
-
-    __debugbreak();
-
     if (FAILED(SuspendAllThreadsExcept(*options.ProcessId, *options.ThreadId)))
     {
         std::println(stderr, "Failed to suspend threads: {}", GetLastError());

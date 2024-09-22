@@ -109,7 +109,7 @@ TEST_CASE("MPMC Queue - Multiple Threads")
                 }
                 else
                 {
-                    //Yield(ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor);
+                    // Yield(ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor);
                 }
 
             } while (true);
@@ -142,7 +142,7 @@ TEST_CASE("MPMC Queue - Multiple Threads")
                 }
                 else
                 {
-                    //Sleep(Duration::FromMilliseconds(50));
+                    // Sleep(Duration::FromMilliseconds(50));
                 }
             }
         }

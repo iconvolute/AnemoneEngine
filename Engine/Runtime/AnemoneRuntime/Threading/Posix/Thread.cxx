@@ -10,19 +10,19 @@ namespace Anemone::Threading::Private
     {
         switch (priority)
         {
-            case ThreadPriority::TimeCritical:
-            case ThreadPriority::Highest:
-                return 30;
-            case ThreadPriority::AboveNormal:
-                return 25;
-            case ThreadPriority::Normal:
-                return 15;
-            case ThreadPriority::BelowNormal:
-                return 5;
-            case ThreadPriority::Lower:
-                return 14;
-            case ThreadPriority::Lowest:
-                return 1;
+        case ThreadPriority::TimeCritical:
+        case ThreadPriority::Highest:
+            return 30;
+        case ThreadPriority::AboveNormal:
+            return 25;
+        case ThreadPriority::Normal:
+            return 15;
+        case ThreadPriority::BelowNormal:
+            return 5;
+        case ThreadPriority::Lower:
+            return 14;
+        case ThreadPriority::Lowest:
+            return 1;
         }
 
         return 5;

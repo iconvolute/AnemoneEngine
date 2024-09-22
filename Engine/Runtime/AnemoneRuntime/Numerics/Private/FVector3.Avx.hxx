@@ -171,7 +171,7 @@ namespace Anemone::Numerics
 
     inline FVector3A anemone_vectorcall InverseRotate(FQuaternionA q, FVector3A v)
     {
-        return FVector3A{Private::QuaternionF_InverseRotate3(q.Inner,v.Inner)};
+        return FVector3A{Private::QuaternionF_InverseRotate3(q.Inner, v.Inner)};
     }
 
     inline FVector3A anemone_vectorcall Transform(FVector3A v, FMatrix4x4A m)
@@ -412,7 +412,7 @@ namespace Anemone::Numerics
 
     inline FVector3A anemone_vectorcall Atan2(FVector3A y, FVector3A x)
     {
-                return FVector3A{Private::Vector4F_Atan2(y.Inner, x.Inner)};
+        return FVector3A{Private::Vector4F_Atan2(y.Inner, x.Inner)};
     }
 }
 

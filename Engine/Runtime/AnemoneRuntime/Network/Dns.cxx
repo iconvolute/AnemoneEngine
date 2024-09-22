@@ -166,6 +166,6 @@ namespace Anemone::Network
 
 #else
 
-//#error "Not implemented"
+// #error "Not implemented"
 
 #endif

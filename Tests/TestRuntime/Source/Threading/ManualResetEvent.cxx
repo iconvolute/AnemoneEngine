@@ -34,6 +34,7 @@ TEST_CASE("Threading / ManualResetEvent")
         ManualResetEventSlim BeforeWait;
         ManualResetEventSlim MiddleWait;
         ManualResetEventSlim AfterWait;
+
     protected:
         void OnRun() override
         {

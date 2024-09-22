@@ -81,7 +81,7 @@ namespace Anemone::System
 
         uint32_t CacheLineSize{};
 
-        std::string Name;    // NOTE: Do we really need this?
+        std::string Name; // NOTE: Do we really need this?
         std::string Vendor;
     };
 

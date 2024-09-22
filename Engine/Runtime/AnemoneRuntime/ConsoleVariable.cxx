@@ -15,17 +15,17 @@ namespace Anemone
     void ConsoleVariableRegistry::Enumerate(FunctionRef<void(IConsoleVariable&)> callback)
     {
         this->m_variables.ForEach([&callback](IConsoleVariable& variable)
-            {
-                callback(variable);
-            });
+        {
+            callback(variable);
+        });
     }
 
     IConsoleVariable* ConsoleVariableRegistry::FindByName(std::string_view name) const
     {
         return this->m_variables.Find([&name](IConsoleVariable const& variable)
-            {
-                return variable.Name() == name;
-            });
+        {
+            return variable.Name() == name;
+        });
     }
 
     ConsoleVariableRegistry& ConsoleVariableRegistry::Get()

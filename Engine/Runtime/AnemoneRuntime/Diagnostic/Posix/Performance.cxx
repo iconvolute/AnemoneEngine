@@ -10,15 +10,11 @@ namespace Anemone::Diagnostic
     MemoryProperties GetMemoryProperties()
     {
         // Get memory properties
-        struct sysinfo info
-        {
-        };
+        struct sysinfo info{};
 
         sysinfo(&info);
         // Get address space limits
-        struct rlimit64 limits
-        {
-        };
+        struct rlimit64 limits{};
 
         getrlimit64(RLIMIT_AS, &limits);
 

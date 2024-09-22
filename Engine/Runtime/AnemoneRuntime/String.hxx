@@ -157,10 +157,9 @@ namespace Anemone
         std::vector<std::basic_string<CharT>> result{};
 
         Split([&](std::basic_string_view<CharT> part)
-            {
-                result.emplace_back(part);
-            },
-            value, separator, removeEmpty);
+        {
+            result.emplace_back(part);
+        }, value, separator, removeEmpty);
 
         return result;
     }
@@ -174,10 +173,9 @@ namespace Anemone
         std::vector<std::basic_string<CharT>> result{};
 
         Split([&](std::basic_string_view<CharT> part)
-            {
-                result.emplace_back(part);
-            },
-            value, separators, removeEmpty);
+        {
+            result.emplace_back(part);
+        }, value, separators, removeEmpty);
 
         return result;
     }

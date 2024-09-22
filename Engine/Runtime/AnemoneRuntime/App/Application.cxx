@@ -17,7 +17,7 @@ namespace Anemone::App
         GCurrent = nullptr;
     }
 
-    
+
     void Application::AddWindow(Window& window)
     {
         this->m_windows.PushBack(&window);

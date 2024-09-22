@@ -184,7 +184,6 @@ namespace Anemone::System
         {
             environment.StartupTime = DateTime::Now();
         }
-
     }
 
     static void InitializeProcessorProperties(ProcessorProperties& properties)

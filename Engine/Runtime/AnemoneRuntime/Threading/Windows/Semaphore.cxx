@@ -12,10 +12,10 @@ namespace Anemone::Threading
         Platform::NativeSemaphore& nativeThis = Platform::Create(this->_native);
 
         nativeThis.Inner = CreateSemaphoreW(
-                nullptr,
-                initialCount,
-                maxCount,
-                nullptr);
+            nullptr,
+            initialCount,
+            maxCount,
+            nullptr);
     }
 
     Semaphore::~Semaphore()

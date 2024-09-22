@@ -64,7 +64,7 @@ namespace Anemone::Network
                 return true;
             }
 
-            auto[ptr, ec] = std::from_chars(value.data() + address_length + 1, value.data() + value.size(), port);
+            auto [ptr, ec] = std::from_chars(value.data() + address_length + 1, value.data() + value.size(), port);
 
             if ((ec != std::errc()) or (*ptr != '\0') or (port > 65535))
             {

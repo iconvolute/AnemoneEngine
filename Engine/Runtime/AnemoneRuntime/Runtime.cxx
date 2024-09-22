@@ -10,8 +10,12 @@
 
 namespace Anemone
 {
-    struct RuntimeInitializeContext{ };
-    struct RuntimeFinalizeContext{ };
+    struct RuntimeInitializeContext
+    {
+    };
+    struct RuntimeFinalizeContext
+    {
+    };
 
     void InitializeRuntime(int argc, char* argv[])
     {

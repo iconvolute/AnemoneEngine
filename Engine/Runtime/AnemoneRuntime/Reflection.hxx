@@ -239,9 +239,9 @@ namespace Anemone::Reflection
         PropertyDescriptor* GetProperty(MemberId name, TypeId type)
         {
             auto it = std::find_if(this->_properties.begin(), this->_properties.end(), [name, type](PropertyDescriptor const& descriptor)
-                {
-                    return (descriptor.Name == name) and (descriptor.Type == type);
-                });
+            {
+                return (descriptor.Name == name) and (descriptor.Type == type);
+            });
 
             if (it != this->_properties.end())
             {
@@ -254,9 +254,9 @@ namespace Anemone::Reflection
         PropertyDescriptor* GetProperty(MemberId name)
         {
             auto it = std::find_if(this->_properties.begin(), this->_properties.end(), [name](PropertyDescriptor const& descriptor)
-                {
-                    return descriptor.Name == name;
-                });
+            {
+                return descriptor.Name == name;
+            });
 
             if (it != this->_properties.end())
             {
@@ -280,9 +280,9 @@ namespace Anemone::Reflection
         EventHandlerDescriptor* GetEventHandler(MemberId name, TypeId type)
         {
             auto it = std::find_if(this->_event_handlers.begin(), this->_event_handlers.end(), [name, type](EventHandlerDescriptor const& descriptor)
-                {
-                    return (descriptor.Name == name) and (descriptor.Type == type);
-                });
+            {
+                return (descriptor.Name == name) and (descriptor.Type == type);
+            });
 
             if (it != this->_event_handlers.end())
             {
@@ -295,9 +295,9 @@ namespace Anemone::Reflection
         EventHandlerDescriptor* GetEventHandler(MemberId name)
         {
             auto it = std::find_if(this->_event_handlers.begin(), this->_event_handlers.end(), [name](EventHandlerDescriptor const& descriptor)
-                {
-                    return descriptor.Name == name;
-                });
+            {
+                return descriptor.Name == name;
+            });
 
             if (it != this->_event_handlers.end())
             {

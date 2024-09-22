@@ -13,8 +13,7 @@ namespace Anemone
     {
     private:
         void* m_Instance{};
-        R (*m_Function)
-        (void*, ArgsT...) = nullptr;
+        R (*m_Function)(void*, ArgsT...) = nullptr;
 
     public:
         constexpr FunctionRef() noexcept = default;

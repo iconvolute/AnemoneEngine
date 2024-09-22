@@ -45,7 +45,7 @@ namespace Anemone::Platform
         DWORD Id;
     };
 
-        struct NativeSharedLibrary final
+    struct NativeSharedLibrary final
     {
         HMODULE Handle;
     };

@@ -127,10 +127,10 @@ namespace Anemone::System
                 break;
             }
 
-            //if ((path.compare(0, 2, "..") == 0) or (path.compare(0, parent.length(), parent) == 0))
+            // if ((path.compare(0, 2, "..") == 0) or (path.compare(0, parent.length(), parent) == 0))
             //{
-            //    return;
-            //}
+            //     return;
+            // }
 
             std::string::size_type const index = path.find(parent);
 

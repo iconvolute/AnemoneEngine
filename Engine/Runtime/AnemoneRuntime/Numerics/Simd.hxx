@@ -181,7 +181,7 @@ namespace Anemone::Numerics::Private
 
     template <size_t N>
     SimdVector4F anemone_vectorcall Vector4F_Broadcast(SimdVector4F v)
-            requires(N < 4);
+        requires(N < 4);
 
     template <size_t X, size_t Y, size_t Z, size_t W>
     SimdVector4F anemone_vectorcall Vector4F_Permute(SimdVector4F v)
@@ -579,7 +579,8 @@ namespace Anemone::Numerics::Private
 // VVV Inlined functions without prototypes VVV
 namespace Anemone::Numerics::Private
 {
-    struct Bezier4FA {
+    struct Bezier4FA
+    {
         SimdVector4F Point0;
         SimdVector4F Point1;
         SimdVector4F Point2;

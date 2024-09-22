@@ -414,7 +414,7 @@ namespace Anemone
             return *this % UInt128{0, right};
         }
 
-        public:
+    public:
         [[nodiscard]] static constexpr UInt128 BitCompl(UInt128 value)
         {
             return UInt128{
@@ -550,7 +550,7 @@ namespace Anemone
             return BitXor(*this, right);
         }
 
-            static inline constexpr signed char g_character_to_digit_mapping[] = {
+        static inline constexpr signed char g_character_to_digit_mapping[] = {
             // clang-format off
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
             -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,
@@ -738,7 +738,6 @@ namespace Anemone
 
             return UInt128{0, static_cast<uint64_t>(value)};
         }
-
     };
 }
 

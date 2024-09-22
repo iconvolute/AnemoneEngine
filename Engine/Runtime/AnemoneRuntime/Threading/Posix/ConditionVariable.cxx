@@ -33,8 +33,8 @@ namespace Anemone::Threading
         Platform::NativeCriticalSection& nativeLock = Platform::Get(lock._native);
 
         int const rc = pthread_cond_wait(
-                &nativeThis.Inner,
-                &nativeLock.Inner);
+            &nativeThis.Inner,
+            &nativeLock.Inner);
 
         if (rc != 0)
         {
@@ -52,9 +52,9 @@ namespace Anemone::Threading
         Platform::posix_ValidateTimeout(ts, timeout);
 
         int const rc = pthread_cond_timedwait(
-                &nativeThis.Inner,
-                &nativeLock.Inner,
-                &ts);
+            &nativeThis.Inner,
+            &nativeLock.Inner,
+            &ts);
 
         if (rc == ETIMEDOUT)
         {

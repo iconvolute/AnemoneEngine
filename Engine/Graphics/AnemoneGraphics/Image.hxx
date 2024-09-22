@@ -102,8 +102,8 @@ namespace Anemone::Graphics
         size_t const block_size = GetBlockSize(format);
         if (block_size != 0)
         {
-            size_t const blocks_horz = Bitwise::AlignUp<size_t >(width, 4) / 4;
-            size_t const blocks_vert = Bitwise::AlignUp<size_t >(height, 4) / 4;
+            size_t const blocks_horz = Bitwise::AlignUp<size_t>(width, 4) / 4;
+            size_t const blocks_vert = Bitwise::AlignUp<size_t>(height, 4) / 4;
             size_t const blocks_count = blocks_horz * blocks_vert;
             return blocks_count * block_size * depth;
         }
