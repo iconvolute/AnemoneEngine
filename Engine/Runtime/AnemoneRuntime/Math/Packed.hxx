@@ -200,6 +200,26 @@ namespace Anemone::Math::Packed
         Vector3D Extents;
     };
 
+    struct BoundingFrustumF
+    {
+        PlaneF Near;
+        PlaneF Far;
+        PlaneF Left;
+        PlaneF Right;
+        PlaneF Top;
+        PlaneF Bottom;
+    };
+
+    struct BoundingFrustumD
+    {
+        PlaneD Near;
+        PlaneD Far;
+        PlaneD Left;
+        PlaneD Right;
+        PlaneD Top;
+        PlaneD Bottom;
+    };
+
     struct Matrix4x4F
     {
         float M11, M12, M13, M14;

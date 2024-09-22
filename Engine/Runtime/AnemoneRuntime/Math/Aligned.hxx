@@ -200,6 +200,26 @@ namespace Anemone::Math::Aligned
         Vector3D Extents;
     };
 
+    struct alignas(16) BoundingFrustumF
+    {
+        PlaneF Near;
+        PlaneF Far;
+        PlaneF Left;
+        PlaneF Right;
+        PlaneF Top;
+        PlaneF Bottom;
+    };
+
+    struct alignas(32) BoundingFrustumD
+    {
+        PlaneD Near;
+        PlaneD Far;
+        PlaneD Left;
+        PlaneD Right;
+        PlaneD Top;
+        PlaneD Bottom;
+    };
+
     struct alignas(16) Matrix4x4F
     {
         float M11, M12, M13, M14;
