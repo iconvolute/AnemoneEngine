@@ -142,6 +142,26 @@ namespace Anemone::Numerics::Private
         return _mm_setzero_ps();
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_NaN()
+    {
+        return _mm_load_ps(F32x4_PositiveQNaN_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_PositiveInfinity()
+    {
+        return _mm_load_ps(F32x4_PositiveInfinity_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_NegativeInfinity()
+    {
+        return _mm_load_ps(F32x4_NegativeInfinity_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Epsilon()
+    {
+        return _mm_load_ps(F32x4_Epsilon_XXXX.As<float>());
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_PositiveUnitX()
     {
         return _mm_load_ps(F32x4_PositiveUnitX.As<float>());
@@ -1404,6 +1424,42 @@ namespace Anemone::Numerics::Private
         return _mm_sqrt_ps(dot);
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength4(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared4(v);
+        return Vector4F_ReciprocalSquareRoot(lengthSquared);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength3(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared3(v);
+        return Vector4F_ReciprocalSquareRoot(lengthSquared);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength2(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared2(v);
+        return Vector4F_ReciprocalSquareRoot(lengthSquared);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst4(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared4(v);
+        return Vector4F_ReciprocalSquareRootEst(lengthSquared);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst3(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared3(v);
+        return Vector4F_ReciprocalSquareRootEst(lengthSquared);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst2(SimdVector4F v)
+    {
+        __m128 const lengthSquared = Vector4F_LengthSquared2(v);
+        return Vector4F_ReciprocalSquareRootEst(lengthSquared);
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Normalize4(SimdVector4F v)
     {
         __m128 const length_squared = Vector4F_Dot4(v, v);
@@ -1641,6 +1697,20 @@ namespace Anemone::Numerics::Private
         return Vector4F_Refract2(incident, normal, _mm_set1_ps(index));
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform4(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        __m128 const v_xxxx = _mm_permute_ps(v, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 const v_yyyy = _mm_permute_ps(v, _MM_SHUFFLE(1, 1, 1, 1));
+        __m128 const v_zzzz = _mm_permute_ps(v, _MM_SHUFFLE(2, 2, 2, 2));
+        __m128 const v_wwww = _mm_permute_ps(v, _MM_SHUFFLE(3, 3, 3, 3));
+
+        __m128 r = Vector4F_Multiply(v_wwww, m.Inner[3]);
+        r = Vector4F_MultiplyAdd(v_zzzz, m.Inner[2], r);
+        r = Vector4F_MultiplyAdd(v_yyyy, m.Inner[1], r);
+        r = Vector4F_MultiplyAdd(v_xxxx, m.Inner[0], r);
+        return r;
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Transform3(SimdVector4F v, SimdMatrix4x4F m)
     {
         __m128 const v_xxxx = _mm_permute_ps(v, _MM_SHUFFLE(0, 0, 0, 0));
@@ -1649,6 +1719,16 @@ namespace Anemone::Numerics::Private
 
         __m128 r = Vector4F_MultiplyAdd(v_zzzz, m.Inner[2], m.Inner[3]);
         r = Vector4F_MultiplyAdd(v_yyyy, m.Inner[1], r);
+        r = Vector4F_MultiplyAdd(v_xxxx, m.Inner[0], r);
+        return r;
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform2(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        __m128 const v_xxxx = _mm_permute_ps(v, _MM_SHUFFLE(0, 0, 0, 0));
+        __m128 const v_yyyy = _mm_permute_ps(v, _MM_SHUFFLE(1, 1, 1, 1));
+
+        __m128 r = Vector4F_MultiplyAdd(v_yyyy, m.Inner[1], m.Inner[3]);
         r = Vector4F_MultiplyAdd(v_xxxx, m.Inner[0], r);
         return r;
     }

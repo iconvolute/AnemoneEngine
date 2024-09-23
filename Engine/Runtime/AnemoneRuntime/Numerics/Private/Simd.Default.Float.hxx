@@ -172,6 +172,46 @@ namespace Anemone::Numerics::Private
         };
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_NaN()
+    {
+        return SimdVector4F{
+            std::bit_cast<float>(F32x4_PositiveQNaN_XXXX.Elements[0]),
+            std::bit_cast<float>(F32x4_PositiveQNaN_XXXX.Elements[1]),
+            std::bit_cast<float>(F32x4_PositiveQNaN_XXXX.Elements[2]),
+            std::bit_cast<float>(F32x4_PositiveQNaN_XXXX.Elements[3]),
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_PositiveInfinity()
+    {
+        return SimdVector4F{
+            std::bit_cast<float>(F32x4_PositiveInfinity_XXXX.Elements[0]),
+            std::bit_cast<float>(F32x4_PositiveInfinity_XXXX.Elements[1]),
+            std::bit_cast<float>(F32x4_PositiveInfinity_XXXX.Elements[2]),
+            std::bit_cast<float>(F32x4_PositiveInfinity_XXXX.Elements[3]),
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_NegativeInfinity()
+    {
+        return SimdVector4F{
+            std::bit_cast<float>(F32x4_NegativeInfinity_XXXX.Elements[0]),
+            std::bit_cast<float>(F32x4_NegativeInfinity_XXXX.Elements[1]),
+            std::bit_cast<float>(F32x4_NegativeInfinity_XXXX.Elements[2]),
+            std::bit_cast<float>(F32x4_NegativeInfinity_XXXX.Elements[3]),
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Epsilon()
+    {
+        return SimdVector4F{
+            F32x4_Epsilon_XXXX.Elements[0],
+            F32x4_Epsilon_XXXX.Elements[1],
+            F32x4_Epsilon_XXXX.Elements[2],
+            F32x4_Epsilon_XXXX.Elements[3],
+        };
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_PositiveUnitX()
     {
         return SimdVector4F{
@@ -1362,6 +1402,84 @@ namespace Anemone::Numerics::Private
         };
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength4(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]) + (v.Inner[2] * v.Inner[2]) + (v.Inner[3] * v.Inner[3]);
+        float const result = ReciprocalSqrt<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength3(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]) + (v.Inner[2] * v.Inner[2]);
+        float const result = ReciprocalSqrt<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength2(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]);
+        float const result = ReciprocalSqrt<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst4(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]) + (v.Inner[2] * v.Inner[2]) + (v.Inner[3] * v.Inner[3]);
+        float const result = ReciprocalSqrtEst<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst3(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]) + (v.Inner[2] * v.Inner[2]);
+        float const result = ReciprocalSqrtEst<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst2(SimdVector4F v)
+    {
+        float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]);
+        float const result = ReciprocalSqrtEst<float>(lengthSquared);
+
+        return SimdVector4F{
+            result,
+            result,
+            result,
+            result,
+        };
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Normalize4(SimdVector4F v)
     {
         float const lengthSquared = (v.Inner[0] * v.Inner[0]) + (v.Inner[1] * v.Inner[1]) + (v.Inner[2] * v.Inner[2]) + (v.Inner[3] * v.Inner[3]);
@@ -1590,14 +1708,40 @@ namespace Anemone::Numerics::Private
         return Vector4F_Refract2(incident, normal, SimdVector4F{index, index, index, index});
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform4(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        SimdVector4F const vXXXX = Vector4F_Broadcast<0>(v);
+        SimdVector4F const vYYYY = Vector4F_Broadcast<1>(v);
+        SimdVector4F const vZZZZ = Vector4F_Broadcast<2>(v);
+        SimdVector4F const vWWWW = Vector4F_Broadcast<3>(v);
+
+        SimdVector4F r = Vector4F_Multiply(vWWWW, m.Inner[3]);
+        r = Vector4F_MultiplyAdd(vZZZZ, m.Inner[2], r);
+        r = Vector4F_MultiplyAdd(vYYYY, m.Inner[1], r);
+        r = Vector4F_MultiplyAdd(vXXXX, m.Inner[0], r);
+        return r;
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Transform3(SimdVector4F v, SimdMatrix4x4F m)
     {
-        return SimdVector4F{
-            (v.Inner[0] * m.Inner[0].Inner[0]) + (v.Inner[1] * m.Inner[1].Inner[0]) + (v.Inner[2] * m.Inner[2].Inner[0] + m.Inner[3].Inner[0]),
-            (v.Inner[0] * m.Inner[0].Inner[1]) + (v.Inner[1] * m.Inner[1].Inner[1]) + (v.Inner[2] * m.Inner[2].Inner[1] + m.Inner[3].Inner[1]),
-            (v.Inner[0] * m.Inner[0].Inner[2]) + (v.Inner[1] * m.Inner[1].Inner[2]) + (v.Inner[2] * m.Inner[2].Inner[2] + m.Inner[3].Inner[2]),
-            (v.Inner[0] * m.Inner[0].Inner[3]) + (v.Inner[1] * m.Inner[1].Inner[3]) + (v.Inner[2] * m.Inner[2].Inner[3] + m.Inner[3].Inner[3]),
-        };
+        SimdVector4F const vXXXX = Vector4F_Broadcast<0>(v);
+        SimdVector4F const vYYYY = Vector4F_Broadcast<1>(v);
+        SimdVector4F const vZZZZ = Vector4F_Broadcast<2>(v);
+
+        SimdVector4F r = Vector4F_MultiplyAdd(vZZZZ, m.Inner[2], m.Inner[3]);
+        r = Vector4F_MultiplyAdd(vYYYY, m.Inner[1], r);
+        r = Vector4F_MultiplyAdd(vXXXX, m.Inner[0], r);
+        return r;
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform2(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        SimdVector4F const vXXXX = Vector4F_Broadcast<0>(v);
+        SimdVector4F const vYYYY = Vector4F_Broadcast<1>(v);
+
+        SimdVector4F r = Vector4F_MultiplyAdd(vYYYY, m.Inner[1], m.Inner[3]);
+        r = Vector4F_MultiplyAdd(vXXXX, m.Inner[0], r);
+        return r;
     }
 
     inline SimdMask4F anemone_vectorcall Vector4F_CompareEqual(SimdVector4F a, SimdVector4F b)

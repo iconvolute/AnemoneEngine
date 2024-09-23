@@ -161,6 +161,10 @@ namespace Anemone::Numerics::Private
     SimdVector4F anemone_vectorcall Vector4F_Create(float x, float y, float z, float w);
     SimdVector4F anemone_vectorcall Vector4F_Replicate(float f);
     SimdVector4F anemone_vectorcall Vector4F_Zero();
+    SimdVector4F anemone_vectorcall Vector4F_NaN();
+    SimdVector4F anemone_vectorcall Vector4F_PositiveInfinity();
+    SimdVector4F anemone_vectorcall Vector4F_NegativeInfinity();
+    SimdVector4F anemone_vectorcall Vector4F_Epsilon();
 
     SimdVector4F anemone_vectorcall Vector4F_PositiveUnitX();
     SimdVector4F anemone_vectorcall Vector4F_PositiveUnitY();
@@ -303,6 +307,12 @@ namespace Anemone::Numerics::Private
     SimdVector4F anemone_vectorcall Vector4F_Length4(SimdVector4F v);
     SimdVector4F anemone_vectorcall Vector4F_Length3(SimdVector4F v);
     SimdVector4F anemone_vectorcall Vector4F_Length2(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength4(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength3(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength2(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst4(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst3(SimdVector4F v);
+    SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst2(SimdVector4F v);
     SimdVector4F anemone_vectorcall Vector4F_Normalize4(SimdVector4F v);
     SimdVector4F anemone_vectorcall Vector4F_Normalize3(SimdVector4F v);
     SimdVector4F anemone_vectorcall Vector4F_Normalize2(SimdVector4F v);
@@ -320,7 +330,9 @@ namespace Anemone::Numerics::Private
     SimdVector4F anemone_vectorcall Vector4F_Refract3(SimdVector4F incident, SimdVector4F normal, float index);
     SimdVector4F anemone_vectorcall Vector4F_Refract2(SimdVector4F incident, SimdVector4F normal, float index);
 
+    SimdVector4F anemone_vectorcall Vector4F_Transform4(SimdVector4F v, SimdMatrix4x4F m);
     SimdVector4F anemone_vectorcall Vector4F_Transform3(SimdVector4F v, SimdMatrix4x4F m);
+    SimdVector4F anemone_vectorcall Vector4F_Transform2(SimdVector4F v, SimdMatrix4x4F m);
 
     SimdMask4F anemone_vectorcall Vector4F_CompareEqual(SimdVector4F a, SimdVector4F b);
     bool anemone_vectorcall Vector4F_IsEqual4(SimdVector4F a, SimdVector4F b);
@@ -465,6 +477,9 @@ namespace Anemone::Numerics::Private
 
     SimdVector4F anemone_vectorcall QuaternionF_Slerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
     SimdVector4F anemone_vectorcall QuaternionF_Slerp(SimdVector4F from, SimdVector4F to, float t);
+
+    // SimdVector4F anemone_vectorcall QuaternionF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, SimdVector4F u, SimdVector4F v);
+    // SimdVector4F anemone_vectorcall QuaternionF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, float u, float v);
 }
 
 // Matrix functions
@@ -585,6 +600,128 @@ namespace Anemone::Numerics::Private
 
     SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
     SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, float t);
+
+    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, SimdVector4F u, SimdVector4F v);
+    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, float u, float v);
+}
+
+// Plane functions.
+namespace Anemone::Numerics::Private
+{
+    inline SimdMask4F anemone_vectorcall PlaneF_CompareEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall PlaneF_IsEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall PlaneF_CompareNearEqual(SimdVector4F a, SimdVector4F b, SimdVector4F tolerance)
+    {
+        return Vector4F_CompareNearEqual(a, b, tolerance);
+    }
+
+    inline SimdMask4F anemone_vectorcall PlaneF_CompareNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_CompareNotEqual(a, b);
+    }
+
+    inline bool anemone_vectorcall PlaneF_IsNotEqual(SimdVector4F a, SimdVector4F b)
+    {
+        return Vector4F_IsNotEqual4(a, b);
+    }
+
+    inline SimdMask4F anemone_vectorcall PlaneF_CompareNaN(SimdVector4F q)
+    {
+        return Vector4F_CompareNaN(q);
+    }
+
+    inline bool anemone_vectorcall PlaneF_IsNaN(SimdVector4F q)
+    {
+        return Vector4F_IsNaN4(q);
+    }
+
+    inline SimdMask4F anemone_vectorcall PlaneF_CompareInfinite(SimdVector4F q)
+    {
+        return Vector4F_CompareInfinite(q);
+    }
+
+    inline bool anemone_vectorcall PlaneF_IsInfinite(SimdVector4F q)
+    {
+        return Vector4F_IsInfinite4(q);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_Create(float a, float b, float c, float d)
+    {
+        return Vector4F_Create(a, b, c, d);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_Dot(SimdVector4F plane, SimdVector4F point)
+    {
+        return Vector4F_Dot4(plane, point);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_DotCoord(SimdVector4F plane, SimdVector4F point)
+    {
+        SimdVector4F const p = Vector4F_Insert<3>(point, 1.0f);
+        return Vector4F_Dot4(plane, p);
+
+    }
+    inline SimdVector4F anemone_vectorcall PlaneF_DotNormal(SimdVector4F plane, SimdVector4F point)
+    {
+        return Vector4F_Dot3(plane, point);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_Normalize(SimdVector4F plane)
+    {
+        SimdVector4F const length = Vector4F_ReciprocalLength3(plane);
+        return Vector4F_Multiply(plane, length);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_IntersectLine(SimdVector4F plane, SimdVector4F linePoint1, SimdVector4F linePoint2)
+    {
+        SimdVector4F const v1 = Vector4F_Dot3(plane, linePoint1);
+        SimdVector4F const v2 = Vector4F_Dot3(plane, linePoint2);
+        SimdVector4F const d = Vector4F_Subtract(v1, v2);
+        SimdVector4F const t = Vector4F_Divide(PlaneF_DotCoord(plane, linePoint1), d);
+
+        SimdVector4F point = Vector4F_Subtract(linePoint2, linePoint1);
+        point = Vector4F_MultiplyAdd(point, t, linePoint1);
+
+        SimdVector4F const zero = Vector4F_Zero();
+        SimdMask4F const mask = Vector4F_CompareNearEqual(d, zero);
+        return Vector4F_Select(mask, point, Vector4F_NaN());
+    }
+
+    inline void anemone_vectorcall PlaneF_IntersectPlane(SimdVector4F& linePoint1, SimdVector4F& linePoint2, SimdVector4F plane1, SimdVector4F plane2)
+    {
+        SimdVector4F const v1 = Vector4F_Cross3(plane2, plane1);
+        SimdVector4F const lengthSquared = Vector4F_LengthSquared3(v1);
+        SimdVector4F const v2 = Vector4F_Cross3(plane2, v1);
+        SimdVector4F const plane1_wwww = Vector4F_Broadcast<3>(plane1);
+
+        SimdVector4F point = Vector4F_Multiply(v2, plane1_wwww);
+
+        SimdVector4F const v3 = Vector4F_Cross3(v1, plane1);
+        SimdVector4F const plane2_wwww = Vector4F_Broadcast<3>(plane2);
+        point = Vector4F_MultiplyAdd(v3, plane2_wwww, point);
+
+        SimdVector4F const lp1 = Vector4F_Divide(point, lengthSquared);
+        SimdVector4F const lp2 = Vector4F_Add(lp1, v1);
+
+        SimdMask4F const mask = Vector4F_CompareLessEqual(lengthSquared, Vector4F_Epsilon());
+        SimdVector4F const nan = Vector4F_NaN();
+
+        linePoint1 = Vector4F_Select(mask, lp1, nan);
+        linePoint2 = Vector4F_Select(mask, lp2, nan);
+    }
+
+    inline SimdVector4F anemone_vectorcall PlaneF_Transform(SimdVector4F plane, SimdMatrix4x4F matrix)
+    {
+        return Vector4F_Transform4(plane, matrix);
+    }
 }
 
 // VVV Inlined functions without prototypes VVV

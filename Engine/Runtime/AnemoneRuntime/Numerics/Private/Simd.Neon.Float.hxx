@@ -693,6 +693,26 @@ namespace Anemone::Numerics::Private
         return vdupq_n_f32(0.0f);
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_NaN()
+    {
+        return vld1q_f32(F32x4_PositiveQNaN_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_PositiveInfinity()
+    {
+        return vld1q_f32(F32x4_PositiveInfinity_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_NegativeInfinity()
+    {
+        return vld1q_f32(F32x4_NegativeInfinity_XXXX.As<float>());
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Epsilon()
+    {
+        return vld1q_f32(F32x4_Epsilon_XXXX.As<float>());
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_PositiveUnitX()
     {
         return vld1q_f32(F32x4_PositiveUnitX.Elements);
@@ -1821,6 +1841,48 @@ namespace Anemone::Numerics::Private
         return vcombine_f32(r1, r1);
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength4(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot4(v);
+        float32x2_t const r1 = NeonReciprocalSquareRoot2xNewtonRhapson(r0);
+        return vcombine_f32(r1, r1);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength3(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot3(v);
+        float32x2_t const r1 = NeonReciprocalSquareRoot2xNewtonRhapson(r0);
+        return vcombine_f32(r1, r1);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLength2(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot2(vget_low_f32(v));
+        float32x2_t const r1 = NeonReciprocalSquareRoot2xNewtonRhapson(r0);
+        return vcombine_f32(r1, r1);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst4(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot4(v);
+        float32x2_t const r1 = vrsqrte_f32(r0);
+        return vcombine_f32(r1, r1);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst3(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot3(v);
+        float32x2_t const r1 = vrsqrte_f32(r0);
+        return vcombine_f32(r1, r1);
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_ReciprocalLengthEst2(SimdVector4F v)
+    {
+        float32x2_t const r0 = NeonDot2(vget_low_f32(v));
+        float32x2_t const r1 = vrsqrte_f32(r0);
+        return vcombine_f32(r1, r1);
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Normalize4(SimdVector4F v)
     {
         // = length
@@ -2047,10 +2109,26 @@ namespace Anemone::Numerics::Private
         return Vector4F_Refract2(incident, normal, vdupq_n_f32(index));
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform4(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        float32x4_t r = vmulq_laneq_f32(m.val[0], v, 0);
+        r = vmlaq_laneq_f32(r, m.val[1], v, 1);
+        r = vmlaq_laneq_f32(r, m.val[2], v, 2);
+        r = vmlaq_laneq_f32(r, m.val[3], v, 3);
+        return r;
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_Transform3(SimdVector4F v, SimdMatrix4x4F m)
     {
-        float32x4_t r = vmlaq_laneq_f32(m.val[3], m.val[2], v, 2);
+        float32x4_t r = vmlaq_laneq_f32(m.val[3], m.val[0], v, 0);
         r = vmlaq_laneq_f32(r, m.val[1], v, 1);
+        r = vmlaq_laneq_f32(r, m.val[2], v, 2);
+        return r;
+    }
+
+    inline SimdVector4F anemone_vectorcall Vector4F_Transform2(SimdVector4F v, SimdMatrix4x4F m)
+    {
+        float32x4_t r = vmlaq_laneq_f32(m.val[3], m.val[1], v, 1);
         r = vmlaq_laneq_f32(r, m.val[0], v, 0);
         return r;
     }
