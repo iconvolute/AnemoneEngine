@@ -1,7 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
-namespace Anemone::Numerics::Easing
+namespace Anemone::Math::Easing
 {
     template <typename T>
     T EaseInQuad(T start, T end, T t)
@@ -428,7 +428,7 @@ namespace Anemone::Numerics::Easing
     }
 }
 
-namespace Anemone::Numerics::Easing
+namespace Anemone::Math::Easing
 {
     template <typename T>
     T EaseSmoothC1(T t)

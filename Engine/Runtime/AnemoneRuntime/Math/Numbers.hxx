@@ -1,10 +1,10 @@
 #pragma once
+#include "AnemoneRuntime/Float.hxx"
+
 #include <cfloat>
 #include <bit>
 
-#include "AnemoneRuntime/Numerics/Types.hxx"
-
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     // = e
     template <typename T>
@@ -99,9 +99,7 @@ namespace Anemone::Numerics
     inline constexpr T PiOver8 = static_cast<T>(0.39269908169872415480783042290993786052464617492189);
 }
 
-#include "AnemoneRuntime/Float.hxx"
-
-namespace Anemone::Numerics::Private
+namespace Anemone::Math::Detail
 {
     inline constexpr float Factor_RevolutionsToDegrees = 360.0f;
     inline constexpr float Factor_RevolutionsToRadians = Pi2<float>;
@@ -110,48 +108,61 @@ namespace Anemone::Numerics::Private
     inline constexpr float Factor_RadiansToRevolutions = 1.0f / Pi2<float>;
     inline constexpr float Factor_RadiansToDegrees = 180.0f / Pi<float>;
 
-    inline constexpr Vector<float, 4> F32x4_PositiveUnitX{1.0f, 0.0f, 0.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_PositiveUnitY{0.0f, 1.0f, 0.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_PositiveUnitZ{0.0f, 0.0f, 1.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_PositiveUnitW{0.0f, 0.0f, 0.0f, 1.0f};
+    template <typename T, size_t Lanes, size_t Alignment = 16>
+    struct VectorConstant
+    {
+        alignas(Alignment) T Elements[Lanes];
 
-    inline constexpr Vector<float, 4> F32x4_NegativeUnitX{-1.0f, 0.0f, 0.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_NegativeUnitY{0.0f, -1.0f, 0.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_NegativeUnitZ{0.0f, 0.0f, -1.0f, 0.0f};
-    inline constexpr Vector<float, 4> F32x4_NegativeUnitW{0.0f, 0.0f, 0.0f, -1.0f};
+        template <typename U>
+        U const* As() const
+        {
+            return reinterpret_cast<U const*>(this->Elements);
+        }
+    };
 
-    inline constexpr Vector<float, 4> F32x4_Negate_Xnnn{-1.0f, 1.0f, 1.0f, 1.0f};
-    inline constexpr Vector<float, 4> F32x4_Negate_nXnn{1.0f, -1.0f, 1.0f, 1.0f};
-    inline constexpr Vector<float, 4> F32x4_Negate_nnXn{1.0f, 1.0f, -1.0f, 1.0f};
-    inline constexpr Vector<float, 4> F32x4_Negate_nnnX{1.0f, 1.0f, 1.0f, -1.0f};
+    
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitX{1.0f, 0.0f, 0.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitY{0.0f, 1.0f, 0.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitZ{0.0f, 0.0f, 1.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitW{0.0f, 0.0f, 0.0f, 1.0f};
 
-    inline constexpr Vector<float, 4> F32x4_PositiveOne{1.0f, 1.0f, 1.0f, 1.0f};
-    inline constexpr Vector<float, 4> F32x4_NegativeOne{-1.0f, -1.0f, -1.0f, -1.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitX{-1.0f, 0.0f, 0.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitY{0.0f, -1.0f, 0.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitZ{0.0f, 0.0f, -1.0f, 0.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitW{0.0f, 0.0f, 0.0f, -1.0f};
 
-    inline constexpr Vector<float, 4> F32x4_Pi{Pi<float>, Pi<float>, Pi<float>, Pi<float>};
-    inline constexpr Vector<float, 4> F32x4_Pi2{Pi2<float>, Pi2<float>, Pi2<float>, Pi2<float>};
-    inline constexpr Vector<float, 4> F32x4_InvPi{InvPi<float>, InvPi<float>, InvPi<float>, InvPi<float>};
-    inline constexpr Vector<float, 4> F32x4_InvPi2{InvPi2<float>, InvPi2<float>, InvPi2<float>, InvPi2<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_Negate_Xnnn{-1.0f, 1.0f, 1.0f, 1.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_Negate_nXnn{1.0f, -1.0f, 1.0f, 1.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_Negate_nnXn{1.0f, 1.0f, -1.0f, 1.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_Negate_nnnX{1.0f, 1.0f, 1.0f, -1.0f};
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_XXXn{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_Xnnn{0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_nXnn{0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_nnXn{0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_nnnX{0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_XXnn{0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_XnXn{0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_nXnX{0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_XnXX{0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF};
-    inline constexpr Vector<uint32_t, 4> F32x4_SelectMask_XXXX{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveOne{1.0f, 1.0f, 1.0f, 1.0f};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativeOne{-1.0f, -1.0f, -1.0f, -1.0f};
 
-    inline constexpr Vector<uint32_t, 4> F32x4_ExponentMask_XXXX{
+    inline constexpr VectorConstant<float, 4> F32x4_Pi{Pi<float>, Pi<float>, Pi<float>, Pi<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_Pi2{Pi2<float>, Pi2<float>, Pi2<float>, Pi2<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_InvPi{InvPi<float>, InvPi<float>, InvPi<float>, InvPi<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_InvPi2{InvPi2<float>, InvPi2<float>, InvPi2<float>, InvPi2<float>};
+
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XXXn{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_Xnnn{0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_nXnn{0x00000000, 0xFFFFFFFF, 0x00000000, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_nnXn{0x00000000, 0x00000000, 0xFFFFFFFF, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_nnnX{0x00000000, 0x00000000, 0x00000000, 0xFFFFFFFF};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XXnn{0xFFFFFFFF, 0xFFFFFFFF, 0x00000000, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XnXn{0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0x00000000};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_nXnX{0x00000000, 0xFFFFFFFF, 0x00000000, 0xFFFFFFFF};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XnXX{0xFFFFFFFF, 0x00000000, 0xFFFFFFFF, 0xFFFFFFFF};
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XXXX{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF};
+
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_ExponentMask_XXXX{
         Float32::BiasedExponentMask,
         Float32::BiasedExponentMask,
         Float32::BiasedExponentMask,
         Float32::BiasedExponentMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_MantissaMask_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_MantissaMask_XXXX{
         Float32::SignMask | Float32::BiasedExponentMask,
         Float32::SignMask | Float32::BiasedExponentMask,
         Float32::SignMask | Float32::BiasedExponentMask,
@@ -159,166 +170,166 @@ namespace Anemone::Numerics::Private
     };
 
 
-    inline constexpr Vector<uint32_t, 4> F32x4_PositiveInfinity_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_PositiveInfinity_XXXX{
         Float32::PositiveInfinityBits,
         Float32::PositiveInfinityBits,
         Float32::PositiveInfinityBits,
         Float32::PositiveInfinityBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeInfinity_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeInfinity_XXXX{
         Float32::NegativeInfinityBits,
         Float32::NegativeInfinityBits,
         Float32::NegativeInfinityBits,
         Float32::NegativeInfinityBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_PositiveQNaN_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_PositiveQNaN_XXXX{
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeQNaN_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeQNaN_XXXX{
         Float32::NegativeQNaNBits,
         Float32::NegativeQNaNBits,
         Float32::NegativeQNaNBits,
         Float32::NegativeQNaNBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_PositiveMinNormalValue_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_PositiveMinNormalValue_XXXX{
         Float32::SmallestNormalBits,
         Float32::SmallestNormalBits,
         Float32::SmallestNormalBits,
         Float32::SmallestNormalBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeMinNormalValue_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeMinNormalValue_XXXX{
         Float32::SmallestNormalBits | Float32::SignMask,
         Float32::SmallestNormalBits | Float32::SignMask,
         Float32::SmallestNormalBits | Float32::SignMask,
         Float32::SmallestNormalBits | Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_PositiveMaxValue_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_PositiveMaxValue_XXXX{
         Float32::MaxValueBits,
         Float32::MaxValueBits,
         Float32::MaxValueBits,
         Float32::MaxValueBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeMaxValue_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeMaxValue_XXXX{
         Float32::MaxValueBits | Float32::SignMask,
         Float32::MaxValueBits | Float32::SignMask,
         Float32::MaxValueBits | Float32::SignMask,
         Float32::MaxValueBits | Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_EpsilonValue_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_EpsilonValue_XXXX{
         Float32::EpsilonBits,
         Float32::EpsilonBits,
         Float32::EpsilonBits,
         Float32::EpsilonBits,
     };
 
-    inline constexpr Vector<float, 4> F32x4_Epsilon_XXXX{
+    inline constexpr VectorConstant<float, 4> F32x4_Epsilon_XXXX{
         std::numeric_limits<float>::epsilon(),
         std::numeric_limits<float>::epsilon(),
         std::numeric_limits<float>::epsilon(),
         std::numeric_limits<float>::epsilon(),
     };
 
-    inline constexpr Vector<float, 4> F32x4_PositiveZero_XXXX{
+    inline constexpr VectorConstant<float, 4> F32x4_PositiveZero_XXXX{
         0.0f,
         0.0f,
         0.0f,
         0.0f,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeZero_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeZero_XXXX{
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_NegativeZero_XXXn{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeZero_XXXn{
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         0,
     };
 
-    inline constexpr Vector<float, 4> F32x4_PositivePi_XXXX = {Pi<float>, Pi<float>, Pi<float>, Pi<float>};
-    inline constexpr Vector<float, 4> F32x4_NegativePi_XXXX = {-Pi<float>, -Pi<float>, -Pi<float>, -Pi<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_PositivePi_XXXX = {Pi<float>, Pi<float>, Pi<float>, Pi<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativePi_XXXX = {-Pi<float>, -Pi<float>, -Pi<float>, -Pi<float>};
 
-    inline constexpr Vector<float, 4> F32x4_PositivePi2_XXXX = {Pi2<float>, Pi2<float>, Pi2<float>, Pi2<float>};
-    inline constexpr Vector<float, 4> F32x4_NegativePi2_XXXX = {-Pi2<float>, -Pi2<float>, -Pi2<float>, -Pi2<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_PositivePi2_XXXX = {Pi2<float>, Pi2<float>, Pi2<float>, Pi2<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_NegativePi2_XXXX = {-Pi2<float>, -Pi2<float>, -Pi2<float>, -Pi2<float>};
 
-    inline constexpr Vector<uint32_t, 4> F32x4_AbsMask_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_AbsMask_XXXX{
         ~Float32::SignMask,
         ~Float32::SignMask,
         ~Float32::SignMask,
         ~Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_XXXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_XXXX{
         Float32::SignMask,
         Float32::SignMask,
         Float32::SignMask,
         Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_Xnnn{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_Xnnn{
         Float32::SignMask,
         0,
         0,
         0,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nXnn{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nXnn{
         0,
         Float32::SignMask,
         0,
         0,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nnXn{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nnXn{
         0,
         0,
         Float32::SignMask,
         0,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nnnX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nnnX{
         0,
         0,
         0,
         Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nnXX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nnXX{
         0,
         0,
         Float32::SignMask,
         Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nXnX{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nXnX{
         0,
         Float32::SignMask,
         0,
         Float32::SignMask,
     };
 
-    inline constexpr Vector<uint32_t, 4> F32x4_SignMask_nXXn{
+    inline constexpr VectorConstant<uint32_t, 4> F32x4_SignMask_nXXn{
         0,
         Float32::SignMask,
         Float32::SignMask,
         0,
     };
 
-    inline constexpr Vector<int32_t, 4> I32x4_MoveMaskShifts = {-31, -30, -29, -28};
-    inline constexpr Vector<int32_t, 4> I64x4_MoveMaskShifts = {-63, -62, -61, -60};
+    inline constexpr VectorConstant<int32_t, 4> I32x4_MoveMaskShifts = {-31, -30, -29, -28};
+    inline constexpr VectorConstant<int32_t, 4> I64x4_MoveMaskShifts = {-63, -62, -61, -60};
 }

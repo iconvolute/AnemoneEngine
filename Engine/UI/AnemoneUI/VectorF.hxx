@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 #include <compare>
 
@@ -13,7 +13,7 @@ namespace Anemone::UI
 
         float GetLength() const
         {
-            return Numerics::Sqrt((this->X * this->X) + (this->Y * this->Y));
+            return Math::Sqrt((this->X * this->X) + (this->Y * this->Y));
         }
 
         constexpr float GetSquaredLength() const
@@ -23,9 +23,9 @@ namespace Anemone::UI
 
         void Normalize()
         {
-            float const axis = Numerics::Max(
-                Numerics::Abs(this->X),
-                Numerics::Abs(this->Y));
+            float const axis = Math::Max(
+                Math::Abs(this->X),
+                Math::Abs(this->Y));
 
             this->X /= axis;
             this->Y /= axis;

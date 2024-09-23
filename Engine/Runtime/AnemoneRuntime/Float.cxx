@@ -15,7 +15,7 @@
 
 #define ANEMONE_FORCE_DISABLE_FP16_INTRINSICS (ANEMONE_PLATFORM_WINDOWS && ANEMONE_ARCHITECTURE_ARM64) || (!ANEMONE_FEATURE_F16C)
 
-namespace Anemone::Numerics
+namespace Anemone
 {
     Half ToHalf(float value)
     {

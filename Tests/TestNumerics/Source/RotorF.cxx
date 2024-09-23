@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Numerics/Simd.hxx"
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -7,10 +7,10 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
-TEST_CASE("RotorF_FromAxisAngle")
+TEST_CASE("RotorF_CreateFromAxisAngle")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -21,7 +21,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = -30")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.25882f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -31,7 +31,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 0")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(0.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(0.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -41,7 +41,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 45")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(45.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(45.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.38268f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -51,7 +51,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 90")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(90.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(90.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.70711f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -61,7 +61,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 270")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(270.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(270.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.70711f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -76,7 +76,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = -30")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.25882f, tolerance));
@@ -86,7 +86,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 0")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(0.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(0.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -96,7 +96,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 45")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(45.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(45.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.38268f, tolerance));
@@ -106,7 +106,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 90")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(90.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(90.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.70711f, tolerance));
@@ -116,7 +116,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 270")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(270.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(270.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.70711f, tolerance));
@@ -131,7 +131,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = -30")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -141,7 +141,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 0")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(0.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(0.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -151,7 +151,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 45")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(45.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(45.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -161,7 +161,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 90")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(90.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(90.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -171,7 +171,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 270")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(270.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(270.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -186,7 +186,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = -30")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(-30.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.08397f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.12596f, tolerance));
@@ -196,7 +196,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 0")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(0.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(0.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(0.0f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(0.0f, tolerance));
@@ -206,7 +206,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 45")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(45.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(45.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.12416f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.18624f, tolerance));
@@ -216,7 +216,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 90")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(90.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(90.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.22942f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.34412f, tolerance));
@@ -226,7 +226,7 @@ TEST_CASE("RotorF_FromAxisAngle")
 
         SECTION("angle = 270")
         {
-            SimdVector4F const rotor = RotorF_FromAxisAngle(axis, DegreesToRadians<float>(270.0f));
+            SimdVector4F const rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians<float>(270.0f));
 
             CHECK_THAT(Vector4F_Extract<0>(rotor), WithinAbs(-0.22942f, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(rotor), WithinAbs(-0.34412f, tolerance));
@@ -238,8 +238,8 @@ TEST_CASE("RotorF_FromAxisAngle")
 
 TEST_CASE("RotorF_Rotate3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -272,7 +272,7 @@ TEST_CASE("RotorF_Rotate3")
 
     SECTION("Random")
     {
-        Anemone::Numerics::Random random{2137};
+        Random random{2137};
 
         // Pick random unit vector
         for (size_t i = 0; i < 16; ++i)
@@ -291,7 +291,7 @@ TEST_CASE("RotorF_Rotate3")
 
             float const angle = random.NextFloat(-Pi2<float>, Pi2<float>);
 
-            auto const rotation = RotorF_FromAxisAngle(axis, angle);
+            auto const rotation = RotorF_CreateFromAxisAngle(axis, angle);
 
             auto const unit_rotated = RotorF_Rotate3(rotation, unit);
 
@@ -306,8 +306,8 @@ TEST_CASE("RotorF_Rotate3")
 
 TEST_CASE("RotorF_ToMatrix4x4F")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -317,7 +317,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
         SimdVector4F const axis = Vector4F_PositiveUnitX();
         SECTION("angle = -30")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(-30.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(-30.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -347,7 +347,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 0")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(0.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(0.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -377,7 +377,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 45")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(45.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(45.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -407,7 +407,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 90")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(90.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(90.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -437,7 +437,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 135")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(135.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(135.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -467,7 +467,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 270")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(270.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(270.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -501,7 +501,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
         SimdVector4F const axis = Vector4F_PositiveUnitY();
         SECTION("angle = -30")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(-30.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(-30.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -531,7 +531,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 0")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(0.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(0.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -561,7 +561,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 45")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(45.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(45.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -591,7 +591,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 90")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(90.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(90.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -621,7 +621,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 135")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(135.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(135.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -651,7 +651,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 270")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(270.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(270.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -685,7 +685,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
         SimdVector4F const axis = Vector4F_PositiveUnitZ();
         SECTION("angle = -30")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(-30.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(-30.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -715,7 +715,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 0")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(0.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(0.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -745,7 +745,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 45")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(45.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(45.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -775,7 +775,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 90")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(90.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(90.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -805,7 +805,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 135")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(135.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(135.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -835,7 +835,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 270")
         {
-            SimdVector4F rotor = RotorF_FromNormalAngle(axis, DegreesToRadians(270.0f));
+            SimdVector4F rotor = RotorF_CreateFromNormalAngle(axis, DegreesToRadians(270.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -869,7 +869,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
         SimdVector4F const axis = Vector4F_Create(2.0f, 3.0f, 5.0f, 0.0f);
         SECTION("angle = -30")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(-30.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(-30.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -899,7 +899,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 0")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(0.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(0.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -929,7 +929,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 45")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(45.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(45.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -959,7 +959,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 90")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(90.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(90.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -989,7 +989,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 135")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(135.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(135.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -1019,7 +1019,7 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
         SECTION("angle = 270")
         {
-            SimdVector4F rotor = RotorF_FromAxisAngle(axis, DegreesToRadians(270.0f));
+            SimdVector4F rotor = RotorF_CreateFromAxisAngle(axis, DegreesToRadians(270.0f));
             SimdMatrix4x4F matrix = RotorF_ToMatrix4x4F(rotor);
 
             SimdVector4F const r0 = Matrix4x4F_Extract<0>(matrix);
@@ -1051,16 +1051,16 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
 TEST_CASE("RotorF_Slerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
 
     SimdVector4F const v = Vector4F_PositiveUnitY();
 
-    SimdVector4F const rotor1 = RotorF_FromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(0.0f));
-    SimdVector4F const rotor2 = RotorF_FromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(180.0f));
+    SimdVector4F const rotor1 = RotorF_CreateFromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(0.0f));
+    SimdVector4F const rotor2 = RotorF_CreateFromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(180.0f));
 
     SECTION("t = 0/6")
     {
@@ -1219,7 +1219,8 @@ TEST_CASE("RotorF_Slerp")
 
 TEST_CASE("RotorF_ToMatrix4x4F / scratch")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;

@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Numerics/Simd.hxx"
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -9,7 +9,7 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 TEST_CASE("Vector4F_LoadUnalignedFloat4")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -23,7 +23,7 @@ TEST_CASE("Vector4F_LoadUnalignedFloat4")
 
 TEST_CASE("Vector4F_StoreUnalignedFloat4")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 0.0f, 0.0f};
@@ -38,7 +38,7 @@ TEST_CASE("Vector4F_StoreUnalignedFloat4")
 
 TEST_CASE("Vector4F_LoadUnalignedFloat3")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -52,7 +52,7 @@ TEST_CASE("Vector4F_LoadUnalignedFloat3")
 
 TEST_CASE("Vector4F_StoreUnalignedFloat3")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 0.0f, 4.0f};
@@ -67,7 +67,7 @@ TEST_CASE("Vector4F_StoreUnalignedFloat3")
 
 TEST_CASE("Vector4F_LoadUnalignedFloat2")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -81,7 +81,7 @@ TEST_CASE("Vector4F_LoadUnalignedFloat2")
 
 TEST_CASE("Vector4F_StoreUnalignedFloat2")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 0.0f, 3.0f, 4.0f};
@@ -96,7 +96,7 @@ TEST_CASE("Vector4F_StoreUnalignedFloat2")
 
 TEST_CASE("Vector4F_LoadUnalignedFloat1")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float const data[4] = {1.0f, 2.0f, 3.0f, 4.0f};
@@ -110,7 +110,7 @@ TEST_CASE("Vector4F_LoadUnalignedFloat1")
 
 TEST_CASE("Vector4F_StoreUnalignedFloat1")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     float data[4] = {0.0f, 2.0f, 3.0f, 4.0f};
@@ -125,7 +125,7 @@ TEST_CASE("Vector4F_StoreUnalignedFloat1")
 
 TEST_CASE("Vector4F_Create")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -138,7 +138,7 @@ TEST_CASE("Vector4F_Create")
 
 TEST_CASE("Vector4F_Replicate")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Replicate(1.0f);
@@ -151,7 +151,7 @@ TEST_CASE("Vector4F_Replicate")
 
 TEST_CASE("Vector4F_Zero")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Zero();
@@ -164,7 +164,7 @@ TEST_CASE("Vector4F_Zero")
 
 TEST_CASE("Vector4F_PositiveUnitX")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_PositiveUnitX();
@@ -177,7 +177,7 @@ TEST_CASE("Vector4F_PositiveUnitX")
 
 TEST_CASE("Vector4F_PositiveUnitY")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_PositiveUnitY();
@@ -190,7 +190,7 @@ TEST_CASE("Vector4F_PositiveUnitY")
 
 TEST_CASE("Vector4F_PositiveUnitZ")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_PositiveUnitZ();
@@ -203,7 +203,7 @@ TEST_CASE("Vector4F_PositiveUnitZ")
 
 TEST_CASE("Vector4F_PositiveUnitW")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_PositiveUnitW();
@@ -216,7 +216,7 @@ TEST_CASE("Vector4F_PositiveUnitW")
 
 TEST_CASE("Vector4F_NegativeUnitX")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_NegativeUnitX();
@@ -229,7 +229,7 @@ TEST_CASE("Vector4F_NegativeUnitX")
 
 TEST_CASE("Vector4F_NegativeUnitY")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_NegativeUnitY();
@@ -242,7 +242,7 @@ TEST_CASE("Vector4F_NegativeUnitY")
 
 TEST_CASE("Vector4F_NegativeUnitZ")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_NegativeUnitZ();
@@ -255,7 +255,7 @@ TEST_CASE("Vector4F_NegativeUnitZ")
 
 TEST_CASE("Vector4F_NegativeUnitW")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_NegativeUnitW();
@@ -268,7 +268,7 @@ TEST_CASE("Vector4F_NegativeUnitW")
 
 TEST_CASE("Vector4F_Extract")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -281,7 +281,7 @@ TEST_CASE("Vector4F_Extract")
 
 TEST_CASE("Vector4F_Insert")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -325,7 +325,7 @@ TEST_CASE("Vector4F_Insert")
 
 TEST_CASE("Vector4F_Broadcast")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -369,7 +369,7 @@ TEST_CASE("Vector4F_Broadcast")
 
 TEST_CASE("Vector4F_Permute / Single Vector")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -476,7 +476,7 @@ TEST_CASE("Vector4F_Permute / Single Vector")
 
 TEST_CASE("Vector4F_Permute / Two vectors")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v1 = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -548,7 +548,7 @@ TEST_CASE("Vector4F_Permute / Two vectors")
 
 TEST_CASE("Vector4F_Select / With Mask")
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
     using namespace Catch::Matchers;
 
     SimdVector4F const v1 = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -597,8 +597,8 @@ TEST_CASE("Vector4F_Select / With Mask")
 
 TEST_CASE("Vector4F_MultiplyAdd")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -643,8 +643,8 @@ TEST_CASE("Vector4F_MultiplyAdd")
 
 TEST_CASE("Vector4F_MultiplySubtract")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -689,8 +689,8 @@ TEST_CASE("Vector4F_MultiplySubtract")
 
 TEST_CASE("Vector4F_NegateMultiplyAdd")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -735,8 +735,8 @@ TEST_CASE("Vector4F_NegateMultiplyAdd")
 
 TEST_CASE("Vector4F_NegateMultiplySubtract")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -781,8 +781,8 @@ TEST_CASE("Vector4F_NegateMultiplySubtract")
 
 TEST_CASE("Vector4F_Add")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -817,8 +817,8 @@ TEST_CASE("Vector4F_Add")
 
 TEST_CASE("Vector4F_Subtract")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -853,8 +853,8 @@ TEST_CASE("Vector4F_Subtract")
 
 TEST_CASE("Vector4F_Multiply")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -891,8 +891,8 @@ TEST_CASE("Vector4F_Multiply")
 
 TEST_CASE("Vector4F_Divide")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -927,8 +927,8 @@ TEST_CASE("Vector4F_Divide")
 
 TEST_CASE("Vector4F_Negate")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -955,8 +955,8 @@ TEST_CASE("Vector4F_Negate")
 
 TEST_CASE("Vector4F_Reciprocal")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -983,8 +983,8 @@ TEST_CASE("Vector4F_Reciprocal")
 
 TEST_CASE("Vector4F_ReciprocalEst")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.1f;
@@ -1013,8 +1013,8 @@ TEST_CASE("Vector4F_ReciprocalEst")
 
 TEST_CASE("Vector4F_Min")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1049,8 +1049,8 @@ TEST_CASE("Vector4F_Min")
 
 TEST_CASE("Vector4F_Max")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1085,8 +1085,8 @@ TEST_CASE("Vector4F_Max")
 
 TEST_CASE("Vector4F_Abs")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1113,8 +1113,8 @@ TEST_CASE("Vector4F_Abs")
 
 TEST_CASE("Vector4F_Square")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1141,8 +1141,8 @@ TEST_CASE("Vector4F_Square")
 
 TEST_CASE("Vector4F_SignedSquare")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1169,8 +1169,8 @@ TEST_CASE("Vector4F_SignedSquare")
 
 TEST_CASE("Vector4F_Clamp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1213,8 +1213,8 @@ TEST_CASE("Vector4F_Clamp")
 
 TEST_CASE("Vector4F_Saturate")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1241,8 +1241,8 @@ TEST_CASE("Vector4F_Saturate")
 
 TEST_CASE("Vector4F_SquareRoot")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1269,8 +1269,8 @@ TEST_CASE("Vector4F_SquareRoot")
 
 TEST_CASE("Vector4F_SquareRootEst")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1299,8 +1299,8 @@ TEST_CASE("Vector4F_SquareRootEst")
 
 TEST_CASE("Vector4F_ReciprocalSquareRoot")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1327,8 +1327,8 @@ TEST_CASE("Vector4F_ReciprocalSquareRoot")
 
 TEST_CASE("Vector4F_ReciprocalSquareRootEst")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1357,8 +1357,8 @@ TEST_CASE("Vector4F_ReciprocalSquareRootEst")
 
 TEST_CASE("Vector4F_Ceil")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1385,8 +1385,8 @@ TEST_CASE("Vector4F_Ceil")
 
 TEST_CASE("Vector4F_Floor")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1413,8 +1413,8 @@ TEST_CASE("Vector4F_Floor")
 
 TEST_CASE("Vector4F_Truncate")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1441,8 +1441,8 @@ TEST_CASE("Vector4F_Truncate")
 
 TEST_CASE("Vector4F_Round")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1469,8 +1469,8 @@ TEST_CASE("Vector4F_Round")
 
 TEST_CASE("Vector4F_Fraction")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1497,8 +1497,8 @@ TEST_CASE("Vector4F_Fraction")
 
 TEST_CASE("Vector4F_Remainder")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1533,8 +1533,8 @@ TEST_CASE("Vector4F_Remainder")
 
 TEST_CASE("Vector4F_Repeat")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1571,8 +1571,8 @@ TEST_CASE("Vector4F_Repeat")
 
 TEST_CASE("Vector4F_Wrap")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1617,8 +1617,8 @@ TEST_CASE("Vector4F_Wrap")
 
 TEST_CASE("Vector4F_Power")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1653,8 +1653,8 @@ TEST_CASE("Vector4F_Power")
 
 TEST_CASE("Vector4F_Exp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1681,8 +1681,8 @@ TEST_CASE("Vector4F_Exp")
 
 TEST_CASE("Vector4F_Exp2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1709,8 +1709,8 @@ TEST_CASE("Vector4F_Exp2")
 
 TEST_CASE("Vector4F_Exp10")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1737,8 +1737,8 @@ TEST_CASE("Vector4F_Exp10")
 
 TEST_CASE("Vector4F_Log")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1765,8 +1765,8 @@ TEST_CASE("Vector4F_Log")
 
 TEST_CASE("Vector4F_Log with base")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1796,8 +1796,8 @@ TEST_CASE("Vector4F_Log with base")
 
 TEST_CASE("Vector4F_Log2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1824,8 +1824,8 @@ TEST_CASE("Vector4F_Log2")
 
 TEST_CASE("Vector4F_Log10")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1852,8 +1852,8 @@ TEST_CASE("Vector4F_Log10")
 
 TEST_CASE("Vector4F_SinCos")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1888,8 +1888,8 @@ TEST_CASE("Vector4F_SinCos")
 
 TEST_CASE("Vector4F_Sin")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1916,8 +1916,8 @@ TEST_CASE("Vector4F_Sin")
 
 TEST_CASE("Vector4F_Cos")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1944,8 +1944,8 @@ TEST_CASE("Vector4F_Cos")
 
 TEST_CASE("Vector4F_Tan")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -1972,8 +1972,8 @@ TEST_CASE("Vector4F_Tan")
 
 TEST_CASE("Vector4F_Asin")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2000,8 +2000,8 @@ TEST_CASE("Vector4F_Asin")
 
 TEST_CASE("Vector4F_Acos")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2028,8 +2028,8 @@ TEST_CASE("Vector4F_Acos")
 
 TEST_CASE("Vector4F_Atan")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2056,8 +2056,8 @@ TEST_CASE("Vector4F_Atan")
 
 TEST_CASE("Vector4F_Atan2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2092,8 +2092,8 @@ TEST_CASE("Vector4F_Atan2")
 
 TEST_CASE("Vector4F_PreciseLerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2171,8 +2171,8 @@ TEST_CASE("Vector4F_PreciseLerp")
 
 TEST_CASE("Vector4F_Lerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2252,8 +2252,8 @@ TEST_CASE("Vector4F_Lerp")
 
 TEST_CASE("Vector4F_PreciseBilinearLerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2373,8 +2373,8 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
 
 TEST_CASE("Vector4F_BilinearLerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2500,8 +2500,8 @@ TEST_CASE("Vector4F_Barycentric")
 
 TEST_CASE("Vector4F_Unlerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2544,8 +2544,8 @@ TEST_CASE("Vector4F_Unlerp")
 
 TEST_CASE("Vector4F_Map")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2606,8 +2606,8 @@ TEST_CASE("Vector4F_Map")
 
 TEST_CASE("Vector4F_PreciseMap")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2668,8 +2668,8 @@ TEST_CASE("Vector4F_PreciseMap")
 
 TEST_CASE("Vector4F_UnwindRadians")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2693,8 +2693,8 @@ TEST_CASE("Vector4F_UnwindRadians")
 
 TEST_CASE("Vector4F_UnwindDegrees")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2718,8 +2718,8 @@ TEST_CASE("Vector4F_UnwindDegrees")
 
 TEST_CASE("Vector4F_AngleDifferenceRadians")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2749,8 +2749,8 @@ TEST_CASE("Vector4F_AngleDifferenceRadians")
 
 TEST_CASE("Vector4F_AngleDifferenceDegrees")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2780,8 +2780,8 @@ TEST_CASE("Vector4F_AngleDifferenceDegrees")
 
 TEST_CASE("Vector4F_RevolutionsToDegrees")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2805,8 +2805,8 @@ TEST_CASE("Vector4F_RevolutionsToDegrees")
 
 TEST_CASE("Vector4F_RevolutionsToRadians")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2830,8 +2830,8 @@ TEST_CASE("Vector4F_RevolutionsToRadians")
 
 TEST_CASE("Vector4F_DegreesToRevolutions")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2855,8 +2855,8 @@ TEST_CASE("Vector4F_DegreesToRevolutions")
 
 TEST_CASE("Vector4F_RadiansToRevolutions")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2880,8 +2880,8 @@ TEST_CASE("Vector4F_RadiansToRevolutions")
 
 TEST_CASE("Vector4F_RadiansToDegrees")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2905,8 +2905,8 @@ TEST_CASE("Vector4F_RadiansToDegrees")
 
 TEST_CASE("Vector4F_DegreesToRadians")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     Random r{2137};
@@ -2930,8 +2930,8 @@ TEST_CASE("Vector4F_DegreesToRadians")
 
 TEST_CASE("Vector4F_Dot4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SECTION("dot4(+X, +X)")
@@ -3027,8 +3027,8 @@ TEST_CASE("Vector4F_Dot4")
 
 TEST_CASE("Vector4F_Dot3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SECTION("dot3(+X, +X)")
@@ -3127,8 +3127,8 @@ TEST_CASE("Vector4F_Dot3")
 
 TEST_CASE("Vector4F_Dot2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SECTION("dot2(+X, +X)")
@@ -3290,8 +3290,8 @@ TEST_CASE("Vector4F_Dot2")
 
 TEST_CASE("Vector4F_Cross4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3349,8 +3349,8 @@ TEST_CASE("Vector4F_Cross4")
 
 TEST_CASE("Vector4F_Cross3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const v1000 = Vector4F_Create(1.0f, 0.0f, 0.0f, 0.0f);
@@ -3407,8 +3407,8 @@ TEST_CASE("Vector4F_Cross3")
 
 TEST_CASE("Vector4F_Cross2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const v1000 = Vector4F_Create(1.0f, 0.0f, 0.0f, 0.0f);
@@ -3442,8 +3442,8 @@ TEST_CASE("Vector4F_Cross2")
 
 TEST_CASE("Vector4F_LengthSquared4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3459,8 +3459,8 @@ TEST_CASE("Vector4F_LengthSquared4")
 
 TEST_CASE("Vector4F_LengthSquared3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3476,8 +3476,8 @@ TEST_CASE("Vector4F_LengthSquared3")
 
 TEST_CASE("Vector4F_LengthSquared2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3493,8 +3493,8 @@ TEST_CASE("Vector4F_LengthSquared2")
 
 TEST_CASE("Vector4F_Length4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3510,8 +3510,8 @@ TEST_CASE("Vector4F_Length4")
 
 TEST_CASE("Vector4F_Length3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3527,8 +3527,8 @@ TEST_CASE("Vector4F_Length3")
 
 TEST_CASE("Vector4F_Length2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -3544,8 +3544,8 @@ TEST_CASE("Vector4F_Length2")
 
 TEST_CASE("Vector4F_Normalize4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const va = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -3559,8 +3559,8 @@ TEST_CASE("Vector4F_Normalize4")
 
 TEST_CASE("Vector4F_Normalize3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const va = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -3573,8 +3573,8 @@ TEST_CASE("Vector4F_Normalize3")
 
 TEST_CASE("Vector4F_Normalize2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const va = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -3586,8 +3586,8 @@ TEST_CASE("Vector4F_Normalize2")
 
 TEST_CASE("Vector4F_Reflect4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);
@@ -3603,8 +3603,8 @@ TEST_CASE("Vector4F_Reflect4")
 
 TEST_CASE("Vector4F_Reflect3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 0.0f);
@@ -3619,8 +3619,8 @@ TEST_CASE("Vector4F_Reflect3")
 
 TEST_CASE("Vector4F_Reflect2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const v = Vector4F_Create(1.0f, 2.0f, 3.0f, 0.0f);
@@ -3634,8 +3634,8 @@ TEST_CASE("Vector4F_Reflect2")
 
 TEST_CASE("Vector4F_Refract4")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -3667,8 +3667,8 @@ TEST_CASE("Vector4F_Refract4")
 
 TEST_CASE("Vector4F_Refract3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -3699,8 +3699,8 @@ TEST_CASE("Vector4F_Refract3")
 
 TEST_CASE("Vector4F_Refract2")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -3732,15 +3732,15 @@ TEST_CASE("Vector4F_Refract2")
 TEST_CASE("QuaternionF_Rotate3 / QuaternionF_InverseRotate3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Anemone;
 
     SimdVector4F const source = Vector4F_PositiveUnitX();
 
     SECTION("axis = x, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitX(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitX(), DegreesToRadians(90.0f));
 
         SimdVector4F const transformed = QuaternionF_Rotate3(q, source);
 
@@ -3757,7 +3757,7 @@ TEST_CASE("QuaternionF_Rotate3 / QuaternionF_InverseRotate3")
 
     SECTION("axis = y, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitY(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitY(), DegreesToRadians(90.0f));
 
         SimdVector4F const transformed = QuaternionF_Rotate3(q, source);
 
@@ -3774,7 +3774,7 @@ TEST_CASE("QuaternionF_Rotate3 / QuaternionF_InverseRotate3")
 
     SECTION("axis = z, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f));
 
         SimdVector4F const transformed = QuaternionF_Rotate3(q, source);
 
@@ -3793,8 +3793,8 @@ TEST_CASE("QuaternionF_Rotate3 / QuaternionF_InverseRotate3")
 TEST_CASE("Vector4F_Transform3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     SECTION("Identity")
     {
@@ -3833,8 +3833,8 @@ TEST_CASE("Vector4F_Transform3")
 
 TEST_CASE("Vector4F_CompareEqual")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3850,8 +3850,8 @@ TEST_CASE("Vector4F_CompareEqual")
 
 TEST_CASE("Vector4F_CompareNotEqual")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3867,8 +3867,8 @@ TEST_CASE("Vector4F_CompareNotEqual")
 
 TEST_CASE("Vector4F_CompareLessThan")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3884,8 +3884,8 @@ TEST_CASE("Vector4F_CompareLessThan")
 
 TEST_CASE("Vector4F_CompareLessEqual")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3901,8 +3901,8 @@ TEST_CASE("Vector4F_CompareLessEqual")
 
 TEST_CASE("Vector4F_CompareGreaterThan")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3918,8 +3918,8 @@ TEST_CASE("Vector4F_CompareGreaterThan")
 
 TEST_CASE("Vector4F_CompareGreaterEqual")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
@@ -3935,8 +3935,8 @@ TEST_CASE("Vector4F_CompareGreaterEqual")
 
 TEST_CASE("Vector4F_CompareNaN")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -3962,8 +3962,8 @@ TEST_CASE("Vector4F_CompareNaN")
 
 TEST_CASE("Vector4F_CompareInfinite")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -4028,8 +4028,8 @@ TEST_CASE("Vector4F_CompareInfinite")
 
 TEST_CASE("Vector4F_CompareNearZero")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     {
@@ -4061,8 +4061,8 @@ TEST_CASE("Vector4F_CompareNearZero")
 
 TEST_CASE("Vector4F_CompareNearZeroPrecise")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     float const zero = 0.0f;
@@ -4098,14 +4098,14 @@ TEST_CASE("Vector4F_CompareNearZeroPrecise")
 
 TEST_CASE("Vector4F_CompareNearEqual")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 }
 
 TEST_CASE("Vector4F_CompareNearEqualPrecise")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 }

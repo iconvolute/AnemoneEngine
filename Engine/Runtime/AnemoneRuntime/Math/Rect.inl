@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Margins.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 namespace Anemone::Math
 {
@@ -180,10 +180,10 @@ namespace Anemone::Math
     {
         RectF result{};
 
-        float const x1 = Numerics::Max(self.X, other.X);
-        float const x2 = Numerics::Min(self.X + self.Width, other.X + other.Width);
-        float const y1 = Numerics::Max(self.Y, other.Y);
-        float const y2 = Numerics::Min(self.Y + self.Height, other.Y + other.Height);
+        float const x1 = Max(self.X, other.X);
+        float const x2 = Min(self.X + self.Width, other.X + other.Width);
+        float const y1 = Max(self.Y, other.Y);
+        float const y2 = Min(self.Y + self.Height, other.Y + other.Height);
 
         if ((x2 >= x1) && (y2 >= y1))
         {
@@ -203,10 +203,10 @@ namespace Anemone::Math
 
     constexpr RectF Union(RectF self, RectF other)
     {
-        float const x1 = Numerics::Min(self.X, other.X);
-        float const x2 = Numerics::Max(self.X + self.Width, other.X + other.Width);
-        float const y1 = Numerics::Min(self.Y, other.Y);
-        float const y2 = Numerics::Max(self.Y + self.Height, other.Y + other.Height);
+        float const x1 = Min(self.X, other.X);
+        float const x2 = Max(self.X + self.Width, other.X + other.Width);
+        float const y1 = Min(self.Y, other.Y);
+        float const y2 = Max(self.Y + self.Height, other.Y + other.Height);
 
         return RectF{x1, y1, x2 - x1, y2 - y1};
     }
@@ -229,8 +229,8 @@ namespace Anemone::Math
     constexpr PointF Clip(RectF self, PointF point)
     {
         return {
-            Numerics::Clamp(point.X, self.X, self.X + self.Width),
-            Numerics::Clamp(point.Y, self.Y, self.Y + self.Height),
+            Clamp(point.X, self.X, self.X + self.Width),
+            Clamp(point.Y, self.Y, self.Y + self.Height),
         };
     }
 }

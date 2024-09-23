@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     struct fixed32p16 final
     {

@@ -1,0 +1,9 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "SimdDouble.cxx"
+        "SimdDouble.hxx"
+        "SimdDouble.inl"
+        "SimdFloat.cxx"
+        "SimdFloat.inl"
+        "SimdFloat.hxx"
+)

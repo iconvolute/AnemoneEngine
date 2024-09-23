@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/App/Windows/WindowsInput.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 #include <hidusage.h>
 
@@ -21,7 +21,7 @@ namespace Anemone::App
         }
 
         float const scaled = value / (max - deadzone);
-        return Anemone::Numerics::Clamp(scaled, -1.0f, 1.0f);
+        return Anemone::Math::Clamp(scaled, -1.0f, 1.0f);
     }
 
     void WindowsInput::StartTracking(HWND handle)

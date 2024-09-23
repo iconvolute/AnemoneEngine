@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Numerics/Simd.hxx"
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -7,16 +7,16 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
-TEST_CASE("QuaternionF_FromAxisAngle")
+TEST_CASE("QuaternionF_CreateFromAxisAngle")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Anemone;
 
     SECTION("axis = x, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitX(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitX(), DegreesToRadians(90.0f));
 
         CHECK_THAT(Vector4F_Extract<0>(q), WithinAbs(0.70711f, 0.0001));
         CHECK_THAT(Vector4F_Extract<1>(q), WithinAbs(0.0f, 0.0001));
@@ -26,7 +26,7 @@ TEST_CASE("QuaternionF_FromAxisAngle")
 
     SECTION("axis = y, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitY(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitY(), DegreesToRadians(90.0f));
 
         CHECK_THAT(Vector4F_Extract<0>(q), WithinAbs(0.0f, 0.0001));
         CHECK_THAT(Vector4F_Extract<1>(q), WithinAbs(0.70711f, 0.0001));
@@ -37,7 +37,7 @@ TEST_CASE("QuaternionF_FromAxisAngle")
 
     SECTION("axis = z, angle = 90")
     {
-        SimdVector4F const q = QuaternionF_FromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f));
+        SimdVector4F const q = QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f));
 
         CHECK_THAT(Vector4F_Extract<0>(q), WithinAbs(0.0f, 0.0001));
         CHECK_THAT(Vector4F_Extract<1>(q), WithinAbs(0.0f, 0.0001));
@@ -48,15 +48,15 @@ TEST_CASE("QuaternionF_FromAxisAngle")
 
 TEST_CASE("QuaternionF_Rotate3")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
 
     SECTION("Random")
     {
-        Anemone::Numerics::Random random{2137};
+        Random random{2137};
 
         // Pick random unit vector
         for (size_t i = 0; i < 16; ++i)
@@ -75,7 +75,7 @@ TEST_CASE("QuaternionF_Rotate3")
 
             float const angle = random.NextFloat(-Pi2<float>, Pi2<float>);
 
-            auto const rotation = QuaternionF_FromAxisAngle(axis, angle);
+            auto const rotation = QuaternionF_CreateFromAxisAngle(axis, angle);
 
             auto const unit_rotated = QuaternionF_Rotate3(rotation, unit);
 
@@ -90,16 +90,16 @@ TEST_CASE("QuaternionF_Rotate3")
 
 TEST_CASE("QuaternionF_Slerp")
 {
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
 
     SimdVector4F const v = Vector4F_PositiveUnitY();
 
-    SimdVector4F const rotor1 = QuaternionF_FromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(0.0f));
-    SimdVector4F const rotor2 = QuaternionF_FromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(180.0f));
+    SimdVector4F const rotor1 = QuaternionF_CreateFromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(0.0f));
+    SimdVector4F const rotor2 = QuaternionF_CreateFromNormalAngle(Vector4F_PositiveUnitX(), DegreesToRadians(180.0f));
 
     SECTION("t = 0/6")
     {

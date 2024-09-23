@@ -4,14 +4,14 @@
 
 #include "AnemoneRuntime/Math/Types.hxx"
 
-#include "AnemoneRuntime/Numerics/Numbers.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Numbers.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 #include <array>
 #include <span>
 #include <vector>
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     class [[nodiscard]] RUNTIME_API Random
     {
@@ -106,7 +106,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     RUNTIME_API void ComputeHistogram(std::vector<uint64_t>& histogram, std::span<uint8_t const> data);
 

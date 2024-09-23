@@ -1,6 +1,5 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Numerics/Vector.hxx"
 
 #include <utility>
 
@@ -46,23 +45,17 @@
 
 #endif
 
-#include "AnemoneRuntime/Numerics/Functions.hxx"
-#include "AnemoneRuntime/Numerics/Numbers.hxx"
-#include "AnemoneRuntime/Numerics/Vector.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
+#include "AnemoneRuntime/Math/Numbers.hxx"
 #include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
+namespace Anemone::Math::Detail
+{
 #if ANEMONE_BUILD_DISABLE_SIMD
 
-namespace Anemone::Numerics::Private
-{
     struct SimdVector4F final
     {
         float Inner[4];
-    };
-
-    struct SimdVector4D final
-    {
-        double Inner[4];
     };
 
     struct SimdMask4F final
@@ -70,75 +63,37 @@ namespace Anemone::Numerics::Private
         uint32_t Inner[4];
     };
 
-    struct SimdMaskD final
-    {
-        uint64_t Inner[4];
-    };
-
     struct SimdMatrix4x4F final
     {
         SimdVector4F Inner[4];
     };
 
-    struct SimdMatrix4x4D final
-    {
-        SimdVector4D Inner[4];
-    };
-}
-
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
 
-namespace Anemone::Numerics::Private
-{
     using SimdVector4F = __m128;
 
-    using SimdVector4D = __m256d;
-
     using SimdMask4F = __m128;
-
-    using SimdMask4D = __m256d;
 
     struct SimdMatrix4x4F final
     {
         __m128 Inner[4];
     };
 
-    struct SimdMatrix4x4D final
-    {
-        __m256d Inner[4];
-    };
-}
-
 #elif ANEMONE_FEATURE_NEON
 
-namespace Anemone::Numerics::Private
-{
     using SimdVector4F = float32x4_t;
-
-    struct SimdVector4D final
-    {
-        float64x2_t Inner[2];
-    };
 
     using SimdMask4F = uint32x4_t;
 
-    struct SimdMask4D final
-    {
-        uint64x2_t Inner[2];
-    };
-
     using SimdMatrix4x4F = float32x4x4_t;
 
-    struct SimdMatrix4x4D
-    {
-        float64x2x4_t Inner[2];
-    };
+#else
+#error "Not implemented"
+#endif
 }
 
-#endif
-
-// Vector functions
-namespace Anemone::Numerics::Private
+// Vector4F
+namespace Anemone::Math::Detail
 {
     SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source);
     SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat3(float const* source);
@@ -390,9 +345,12 @@ namespace Anemone::Numerics::Private
     SimdMask4F anemone_vectorcall Vector4F_CompareNearEqualPrecise(SimdVector4F a, SimdVector4F b);
 }
 
-// Mask functions
-namespace Anemone::Numerics::Private
+// Mask4F
+namespace Anemone::Math::Detail
 {
+    SimdMask4F anemone_vectorcall Mask4F_True();
+    SimdMask4F anemone_vectorcall Mask4F_False();
+
     SimdMask4F anemone_vectorcall Mask4F_Create(bool x, bool y, bool z, bool w);
     SimdMask4F anemone_vectorcall Mask4F_Create(bool x, bool y, bool z);
     SimdMask4F anemone_vectorcall Mask4F_Create(bool x, bool y);
@@ -406,12 +364,7 @@ namespace Anemone::Numerics::Private
     SimdMask4F anemone_vectorcall Mask4F_Insert(SimdMask4F v, uint32_t b)
         requires(N < 4);
 
-    SimdMask4F anemone_vectorcall Mask4F_True();
-    SimdMask4F anemone_vectorcall Mask4F_False();
-    SimdMask4F anemone_vectorcall Mask4F_CompareEqual(SimdMask4F a, SimdMask4F b);
-    SimdMask4F anemone_vectorcall Mask4F_CompareNotEqual(SimdMask4F a, SimdMask4F b);
     SimdMask4F anemone_vectorcall Mask4F_And(SimdMask4F a, SimdMask4F b);
-
     SimdMask4F anemone_vectorcall Mask4F_AndNot(SimdMask4F a, SimdMask4F b);
     SimdMask4F anemone_vectorcall Mask4F_Or(SimdMask4F a, SimdMask4F b);
     SimdMask4F anemone_vectorcall Mask4F_Xor(SimdMask4F a, SimdMask4F b);
@@ -432,33 +385,21 @@ namespace Anemone::Numerics::Private
     bool anemone_vectorcall Mask4F_None4(SimdMask4F mask);
     bool anemone_vectorcall Mask4F_None3(SimdMask4F mask);
     bool anemone_vectorcall Mask4F_None2(SimdMask4F mask);
+    
+    SimdMask4F anemone_vectorcall Mask4F_CompareEqual(SimdMask4F a, SimdMask4F b);
+    SimdMask4F anemone_vectorcall Mask4F_CompareNotEqual(SimdMask4F a, SimdMask4F b);
 }
 
-// Quaternion functions
-namespace Anemone::Numerics::Private
+// QuaternionF
+namespace Anemone::Math::Detail
 {
-    SimdMask4F anemone_vectorcall QuaternionF_CompareEqual(SimdVector4F a, SimdVector4F b);
-    bool anemone_vectorcall QuaternionF_IsEqual(SimdVector4F a, SimdVector4F b);
-
-    SimdMask4F anemone_vectorcall QuaternionF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
-    bool anemone_vectorcall QuaternionF_IsNotEqual(SimdVector4F a, SimdVector4F b);
-
-    SimdMask4F anemone_vectorcall QuaternionF_CompareNaN(SimdVector4F q);
-    bool anemone_vectorcall QuaternionF_IsNaN(SimdVector4F q);
-
-    SimdMask4F anemone_vectorcall QuaternionF_CompareInfinite(SimdVector4F q);
-    bool anemone_vectorcall QuaternionF_IsInfinite(SimdVector4F q);
-
-    SimdMask4F anemone_vectorcall QuaternionF_CompareIdentity(SimdVector4F q);
-    bool anemone_vectorcall QuaternionF_IsIdentity(SimdVector4F q);
-
     SimdVector4F anemone_vectorcall QuaternionF_Identity();
 
-    SimdVector4F anemone_vectorcall QuaternionF_FromNormalAngle(SimdVector4F normal, float angle);
-    SimdVector4F anemone_vectorcall QuaternionF_FromAxisAngle(SimdVector4F axis, float angle);
+    SimdVector4F anemone_vectorcall QuaternionF_CreateFromNormalAngle(SimdVector4F normal, float angle);
+    SimdVector4F anemone_vectorcall QuaternionF_CreateFromAxisAngle(SimdVector4F axis, float angle);
 
-    SimdVector4F anemone_vectorcall QuaternionF_FromEulerAngles(SimdVector4F pitchYawRoll);
-    SimdVector4F anemone_vectorcall QuaternionF_FromEulerAngles(float pitch, float yaw, float roll);
+    SimdVector4F anemone_vectorcall QuaternionF_CreateFromEulerAngles(SimdVector4F pitchYawRoll);
+    SimdVector4F anemone_vectorcall QuaternionF_CreateFromEulerAngles(float pitch, float yaw, float roll);
 
     SimdVector4F anemone_vectorcall QuaternionF_Rotate3(SimdVector4F q, SimdVector4F v);
     SimdVector4F anemone_vectorcall QuaternionF_InverseRotate3(SimdVector4F q, SimdVector4F v);
@@ -480,14 +421,95 @@ namespace Anemone::Numerics::Private
 
     // SimdVector4F anemone_vectorcall QuaternionF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, SimdVector4F u, SimdVector4F v);
     // SimdVector4F anemone_vectorcall QuaternionF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, float u, float v);
+
+    SimdMask4F anemone_vectorcall QuaternionF_CompareEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall QuaternionF_IsEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall QuaternionF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall QuaternionF_IsNotEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall QuaternionF_CompareNaN(SimdVector4F q);
+    bool anemone_vectorcall QuaternionF_IsNaN(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall QuaternionF_CompareInfinite(SimdVector4F q);
+    bool anemone_vectorcall QuaternionF_IsInfinite(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall QuaternionF_CompareIdentity(SimdVector4F q);
+    bool anemone_vectorcall QuaternionF_IsIdentity(SimdVector4F q);
 }
 
-// Matrix functions
-namespace Anemone::Numerics::Private
+// RotorF
+namespace Anemone::Math::Detail
 {
+    SimdVector4F anemone_vectorcall RotorF_Identity();
+
+    SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar);
+    SimdVector4F anemone_vectorcall RotorF_Create(SimdVector4F bv, float scalar);
+    SimdVector4F anemone_vectorcall RotorF_CreateFromAxisAngle(SimdVector4F axis, float angle);
+    SimdVector4F anemone_vectorcall RotorF_CreateFromNormalAngle(SimdVector4F normal, float angle);
+    SimdVector4F anemone_vectorcall RotorF_RotationBetween(SimdVector4F from, SimdVector4F to);
+
+    SimdVector4F anemone_vectorcall RotorF_Rotate3(SimdVector4F rotor, SimdVector4F v);
+    SimdVector4F anemone_vectorcall RotorF_InverseRotate3(SimdVector4F rotor, SimdVector4F v);
+
+    SimdVector4F anemone_vectorcall RotorF_Dot(SimdVector4F a, SimdVector4F b);
+    SimdVector4F anemone_vectorcall RotorF_Multiply(SimdVector4F a, SimdVector4F b);
+    SimdVector4F anemone_vectorcall RotorF_RotateRotor(SimdVector4F rotor, SimdVector4F rotation);
+    SimdVector4F anemone_vectorcall RotorF_Reverse(SimdVector4F rotor);
+    SimdVector4F anemone_vectorcall RotorF_Length(SimdVector4F rotor);
+    SimdVector4F anemone_vectorcall RotorF_LengthSquared(SimdVector4F rotor);
+    SimdVector4F anemone_vectorcall RotorF_Normalize(SimdVector4F rotor);
+
+    SimdMatrix4x4F anemone_vectorcall RotorF_ToMatrix4x4F(SimdVector4F rotor);
+
+    SimdVector4F anemone_vectorcall RotorF_Nlerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
+    SimdVector4F anemone_vectorcall RotorF_Nlerp(SimdVector4F from, SimdVector4F to, float t);
+
+    SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
+    SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, float t);
+
+    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, SimdVector4F u, SimdVector4F v);
+    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, float u, float v);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall RotorF_IsEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall RotorF_IsNotEqual(SimdVector4F a, SimdVector4F b);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareNaN(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsNaN(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareInfinite(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsInfinite(SimdVector4F q);
+
+    SimdMask4F anemone_vectorcall RotorF_CompareIdentity(SimdVector4F q);
+    bool anemone_vectorcall RotorF_IsIdentity(SimdVector4F q);
+}
+
+// Matrix4x4F
+namespace Anemone::Math::Detail
+{
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat4x4(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat4x3(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat3x4(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadUnalignedFloat4x4(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadUnalignedFloat4x3(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadUnalignedFloat3x4(float const* source);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadUnalignedFloat3x3(float const* source);
+
+    void anemone_vectorcall Matrix4x4F_StoreAlignedFloat4x4(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreAlignedFloat4x3(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreAlignedFloat3x4(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreUnalignedFloat4x4(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreUnalignedFloat4x3(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreUnalignedFloat3x4(float* destination, SimdMatrix4x4F source);
+    void anemone_vectorcall Matrix4x4F_StoreUnalignedFloat3x3(float* destination, SimdMatrix4x4F source);
+
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_Identity();
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_NaN();
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_Infinity();
+
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateTranslation(float x, float y, float z);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateTranslation(SimdVector4F translation);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateScale(float x, float y, float z);
@@ -523,16 +545,6 @@ namespace Anemone::Numerics::Private
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float near, float far);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float near, float far);
 
-    // TODO: Use proper structs instead of arrays
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadFloat4x4(float const* source);
-    void anemone_vectorcall Matrix4x4F_StoreFloat4x4(float* destination, SimdMatrix4x4F source);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadFloat4x3(float const* source);
-    void anemone_vectorcall Matrix4x4F_StoreFloat4x3(float* destination, SimdMatrix4x4F source);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadFloat3x4(float const* source);
-    void anemone_vectorcall Matrix4x4F_StoreFloat3x4(float* destination, SimdMatrix4x4F source);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadFloat3x3(float const* source);
-    void anemone_vectorcall Matrix4x4F_StoreFloat3x3(float* destination, SimdMatrix4x4F source);
-
     template <size_t N>
     SimdVector4F anemone_vectorcall Matrix4x4F_Extract(SimdMatrix4x4F m)
         requires(N < 4);
@@ -557,175 +569,33 @@ namespace Anemone::Numerics::Private
     bool anemone_vectorcall Matrix4x4F_IsInfinite(SimdMatrix4x4F m);
 }
 
-// Rotor functions.
-namespace Anemone::Numerics::Private
+// PlaneF
+namespace Anemone::Math::Detail
 {
-    SimdMask4F anemone_vectorcall RotorF_CompareEqual(SimdVector4F a, SimdVector4F b);
-    bool anemone_vectorcall RotorF_IsEqual(SimdVector4F a, SimdVector4F b);
+    SimdVector4F anemone_vectorcall PlaneF_Create(float a, float b, float c, float d);
+    SimdVector4F anemone_vectorcall PlaneF_CreateFromPointNormal(SimdVector4F point, SimdVector4F normal);
+    SimdVector4F anemone_vectorcall PlaneF_CreateFromPoints(SimdVector4F point1, SimdVector4F point2, SimdVector4F point3);
+    SimdVector4F anemone_vectorcall PlaneF_Dot(SimdVector4F plane, SimdVector4F point);
+    SimdVector4F anemone_vectorcall PlaneF_DotCoord(SimdVector4F plane, SimdVector4F point);
+    SimdVector4F anemone_vectorcall PlaneF_DotNormal(SimdVector4F plane, SimdVector4F point);
+    SimdVector4F anemone_vectorcall PlaneF_Normalize(SimdVector4F plane);
+    SimdVector4F anemone_vectorcall PlaneF_IntersectLine(SimdVector4F plane, SimdVector4F linePoint1, SimdVector4F linePoint2);
+    void anemone_vectorcall PlaneF_IntersectPlane(SimdVector4F& linePoint1, SimdVector4F& linePoint2, SimdVector4F plane1, SimdVector4F plane2);
+    SimdVector4F anemone_vectorcall PlaneF_Transform(SimdVector4F plane, SimdMatrix4x4F matrix);
 
-    SimdMask4F anemone_vectorcall RotorF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
-    bool anemone_vectorcall RotorF_IsNotEqual(SimdVector4F a, SimdVector4F b);
-
-    SimdMask4F anemone_vectorcall RotorF_CompareNaN(SimdVector4F q);
-    bool anemone_vectorcall RotorF_IsNaN(SimdVector4F q);
-
-    SimdMask4F anemone_vectorcall RotorF_CompareInfinite(SimdVector4F q);
-    bool anemone_vectorcall RotorF_IsInfinite(SimdVector4F q);
-
-    SimdMask4F anemone_vectorcall RotorF_CompareIdentity(SimdVector4F q);
-    bool anemone_vectorcall RotorF_IsIdentity(SimdVector4F q);
-
-    SimdVector4F anemone_vectorcall RotorF_Create(float xy, float xz, float yz, float scalar);
-    SimdVector4F anemone_vectorcall RotorF_Create(SimdVector4F bv, float scalar);
-    SimdVector4F anemone_vectorcall RotorF_Identity();
-    SimdVector4F anemone_vectorcall RotorF_FromAxisAngle(SimdVector4F axis, float angle);
-    SimdVector4F anemone_vectorcall RotorF_FromNormalAngle(SimdVector4F normal, float angle);
-    SimdVector4F anemone_vectorcall RotorF_RotationBetween(SimdVector4F from, SimdVector4F to);
-
-    SimdVector4F anemone_vectorcall RotorF_Rotate3(SimdVector4F rotor, SimdVector4F v);
-    SimdVector4F anemone_vectorcall RotorF_InverseRotate3(SimdVector4F rotor, SimdVector4F v);
-
-    SimdVector4F anemone_vectorcall RotorF_Dot(SimdVector4F a, SimdVector4F b);
-    SimdVector4F anemone_vectorcall RotorF_Multiply(SimdVector4F a, SimdVector4F b);
-    SimdVector4F anemone_vectorcall RotorF_RotateRotor(SimdVector4F rotor, SimdVector4F rotation);
-    SimdVector4F anemone_vectorcall RotorF_Reverse(SimdVector4F rotor);
-    SimdVector4F anemone_vectorcall RotorF_Length(SimdVector4F rotor);
-    SimdVector4F anemone_vectorcall RotorF_LengthSquared(SimdVector4F rotor);
-    SimdVector4F anemone_vectorcall RotorF_Normalize(SimdVector4F rotor);
-
-    SimdMatrix4x4F anemone_vectorcall RotorF_ToMatrix4x4F(SimdVector4F rotor);
-
-    SimdVector4F anemone_vectorcall RotorF_Nlerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
-    SimdVector4F anemone_vectorcall RotorF_Nlerp(SimdVector4F from, SimdVector4F to, float t);
-
-    SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, SimdVector4F t);
-    SimdVector4F anemone_vectorcall RotorF_Slerp(SimdVector4F from, SimdVector4F to, float t);
-
-    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, SimdVector4F u, SimdVector4F v);
-    // SimdVector4F anemone_vectorcall RotorF_Barycentric(SimdVector4F a, SimdVector4F b, SimdVector4F c, float u, float v);
+    SimdMask4F anemone_vectorcall PlaneF_CompareEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall PlaneF_IsEqual(SimdVector4F a, SimdVector4F b);
+    SimdMask4F anemone_vectorcall PlaneF_CompareNearEqual(SimdVector4F a, SimdVector4F b, SimdVector4F tolerance);
+    SimdMask4F anemone_vectorcall PlaneF_CompareNotEqual(SimdVector4F a, SimdVector4F b);
+    bool anemone_vectorcall PlaneF_IsNotEqual(SimdVector4F a, SimdVector4F b);
+    SimdMask4F anemone_vectorcall PlaneF_CompareNaN(SimdVector4F q);
+    bool anemone_vectorcall PlaneF_IsNaN(SimdVector4F q);
+    SimdMask4F anemone_vectorcall PlaneF_CompareInfinite(SimdVector4F q);
+    bool anemone_vectorcall PlaneF_IsInfinite(SimdVector4F q);
 }
 
-// Plane functions.
-namespace Anemone::Numerics::Private
-{
-    inline SimdMask4F anemone_vectorcall PlaneF_CompareEqual(SimdVector4F a, SimdVector4F b)
-    {
-        return Vector4F_CompareEqual(a, b);
-    }
-
-    inline bool anemone_vectorcall PlaneF_IsEqual(SimdVector4F a, SimdVector4F b)
-    {
-        return Vector4F_IsEqual4(a, b);
-    }
-
-    inline SimdMask4F anemone_vectorcall PlaneF_CompareNearEqual(SimdVector4F a, SimdVector4F b, SimdVector4F tolerance)
-    {
-        return Vector4F_CompareNearEqual(a, b, tolerance);
-    }
-
-    inline SimdMask4F anemone_vectorcall PlaneF_CompareNotEqual(SimdVector4F a, SimdVector4F b)
-    {
-        return Vector4F_CompareNotEqual(a, b);
-    }
-
-    inline bool anemone_vectorcall PlaneF_IsNotEqual(SimdVector4F a, SimdVector4F b)
-    {
-        return Vector4F_IsNotEqual4(a, b);
-    }
-
-    inline SimdMask4F anemone_vectorcall PlaneF_CompareNaN(SimdVector4F q)
-    {
-        return Vector4F_CompareNaN(q);
-    }
-
-    inline bool anemone_vectorcall PlaneF_IsNaN(SimdVector4F q)
-    {
-        return Vector4F_IsNaN4(q);
-    }
-
-    inline SimdMask4F anemone_vectorcall PlaneF_CompareInfinite(SimdVector4F q)
-    {
-        return Vector4F_CompareInfinite(q);
-    }
-
-    inline bool anemone_vectorcall PlaneF_IsInfinite(SimdVector4F q)
-    {
-        return Vector4F_IsInfinite4(q);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_Create(float a, float b, float c, float d)
-    {
-        return Vector4F_Create(a, b, c, d);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_Dot(SimdVector4F plane, SimdVector4F point)
-    {
-        return Vector4F_Dot4(plane, point);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_DotCoord(SimdVector4F plane, SimdVector4F point)
-    {
-        SimdVector4F const p = Vector4F_Insert<3>(point, 1.0f);
-        return Vector4F_Dot4(plane, p);
-
-    }
-    inline SimdVector4F anemone_vectorcall PlaneF_DotNormal(SimdVector4F plane, SimdVector4F point)
-    {
-        return Vector4F_Dot3(plane, point);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_Normalize(SimdVector4F plane)
-    {
-        SimdVector4F const length = Vector4F_ReciprocalLength3(plane);
-        return Vector4F_Multiply(plane, length);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_IntersectLine(SimdVector4F plane, SimdVector4F linePoint1, SimdVector4F linePoint2)
-    {
-        SimdVector4F const v1 = Vector4F_Dot3(plane, linePoint1);
-        SimdVector4F const v2 = Vector4F_Dot3(plane, linePoint2);
-        SimdVector4F const d = Vector4F_Subtract(v1, v2);
-        SimdVector4F const t = Vector4F_Divide(PlaneF_DotCoord(plane, linePoint1), d);
-
-        SimdVector4F point = Vector4F_Subtract(linePoint2, linePoint1);
-        point = Vector4F_MultiplyAdd(point, t, linePoint1);
-
-        SimdVector4F const zero = Vector4F_Zero();
-        SimdMask4F const mask = Vector4F_CompareNearEqual(d, zero);
-        return Vector4F_Select(mask, point, Vector4F_NaN());
-    }
-
-    inline void anemone_vectorcall PlaneF_IntersectPlane(SimdVector4F& linePoint1, SimdVector4F& linePoint2, SimdVector4F plane1, SimdVector4F plane2)
-    {
-        SimdVector4F const v1 = Vector4F_Cross3(plane2, plane1);
-        SimdVector4F const lengthSquared = Vector4F_LengthSquared3(v1);
-        SimdVector4F const v2 = Vector4F_Cross3(plane2, v1);
-        SimdVector4F const plane1_wwww = Vector4F_Broadcast<3>(plane1);
-
-        SimdVector4F point = Vector4F_Multiply(v2, plane1_wwww);
-
-        SimdVector4F const v3 = Vector4F_Cross3(v1, plane1);
-        SimdVector4F const plane2_wwww = Vector4F_Broadcast<3>(plane2);
-        point = Vector4F_MultiplyAdd(v3, plane2_wwww, point);
-
-        SimdVector4F const lp1 = Vector4F_Divide(point, lengthSquared);
-        SimdVector4F const lp2 = Vector4F_Add(lp1, v1);
-
-        SimdMask4F const mask = Vector4F_CompareLessEqual(lengthSquared, Vector4F_Epsilon());
-        SimdVector4F const nan = Vector4F_NaN();
-
-        linePoint1 = Vector4F_Select(mask, lp1, nan);
-        linePoint2 = Vector4F_Select(mask, lp2, nan);
-    }
-
-    inline SimdVector4F anemone_vectorcall PlaneF_Transform(SimdVector4F plane, SimdMatrix4x4F matrix)
-    {
-        return Vector4F_Transform4(plane, matrix);
-    }
-}
-
-// VVV Inlined functions without prototypes VVV
-namespace Anemone::Numerics::Private
+// Bezier4F
+namespace Anemone::Math::Detail
 {
     struct Bezier4FA
     {
@@ -816,10 +686,4 @@ namespace Anemone::Numerics::Private
     }
 }
 
-#if ANEMONE_BUILD_DISABLE_SIMD
-#include "AnemoneRuntime/Numerics/Private/Simd.Default.Float.hxx"
-#elif ANEMONE_FEATURE_AVX
-#include "AnemoneRuntime/Numerics/Private/Simd.Avx.Float.hxx"
-#elif ANEMONE_FEATURE_NEON
-#include "AnemoneRuntime/Numerics/Private/Simd.Neon.Float.hxx"
-#endif
+#include "AnemoneRuntime/Math/Detail/SimdFloat.inl"

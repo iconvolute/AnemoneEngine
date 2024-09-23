@@ -4,7 +4,6 @@
 
 TEST_CASE("Float16 conversion")
 {
-    using namespace Anemone::Numerics;
     using namespace Anemone;
 
     SECTION("To Float - single values")

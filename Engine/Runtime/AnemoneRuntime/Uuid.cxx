@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Uuid.hxx"
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Crypto/Sha256.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
@@ -9,12 +9,12 @@ namespace Anemone
     Uuid Uuid::CreateRandom()
     {
         // TODO: This should use shared random number generator just for this purpose?
-        Numerics::Random generator{static_cast<uint64_t>(DateTime::Now().Inner.Seconds)};
+        Math::Random generator{static_cast<uint64_t>(DateTime::Now().Inner.Seconds)};
 
         return CreateRandom(generator);
     }
 
-    Uuid Uuid::CreateRandom(Numerics::Random& generator)
+    Uuid Uuid::CreateRandom(Math::Random& generator)
     {
         std::array<uint64_t, 2> bits;
         bits[0] = generator.NextUInt64();
@@ -25,12 +25,12 @@ namespace Anemone
         return result;
     }
 
-    Uuid Uuid::CreateSortable(Numerics::Random& generator)
+    Uuid Uuid::CreateSortable(Math::Random& generator)
     {
         return CreateSortable(DateTime::UtcNow(), generator);
     }
 
-    Uuid Uuid::CreateSortable(DateTime dateTime, Numerics::Random& generator)
+    Uuid Uuid::CreateSortable(DateTime dateTime, Math::Random& generator)
     {
         uint64_t const milliseconds = static_cast<uint64_t>((dateTime - UnixEpoch).ToMilliseconds());
 

@@ -1,14 +1,20 @@
-
 target_sources(AnemoneRuntime
     PRIVATE
         "Aligned.hxx"
+        "Easing.cxx"
+        "Easing.hxx"
+        "Fixed.hxx"
+        "Functions.hxx"
         "Margins.hxx"
         "Margins.inl"
         "Matrix3x2.hxx"
         "Matrix3x2.inl"
+        "Numbers.hxx"
         "Packed.hxx"
         "Point.hxx"
         "Point.inl"
+        "Random.cxx"
+        "Random.hxx"
         "Rect.hxx"
         "Rect.inl"
         "Size.hxx"
@@ -17,3 +23,5 @@ target_sources(AnemoneRuntime
         "Transform2.inl"
         "Types.hxx"
 )
+
+add_subdirectory("Detail")

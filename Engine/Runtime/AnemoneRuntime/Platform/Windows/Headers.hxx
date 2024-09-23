@@ -116,6 +116,7 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 #include <WinSock2.h>
 #include <WS2tcpip.h>
 #include <Windows.h>
+#include <afunix.h>
 #include <cerrno>
 #include <cmath>
 

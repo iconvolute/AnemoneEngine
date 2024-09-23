@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Math/Aligned.hxx"
 #include "AnemoneRuntime/Math/Packed.hxx"
-#include "AnemoneRuntime/Numerics/Simd.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
 
 //
 //  API design note:
@@ -35,24 +35,24 @@ namespace Anemone::Math
 
     struct Matrix4x4F
     {
-        Numerics::Private::SimdMatrix4x4F Inner;
+        Detail::SimdMatrix4x4F Inner;
 
         [[nodiscard]] static Matrix4x4F anemone_vectorcall CreateTranslation(Vector3F v);
     };
 
     struct Mask2F
     {
-        Numerics::Private::SimdMask4F Inner;
+        Detail::SimdMask4F Inner;
     };
 
     struct Mask3F
     {
-        Numerics::Private::SimdMask4F Inner;
+        Detail::SimdMask4F Inner;
     };
 
     struct Mask4F
     {
-        Numerics::Private::SimdMask4F Inner;
+        Detail::SimdMask4F Inner;
 
         [[nodiscard]] static Mask4F anemone_vectorcall Create(bool x, bool y, bool z, bool w);
         [[nodiscard]] static inline Mask4F anemone_vectorcall CreateReplicated(bool value);
@@ -62,29 +62,29 @@ namespace Anemone::Math
 
     struct Vector2F
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
     };
 
     struct Vector3F
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
 
         [[nodiscard]] static Vector3F anemone_vectorcall Create(float x, float y, float z);
     };
 
     struct Vector4F
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
     };
 
     struct PlaneF
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
     };
 
     struct RotorF
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
 
         [[nodiscard]] static RotorF anemone_vectorcall Create(float xy, float xz, float yz, float scalar);
         [[nodiscard]] static RotorF anemone_vectorcall CreateFromBivector(Vector4F bivector, float scalar);
@@ -101,32 +101,32 @@ namespace Anemone::Math
 
     struct QuaternionF
     {
-        Numerics::Private::SimdVector4F Inner;
+        Detail::SimdVector4F Inner;
     };
 
     inline Matrix4x4F anemone_vectorcall Matrix4x4F::CreateTranslation(Vector3F v)
     {
-        return {Numerics::Private::Matrix4x4F_CreateTranslation(v.Inner)};
+        return {Detail::Matrix4x4F_CreateTranslation(v.Inner)};
     }
 
     inline Vector3F anemone_vectorcall Transform(Matrix4x4F matrix, Vector3F v)
     {
-        return {Numerics::Private::Vector4F_Transform3(v.Inner, matrix.Inner)};
+        return {Detail::Vector4F_Transform3(v.Inner, matrix.Inner)};
     }
 
     inline Vector2F anemone_vectorcall Add(Vector2F left, Vector2F right)
     {
-        return {Numerics::Private::Vector4F_Add(left.Inner, right.Inner)};
+        return {Detail::Vector4F_Add(left.Inner, right.Inner)};
     }
 
     inline Vector3F anemone_vectorcall Add(Vector3F left, Vector3F right)
     {
-        return {Numerics::Private::Vector4F_Add(left.Inner, right.Inner)};
+        return {Detail::Vector4F_Add(left.Inner, right.Inner)};
     }
 
     inline Vector4F anemone_vectorcall Add(Vector4F left, Vector4F right)
     {
-        return {Numerics::Private::Vector4F_Add(left.Inner, right.Inner)};
+        return {Detail::Vector4F_Add(left.Inner, right.Inner)};
     }
 }
 
@@ -135,96 +135,96 @@ namespace Anemone::Math
 {
     inline Mask4F anemone_vectorcall Mask4F::Create(bool x, bool y, bool z, bool w)
     {
-        return {Numerics::Private::Mask4F_Create(x, y, z, w)};
+        return {Detail::Mask4F_Create(x, y, z, w)};
     }
 
     inline Mask4F anemone_vectorcall Mask4F::CreateReplicated(bool value)
     {
-        return {Numerics::Private::Mask4F_Replicate(value)};
+        return {Detail::Mask4F_Replicate(value)};
     }
 
     inline Mask4F anemone_vectorcall Mask4F::CreateTrue()
     {
-        return {Numerics::Private::Mask4F_True()};
+        return {Detail::Mask4F_True()};
     }
 
     inline Mask4F anemone_vectorcall Mask4F::CreateFalse()
     {
-        return {Numerics::Private::Mask4F_False()};
+        return {Detail::Mask4F_False()};
     }
 
     template <size_t N>
     inline bool anemone_vectorcall Extract(Mask4F mask)
         requires(N < 4)
     {
-        return Numerics::Private::Mask4F_Extract<N>(mask.Inner);
+        return Detail::Mask4F_Extract<N>(mask.Inner);
     }
 
     template <size_t N>
     inline Mask4F anemone_vectorcall Insert(Mask4F mask, bool value)
     {
-        return {Numerics::Private::Mask4F_Insert<N>(mask.Inner, value)};
+        return {Detail::Mask4F_Insert<N>(mask.Inner, value)};
     }
 
     inline Mask4F anemone_vectorcall CompareEqual(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_CompareEqual(left.Inner, right.Inner)};
+        return {Detail::Mask4F_CompareEqual(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall CompareNotEqual(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_CompareNotEqual(left.Inner, right.Inner)};
+        return {Detail::Mask4F_CompareNotEqual(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall And(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_And(left.Inner, right.Inner)};
+        return {Detail::Mask4F_And(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall AndNot(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_AndNot(left.Inner, right.Inner)};
+        return {Detail::Mask4F_AndNot(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall Or(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_Or(left.Inner, right.Inner)};
+        return {Detail::Mask4F_Or(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall Xor(Mask4F left, Mask4F right)
     {
-        return {Numerics::Private::Mask4F_Xor(left.Inner, right.Inner)};
+        return {Detail::Mask4F_Xor(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall Not(Mask4F mask)
     {
-        return {Numerics::Private::Mask4F_Not(mask.Inner)};
+        return {Detail::Mask4F_Not(mask.Inner)};
     }
 
     inline Mask4F anemone_vectorcall Select(Mask4F mask, Mask4F whenFalse, Mask4F whenTrue)
     {
-        return {Numerics::Private::Mask4F_Select(mask.Inner, whenFalse.Inner, whenTrue.Inner)};
+        return {Detail::Mask4F_Select(mask.Inner, whenFalse.Inner, whenTrue.Inner)};
     }
 
     template <bool X, bool Y, bool Z, bool W>
     inline Mask4F anemone_vectorcall Select(Mask4F whenFalse, Mask4F whenTrue)
     {
-        return {Numerics::Private::Mask4F_Select<X, Y, Z, W>(whenFalse.Inner, whenTrue.Inner)};
+        return {Detail::Mask4F_Select<X, Y, Z, W>(whenFalse.Inner, whenTrue.Inner)};
     }
 
     inline bool anemone_vectorcall All(Mask4F mask)
     {
-        return Numerics::Private::Mask4F_All4(mask.Inner);
+        return Detail::Mask4F_All4(mask.Inner);
     }
 
     inline bool anemone_vectorcall Any(Mask4F mask)
     {
-        return Numerics::Private::Mask4F_Any4(mask.Inner);
+        return Detail::Mask4F_Any4(mask.Inner);
     }
 
     inline bool anemone_vectorcall None(Mask4F mask)
     {
-        return Numerics::Private::Mask4F_None4(mask.Inner);
+        return Detail::Mask4F_None4(mask.Inner);
     }
 }
 
@@ -233,7 +233,7 @@ namespace Anemone::Math
 {
     inline Vector3F anemone_vectorcall Vector3F::Create(float x, float y, float z)
     {
-        return {Numerics::Private::Vector4F_Create(x, y, z, 0.0f)};
+        return {Detail::Vector4F_Create(x, y, z, 0.0f)};
     }
 }
 
@@ -242,131 +242,131 @@ namespace Anemone::Math
 {
     inline RotorF anemone_vectorcall RotorF::Create(float xy, float xz, float yz, float scalar)
     {
-        return {Numerics::Private::RotorF_Create(xy, xz, yz, scalar)};
+        return {Detail::RotorF_Create(xy, xz, yz, scalar)};
     }
 
     inline RotorF anemone_vectorcall RotorF::CreateFromBivector(Vector4F bivector, float scalar)
     {
-        return {Numerics::Private::RotorF_Create(bivector.Inner, scalar)};
+        return {Detail::RotorF_Create(bivector.Inner, scalar)};
     }
 
     inline RotorF anemone_vectorcall RotorF::Identity()
     {
-        return {Numerics::Private::RotorF_Identity()};
+        return {Detail::RotorF_Identity()};
     }
 
     inline RotorF anemone_vectorcall RotorF::FromAxisAngle(Vector3F axis, float angle)
     {
-        return {Numerics::Private::RotorF_FromAxisAngle(axis.Inner, angle)};
+        return {Detail::RotorF_CreateFromAxisAngle(axis.Inner, angle)};
     }
 
     inline RotorF anemone_vectorcall RotorF::FromNormalAngle(Vector3F normal, float angle)
     {
-        return {Numerics::Private::RotorF_FromNormalAngle(normal.Inner, angle)};
+        return {Detail::RotorF_CreateFromNormalAngle(normal.Inner, angle)};
     }
 
     inline RotorF anemone_vectorcall RotorF::RotationBetween(Vector3F from, Vector3F to)
     {
-        return {Numerics::Private::RotorF_RotationBetween(from.Inner, to.Inner)};
+        return {Detail::RotorF_RotationBetween(from.Inner, to.Inner)};
     }
 
     inline RotorF anemone_vectorcall RotorF::Load(Packed::RotorF const& value)
     {
-        return {Numerics::Private::Vector4F_LoadUnalignedFloat4(reinterpret_cast<float const*>(&value))};
+        return {Detail::Vector4F_LoadUnalignedFloat4(reinterpret_cast<float const*>(&value))};
     }
 
     inline RotorF anemone_vectorcall RotorF::Load(Aligned::RotorF const& value)
     {
-        return {Numerics::Private::Vector4F_LoadAlignedFloat4(reinterpret_cast<float const*>(&value))};
+        return {Detail::Vector4F_LoadAlignedFloat4(reinterpret_cast<float const*>(&value))};
     }
 
     inline void anemone_vectorcall RotorF::Store(Packed::RotorF& destination, RotorF source)
     {
-        Numerics::Private::Vector4F_StoreUnalignedFloat4(reinterpret_cast<float*>(&destination), source.Inner);
+        Detail::Vector4F_StoreUnalignedFloat4(reinterpret_cast<float*>(&destination), source.Inner);
     }
 
     inline void anemone_vectorcall RotorF::Store(Aligned::RotorF& destination, RotorF source)
     {
-        Numerics::Private::Vector4F_StoreAlignedFloat4(reinterpret_cast<float*>(&destination), source.Inner);
+        Detail::Vector4F_StoreAlignedFloat4(reinterpret_cast<float*>(&destination), source.Inner);
     }
 
     inline Vector3F anemone_vectorcall Rotate(RotorF rotor, Vector3F v)
     {
-        return {Numerics::Private::RotorF_Rotate3(rotor.Inner, v.Inner)};
+        return {Detail::RotorF_Rotate3(rotor.Inner, v.Inner)};
     }
 
     inline Vector3F anemone_vectorcall InverseRotate(RotorF rotor, Vector3F v)
     {
-        return {Numerics::Private::RotorF_InverseRotate3(rotor.Inner, v.Inner)};
+        return {Detail::RotorF_InverseRotate3(rotor.Inner, v.Inner)};
     }
 
     inline RotorF anemone_vectorcall Dot(RotorF a, RotorF b)
     {
-        return {Numerics::Private::RotorF_Dot(a.Inner, b.Inner)};
+        return {Detail::RotorF_Dot(a.Inner, b.Inner)};
     }
 
     inline RotorF anemone_vectorcall Multiply(RotorF a, RotorF b)
     {
-        return {Numerics::Private::RotorF_Multiply(a.Inner, b.Inner)};
+        return {Detail::RotorF_Multiply(a.Inner, b.Inner)};
     }
 
     inline RotorF anemone_vectorcall Rotate(RotorF rotor, RotorF rotation)
     {
-        return {Numerics::Private::RotorF_RotateRotor(rotor.Inner, rotation.Inner)};
+        return {Detail::RotorF_RotateRotor(rotor.Inner, rotation.Inner)};
     }
 
     inline RotorF anemone_vectorcall Reverse(RotorF rotor)
     {
-        return {Numerics::Private::RotorF_Reverse(rotor.Inner)};
+        return {Detail::RotorF_Reverse(rotor.Inner)};
     }
 
     inline Vector4F anemone_vectorcall Length(RotorF rotor)
     {
-        return {Numerics::Private::RotorF_Length(rotor.Inner)};
+        return {Detail::RotorF_Length(rotor.Inner)};
     }
 
     inline Vector4F anemone_vectorcall LengthSquared(RotorF rotor)
     {
-        return {Numerics::Private::RotorF_LengthSquared(rotor.Inner)};
+        return {Detail::RotorF_LengthSquared(rotor.Inner)};
     }
 
     inline RotorF anemone_vectorcall Normalize(RotorF rotor)
     {
-        return {Numerics::Private::RotorF_Normalize(rotor.Inner)};
+        return {Detail::RotorF_Normalize(rotor.Inner)};
     }
 
     inline Matrix4x4F anemone_vectorcall ToMatrix4x4F(RotorF rotor)
     {
-        return {Numerics::Private::RotorF_ToMatrix4x4F(rotor.Inner)};
+        return {Detail::RotorF_ToMatrix4x4F(rotor.Inner)};
     }
 
     inline RotorF anemone_vectorcall Nlerp(RotorF from, RotorF to, Vector4F t)
     {
-        return {Numerics::Private::RotorF_Nlerp(from.Inner, to.Inner, t.Inner)};
+        return {Detail::RotorF_Nlerp(from.Inner, to.Inner, t.Inner)};
     }
 
     inline RotorF anemone_vectorcall Nlerp(RotorF from, RotorF to, float t)
     {
-        return {Numerics::Private::RotorF_Nlerp(from.Inner, to.Inner, t)};
+        return {Detail::RotorF_Nlerp(from.Inner, to.Inner, t)};
     }
 
     inline RotorF anemone_vectorcall Slerp(RotorF from, RotorF to, Vector4F t)
     {
-        return {Numerics::Private::RotorF_Slerp(from.Inner, to.Inner, t.Inner)};
+        return {Detail::RotorF_Slerp(from.Inner, to.Inner, t.Inner)};
     }
 
     inline RotorF anemone_vectorcall Slerp(RotorF from, RotorF to, float t)
     {
-        return {Numerics::Private::RotorF_Slerp(from.Inner, to.Inner, t)};
+        return {Detail::RotorF_Slerp(from.Inner, to.Inner, t)};
     }
 
     inline Mask4F anemone_vectorcall CompareEquals(RotorF left, RotorF right)
     {
-        return {Numerics::Private::RotorF_CompareEqual(left.Inner, right.Inner)};
+        return {Detail::RotorF_CompareEqual(left.Inner, right.Inner)};
     }
 
     inline Mask4F anemone_vectorcall CompareNotEquals(RotorF left, RotorF right)
     {
-        return {Numerics::Private::RotorF_CompareNotEqual(left.Inner, right.Inner)};
+        return {Detail::RotorF_CompareNotEqual(left.Inner, right.Inner)};
     }
 }

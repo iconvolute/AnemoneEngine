@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Math/Matrix3x2.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Point.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 namespace Anemone::Math
 {
@@ -54,8 +54,8 @@ namespace Anemone::Math
 
     inline Matrix3x2F Matrix3x2F::CreateRotation(float radians)
     {
-        float const s = Numerics::Sin(radians);
-        float const c = Numerics::Cos(radians);
+        float const s = Sin(radians);
+        float const c = Cos(radians);
 
         return Matrix3x2F{
             c, s,
@@ -65,8 +65,8 @@ namespace Anemone::Math
 
     inline Matrix3x2F Matrix3x2F::CreateRotation(float radians, PointF center)
     {
-        float const s = Numerics::Sin(radians);
-        float const c = Numerics::Cos(radians);
+        float const s = Sin(radians);
+        float const c = Cos(radians);
         float const x = (center.X * (1.0f - c)) + (center.Y * s);
         float const y = (center.Y * (1.0f - c)) - (center.X * s);
 
@@ -116,8 +116,8 @@ namespace Anemone::Math
 
     inline Matrix3x2F Matrix3x2F::CreateSkew(float radiansX, float radiansY)
     {
-        float const xTan = Numerics::Tan(radiansX);
-        float const yTan = Numerics::Tan(radiansY);
+        float const xTan = Tan(radiansX);
+        float const yTan = Tan(radiansY);
 
         return Matrix3x2F{
             1.0f, yTan,
@@ -127,8 +127,8 @@ namespace Anemone::Math
 
     inline Matrix3x2F Matrix3x2F::CreateSkew(float radiansX, float radiansY, PointF center)
     {
-        float const xTan = Numerics::Tan(radiansX);
-        float const yTan = Numerics::Tan(radiansY);
+        float const xTan = Tan(radiansX);
+        float const yTan = Tan(radiansY);
 
         float const tx = -center.Y * xTan;
         float const ty = -center.X * yTan;
@@ -148,7 +148,7 @@ namespace Anemone::Math
     {
         float const det = (matrix.M11 * matrix.M22) - (matrix.M12 * matrix.M21);
 
-        if (Numerics::IsNearZero(det))
+        if (IsNearZero(det))
         {
             result = Matrix3x2F::CreateNaN();
             return false;

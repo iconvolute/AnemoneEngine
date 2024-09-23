@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Math/Size.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 namespace Anemone::Math
 {
@@ -20,7 +20,7 @@ namespace Anemone::Math
 
     constexpr bool SizeF::IsEmpty() const
     {
-        return Numerics::IsNearZero(this->Width) && Numerics::IsNearZero(this->Height);
+        return IsNearZero(this->Width) && IsNearZero(this->Height);
     }
 
     constexpr float SizeF::AspectRatio() const

@@ -1,7 +1,17 @@
+// ReSharper disable CppClangTidyClangDiagnosticFloatEqual
+// ReSharper disable CppPassValueParameterByConstReference
 #pragma once
-#include "AnemoneRuntime/Numerics/Simd.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdDouble.hxx"
 
-namespace Anemone::Numerics::Private
+#if ANEMONE_BUILD_DISABLE_SIMD
+
+namespace Anemone::Math::Detail
+{
+}
+
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+
+namespace Anemone::Math::Detail
 {
     anemone_forceinline __m256d anemone_vectorcall AvxMultiplyAdd(__m256d a, __m256d b, __m256d c)
     {
@@ -125,9 +135,6 @@ namespace Anemone::Numerics::Private
 }
 
 #if false
-// Mask type
-namespace Anemone::Numerics::Simd
-{
     template <>
     inline Mask<double>::Mask(bool x, bool y, bool z, bool w)
         : Private::Mask<double>{
@@ -164,96 +171,108 @@ namespace Anemone::Numerics::Simd
     {
     }
 
-// Vector
-namespace Anemone::Numerics::Simd
+    // Vector
+    namespace Anemone::Numerics::Simd
+    {
+        template <>
+        inline double anemone_vectorcall Extract<0, double>(Vector<double> value)
+        {
+            return _mm_cvtsd_f64(_mm256_castpd256_pd128(value.Inner));
+        }
+
+        template <>
+        inline double anemone_vectorcall Extract<1, double>(Vector<double> value)
+        {
+            __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
+            __m128d const v_yy = _mm_permute_pd(v_xy, _MM_SHUFFLE2(1, 1));
+            return _mm_cvtsd_f64(v_yy);
+        }
+
+        template <>
+        inline double anemone_vectorcall Extract<2, double>(Vector<double> value)
+        {
+            __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
+            return _mm_cvtsd_f64(v_zw);
+        }
+
+        template <>
+        inline double anemone_vectorcall Extract<3, double>(Vector<double> value)
+        {
+            __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
+            __m128d const v_ww = _mm_permute_pd(v_zw, _MM_SHUFFLE2(1, 1));
+            return _mm_cvtsd_f64(v_ww);
+        }
+
+        template <>
+        inline Vector<double> anemone_vectorcall Insert<0, double>(Vector<double> value, double element)
+        {
+            // = [x, y]
+            __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
+            // = [e, y]
+            __m128d const v_ey = _mm_move_sd(v_xy, _mm_set_sd(element));
+            // = [e, y, z, w]
+            return {{
+                _mm256_insertf128_pd(value.Inner, v_ey, 0),
+            }};
+        }
+
+        template <>
+        inline Vector<double> anemone_vectorcall Insert<1, double>(Vector<double> value, double element)
+        {
+            // = [x, y]
+            __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
+            // = [y, x]
+            __m128d const v_yx = _mm_permute_pd(v_xy, _MM_SHUFFLE2(0, 1));
+            // = [e, x]
+            __m128d const v_ex = _mm_move_sd(v_yx, _mm_set_sd(element));
+            // = [x, e]
+            __m128d const v_xe = _mm_permute_pd(v_ex, _MM_SHUFFLE2(0, 1));
+            // = [x, e, z, w]
+            return {{
+                _mm256_insertf128_pd(value.Inner, v_xe, 0),
+            }};
+        }
+
+        template <>
+        inline Vector<double> anemone_vectorcall Insert<2, double>(Vector<double> value, double element)
+        {
+            // = [z, w]
+            __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
+            // = [e, w]
+            __m128d const v_ew = _mm_move_sd(v_zw, _mm_set_sd(element));
+            // = [x, y, e, w]
+            return {{
+                _mm256_insertf128_pd(value.Inner, v_ew, 1),
+            }};
+        }
+
+        template <>
+        inline Vector<double> anemone_vectorcall Insert<3, double>(Vector<double> value, double element)
+        {
+            // = [z, w]
+            __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
+            // = [w, z]
+            __m128d const v_wz = _mm_permute_pd(v_zw, _MM_SHUFFLE2(0, 1));
+            // = [e, z]
+            __m128d const v_ez = _mm_move_sd(v_wz, _mm_set_sd(element));
+            // = [z, e]
+            __m128d const v_ze = _mm_permute_pd(v_ez, _MM_SHUFFLE2(0, 1));
+            // = [x, y, z, e]
+            return {{
+                _mm256_insertf128_pd(value.Inner, v_ze, 1),
+            }};
+        }
+#endif
+
+#elif ANEMONE_FEATURE_NEON
+
+namespace Anemone::Math::Detail
 {
-    template <>
-    inline double anemone_vectorcall Extract<0, double>(Vector<double> value)
+    anemone_forceinline uint64x2_t anemone_vectorcall NeonCompareInBounds(float64x2_t v, float64x2_t lower, float64x2_t upper)
     {
-        return _mm_cvtsd_f64(_mm256_castpd256_pd128(value.Inner));
-    }
-
-    template <>
-    inline double anemone_vectorcall Extract<1, double>(Vector<double> value)
-    {
-        __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
-        __m128d const v_yy = _mm_permute_pd(v_xy, _MM_SHUFFLE2(1, 1));
-        return _mm_cvtsd_f64(v_yy);
-    }
-
-    template <>
-    inline double anemone_vectorcall Extract<2, double>(Vector<double> value)
-    {
-        __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
-        return _mm_cvtsd_f64(v_zw);
-    }
-
-    template <>
-    inline double anemone_vectorcall Extract<3, double>(Vector<double> value)
-    {
-        __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
-        __m128d const v_ww = _mm_permute_pd(v_zw, _MM_SHUFFLE2(1, 1));
-        return _mm_cvtsd_f64(v_ww);
-    }
-
-    template <>
-    inline Vector<double> anemone_vectorcall Insert<0, double>(Vector<double> value, double element)
-    {
-        // = [x, y]
-        __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
-        // = [e, y]
-        __m128d const v_ey = _mm_move_sd(v_xy, _mm_set_sd(element));
-        // = [e, y, z, w]
-        return {{
-            _mm256_insertf128_pd(value.Inner, v_ey, 0),
-        }};
-    }
-
-    template <>
-    inline Vector<double> anemone_vectorcall Insert<1, double>(Vector<double> value, double element)
-    {
-        // = [x, y]
-        __m128d const v_xy = _mm256_castpd256_pd128(value.Inner);
-        // = [y, x]
-        __m128d const v_yx = _mm_permute_pd(v_xy, _MM_SHUFFLE2(0, 1));
-        // = [e, x]
-        __m128d const v_ex = _mm_move_sd(v_yx, _mm_set_sd(element));
-        // = [x, e]
-        __m128d const v_xe = _mm_permute_pd(v_ex, _MM_SHUFFLE2(0, 1));
-        // = [x, e, z, w]
-        return {{
-            _mm256_insertf128_pd(value.Inner, v_xe, 0),
-        }};
-    }
-
-    template <>
-    inline Vector<double> anemone_vectorcall Insert<2, double>(Vector<double> value, double element)
-    {
-        // = [z, w]
-        __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
-        // = [e, w]
-        __m128d const v_ew = _mm_move_sd(v_zw, _mm_set_sd(element));
-        // = [x, y, e, w]
-        return {{
-            _mm256_insertf128_pd(value.Inner, v_ew, 1),
-        }};
-    }
-
-    template <>
-    inline Vector<double> anemone_vectorcall Insert<3, double>(Vector<double> value, double element)
-    {
-        // = [z, w]
-        __m128d const v_zw = _mm256_extractf128_pd(value.Inner, 1);
-        // = [w, z]
-        __m128d const v_wz = _mm_permute_pd(v_zw, _MM_SHUFFLE2(0, 1));
-        // = [e, z]
-        __m128d const v_ez = _mm_move_sd(v_wz, _mm_set_sd(element));
-        // = [z, e]
-        __m128d const v_ze = _mm_permute_pd(v_ez, _MM_SHUFFLE2(0, 1));
-        // = [x, y, z, e]
-        return {{
-            _mm256_insertf128_pd(value.Inner, v_ze, 1),
-        }};
+        uint64x2_t const maskLower = vcleq_f64(lower, v);
+        uint64x2_t const maskUpper = vcleq_f64(v, upper);
+        return vandq_u64(maskLower, maskUpper);
     }
 }
 

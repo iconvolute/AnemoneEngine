@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Numerics/Simd.hxx"
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -10,8 +10,8 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("Matrix4x4F_Multiply")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     static constexpr float tolerance = 0.001f;
 
@@ -59,7 +59,7 @@ TEST_CASE("Matrix4x4F_Multiply")
 
     SECTION("a * identity")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_Multiply(Matrix4x4F_LoadFloat4x4(a), identity);
+        SimdMatrix4x4F const m = Matrix4x4F_Multiply(Matrix4x4F_LoadUnalignedFloat4x4(a), identity);
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(1.0f, tolerance));
@@ -88,7 +88,7 @@ TEST_CASE("Matrix4x4F_Multiply")
 
     SECTION("identity * b")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_Multiply(identity, Matrix4x4F_LoadFloat4x4(b));
+        SimdMatrix4x4F const m = Matrix4x4F_Multiply(identity, Matrix4x4F_LoadUnalignedFloat4x4(b));
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
@@ -117,7 +117,7 @@ TEST_CASE("Matrix4x4F_Multiply")
 
     SECTION("a * b")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_Multiply(Matrix4x4F_LoadFloat4x4(a), Matrix4x4F_LoadFloat4x4(b));
+        SimdMatrix4x4F const m = Matrix4x4F_Multiply(Matrix4x4F_LoadUnalignedFloat4x4(a), Matrix4x4F_LoadUnalignedFloat4x4(b));
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(310.0f, tolerance));
@@ -148,8 +148,8 @@ TEST_CASE("Matrix4x4F_Multiply")
 TEST_CASE("Matrix4x4F_MultiplyTranspose")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     static constexpr float tolerance = 0.001f;
 
@@ -197,7 +197,7 @@ TEST_CASE("Matrix4x4F_MultiplyTranspose")
 
     SECTION("a * identity")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(Matrix4x4F_LoadFloat4x4(a), identity);
+        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(Matrix4x4F_LoadUnalignedFloat4x4(a), identity);
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(1.0f, tolerance));
@@ -226,7 +226,7 @@ TEST_CASE("Matrix4x4F_MultiplyTranspose")
 
     SECTION("identity * b")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(identity, Matrix4x4F_LoadFloat4x4(b));
+        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(identity, Matrix4x4F_LoadUnalignedFloat4x4(b));
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
@@ -255,7 +255,7 @@ TEST_CASE("Matrix4x4F_MultiplyTranspose")
 
     SECTION("a * b")
     {
-        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(Matrix4x4F_LoadFloat4x4(a), Matrix4x4F_LoadFloat4x4(b));
+        SimdMatrix4x4F const m = Matrix4x4F_MultiplyTranspose(Matrix4x4F_LoadUnalignedFloat4x4(a), Matrix4x4F_LoadUnalignedFloat4x4(b));
 
         SimdVector4F const r0 = Matrix4x4F_Extract<0>(m);
         CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(310.0f, tolerance));
@@ -325,8 +325,8 @@ T Helper_Matrix4x4_ComputeDeterminant(T const* m)
 TEST_CASE("Matrix4x4F_Determinant")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     static constexpr float tolerance = 0.05f;
 
@@ -355,7 +355,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
     SECTION("a")
     {
-        SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadFloat4x4(a));
+        SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadUnalignedFloat4x4(a));
         CHECK_THAT(Vector4F_Extract<0>(d), WithinAbs(0.0f, tolerance));
         CHECK_THAT(Vector4F_Extract<1>(d), WithinAbs(0.0f, tolerance));
         CHECK_THAT(Vector4F_Extract<2>(d), WithinAbs(0.0f, tolerance));
@@ -364,7 +364,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
     SECTION("b")
     {
-        SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadFloat4x4(b));
+        SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadUnalignedFloat4x4(b));
         CHECK_THAT(Vector4F_Extract<0>(d), WithinAbs(-34.0f, tolerance));
         CHECK_THAT(Vector4F_Extract<1>(d), WithinAbs(-34.0f, tolerance));
         CHECK_THAT(Vector4F_Extract<2>(d), WithinAbs(-34.0f, tolerance));
@@ -373,7 +373,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
     SECTION("Random")
     {
-        Anemone::Numerics::Random random{2137};
+        Random random{2137};
 
         for (size_t i = 0; i < 100; ++i)
         {
@@ -386,7 +386,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
             float const expected = Helper_Matrix4x4_ComputeDeterminant(m);
 
-            SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadFloat4x4(m));
+            SimdVector4F const d = Matrix4x4F_Determinant(Matrix4x4F_LoadUnalignedFloat4x4(m));
             CHECK_THAT(Vector4F_Extract<0>(d), WithinAbs(expected, tolerance));
             CHECK_THAT(Vector4F_Extract<1>(d), WithinAbs(expected, tolerance));
             CHECK_THAT(Vector4F_Extract<2>(d), WithinAbs(expected, tolerance));
@@ -492,8 +492,8 @@ T Helper_Matrix4x4_ComputeInverse(T const* matrix, T* result)
 TEST_CASE("Matrix4x4F_Inverse")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     static constexpr float tolerance = 0.01f;
 
@@ -505,7 +505,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             02.0f, 12.0f, 22.0f, 32.0f,
             03.0f, 13.0f, 23.0f, 33.0f};
 
-        SimdMatrix4x4F const matrix = Matrix4x4F_LoadFloat4x4(source);
+        SimdMatrix4x4F const matrix = Matrix4x4F_LoadUnalignedFloat4x4(source);
 
         SimdVector4F determinant;
         SimdMatrix4x4F const inverse = Matrix4x4F_Inverse(matrix, determinant);
@@ -557,7 +557,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             0.0f, 0.0f, 1.0f, 0.0f,
             0.0f, 0.0f, 0.0f, 1.0f};
 
-        SimdMatrix4x4F const matrix = Matrix4x4F_LoadFloat4x4(source);
+        SimdMatrix4x4F const matrix = Matrix4x4F_LoadUnalignedFloat4x4(source);
 
         SimdVector4F determinant;
         SimdMatrix4x4F const inverse = Matrix4x4F_Inverse(matrix, determinant);
@@ -601,7 +601,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             2.0f, 4.0f, 0.0f, 0.0f,
             3.0f, 6.0f, 1.0f, 0.0f,
             4.0f, 8.0f, 0.0f, 1.0f};
-        SimdMatrix4x4F const matrix = Matrix4x4F_LoadFloat4x4(source);
+        SimdMatrix4x4F const matrix = Matrix4x4F_LoadUnalignedFloat4x4(source);
 
         SimdVector4F determinant;
         SimdMatrix4x4F const inverse = Matrix4x4F_Inverse(matrix, determinant);
@@ -640,7 +640,7 @@ TEST_CASE("Matrix4x4F_Inverse")
 
     SECTION("Random")
     {
-        Anemone::Numerics::Random random{2137};
+        Random random{2137};
 
         for (size_t i = 0; i < 100; ++i)
         {
@@ -658,7 +658,7 @@ TEST_CASE("Matrix4x4F_Inverse")
             CHECK_THAT(ed, WithinAbs(expected_determinant, tolerance));
 
             SimdVector4F determinant;
-            SimdMatrix4x4F const inverse = Matrix4x4F_Inverse(Matrix4x4F_LoadFloat4x4(m), determinant);
+            SimdMatrix4x4F const inverse = Matrix4x4F_Inverse(Matrix4x4F_LoadUnalignedFloat4x4(m), determinant);
 
             if (IsNearZero(Vector4F_Extract<0>(determinant)))
             {
@@ -698,7 +698,7 @@ TEST_CASE("Matrix4x4F_Inverse")
                 }
 
                 // Inverse of the matrix multiplied by the original matrix should be the identity matrix.
-                SimdMatrix4x4F const product = Matrix4x4F_Multiply(inverse, Matrix4x4F_LoadFloat4x4(m));
+                SimdMatrix4x4F const product = Matrix4x4F_Multiply(inverse, Matrix4x4F_LoadUnalignedFloat4x4(m));
                 {
                     SimdVector4F const r0 = Matrix4x4F_Extract<0>(product);
                     CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(1.0f, tolerance));
@@ -732,14 +732,14 @@ TEST_CASE("Matrix4x4F_Inverse")
 TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Math;
 
     static constexpr float tolerance = 0.001f;
 
     SECTION("x-axis, 0 degrees")
     {
-        SimdVector4F const rotation = QuaternionF_FromAxisAngle(
+        SimdVector4F const rotation = QuaternionF_CreateFromAxisAngle(
             Vector4F_PositiveUnitX(),
             DegreesToRadians(0.0f));
 
@@ -772,7 +772,7 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 
     SECTION("x-axis, 90 degrees")
     {
-        SimdVector4F const rotation = QuaternionF_FromAxisAngle(
+        SimdVector4F const rotation = QuaternionF_CreateFromAxisAngle(
             Vector4F_PositiveUnitX(),
             DegreesToRadians(90.0f));
 
@@ -805,7 +805,7 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 
     SECTION("y-axis, 90 degrees")
     {
-        SimdVector4F const rotation = QuaternionF_FromAxisAngle(
+        SimdVector4F const rotation = QuaternionF_CreateFromAxisAngle(
             Vector4F_PositiveUnitY(),
             DegreesToRadians(90.0f));
 
@@ -838,7 +838,7 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 
     SECTION("z-axis, 90 degrees")
     {
-        SimdVector4F const rotation = QuaternionF_FromAxisAngle(
+        SimdVector4F const rotation = QuaternionF_CreateFromAxisAngle(
             Vector4F_PositiveUnitZ(),
             DegreesToRadians(90.0f));
 
@@ -871,7 +871,7 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 
     SECTION("custom axis and angle")
     {
-        SimdVector4F const rotation = QuaternionF_FromAxisAngle(
+        SimdVector4F const rotation = QuaternionF_CreateFromAxisAngle(
             Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f),
             DegreesToRadians(30.0f));
 
@@ -906,8 +906,8 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 TEST_CASE("Matrix4x4F_CreateFromPitchYawRoll")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     SECTION("Pitch = 0, Yaw = 0, Roll = 0")
     {
@@ -1073,8 +1073,8 @@ TEST_CASE("Matrix4x4F_CreateFromPitchYawRoll")
 TEST_CASE("Matrix4x4F_CreateAffineTransform3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     SECTION("Affine2 - Identity")
     {
@@ -1100,7 +1100,7 @@ TEST_CASE("Matrix4x4F_CreateAffineTransform3")
         SimdMatrix4x4F xform = Matrix4x4F_CreateAffineTransform3(
             Vector4F_Replicate(2.0f),
             Vector4F_Create(1.0f, 1.0f, 1.0f, 1.0f),
-            QuaternionF_FromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f)),
+            QuaternionF_CreateFromAxisAngle(Vector4F_PositiveUnitZ(), DegreesToRadians(90.0f)),
             Vector4F_Create(2.0f, 3.0f, 4.0f, 5.0f));
 
 
@@ -1118,8 +1118,8 @@ TEST_CASE("Matrix4x4F_CreateAffineTransform3")
 TEST_CASE("Matrix4x4F_CreateAffineTransform2")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     SECTION("Affine2 - Identity")
     {
@@ -1163,8 +1163,8 @@ TEST_CASE("Matrix4x4F_CreateAffineTransform2")
 TEST_CASE("Matrix4x4F_Transpose")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1174,7 +1174,7 @@ TEST_CASE("Matrix4x4F_Transpose")
         31.0f, 32.0f, 33.0f, 34.0f,
         41.0f, 42.0f, 43.0f, 44.0f};
 
-    SimdMatrix4x4F const m = Matrix4x4F_LoadFloat4x4(source);
+    SimdMatrix4x4F const m = Matrix4x4F_LoadUnalignedFloat4x4(source);
     SimdMatrix4x4F const r = Matrix4x4F_Transpose(m);
 
     SimdVector4F const r0 = Matrix4x4F_Extract<0>(r);
@@ -1206,8 +1206,8 @@ TEST_CASE("Matrix4x4F_Transpose")
 TEST_CASE("Matrix4x4F_Diagonal")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1217,7 +1217,7 @@ TEST_CASE("Matrix4x4F_Diagonal")
         31.0f, 32.0f, 33.0f, 34.0f,
         41.0f, 42.0f, 43.0f, 44.0f};
 
-    SimdMatrix4x4F const m = Matrix4x4F_LoadFloat4x4(source);
+    SimdMatrix4x4F const m = Matrix4x4F_LoadUnalignedFloat4x4(source);
 
     SimdVector4F const r = Matrix4x4F_Diagonal(m);
 
@@ -1230,8 +1230,8 @@ TEST_CASE("Matrix4x4F_Diagonal")
 TEST_CASE("Matrix4x4F_Trace")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1241,7 +1241,7 @@ TEST_CASE("Matrix4x4F_Trace")
         31.0f, 32.0f, 33.0f, 34.0f,
         41.0f, 42.0f, 43.0f, 44.0f};
 
-    SimdMatrix4x4F const m = Matrix4x4F_LoadFloat4x4(source);
+    SimdMatrix4x4F const m = Matrix4x4F_LoadUnalignedFloat4x4(source);
 
     SimdVector4F const r = Matrix4x4F_Trace(m);
 
@@ -1255,8 +1255,8 @@ TEST_CASE("Matrix4x4F_Trace")
 TEST_CASE("Matrix4x4F_CreateTranslation / scalar")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1291,8 +1291,8 @@ TEST_CASE("Matrix4x4F_CreateTranslation / scalar")
 TEST_CASE("Matrix4x4F_CreateTranslation / vector")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1324,12 +1324,11 @@ TEST_CASE("Matrix4x4F_CreateTranslation / vector")
     CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
 }
 
-
 TEST_CASE("Matrix4x4F_CreateScale / scalar")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1364,8 +1363,8 @@ TEST_CASE("Matrix4x4F_CreateScale / scalar")
 TEST_CASE("Matrix4x4F_CreateScale / vector")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1400,8 +1399,8 @@ TEST_CASE("Matrix4x4F_CreateScale / vector")
 TEST_CASE("Matrix4x4F_CreateRotationX")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1526,12 +1525,11 @@ TEST_CASE("Matrix4x4F_CreateRotationX")
     }
 }
 
-
 TEST_CASE("Matrix4x4F_CreateRotationY")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1659,8 +1657,8 @@ TEST_CASE("Matrix4x4F_CreateRotationY")
 TEST_CASE("Matrix4x4F_CreateRotationZ")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1783,4 +1781,686 @@ TEST_CASE("Matrix4x4F_CreateRotationZ")
         CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(0.0f, tolerance));
         CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
     }
+}
+
+TEST_CASE("Matrix4x4F_LoadAlignedFloat4x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(14.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(24.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(34.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(41.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(42.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(43.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(44.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadAlignedFloat4x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x3F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x3(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(41.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(42.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(43.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadAlignedFloat3x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix3x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat3x4(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(14.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(24.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(34.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Packed::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadUnalignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(14.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(24.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(34.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(41.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(42.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(43.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(44.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Packed::Matrix4x3F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadUnalignedFloat4x3(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(41.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(42.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(43.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Packed::Matrix3x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadUnalignedFloat3x4(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(14.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(24.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(34.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Packed::Matrix3x3F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadUnalignedFloat3x3(reinterpret_cast<float const*>(&source));
+
+    SimdVector4F const r0 = Matrix4x4F_Extract<0>(loaded);
+    SimdVector4F const r1 = Matrix4x4F_Extract<1>(loaded);
+    SimdVector4F const r2 = Matrix4x4F_Extract<2>(loaded);
+    SimdVector4F const r3 = Matrix4x4F_Extract<3>(loaded);
+
+    CHECK_THAT(Vector4F_Extract<0>(r0), WithinAbs(11.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r0), WithinAbs(12.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r0), WithinAbs(13.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r0), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r1), WithinAbs(21.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r1), WithinAbs(22.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r1), WithinAbs(23.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r1), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r2), WithinAbs(31.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r2), WithinAbs(32.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r2), WithinAbs(33.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r2), WithinAbs(0.0f, tolerance));
+
+    CHECK_THAT(Vector4F_Extract<0>(r3), WithinAbs(0.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<1>(r3), WithinAbs(0.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<2>(r3), WithinAbs(0.0f, tolerance));
+    CHECK_THAT(Vector4F_Extract<3>(r3), WithinAbs(1.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreAlignedFloat4x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Aligned::Matrix4x4F destination{};
+
+    Matrix4x4F_StoreAlignedFloat4x4(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M14, WithinAbs(14.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M24, WithinAbs(24.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M34, WithinAbs(34.0f, tolerance));
+    CHECK_THAT(destination.M41, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M42, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M43, WithinAbs(43.0f, tolerance));
+    CHECK_THAT(destination.M44, WithinAbs(44.0f, tolerance));    
+}
+
+TEST_CASE("Matrix4x4F_StoreAlignedFloat4x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Aligned::Matrix4x3F destination{};
+
+    Matrix4x4F_StoreAlignedFloat4x3(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M41, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M42, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M43, WithinAbs(43.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreAlignedFloat3x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Aligned::Matrix3x4F destination{};
+
+    Matrix4x4F_StoreAlignedFloat3x4(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M14, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M24, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M34, WithinAbs(43.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Packed::Matrix4x4F destination{};
+
+    Matrix4x4F_StoreUnalignedFloat4x4(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M14, WithinAbs(14.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M24, WithinAbs(24.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M34, WithinAbs(34.0f, tolerance));
+    CHECK_THAT(destination.M41, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M42, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M43, WithinAbs(43.0f, tolerance));
+    CHECK_THAT(destination.M44, WithinAbs(44.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Packed::Matrix4x3F destination{};
+
+    Matrix4x4F_StoreUnalignedFloat4x3(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M41, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M42, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M43, WithinAbs(43.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreUnalignedFloat3x4")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Packed::Matrix3x4F destination{};
+
+    Matrix4x4F_StoreUnalignedFloat3x4(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M14, WithinAbs(41.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M24, WithinAbs(42.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
+    CHECK_THAT(destination.M34, WithinAbs(43.0f, tolerance));
+}
+
+TEST_CASE("Matrix4x4F_StoreUnalignedFloat3x3")
+{
+    using namespace Catch::Matchers;
+    using namespace Anemone::Math;
+    using namespace Anemone::Math::Detail;
+
+    static constexpr float tolerance = 0.0001f;
+
+    Aligned::Matrix4x4F source;
+    source.M11 = 11.0f;
+    source.M12 = 12.0f;
+    source.M13 = 13.0f;
+    source.M14 = 14.0f;
+    source.M21 = 21.0f;
+    source.M22 = 22.0f;
+    source.M23 = 23.0f;
+    source.M24 = 24.0f;
+    source.M31 = 31.0f;
+    source.M32 = 32.0f;
+    source.M33 = 33.0f;
+    source.M34 = 34.0f;
+    source.M41 = 41.0f;
+    source.M42 = 42.0f;
+    source.M43 = 43.0f;
+    source.M44 = 44.0f;
+
+    SimdMatrix4x4F const loaded = Matrix4x4F_LoadAlignedFloat4x4(reinterpret_cast<float const*>(&source));
+
+    Packed::Matrix3x3F destination{};
+
+    Matrix4x4F_StoreUnalignedFloat3x3(reinterpret_cast<float*>(&destination), loaded);
+
+    CHECK_THAT(destination.M11, WithinAbs(11.0f, tolerance));
+    CHECK_THAT(destination.M12, WithinAbs(12.0f, tolerance));
+    CHECK_THAT(destination.M13, WithinAbs(13.0f, tolerance));
+    CHECK_THAT(destination.M21, WithinAbs(21.0f, tolerance));
+    CHECK_THAT(destination.M22, WithinAbs(22.0f, tolerance));
+    CHECK_THAT(destination.M23, WithinAbs(23.0f, tolerance));
+    CHECK_THAT(destination.M31, WithinAbs(31.0f, tolerance));
+    CHECK_THAT(destination.M32, WithinAbs(32.0f, tolerance));
+    CHECK_THAT(destination.M33, WithinAbs(33.0f, tolerance));
 }

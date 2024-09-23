@@ -1,7 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Types.hxx"
-#include "AnemoneRuntime/Numerics/Numbers.hxx"
+#include "AnemoneRuntime/Math/Numbers.hxx"
 
 #include <cfloat>
 #include <type_traits>
@@ -15,7 +14,7 @@
 
 #if ANEMONE_ARCHITECTURE_ARM64
 
-namespace Anemone::Numerics::Private
+namespace Anemone::Math::Detail
 {
     //    return vrecpes_f32(value);
     //    return vrecped_f64(value);
@@ -27,7 +26,7 @@ namespace Anemone::Numerics::Private
 
 #if ANEMONE_ARCHITECTURE_X64
 
-namespace Anemone::Numerics::Private
+namespace Anemone::Math::Detail
 {
     // = sqrt(x)
     inline float AvxSquareRoot(float x)
@@ -98,7 +97,7 @@ namespace Anemone::Numerics::Private
 
 #endif
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     template <typename T>
     constexpr T Min(T left, T right)
@@ -501,7 +500,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     inline Float3 CartesianToSpherical(Float3 const& value) noexcept
     {
@@ -583,9 +582,8 @@ namespace Anemone::Numerics
 
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
-
     template <typename T>
     constexpr T PreciseLerp(T a, T b, T t)
         requires(std::is_floating_point_v<T>)
@@ -875,7 +873,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     template <typename T>
     float NearbyInt(float value)
@@ -1107,7 +1105,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     template <typename T>
     int QuadricEquation(T a, T b, T c, T& out_x1, T& out_x2)
@@ -1155,7 +1153,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     constexpr uint32_t UNormToUInt(float value, size_t bits)
     {
@@ -1212,7 +1210,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     template <typename T>
     T UnwindRadians(T value)
@@ -1260,47 +1258,47 @@ namespace Anemone::Numerics
     constexpr T RevolutionsToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_RevolutionsToDegrees;
+        return value * Detail::Factor_RevolutionsToDegrees;
     }
 
     template <typename T>
     constexpr T RevolutionsToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_RevolutionsToRadians;
+        return value * Detail::Factor_RevolutionsToRadians;
     }
 
     template <typename T>
     constexpr T DegreesToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_DegreesToRevolutions;
+        return value * Detail::Factor_DegreesToRevolutions;
     }
 
     template <typename T>
     constexpr T RadiansToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_RadiansToRevolutions;
+        return value * Detail::Factor_RadiansToRevolutions;
     }
 
     template <typename T>
     constexpr T RadiansToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_RadiansToDegrees;
+        return value * Detail::Factor_RadiansToDegrees;
     }
 
     template <typename T>
     constexpr T DegreesToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Private::Factor_DegreesToRadians;
+        return value * Detail::Factor_DegreesToRadians;
     }
 
 }
 
-namespace Anemone::Numerics::Signal
+namespace Anemone::Math
 {
     template <typename T>
     T MoveTowards(T current, T target, T maxDelta)
@@ -1332,7 +1330,7 @@ namespace Anemone::Numerics::Signal
     }
 }
 
-namespace Anemone::Numerics::Signal
+namespace Anemone::Math
 {
     template <typename T>
     T Gauss(T amplitude, T x, T y, T centerX, T centerY, T sigmaX, T sigmaY)
@@ -1488,7 +1486,7 @@ namespace Anemone::Numerics::Signal
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     template <typename T>
     T SmoothDamp(T current, T target, T& currentVelocity, T smoothTime, T maxSpeed, T deltaTime)

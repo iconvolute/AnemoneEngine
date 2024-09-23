@@ -10,7 +10,7 @@
 #include <array>
 #include <algorithm>
 
-namespace Anemone::Numerics
+namespace Anemone
 {
     struct Float16
     {

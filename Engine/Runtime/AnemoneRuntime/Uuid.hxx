@@ -13,7 +13,7 @@
 
 #include <fmt/format.h>
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     class Random;
 }
@@ -72,11 +72,11 @@ namespace Anemone
 
         RUNTIME_API static Uuid CreateRandom();
 
-        RUNTIME_API static Uuid CreateRandom(Numerics::Random& generator);
+        RUNTIME_API static Uuid CreateRandom(Math::Random& generator);
 
-        RUNTIME_API static Uuid CreateSortable(Numerics::Random& generator);
+        RUNTIME_API static Uuid CreateSortable(Math::Random& generator);
 
-        RUNTIME_API static Uuid CreateSortable(DateTime dateTime, Numerics::Random& generator);
+        RUNTIME_API static Uuid CreateSortable(DateTime dateTime, Math::Random& generator);
 
         RUNTIME_API static Uuid Create(std::string_view name, uint64_t seed = 0);
 

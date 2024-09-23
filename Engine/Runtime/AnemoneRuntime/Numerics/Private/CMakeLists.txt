@@ -1,9 +1,0 @@
-target_sources(AnemoneRuntime
-    PUBLIC
-        "Simd.Avx.Double.hxx"
-        "Simd.Avx.Float.hxx"
-        "Simd.Default.Double.hxx"
-        "Simd.Default.Float.hxx"
-        "Simd.Neon.Double.hxx"
-        "Simd.Neon.Float.hxx"
-)

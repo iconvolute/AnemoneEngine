@@ -1,7 +1,7 @@
-#include "AnemoneRuntime/Numerics/Random.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
 #include "AnemoneRuntime/Float.hxx"
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 #include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #include <limits>
@@ -9,7 +9,7 @@
 #include <string_view>
 #include <cstring>
 
-namespace Anemone::Numerics::Private
+namespace Anemone::Math::Detail
 {
     constexpr uint64_t SplitMix64(uint64_t& seed)
     {
@@ -24,7 +24,7 @@ namespace Anemone::Numerics::Private
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     uint64_t Random::GenerateBits()
     {
@@ -60,10 +60,10 @@ namespace Anemone::Numerics
 
     Random::Random(uint64_t seed)
     {
-        this->_state[0] = Private::SplitMix64(seed);
-        this->_state[1] = Private::SplitMix64(seed);
-        this->_state[2] = Private::SplitMix64(seed);
-        this->_state[3] = Private::SplitMix64(seed);
+        this->_state[0] = Detail::SplitMix64(seed);
+        this->_state[1] = Detail::SplitMix64(seed);
+        this->_state[2] = Detail::SplitMix64(seed);
+        this->_state[3] = Detail::SplitMix64(seed);
     }
 
     void Random::Forward()
@@ -98,7 +98,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     void Random::Sample(std::span<std::byte> buffer)
     {
@@ -349,14 +349,14 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics::Private
+namespace Anemone::Math::Detail
 {
     inline constexpr std::string_view g_Base32Letters = "0123456789abcdefghjknpqrstuvwxyz";
 
     static_assert(g_Base32Letters.size() == 32);
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     void GenerateReadableString(Random& generator, std::span<char> buffer)
     {
@@ -368,7 +368,7 @@ namespace Anemone::Numerics
 
             for (size_t i = 0; i < count; ++i)
             {
-                buffer[i] = Private::g_Base32Letters[sample[i] & 0x1F];
+                buffer[i] = Detail::g_Base32Letters[sample[i] & 0x1F];
             }
 
             buffer = buffer.subspan(count);
@@ -441,7 +441,7 @@ namespace Anemone::Numerics
     }
 }
 
-namespace Anemone::Numerics
+namespace Anemone::Math
 {
     void ComputeHistogram(std::vector<uint64_t>& histogram, std::span<uint8_t const> data)
     {

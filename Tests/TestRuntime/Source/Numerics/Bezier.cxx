@@ -1,15 +1,15 @@
-#include "AnemoneRuntime/Numerics/Simd.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
 
 #include <catch_amalgamated.hpp>
 
 template <typename Callback>
-anemone_noinline Anemone::Numerics::Private::SimdVector4F anemone_vectorcall Integrate(
+anemone_noinline Anemone::Math::Detail::SimdVector4F anemone_vectorcall Integrate(
     float step,
     float start,
     float end,
     Callback callback)
 {
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
 
     SimdVector4F result{};
 
@@ -25,7 +25,7 @@ anemone_noinline Anemone::Numerics::Private::SimdVector4F anemone_vectorcall Int
 TEST_CASE("Bezier - Integrate")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
 
     constexpr float step = 1.0f / 1024.0f;
 
@@ -77,7 +77,7 @@ TEST_CASE("Bezier - Integrate")
 TEST_CASE("Bezier4 - calculate length")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Numerics::Private;
+    using namespace Anemone::Math::Detail;
 
     SECTION("Custom")
     {

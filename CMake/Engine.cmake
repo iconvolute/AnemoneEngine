@@ -158,6 +158,12 @@ function(_anemone_target_add_options target_name)
                     /arch:armv8.1
                     /Zc:arm64-aliased-neon-types-
             )
+
+            target_compile_definitions(
+                ${target_name}
+                PRIVATE
+                    _ARM64_DISTINCT_NEON_TYPES
+            )
         endif()
     else()
         if (ANEMONE_ARCHITECTURE_X64)

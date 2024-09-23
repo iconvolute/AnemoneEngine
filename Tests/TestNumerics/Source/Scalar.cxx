@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Numerics/Functions.hxx"
+#include "AnemoneRuntime/Math/Functions.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -9,7 +9,7 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("Float / Unwinding angles")
 {
     using Catch::Matchers::WithinAbs;
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math;
 
     SECTION("Unwind Radians")
     {
@@ -37,7 +37,7 @@ TEST_CASE("Float / Unwinding angles")
 
 TEST_CASE("Float / IsNearZeroPrecise")
 {
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math;
 
     SECTION("0.0f - 16 ULP")
     {
@@ -121,7 +121,7 @@ TEST_CASE("Float / IsNearZeroPrecise")
 
 TEST_CASE("Float / IsNearEqualPrecise")
 {
-    using namespace Anemone::Numerics;
+    using namespace Anemone::Math;
 
     SECTION("diff <= epsilon")
     {
