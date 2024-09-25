@@ -27,3 +27,7 @@ ConstructorInitializerIndentWidth: 4
 ContinuationIndentWidth: 4
 BreakBeforeConceptDeclarations: true
 LambdaBodyIndentation: OuterScope
+AttributeMacros: [
+    anemone_noinline,
+    anemone_forceinline
+]

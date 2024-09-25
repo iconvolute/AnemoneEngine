@@ -120,7 +120,7 @@ namespace Anemone::Math::Detail
         }
     };
 
-    
+
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitX{1.0f, 0.0f, 0.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitY{0.0f, 1.0f, 0.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitZ{0.0f, 0.0f, 1.0f, 0.0f};

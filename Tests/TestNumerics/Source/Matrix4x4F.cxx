@@ -2185,7 +2185,7 @@ TEST_CASE("Matrix4x4F_StoreAlignedFloat4x4")
     CHECK_THAT(destination.M41, WithinAbs(41.0f, tolerance));
     CHECK_THAT(destination.M42, WithinAbs(42.0f, tolerance));
     CHECK_THAT(destination.M43, WithinAbs(43.0f, tolerance));
-    CHECK_THAT(destination.M44, WithinAbs(44.0f, tolerance));    
+    CHECK_THAT(destination.M44, WithinAbs(44.0f, tolerance));
 }
 
 TEST_CASE("Matrix4x4F_StoreAlignedFloat4x3")

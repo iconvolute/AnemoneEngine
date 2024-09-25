@@ -2511,7 +2511,7 @@ namespace Anemone::Math::Detail
         };
 #else
         SimdVector4F const progress = Vector4F_Subtract(value, lower);
-        SimdVector4F const range =Vector4F_Subtract(upper, lower);
+        SimdVector4F const range = Vector4F_Subtract(upper, lower);
         return Vector4F_Divide(progress, range);
 #endif
     }

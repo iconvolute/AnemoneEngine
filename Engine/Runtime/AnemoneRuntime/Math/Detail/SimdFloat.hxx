@@ -385,7 +385,7 @@ namespace Anemone::Math::Detail
     bool anemone_vectorcall Mask4F_None4(SimdMask4F mask);
     bool anemone_vectorcall Mask4F_None3(SimdMask4F mask);
     bool anemone_vectorcall Mask4F_None2(SimdMask4F mask);
-    
+
     SimdMask4F anemone_vectorcall Mask4F_CompareEqual(SimdMask4F a, SimdMask4F b);
     SimdMask4F anemone_vectorcall Mask4F_CompareNotEqual(SimdMask4F a, SimdMask4F b);
 }
