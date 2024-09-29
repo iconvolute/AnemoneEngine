@@ -1,36 +1,48 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
 #include "AnemoneRuntime/Network/IpAddress.hxx"
 
-#include <cstdint>
+namespace Anemone::Platform
+{
+#if ANEMONE_PLATFORM_WINDOWS
+    using NativeIpEndPointStorage = UninitializedStorage<struct NativeIpEndPoint, 32, 8>;
+#elif ANEMONE_PLATFORM_LINUX
+    using NativeIpEndPointStorage = UninitializedStorage<struct NativeIpEndPoint, 32, 8>;
+#elif ANEMONE_PLATFORM_ANDROID
+    using NativeIpEndPointStorage = UninitializedStorage<struct NativeIpEndPoint, 32, 8>;
+#else
+#error "Not implemented"
+#endif
+}
 
 namespace Anemone::Network
 {
     class RUNTIME_API IpEndPoint final
     {
-    public:
-        IpAddress Address{};
-        uint32_t Port{};
+    private:
+        Platform::NativeIpEndPointStorage m_native;
 
     public:
-        IpEndPoint() = default;
-        IpEndPoint(IpEndPoint const& other) = default;
-        IpEndPoint(IpEndPoint&& other) noexcept = default;
-        IpEndPoint& operator=(IpEndPoint const& other) = default;
-        IpEndPoint& operator=(IpEndPoint&& other) noexcept = default;
+        IpEndPoint();
+        IpEndPoint(IpEndPoint const& other);
+        IpEndPoint(IpEndPoint&& other) noexcept;
+        IpEndPoint& operator=(IpEndPoint const& other);
+        IpEndPoint& operator=(IpEndPoint&& other) noexcept;
+        ~IpEndPoint();
 
-        IpEndPoint(IpAddress const& address, uint32_t port)
-            : Address{address}
-            , Port{port}
+        IpEndPoint(IpAddress const& address, uint16_t port);
+
+    public:
+        [[nodiscard]] bool operator==(IpEndPoint const& other) const;
+        [[nodiscard]] bool operator!=(IpEndPoint const& other) const
         {
+            return !(*this == other);
         }
 
     public:
-        [[nodiscard]] bool operator==(IpEndPoint const&) const = default;
-        [[nodiscard]] bool operator!=(IpEndPoint const&) const = default;
+        IpAddress GetAddress() const;
 
-        bool ToString(std::string& result) const;
-
-        static bool TryParse(IpEndPoint& result, std::string_view value);
+        uint16_t GetPort() const;
     };
 }

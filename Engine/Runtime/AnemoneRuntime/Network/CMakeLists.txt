@@ -6,16 +6,16 @@ endif()
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Dns.cxx"
-        "Dns.hxx"
+        "Detail.hxx"
         "IpAddress.cxx"
         "IpAddress.hxx"
         "IpEndPoint.cxx"
         "IpEndPoint.hxx"
-        "Private.hxx"
+        "Local.cxx"
+        "Local.hxx"
         "Runtime.hxx"
-        "Socket.cxx"
-        "Socket.hxx"
-        "Static.hxx"
-        "Types.hxx"
+        "Tcp.cxx"
+        "Tcp.hxx"
+        "Udp.cxx"
+        "Udp.hxx"
 )

@@ -3,20 +3,30 @@
 
 namespace Anemone::Platform
 {
-    struct NativeIpAddress final
+    struct NativeIpEndPoint final
     {
         union
         {
-            in_addr IPv4;
-            in6_addr IPv6;
-        } Address;
-        uint32_t ScopeId;
-        int AddressFamily;
+            SOCKADDR Address;
+            SOCKADDR_IN AddressV4;
+            SOCKADDR_IN6 AddressV6;
+        } Inner;
+    };
+
+    struct NativeLocalEndPoint final
+    {
+        SOCKADDR_UN Inner;
     };
 
     struct NativeSocket final
     {
         SOCKET Inner;
+    };
+
+    // todo: remove this
+    struct NativeUnixDomainSocketEndPoint final
+    {
+        SOCKADDR_UN Inner;
     };
 
     struct NativeConditionVariable final

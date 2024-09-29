@@ -1,19 +1,26 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Posix/Headers.hxx"
 
+#include <sys/socket.h>
+#include <sys/un.h>
+
 #include <atomic>
 
 namespace Anemone::Platform
 {
-    struct NativeIpAddress final
+    struct NativeIpEndPoint final
     {
         union
         {
-            in_addr IPv4;
-            in6_addr IPv6;
-        } Address;
-        uint32_t ScopeId;
-        int AddressFamily;
+            sockaddr Address;
+            sockaddr_in AddressV4;
+            sockaddr_in6 AddressV6;
+        } Inner;
+    };
+
+    struct NativeLocalEndPoint final
+    {
+        sockaddr_un Inner;
     };
 
     struct NativeSocket final

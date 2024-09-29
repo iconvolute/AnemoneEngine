@@ -255,6 +255,20 @@ namespace Anemone::Bitwise
             return value;
         }
     }
+
+    template <typename T>
+    [[nodiscard]] constexpr T HostToNetwork(T value)
+        requires(std::is_integral_v<T>)
+    {
+        return ToBigEndian(value);
+    }
+
+            template <typename T>
+    [[nodiscard]] constexpr T NetworkToHost(T value)
+        requires(std::is_integral_v<T>)
+    {
+        return ToBigEndian(value);
+    }
 }
 
 namespace Anemone::Bitwise

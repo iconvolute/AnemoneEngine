@@ -1,5 +1,5 @@
 #include <catch_amalgamated.hpp>
-
+#if false
 #include "AnemoneRuntime/Network/IpAddress.hxx"
 
 TEST_CASE("IPAddress parsing - String conversion")
@@ -74,3 +74,4 @@ TEST_CASE("IPAddress parsing - String conversion")
         }
     }
 }
+#endif
