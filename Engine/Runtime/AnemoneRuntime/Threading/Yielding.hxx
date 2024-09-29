@@ -54,6 +54,17 @@ namespace Anemone::Threading
 
     RUNTIME_API void PauseThread();
 
+    inline void SpinThread(size_t spins)
+    {
+        SpinWait spinner{};
+
+        while (spins != 0)
+        {
+            spinner.Spin();
+            --spins;
+        }
+    }
+
     inline constexpr size_t YieldThreadThreshold = 0xFF;
 
     template <typename PredicateT = bool()>
