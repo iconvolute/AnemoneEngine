@@ -16,7 +16,7 @@ AE_DECLARE_PROFILE(Main);
 AE_DECLARE_PROFILE(Outer);
 AE_DECLARE_PROFILE(Inner);
 
-#include "AnemoneRuntime/Numerics/Simd.hxx"
+#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
 #include "AnemoneRuntime/Diagnostic/Debug.hxx"
 
 #include "AnemoneRuntime/Math/Types.hxx"
