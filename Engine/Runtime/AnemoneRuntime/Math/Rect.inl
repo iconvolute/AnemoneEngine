@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
-#include "AnemoneRuntime/Math/Margins.hxx"
+#include "AnemoneRuntime/Math/Thickness.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
 
 namespace Anemone::Math
@@ -131,7 +131,7 @@ namespace Anemone::Math
         return {self.X - left, self.Y - top, self.Width + left + right, self.Height + top + bottom};
     }
 
-    constexpr RectF Inflate(RectF self, MarginsF border)
+    constexpr RectF Inflate(RectF self, ThicknessF border)
     {
         return Inflate(self, border.Left, border.Top, border.Right, border.Bottom);
     }
@@ -151,7 +151,7 @@ namespace Anemone::Math
         return {self.X + left, self.Y + top, self.Width - left - right, self.Height - top - bottom};
     }
 
-    constexpr RectF Deflate(RectF self, MarginsF border)
+    constexpr RectF Deflate(RectF self, ThicknessF border)
     {
         return Deflate(self, border.Left, border.Top, border.Right, border.Bottom);
     }

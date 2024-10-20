@@ -6,7 +6,7 @@ namespace Anemone::UI
     struct Point2F;
     struct Vector2F;
     struct Size2F;
-    struct MarginsF;
+    struct ThicknessF;
 
     struct RectangleF
     {
@@ -29,7 +29,7 @@ namespace Anemone::UI
         static constexpr RectangleF FromSize(Size2F const& size);
         static constexpr RectangleF FromCenterSize(Point2F const& center, Size2F const& size);
         static constexpr RectangleF FromCentered(Size2F const& size);
-        static constexpr RectangleF FromCentered(MarginsF const& margins);
+        static constexpr RectangleF FromCentered(ThicknessF const& margins);
         static constexpr RectangleF FromPoints(Point2F const& p1, Point2F const& p2);
         static constexpr RectangleF FromPoints(std::span<Point2F> points);
 
@@ -65,12 +65,12 @@ namespace Anemone::UI
         constexpr RectangleF& Inflate(float value);
         constexpr RectangleF& Inflate(float horizontal, float vertical);
         constexpr RectangleF& Inflate(float left, float top, float right, float bottom);
-        constexpr RectangleF& Inflate(MarginsF const& value);
+        constexpr RectangleF& Inflate(ThicknessF const& value);
 
         constexpr RectangleF& Deflate(float value);
         constexpr RectangleF& Deflate(float horizontal, float vertical);
         constexpr RectangleF& Deflate(float left, float top, float right, float bottom);
-        constexpr RectangleF& Deflate(MarginsF const& value);
+        constexpr RectangleF& Deflate(ThicknessF const& value);
 
         constexpr RectangleF& Translate(float x, float y);
         constexpr RectangleF& Translate(Vector2F const& vector);
@@ -79,7 +79,7 @@ namespace Anemone::UI
 
 
 #include <AnemoneUI/PointF.hxx>
-#include <AnemoneUI/MarginsF.hxx>
+#include <AnemoneUI/ThicknessF.hxx>
 #include <AnemoneUI/SizeF.hxx>
 #include <AnemoneUI/VectorF.hxx>
 
@@ -165,7 +165,7 @@ namespace Anemone::UI
         };
     }
 
-    constexpr RectangleF RectangleF::FromCentered(MarginsF const& margins)
+    constexpr RectangleF RectangleF::FromCentered(ThicknessF const& margins)
     {
         float const width = margins.Left + margins.Right;
         float const height = margins.Top + margins.Bottom;
@@ -412,7 +412,7 @@ namespace Anemone::UI
         return *this;
     }
 
-    constexpr RectangleF& RectangleF::Inflate(MarginsF const& value)
+    constexpr RectangleF& RectangleF::Inflate(ThicknessF const& value)
     {
         this->X -= value.Left;
         this->Y -= value.Top;
@@ -452,7 +452,7 @@ namespace Anemone::UI
         return *this;
     }
 
-    constexpr RectangleF& RectangleF::Deflate(MarginsF const& value)
+    constexpr RectangleF& RectangleF::Deflate(ThicknessF const& value)
     {
         this->X += value.Left;
         this->Y += value.Top;

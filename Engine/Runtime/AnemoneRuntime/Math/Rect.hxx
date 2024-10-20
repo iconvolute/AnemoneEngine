@@ -6,7 +6,7 @@ namespace Anemone::Math
 {
     struct PointF;
     struct SizeF;
-    struct MarginsF;
+    struct ThicknessF;
 
     struct RectF
     {
@@ -47,12 +47,12 @@ namespace Anemone::Math
     [[nodiscard]] constexpr RectF Inflate(RectF self, float value);
     [[nodiscard]] constexpr RectF Inflate(RectF self, float horizontal, float vertical);
     [[nodiscard]] constexpr RectF Inflate(RectF self, float left, float top, float right, float bottom);
-    [[nodiscard]] constexpr RectF Inflate(RectF self, MarginsF border);
+    [[nodiscard]] constexpr RectF Inflate(RectF self, ThicknessF border);
 
     [[nodiscard]] constexpr RectF Deflate(RectF self, float value);
     [[nodiscard]] constexpr RectF Deflate(RectF self, float horizontal, float vertical);
     [[nodiscard]] constexpr RectF Deflate(RectF self, float left, float top, float right, float bottom);
-    [[nodiscard]] constexpr RectF Deflate(RectF self, MarginsF border);
+    [[nodiscard]] constexpr RectF Deflate(RectF self, ThicknessF border);
 
     [[nodiscard]] constexpr RectF Translate(RectF self, float x, float y);
 
