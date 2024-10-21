@@ -538,12 +538,12 @@ namespace Anemone::Math::Detail
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookAtRH(SimdVector4F eye, SimdVector4F focus, SimdVector4F up);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookToLH(SimdVector4F eye, SimdVector4F direction, SimdVector4F up);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookToRH(SimdVector4F eye, SimdVector4F direction, SimdVector4F up);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveLH(float width, float height, float near, float far);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveRH(float width, float height, float near, float far);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovLH(float fov, float aspect, float near, float far);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovRH(float fov, float aspect, float near, float far);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float near, float far);
-    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float near, float far);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveLH(float width, float height, float zNear, float zFar);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveRH(float width, float height, float zNear, float zFar);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovLH(float fov, float aspect, float zNear, float zFar);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovRH(float fov, float aspect, float zNear, float zFar);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float zNear, float zFar);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float zNear, float zFar);
 
     template <size_t N>
     SimdVector4F anemone_vectorcall Matrix4x4F_Extract(SimdMatrix4x4F m)

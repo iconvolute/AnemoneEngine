@@ -8876,11 +8876,11 @@ namespace Anemone::Math::Detail
         return Matrix4x4F_CreateLookToLH(eye, negDirection, up);
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveLH(float width, float height, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveLH(float width, float height, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        float const fRange = far / (far - near);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zFar - zNear);
+        float const fTwoNearZ = zNear + zNear;
 
         SimdMatrix4x4F result;
 
@@ -8901,20 +8901,20 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = -fRange * near;
+        result.Inner[3].Inner[2] = -fRange * zNear;
         result.Inner[3].Inner[3] = 0.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        float const fRange = far / (far - near);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zFar - zNear);
+        float const fTwoNearZ = zNear + zNear;
 
         __m128 const zero = _mm_setzero_ps();
         __m128 const unitW = _mm_load_ps(F32x4_PositiveUnitW.As<float>());
         __m128 const values = _mm_setr_ps(
             fTwoNearZ / width,
             fTwoNearZ / height,
-            -fRange * near,
+            -fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -8925,13 +8925,13 @@ namespace Anemone::Math::Detail
         result.Inner[1] = _mm_blend_ps(zero, values, 0b0010);
         // = [0, 0, fRange, 1]
         result.Inner[2] = _mm_insert_ps(unitW, values, 0b11'10'0000);
-        // = [0, 0, -fRange * near, 0]
+        // = [0, 0, -fRange * zNear, 0]
         result.Inner[3] = _mm_blend_ps(zero, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
-        float const fRange = far / (far - near);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zFar - zNear);
+        float const fTwoNearZ = zNear + zNear;
 
         float32x4_t const zero = vdupq_n_f32(0.0f);
         float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
@@ -8944,18 +8944,18 @@ namespace Anemone::Math::Detail
         result.val[1] = vsetq_lane_f32(fTwoNearZ / height, zero, 1);
         // = [fRange, 0, 0, 1]
         result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
-        // = [0, 0, fRange * near, 0]
-        result.val[3] = vsetq_lane_f32(-fRange * near, zero, 2);
+        // = [0, 0, fRange * zNear, 0]
+        result.val[3] = vsetq_lane_f32(-fRange * zNear, zero, 2);
 
         return result;
 #endif
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveRH(float width, float height, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveRH(float width, float height, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        float const fRange = far / (near - far);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zNear - zFar);
+        float const fTwoNearZ = zNear + zNear;
 
         SimdMatrix4x4F result;
 
@@ -8976,20 +8976,20 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = fRange * near;
+        result.Inner[3].Inner[2] = fRange * zNear;
         result.Inner[3].Inner[3] = 0.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        float const fRange = far / (near - far);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zNear - zFar);
+        float const fTwoNearZ = zNear + zNear;
 
         __m128 const zero = _mm_setzero_ps();
         __m128 const unitW = _mm_load_ps(F32x4_NegativeUnitW.As<float>());
         __m128 const values = _mm_setr_ps(
             fTwoNearZ / width,
             fTwoNearZ / height,
-            fRange * near,
+            fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -9003,13 +9003,13 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, -1]
         result.Inner[2] = _mm_insert_ps(unitW, values, 0b11'10'0000);
 
-        // = [0, 0, fRange * near, 0]
+        // = [0, 0, fRange * zNear, 0]
         result.Inner[3] = _mm_blend_ps(zero, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
-        float const fRange = far / (near - far);
-        float const fTwoNearZ = near + near;
+        float const fRange = zFar / (zNear - zFar);
+        float const fTwoNearZ = zNear + zNear;
 
         float32x4_t const zero = vdupq_n_f32(0.0f);
         float32x4_t const unitW = vld1q_f32(F32x4_NegativeUnitW.As<float>());
@@ -9022,19 +9022,19 @@ namespace Anemone::Math::Detail
         result.val[1] = vsetq_lane_f32(fTwoNearZ / height, zero, 1);
         // = [0, 0, fRange, -1]
         result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
-        // = [0, 0, fRange * near, 0]
-        result.val[3] = vsetq_lane_f32(fRange * near, zero, 2);
+        // = [0, 0, fRange * zNear, 0]
+        result.val[3] = vsetq_lane_f32(fRange * zNear, zero, 2);
 
         return result;
 #endif
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovLH(float fov, float aspect, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovLH(float fov, float aspect, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (far - near);
+        float const fRange = zFar / (zFar - zNear);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9057,14 +9057,14 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = -fRange * near;
+        result.Inner[3].Inner[2] = -fRange * zNear;
         result.Inner[3].Inner[3] = 0.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (far - near);
+        float const fRange = zFar / (zFar - zNear);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9073,7 +9073,7 @@ namespace Anemone::Math::Detail
         __m128 const values = _mm_setr_ps(
             width,
             height,
-            -fRange * near,
+            -fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -9087,14 +9087,14 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 1]
         result.Inner[2] = _mm_insert_ps(unitW, values, 0b11'10'0000);
 
-        // = [0, 0, -fRange * near, 0]
+        // = [0, 0, -fRange * zNear, 0]
         result.Inner[3] = _mm_blend_ps(zero, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (far - near);
+        float const fRange = zFar / (zFar - zNear);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9112,19 +9112,19 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 1]
         result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
 
-        // = [0, 0, -fRange * near, 0]
-        result.val[3] = vsetq_lane_f32(-fRange * near, zero, 2);
+        // = [0, 0, -fRange * zNear, 0]
+        result.val[3] = vsetq_lane_f32(-fRange * zNear, zero, 2);
 
         return result;
 #endif
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovRH(float fov, float aspect, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreatePerspectiveFovRH(float fov, float aspect, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (near - far);
+        float const fRange = zFar / (zNear - zFar);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9147,14 +9147,14 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = fRange * near;
+        result.Inner[3].Inner[2] = fRange * zNear;
         result.Inner[3].Inner[3] = 0.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (near - far);
+        float const fRange = zFar / (zNear - zFar);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9163,7 +9163,7 @@ namespace Anemone::Math::Detail
         __m128 const values = _mm_setr_ps(
             width,
             height,
-            fRange * near,
+            fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -9177,14 +9177,14 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, -1]
         result.Inner[2] = _mm_insert_ps(unitW, values, 0b11'10'0000);
 
-        // = [0, 0, fRange * near, 0]
+        // = [0, 0, fRange * zNear, 0]
         result.Inner[3] = _mm_blend_ps(zero, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
         auto [fSin, fCos] = SinCos<float>(0.5f * fov);
 
-        float const fRange = far / (near - far);
+        float const fRange = zFar / (zNear - zFar);
         float const height = fCos / fSin;
         float const width = height / aspect;
 
@@ -9202,17 +9202,17 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, -1]
         result.val[2] = vsetq_lane_f32(fRange, unitW, 2);
 
-        // = [0, 0, fRange * near, 0]
-        result.val[3] = vsetq_lane_f32(fRange * near, zero, 2);
+        // = [0, 0, fRange * zNear, 0]
+        result.val[3] = vsetq_lane_f32(fRange * zNear, zero, 2);
 
         return result;
 #endif
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicLH(float width, float height, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        float const fRange = 1.0f / (far - near);
+        float const fRange = 1.0f / (zFar - zNear);
 
         SimdMatrix4x4F result;
 
@@ -9233,19 +9233,19 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = -fRange * near;
+        result.Inner[3].Inner[2] = -fRange * zNear;
         result.Inner[3].Inner[3] = 1.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        float const fRange = 1.0f / (far - near);
+        float const fRange = 1.0f / (zFar - zNear);
 
         __m128 const zero = _mm_setzero_ps();
         __m128 const unitW = _mm_load_ps(F32x4_PositiveUnitW.As<float>());
         __m128 const values = _mm_setr_ps(
             2.0f / width,
             2.0f / height,
-            -fRange * near,
+            -fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -9259,12 +9259,12 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 0]
         result.Inner[2] = _mm_insert_ps(zero, values, 0b11'10'0000);
 
-        // = [0, 0, -fRange * near, 1]
+        // = [0, 0, -fRange * zNear, 1]
         result.Inner[3] = _mm_blend_ps(unitW, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
-        float const fRange = 1.0f / (far - near);
+        float const fRange = 1.0f / (zFar - zNear);
 
         float32x4_t const zero = vdupq_n_f32(0.0f);
         float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
@@ -9280,17 +9280,17 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 0]
         result.val[2] = vsetq_lane_f32(fRange, zero, 2);
 
-        // = [0, 0, -fRange * near, 1]
-        result.val[3] = vsetq_lane_f32(-fRange * near, unitW, 2);
+        // = [0, 0, -fRange * zNear, 1]
+        result.val[3] = vsetq_lane_f32(-fRange * zNear, unitW, 2);
 
         return result;
 #endif
     }
 
-    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float near, float far)
+    inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateOrthographicRH(float width, float height, float zNear, float zFar)
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        float const fRange = 1.0f / (near - far);
+        float const fRange = 1.0f / (zNear - zFar);
 
         SimdMatrix4x4F result;
 
@@ -9311,19 +9311,19 @@ namespace Anemone::Math::Detail
 
         result.Inner[3].Inner[0] = 0.0f;
         result.Inner[3].Inner[1] = 0.0f;
-        result.Inner[3].Inner[2] = fRange * near;
+        result.Inner[3].Inner[2] = fRange * zNear;
         result.Inner[3].Inner[3] = 1.0f;
 
         return result;
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        float const fRange = 1.0f / (near - far);
+        float const fRange = 1.0f / (zNear - zFar);
 
         __m128 const zero = _mm_setzero_ps();
         __m128 const unitW = _mm_load_ps(F32x4_PositiveUnitW.As<float>());
         __m128 const values = _mm_setr_ps(
             2.0f / width,
             2.0f / height,
-            fRange * near,
+            fRange * zNear,
             fRange);
 
         SimdMatrix4x4F result;
@@ -9337,12 +9337,12 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 0]
         result.Inner[2] = _mm_insert_ps(zero, values, 0b11'10'0000);
 
-        // = [0, 0, fRange * near, 1]
+        // = [0, 0, fRange * zNear, 1]
         result.Inner[3] = _mm_blend_ps(unitW, values, 0b0100);
 
         return result;
 #elif ANEMONE_FEATURE_NEON
-        float const fRange = 1.0f / (near - far);
+        float const fRange = 1.0f / (zNear - zFar);
 
         float32x4_t const zero = vdupq_n_f32(0.0f);
         float32x4_t const unitW = vld1q_f32(F32x4_PositiveUnitW.As<float>());
@@ -9358,8 +9358,8 @@ namespace Anemone::Math::Detail
         // = [0, 0, fRange, 0]
         result.val[2] = vsetq_lane_f32(fRange, zero, 2);
 
-        // = [0, 0, fRange * near, 1]
-        result.val[3] = vsetq_lane_f32(fRange * near, unitW, 2);
+        // = [0, 0, fRange * zNear, 1]
+        result.val[3] = vsetq_lane_f32(fRange * zNear, unitW, 2);
 
         return result;
 #endif
