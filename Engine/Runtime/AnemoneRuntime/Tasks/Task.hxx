@@ -144,6 +144,9 @@ namespace Anemone::Tasks
         {
             AE_ASSERT(this->m_Awaiter == nullptr);
             AE_ASSERT(this->m_DependencyAwaiter == nullptr);
+            AE_ASSERT(awaiter != nullptr);
+            AE_ASSERT(dependencyAwaiter != nullptr);
+            AE_ASSERT(awaiter != dependencyAwaiter);
 
             this->m_Awaiter = awaiter;
             this->m_DependencyAwaiter = dependencyAwaiter;

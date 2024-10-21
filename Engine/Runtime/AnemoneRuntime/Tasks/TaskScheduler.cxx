@@ -91,8 +91,8 @@ namespace Anemone::Tasks
 
     void TaskScheduler::Dispatch(
         Task& task,
-        AwaiterHandle const& dependency,
         AwaiterHandle const& awaiter,
+        AwaiterHandle const& dependency,
         TaskPriority priority)
     {
         task.SetPriority(priority);

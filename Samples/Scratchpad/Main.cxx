@@ -350,9 +350,9 @@ void TestTasking()
             AwaiterHandle dummy{new Awaiter{}};
 
             TaskHandle h1{new MyFancyTaskWithAlignment()};
-            GTaskScheduler->Dispatch(*h1, dummy, barrier);
+            GTaskScheduler->Dispatch(*h1, barrier, dummy);
             TaskHandle h2{new MyFancyTaskWithAlignment()};
-            GTaskScheduler->Dispatch(*h2, dummy, barrier);
+            GTaskScheduler->Dispatch(*h2, barrier, dummy);
             dummy = {};
             h1 = {};
             h2 = {};
@@ -374,7 +374,7 @@ void TestTasking()
             for (size_t i = 0; i < 18; ++i)
             {
                 TaskHandle h1{new MyFancyTaskWithAlignment()};
-                GTaskScheduler->Dispatch(*h1, dummy, barrier);
+                GTaskScheduler->Dispatch(*h1, barrier, dummy);
             }
 
             ReportTimeUsage([&]
@@ -395,9 +395,9 @@ void TestTasking()
             TaskHandle h1{new MyFancyTaskWithAlignment()};
             TaskHandle h2{new MyFancyTaskWithAlignment()};
 
-            GTaskScheduler->Dispatch(*h1, leaf, trunk);
+            GTaskScheduler->Dispatch(*h1, trunk, leaf);
 
-            GTaskScheduler->Dispatch(*h2, trunk, root);
+            GTaskScheduler->Dispatch(*h2, root, trunk);
 
             ReportTimeUsage([&]
             {
@@ -418,9 +418,9 @@ void TestTasking()
                 TaskHandle h1{new MyFancyTaskWithAlignment()};
                 TaskHandle h2{new MyFancyTaskWithAlignment()};
                 TaskHandle h3{new MyFancyTaskWithAlignment()};
-                GTaskScheduler->Dispatch(*h1, leaf, trunk1);
-                GTaskScheduler->Dispatch(*h2, trunk1, trunk2);
-                GTaskScheduler->Dispatch(*h3, trunk2, root);
+                GTaskScheduler->Dispatch(*h1, trunk1, leaf);
+                GTaskScheduler->Dispatch(*h2, trunk2, trunk1);
+                GTaskScheduler->Dispatch(*h3, root, trunk2);
             }
 
             ReportTimeUsage([&]
@@ -449,7 +449,7 @@ void TestTasking()
 
             for (size_t i = 0; i < 64; ++i)
             {
-                GTaskScheduler->Dispatch(*tasks[i], awaiters[i], awaiters[i + 1]);
+                GTaskScheduler->Dispatch(*tasks[i], awaiters[i + 1], awaiters[i]);
             }
 
             // AwaiterHandle accumulate{new Awaiter{}};
@@ -493,9 +493,9 @@ void TestTasking()
                 TaskHandle h2{new MyFancyTaskWithAlignment()};
                 TaskHandle h3{new MyFancyTaskWithAlignment()};
 
-                GTaskScheduler->Dispatch(*h1, cw1, ca1);
-                GTaskScheduler->Dispatch(*h2, cw2, ca2);
-                GTaskScheduler->Dispatch(*h3, cw3, ca3);
+                GTaskScheduler->Dispatch(*h1, ca1, cw1);
+                GTaskScheduler->Dispatch(*h2, ca2, cw2);
+                GTaskScheduler->Dispatch(*h3, ca3, cw3);
 
                 root1 = ca1;
                 root2 = ca2;
@@ -514,11 +514,11 @@ void TestTasking()
 
             AwaiterHandle root{new Awaiter{}};
             TaskHandle r1{new MyFancyTaskWithAlignment()};
-            GTaskScheduler->Dispatch(*r1, root1, root);
+            GTaskScheduler->Dispatch(*r1, root, root1);
             TaskHandle r2{new MyFancyTaskWithAlignment()};
-            GTaskScheduler->Dispatch(*r2, root2, root);
+            GTaskScheduler->Dispatch(*r2, root, root2);
             TaskHandle r3{new MyFancyTaskWithAlignment()};
-            GTaskScheduler->Dispatch(*r3, root3, root);
+            GTaskScheduler->Dispatch(*r3, root, root3);
 
             ReportTimeUsage([&]
             {

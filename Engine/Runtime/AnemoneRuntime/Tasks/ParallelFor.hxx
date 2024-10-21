@@ -132,11 +132,11 @@ namespace Anemone::Tasks
                 },
             };
 
-            GTaskScheduler->Dispatch(*task, forkCounter, joinCounter, priority);
+            GTaskScheduler->Dispatch(*task, joinCounter, forkCounter, priority);
         }
 
         AwaiterHandle waitCounter = new Awaiter{};
-        GTaskScheduler->Dispatch(*barrier, joinCounter, waitCounter, priority);
+        GTaskScheduler->Dispatch(*barrier, waitCounter, joinCounter, priority);
 
         GTaskScheduler->Wait(waitCounter);
     }
