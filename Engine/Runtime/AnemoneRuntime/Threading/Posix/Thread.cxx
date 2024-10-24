@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 #include <cmath>
+#include <utility>
 
 namespace Anemone::Threading::Private
 {
@@ -47,14 +48,13 @@ namespace Anemone::Threading::Private
 namespace Anemone::Threading
 {
     Thread::Thread()
+        : m_native{}
     {
-        Platform::Create(this->_native);
     }
 
     Thread::Thread(ThreadStart const& start)
+        : m_native{}
     {
-        Platform::NativeThread& nativeThis = Platform::Create(this->_native);
-
         if (start.Callback == nullptr)
         {
             AE_PANIC("Thread started without callback.");
@@ -80,7 +80,7 @@ namespace Anemone::Threading
             AE_PANIC("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (int const rc = pthread_create(&nativeThis.Inner, &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
+        if (int const rc = pthread_create(&this->m_native.Inner, &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
         {
             AE_PANIC("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -90,7 +90,7 @@ namespace Anemone::Threading
             AE_PANIC("pthread_attr_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (nativeThis.Inner == 0)
+        if (this->m_native.Inner == 0)
         {
             AE_PANIC("Failed to start thread");
         }
@@ -114,9 +114,9 @@ namespace Anemone::Threading
         {
             std::string const name{*start.Name};
 #if true
-            pthread_setname_np(nativeThis.Inner, name.c_str());
+            pthread_setname_np(this->m_native.Inner, name.c_str());
 #else
-            if (int const rc = pthread_setname_np(nativeThis.Inner, name.c_str()); rc != 0)
+            if (int const rc = pthread_setname_np(this->m_native.Inner, name.c_str()); rc != 0)
             {
                 AE_PANIC("pthread_setname_np (rc: {}, `{}`)", rc, strerror(rc));
             }
@@ -128,22 +128,22 @@ namespace Anemone::Threading
             sched_param sched{};
             int32_t policy = SCHED_RR;
 #if true
-            if (pthread_getschedparam(nativeThis.Inner, &policy, &sched) == 0)
+            if (pthread_getschedparam(this->m_native.Inner, &policy, &sched) == 0)
             {
                 sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
 
-                pthread_setschedparam(nativeThis.Inner, policy, &sched);
+                pthread_setschedparam(this->m_native.Inner, policy, &sched);
             }
 
 #else
-            if (int const rc = pthread_getschedparam(nativeThis.Inner, &policy, &sched); rc != 0)
+            if (int const rc = pthread_getschedparam(this->m_native.Inner, &policy, &sched); rc != 0)
             {
                 AE_PANIC("pthread_getschedparam (rc: {}, `{}`)", rc, strerror(rc));
             }
 
             sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
 
-            if (int const rc = pthread_setschedparam(nativeThis.Inner, policy, &sched); rc != 0)
+            if (int const rc = pthread_setschedparam(this->m_native.Inner, policy, &sched); rc != 0)
             {
                 AE_PANIC("pthread_setschedparam (rc: {}, `{}`)", rc, strerror(rc));
             }
@@ -152,22 +152,20 @@ namespace Anemone::Threading
     }
 
     Thread::Thread(Thread&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     Thread& Thread::operator=(Thread&& other) noexcept
     {
-        if (this != &other)
+        if (this != std::addressof(other))
         {
             if (this->IsJoinable())
             {
                 this->Join();
             }
 
-            Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-            Platform::NativeThread& nativeOther = Platform::Get(other._native);
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -179,61 +177,51 @@ namespace Anemone::Threading
         {
             this->Join();
         }
-
-        Platform::Destroy(this->_native);
     }
 
     void Thread::Join()
     {
-        Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Inner == 0)
+        if (this->m_native.Inner == 0)
         {
             AE_PANIC("Cannot join non-started thread.");
         }
 
-        if (nativeThis.Inner == pthread_self())
+        if (this->m_native.Inner == pthread_self())
         {
             AE_PANIC("Joining thread from itself");
         }
 
-        if (int const rc = pthread_join(nativeThis.Inner, nullptr); rc != 0)
+        if (int const rc = pthread_join(this->m_native.Inner, nullptr); rc != 0)
         {
             AE_PANIC("pthread_join (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        nativeThis.Inner = 0;
+        this->m_native.Inner = 0;
     }
 
     [[nodiscard]] bool Thread::IsJoinable() const
     {
-        Platform::NativeThread const& nativeThis = Platform::Get(this->_native);
-
-        return nativeThis.Inner != 0;
+        return this->m_native.Inner != 0;
     }
 
     [[nodiscard]] ThreadId Thread::GetId() const
     {
-        Platform::NativeThread const& nativeThis = Platform::Get(this->_native);
-
-        return std::bit_cast<ThreadId>(nativeThis.Inner);
+        return std::bit_cast<ThreadId>(this->m_native.Inner);
     }
 
     void Thread::Detach()
     {
-        Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Inner == 0)
+        if (this->m_native.Inner == 0)
         {
             AE_PANIC("Failed to detach from thread");
         }
 
-        if (int const rc = pthread_detach(nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_detach(this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_detach (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        nativeThis.Inner = {};
+        this->m_native.Inner = {};
     }
 
     ThreadId GetThisThreadId()

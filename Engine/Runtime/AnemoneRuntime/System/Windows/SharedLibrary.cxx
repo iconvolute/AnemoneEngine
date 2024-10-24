@@ -5,18 +5,18 @@
 namespace Anemone::System
 {
     SharedLibrary::SharedLibrary(Platform::NativeSharedLibrary const& native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     SharedLibrary::SharedLibrary()
+        : m_native{}
     {
-        Platform::Create(this->_native);
     }
 
     SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
@@ -25,10 +25,7 @@ namespace Anemone::System
         {
             this->Close();
 
-            Platform::NativeSharedLibrary& nativeThis = Platform::Get(this->_native);
-            Platform::NativeSharedLibrary& nativeOther = Platform::Get(other._native);
-
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -36,17 +33,13 @@ namespace Anemone::System
 
     SharedLibrary::~SharedLibrary()
     {
-        Platform::NativeSharedLibrary& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle)
+        if (this->m_native.Handle)
         {
-            if (not FreeLibrary(nativeThis.Handle))
+            if (not FreeLibrary(this->m_native.Handle))
             {
                 AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
             }
         }
-
-        Platform::Destroy(this->_native);
     }
 
     std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(std::string_view path)
@@ -64,14 +57,14 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> SharedLibrary::Close()
     {
-        Platform::NativeSharedLibrary& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle)
+        if (this->m_native.Handle)
         {
-            if (not FreeLibrary(nativeThis.Handle))
+            if (not FreeLibrary(this->m_native.Handle))
             {
                 return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
             }
+
+            this->m_native = {};
         }
 
         return {};
@@ -79,15 +72,11 @@ namespace Anemone::System
 
     SharedLibrary::operator bool() const
     {
-        Platform::NativeSharedLibrary const& nativeThis = Platform::Get(this->_native);
-
-        return nativeThis.Handle != nullptr;
+        return this->m_native.Handle != nullptr;
     }
 
     void* SharedLibrary::GetSymbol(char const* name) const
     {
-        Platform::NativeSharedLibrary const& nativeThis = Platform::Get(this->_native);
-
-        return reinterpret_cast<void*>(GetProcAddress(nativeThis.Handle, name));
+        return reinterpret_cast<void*>(GetProcAddress(this->m_native.Handle, name));
     }
 }

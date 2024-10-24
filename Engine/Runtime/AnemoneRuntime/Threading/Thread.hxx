@@ -1,23 +1,10 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/Threading/Runnable.hxx"
 
 #include <optional>
 #include <string_view>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeThreadStorage = UninitializedStorage<struct NativeThread, 16, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeThreadStorage = UninitializedStorage<struct NativeThread, 8, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeThreadStorage = UninitializedStorage<struct NativeThread, 8, 8>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::Threading
 {
@@ -65,7 +52,7 @@ namespace Anemone::Threading
     class RUNTIME_API Thread final
     {
     private:
-        Platform::NativeThreadStorage _native;
+        Platform::NativeThread m_native;
 
     public:
         //! Creates a new thread object. Does not start the thread.

@@ -1,30 +1,17 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <expected>
 #include <string_view>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeSharedLibraryStorage = UninitializedStorage<struct NativeSharedLibrary, 16, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeSharedLibraryStorage = UninitializedStorage<struct NativeSharedLibrary, 16, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeSharedLibraryStorage = UninitializedStorage<struct NativeSharedLibrary, 16, 8>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::System
 {
     class RUNTIME_API SharedLibrary final
     {
     private:
-        Platform::NativeSharedLibraryStorage _native;
+        Platform::NativeSharedLibrary m_native;
 
     public:
         SharedLibrary(Platform::NativeSharedLibrary const& native);

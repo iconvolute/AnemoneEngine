@@ -139,12 +139,12 @@ namespace Anemone::Network
     public:
         static constexpr IpAddressV6 Localhost()
         {
-            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 1}};
+            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}};
         }
 
         static constexpr IpAddressV6 Any()
         {
-            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0}};
+            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
         }
 
         static constexpr IpAddressV6 Mapped(IpAddressV4 const& address)

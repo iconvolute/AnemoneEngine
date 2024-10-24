@@ -2,25 +2,12 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 
 #include <expected>
 #include <span>
 #include <cstddef>
 #include <vector>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeDirectoryEnumeratorStorage = UninitializedStorage<struct NativeDirectoryEnumerator, 8, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeDirectoryEnumeratorStorage = UninitializedStorage<struct NativeDirectoryEnumerator, 8, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeDirectoryEnumeratorStorage = UninitializedStorage<struct NativeDirectoryEnumerator, 8, 8>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::System
 {
@@ -45,8 +32,8 @@ namespace Anemone::System
     class RUNTIME_API DirectoryEnumerator
     {
     private:
-        std::string _root;
-        Platform::NativeDirectoryEnumeratorStorage _native;
+        std::string m_root;
+        Platform::NativeDirectoryEnumerator m_native;
 
     public:
         explicit DirectoryEnumerator(std::string root);

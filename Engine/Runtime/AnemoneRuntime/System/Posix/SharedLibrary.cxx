@@ -2,35 +2,33 @@
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 #include <string>
+#include <utility>
 #include <dlfcn.h>
 
 namespace Anemone::System
 {
     SharedLibrary::SharedLibrary(Platform::NativeSharedLibrary const& native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     SharedLibrary::SharedLibrary()
+        : m_native{}
     {
-        Platform::Create(this->_native);
     }
 
     SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
     {
-        if (this != &other)
+        if (this != std::addressof(other))
         {
             this->Close();
 
-            Platform::NativeSharedLibrary& nativeThis = Platform::Get(this->_native);
-            Platform::NativeSharedLibrary& nativeOther = Platform::Get(other._native);
-
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -39,8 +37,6 @@ namespace Anemone::System
     SharedLibrary::~SharedLibrary()
     {
         this->Close();
-
-        Platform::Destroy(this->_native);
     }
 
     std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(std::string_view path)
@@ -58,11 +54,10 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> SharedLibrary::Close()
     {
-        Platform::NativeSharedLibrary& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle)
+        if (this->m_native.Handle)
         {
-            dlclose(nativeThis.Handle);
+            dlclose(this->m_native.Handle);
+            this->m_native.Handle = nullptr;
             return {};
         }
 
@@ -71,15 +66,11 @@ namespace Anemone::System
 
     SharedLibrary::operator bool() const
     {
-        Platform::NativeSharedLibrary const& nativeThis = Platform::Get(this->_native);
-
-        return nativeThis.Handle != nullptr;
+        return this->m_native.Handle != nullptr;
     }
 
     void* SharedLibrary::GetSymbol(char const* name) const
     {
-        Platform::NativeSharedLibrary const& nativeThis = Platform::Get(this->_native);
-
-        return dlsym(nativeThis.Handle, name);
+        return dlsym(this->m_native.Handle, name);
     }
 }

@@ -1,20 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/Duration.hxx"
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeConditionVariableStorage = UninitializedStorage<struct NativeConditionVariable, 8, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeConditionVariableStorage = UninitializedStorage<struct NativeConditionVariable, 48, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeConditionVariableStorage = UninitializedStorage<struct NativeConditionVariable, 48, 4>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::Threading
 {
@@ -25,7 +12,7 @@ namespace Anemone::Threading
         friend class CriticalSection;
 
     private:
-        Platform::NativeConditionVariableStorage _native;
+        Platform::NativeConditionVariable m_native;
 
     public:
         ConditionVariable();

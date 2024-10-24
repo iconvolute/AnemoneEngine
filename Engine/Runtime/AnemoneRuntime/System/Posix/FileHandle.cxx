@@ -97,36 +97,33 @@ namespace Anemone::System::Private
 namespace Anemone::System
 {
     FileHandle::FileHandle(Platform::NativeFileHandle const& native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     FileHandle::FileHandle()
+        : m_native{}
     {
-        Platform::Create(this->_native, Platform::NativeFileHandle{-1});
     }
 
     FileHandle::FileHandle(FileHandle&& other) noexcept
+        : m_native{std::exchange(other.m_native, Platform::NativeFileHandle{-1})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), Platform::NativeFileHandle{-1}));
     }
 
     FileHandle& FileHandle::operator=(FileHandle&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-            Platform::NativeFileHandle& nativeOther = Platform::Get(other._native);
-
-            if (nativeThis.Descriptor >= 0)
+            if (this->m_native.Descriptor >= 0)
             {
-                if (close(nativeThis.Descriptor))
+                if (close(this->m_native.Descriptor))
                 {
-                    AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", nativeThis.Descriptor, errno);
+                    AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", this->m_native.Descriptor, errno);
                 }
             }
 
-            nativeThis = std::exchange(nativeOther, Platform::NativeFileHandle{-1});
+            this->m_native = std::exchange(other.m_native, Platform::NativeFileHandle{-1});
         }
 
         return *this;
@@ -134,17 +131,13 @@ namespace Anemone::System
 
     FileHandle::~FileHandle()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Descriptor >= 0)
+        if (this->m_native.Descriptor >= 0)
         {
-            if (close(nativeThis.Descriptor))
+            if (close(this->m_native.Descriptor))
             {
-                AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", nativeThis.Descriptor, errno);
+                AE_TRACE(Error, "Failed to close file: fd = {}, errno = {}", this->m_native.Descriptor, errno);
             }
         }
-
-        Platform::Destroy(this->_native);
     }
 
     std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
@@ -208,9 +201,7 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::Close()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-
-        int const descriptor = std::exchange(nativeThis.Descriptor, -1);
+        int const descriptor = std::exchange(this->m_native.Descriptor, -1);
         if (descriptor >= 0)
         {
             if (close(descriptor))
@@ -224,10 +215,9 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::Flush()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
-        if (fsync(nativeThis.Descriptor))
+        if (fsync(this->m_native.Descriptor))
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
@@ -237,14 +227,13 @@ namespace Anemone::System
 
     std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
         // clang-format off
         struct stat64 st{};
         // clang-format on
 
-        if (fstat64(nativeThis.Descriptor, &st))
+        if (fstat64(this->m_native.Descriptor, &st))
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
@@ -254,10 +243,9 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::SetLength(int64_t length)
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
-        if (ftruncate64(nativeThis.Descriptor, length))
+        if (ftruncate64(this->m_native.Descriptor, length))
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
@@ -267,10 +255,9 @@ namespace Anemone::System
 
     std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
-        off64_t const position = lseek64(nativeThis.Descriptor, 0, SEEK_CUR);
+        off64_t const position = lseek64(this->m_native.Descriptor, 0, SEEK_CUR);
 
         if (position < 0)
         {
@@ -282,10 +269,9 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
-        if (lseek64(nativeThis.Descriptor, position, SEEK_SET) < 0)
+        if (lseek64(this->m_native.Descriptor, position, SEEK_SET) < 0)
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
@@ -295,8 +281,7 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer, int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
         ssize_t processed = 0;
 
@@ -306,7 +291,7 @@ namespace Anemone::System
 
             while (true)
             {
-                processed = pread64(nativeThis.Descriptor, buffer.data(), requested, position);
+                processed = pread64(this->m_native.Descriptor, buffer.data(), requested, position);
 
                 if (processed < 0)
                 {
@@ -328,8 +313,7 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer, int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
         ssize_t processed = 0;
 
@@ -339,7 +323,7 @@ namespace Anemone::System
 
             while (true)
             {
-                processed = pwrite64(nativeThis.Descriptor, buffer.data(), requested, position);
+                processed = pwrite64(this->m_native.Descriptor, buffer.data(), requested, position);
 
                 if (processed < 0)
                 {
@@ -361,8 +345,7 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
         ssize_t processed = 0;
 
@@ -372,7 +355,7 @@ namespace Anemone::System
 
             while (true)
             {
-                processed = read(nativeThis.Descriptor, buffer.data(), requested);
+                processed = read(this->m_native.Descriptor, buffer.data(), requested);
 
                 if (processed < 0)
                 {
@@ -405,8 +388,7 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Descriptor >= 0);
+        AE_ASSERT(this->m_native.Descriptor >= 0);
 
         ssize_t processed = 0;
 
@@ -416,7 +398,7 @@ namespace Anemone::System
 
             while (true)
             {
-                processed = write(nativeThis.Descriptor, buffer.data(), requested);
+                processed = write(this->m_native.Descriptor, buffer.data(), requested);
 
                 if (processed < 0)
                 {

@@ -14,6 +14,8 @@ target_sources(AnemoneRuntime
         "Local.cxx"
         "Local.hxx"
         "Runtime.hxx"
+        "Socket.cxx"
+        "Socket.hxx"
         "Tcp.cxx"
         "Tcp.hxx"
         "Udp.cxx"

@@ -23,28 +23,25 @@ ANEMONE_EXTERNAL_HEADERS_END
 namespace Anemone::System
 {
     Process::Process(Platform::NativeProcess native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     Process::Process()
+        : m_native{}
     {
-        Platform::Create(this->_native);
     }
 
     Process::Process(Process&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     Process& Process::operator=(Process&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeProcess& nativeThis = Platform::Get(this->_native);
-            Platform::NativeProcess& nativeOther = Platform::Get(other._native);
-
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -52,7 +49,6 @@ namespace Anemone::System
 
     Process::~Process()
     {
-        Platform::Destroy(this->_native);
     }
 
     std::expected<Process, ErrorCode> Process::Start(
@@ -225,8 +221,7 @@ namespace Anemone::System
         AE_TRACE(Critical, "Process::Wait not implemented");
         return {};
 #else
-        Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Pid != 0);
+        AE_ASSERT(this->m_native.Pid != 0);
 
         auto& error = errno;
 
@@ -235,10 +230,10 @@ namespace Anemone::System
 
         do
         {
-            rc = waitpid(nativeThis.Pid, &status, 0);
+            rc = waitpid(this->m_native.Pid, &status, 0);
         } while ((rc < 0) and (error == EINTR));
 
-        if (rc != nativeThis.Pid)
+        if (rc != this->m_native.Pid)
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
@@ -258,8 +253,7 @@ namespace Anemone::System
         AE_TRACE(Critical, "Process::TryWait not implemented");
         return {};
 #else
-        Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Pid != 0);
+        AE_ASSERT(this->m_native.Pid != 0);
 
         auto& error = errno;
 
@@ -268,7 +262,7 @@ namespace Anemone::System
 
         do
         {
-            rc = waitpid(nativeThis.Pid, &status, WNOHANG);
+            rc = waitpid(this->m_native.Pid, &status, WNOHANG);
         } while ((rc < 0) and (error == EINTR));
 
         if (rc == 0)
@@ -277,7 +271,7 @@ namespace Anemone::System
             return {};
         }
 
-        if (rc != nativeThis.Pid)
+        if (rc != this->m_native.Pid)
         {
             // Failed to wait for child process.
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
@@ -299,11 +293,10 @@ namespace Anemone::System
         AE_TRACE(Critical, "Process::Terminate not implemented");
         return {};
 #else
-        Platform::NativeProcess& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Pid != 0);
+        AE_ASSERT(this->m_native.Pid != 0);
 
 
-        if (kill(nativeThis.Pid, SIGKILL) != 0)
+        if (kill(this->m_native.Pid, SIGKILL) != 0)
         {
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }

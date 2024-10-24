@@ -12,10 +12,10 @@ namespace Anemone::Platform
     {
         union
         {
-            sockaddr Address;
-            sockaddr_in AddressV4;
-            sockaddr_in6 AddressV6;
-        } Inner;
+            sockaddr Header;
+            sockaddr_in V4;
+            sockaddr_in6 V6;
+        } Address;
     };
 
     struct NativeLocalEndPoint final

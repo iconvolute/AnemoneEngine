@@ -6,35 +6,30 @@
 namespace Anemone::System
 {
     Process::Process(Platform::NativeProcess native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     Process::Process()
+        : m_native{}
     {
-        Platform::Create(this->_native);
     }
 
     Process::Process(Process&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     Process& Process::operator=(Process&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeProcess& nativeThis = Platform::Get(this->_native);
-
-            if (nativeThis.Handle)
+            if (this->m_native.Handle)
             {
-                CloseHandle(nativeThis.Handle);
-                nativeThis.Handle = nullptr;
+                CloseHandle(this->m_native.Handle);
             }
 
-            Platform::NativeProcess& nativeOther = Platform::Get(other._native);
-
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -42,15 +37,11 @@ namespace Anemone::System
 
     Process::~Process()
     {
-        Platform::NativeProcess& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle)
+        if (this->m_native.Handle)
         {
-            CloseHandle(nativeThis.Handle);
-            nativeThis.Handle = nullptr;
+            CloseHandle(this->m_native.Handle);
+            this->m_native.Handle = nullptr;
         }
-
-        Platform::Destroy(this->_native);
     }
 
     static std::expected<void, ErrorCode> CreatePipeForRedirection(FileHandle& parentHandle, FileHandle& childHandle, bool parentInputs)
@@ -145,7 +136,7 @@ namespace Anemone::System
             {
                 if (auto rc = CreatePipeForRedirection(fhWriteInput, fhReadInput, true))
                 {
-                    startup_info.hStdInput = Platform::Get(fhReadInput.GetNative()).Handle;
+                    startup_info.hStdInput = fhReadInput.GetNative().Handle;
                 }
                 else
                 {
@@ -161,7 +152,7 @@ namespace Anemone::System
             {
                 if (auto rc = CreatePipeForRedirection(fhReadOutput, fhWriteOutput, false))
                 {
-                    startup_info.hStdOutput = Platform::Get(fhWriteOutput.GetNative()).Handle;
+                    startup_info.hStdOutput = fhWriteOutput.GetNative().Handle;
                 }
                 else
                 {
@@ -177,7 +168,7 @@ namespace Anemone::System
             {
                 if (auto rc = CreatePipeForRedirection(fhReadError, fhWriteError, false))
                 {
-                    startup_info.hStdError = Platform::Get(fhWriteError.GetNative()).Handle;
+                    startup_info.hStdError = fhWriteError.GetNative().Handle;
                 }
                 else
                 {
@@ -257,17 +248,16 @@ namespace Anemone::System
 
     std::expected<int32_t, ErrorCode> Process::Wait() const
     {
-        Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
-        if (WaitForSingleObject(nativeThis.Handle, INFINITE) != WAIT_OBJECT_0)
+        if (WaitForSingleObject(this->m_native.Handle, INFINITE) != WAIT_OBJECT_0)
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
 
         DWORD dwExitCode;
 
-        if (GetExitCodeProcess(nativeThis.Handle, &dwExitCode) == FALSE)
+        if (GetExitCodeProcess(this->m_native.Handle, &dwExitCode) == FALSE)
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -277,12 +267,11 @@ namespace Anemone::System
 
     std::expected<std::optional<int32_t>, ErrorCode> Process::TryWait() const
     {
-        Platform::NativeProcess const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
         DWORD dwExitCode;
 
-        if (GetExitCodeProcess(nativeThis.Handle, &dwExitCode) == FALSE)
+        if (GetExitCodeProcess(this->m_native.Handle, &dwExitCode) == FALSE)
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -297,18 +286,17 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> Process::Terminate()
     {
-        Platform::NativeProcess& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
         DWORD dwError = 0;
 
-        if (not TerminateProcess(nativeThis.Handle, 0))
+        if (not TerminateProcess(this->m_native.Handle, 0))
         {
             dwError = GetLastError();
 
-            WaitForSingleObject(nativeThis.Handle, INFINITE);
-            CloseHandle(nativeThis.Handle);
-            nativeThis = {};
+            WaitForSingleObject(this->m_native.Handle, INFINITE);
+            CloseHandle(this->m_native.Handle);
+            this->m_native = {};
         }
 
         if (dwError != 0)

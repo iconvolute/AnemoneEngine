@@ -9,9 +9,7 @@ namespace Anemone::Threading
         AE_ASSERT(initialCount >= 0);
         AE_ASSERT(maxCount >= 1);
 
-        Platform::NativeSemaphore& nativeThis = Platform::Create(this->_native);
-
-        nativeThis.Inner = CreateSemaphoreW(
+        this->m_native.Inner = CreateSemaphoreW(
             nullptr,
             initialCount,
             maxCount,
@@ -20,46 +18,34 @@ namespace Anemone::Threading
 
     Semaphore::~Semaphore()
     {
-        Platform::NativeSemaphore& nativeThis = Platform::Get(this->_native);
-
-        CloseHandle(nativeThis.Inner);
-
-        Platform::Destroy(this->_native);
+        CloseHandle(this->m_native.Inner);
     }
 
     void Semaphore::Acquire()
     {
-        Platform::NativeSemaphore& nativeThis = Platform::Get(this->_native);
-
         WaitForSingleObject(
-            nativeThis.Inner,
+            this->m_native.Inner,
             INFINITE);
     }
 
     bool Semaphore::TryAcquire(Duration const& timeout)
     {
-        Platform::NativeSemaphore& nativeThis = Platform::Get(this->_native);
-
         return WaitForSingleObject(
-                   nativeThis.Inner,
+                   this->m_native.Inner,
                    Platform::win32_ValidateTimeoutDuration(timeout)) != WAIT_TIMEOUT;
     }
 
     bool Semaphore::TryAcquire()
     {
-        Platform::NativeSemaphore& nativeThis = Platform::Get(this->_native);
-
         return WaitForSingleObject(
-                   nativeThis.Inner,
+                   this->m_native.Inner,
                    0) != WAIT_TIMEOUT;
     }
 
     void Semaphore::Release()
     {
-        Platform::NativeSemaphore& nativeThis = Platform::Get(this->_native);
-
         ReleaseSemaphore(
-            nativeThis.Inner,
+            this->m_native.Inner,
             1,
             nullptr);
     }

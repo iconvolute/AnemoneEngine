@@ -2,25 +2,12 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/Flags.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 
 #include <span>
 #include <cstddef>
 #include <expected>
 #include <string_view>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeFileHandleStorage = UninitializedStorage<struct NativeFileHandle, 8, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeFileHandleStorage = UninitializedStorage<struct NativeFileHandle, 4, 4>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeFileHandleStorage = UninitializedStorage<struct NativeFileHandle, 4, 4>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::System
 {
@@ -66,7 +53,7 @@ namespace Anemone::System
     class RUNTIME_API FileHandle final
     {
     private:
-        Platform::NativeFileHandleStorage _native;
+        Platform::NativeFileHandle m_native;
 
     public:
         explicit FileHandle(Platform::NativeFileHandle const& native);
@@ -93,9 +80,9 @@ namespace Anemone::System
 
         [[nodiscard]] static std::expected<void, ErrorCode> CreatePipe(FileHandle& read, FileHandle& write);
 
-        [[nodiscard]] Platform::NativeFileHandleStorage GetNative() const
+        [[nodiscard]] Platform::NativeFileHandle const& GetNative() const
         {
-            return this->_native;
+            return this->m_native;
         }
 
     public:

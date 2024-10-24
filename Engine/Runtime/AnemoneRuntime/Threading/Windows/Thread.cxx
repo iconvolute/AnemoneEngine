@@ -47,13 +47,14 @@ namespace Anemone::Threading
 {
     Thread::Thread()
     {
-        Platform::Create(this->_native);
+        this->m_native = {
+            .Handle = nullptr,
+            .Id = 0,
+        };
     }
 
     Thread::Thread(ThreadStart const& start)
     {
-        Platform::NativeThread& nativeThis = Platform::Create(this->_native);
-
         if (start.Callback == nullptr)
         {
             AE_PANIC("Cannot create thread without runnable object");
@@ -69,15 +70,15 @@ namespace Anemone::Threading
             dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
         }
 
-        nativeThis.Handle = CreateThread(
+        this->m_native.Handle = CreateThread(
             nullptr,
             stackSize,
             Private::ThreadEntryPoint,
             start.Callback,
             dwCreationFlags,
-            &nativeThis.Id);
+            &this->m_native.Id);
 
-        if (nativeThis.Handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Cannot create thread");
         }
@@ -87,23 +88,23 @@ namespace Anemone::Threading
             Platform::win32_string_buffer<wchar_t, 128> wname{};
             Platform::win32_WidenString(wname, *start.Name);
 
-            SetThreadDescription(nativeThis.Handle, wname);
+            SetThreadDescription(this->m_native.Handle, wname);
         }
 
         if (start.Priority)
         {
-            SetThreadPriority(nativeThis.Handle, Private::ConvertThreadPriority(*start.Priority));
+            SetThreadPriority(this->m_native.Handle, Private::ConvertThreadPriority(*start.Priority));
         }
 
-        if (ResumeThread(nativeThis.Handle) == static_cast<DWORD>(-1))
+        if (ResumeThread(this->m_native.Handle) == static_cast<DWORD>(-1))
         {
             AE_PANIC("Cannot resume thread");
         }
     }
 
     Thread::Thread(Thread&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     Thread& Thread::operator=(Thread&& other) noexcept
@@ -115,9 +116,7 @@ namespace Anemone::Threading
                 this->Join();
             }
 
-            Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-            Platform::NativeThread& nativeOther = Platform::Get(other._native);
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -129,57 +128,47 @@ namespace Anemone::Threading
         {
             this->Join();
         }
-
-        Platform::Destroy(this->_native);
     }
 
     void Thread::Join()
     {
-        Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Failed to join thread");
         }
 
-        if (nativeThis.Id == GetCurrentThreadId())
+        if (this->m_native.Id == GetCurrentThreadId())
         {
             AE_PANIC("Joining thread from itself");
         }
 
-        WaitForSingleObject(nativeThis.Handle, INFINITE);
+        WaitForSingleObject(this->m_native.Handle, INFINITE);
 
-        CloseHandle(nativeThis.Handle);
+        CloseHandle(this->m_native.Handle);
 
-        nativeThis = {};
+        this->m_native = {};
     }
 
     [[nodiscard]] bool Thread::IsJoinable() const
     {
-        Platform::NativeThread const& nativeThis = Platform::Get(this->_native);
-
-        return nativeThis.Handle != nullptr;
+        return this->m_native.Handle != nullptr;
     }
 
     [[nodiscard]] ThreadId Thread::GetId() const
     {
-        Platform::NativeThread const& nativeThis = Platform::Get(this->_native);
-
-        return ThreadId{nativeThis.Id};
+        return ThreadId{this->m_native.Id};
     }
 
     void Thread::Detach()
     {
-        Platform::NativeThread& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Failed to detach from thread");
         }
 
-        CloseHandle(nativeThis.Handle);
+        CloseHandle(this->m_native.Handle);
 
-        nativeThis = {};
+        this->m_native = {};
     }
 
     ThreadId GetThisThreadId()

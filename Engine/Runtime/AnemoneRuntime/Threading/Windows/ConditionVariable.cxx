@@ -6,50 +6,35 @@ namespace Anemone::Threading
 {
     ConditionVariable::ConditionVariable()
     {
-        Platform::NativeConditionVariable& native = Platform::Create(this->_native);
-
-        InitializeConditionVariable(&native.Inner);
+        InitializeConditionVariable(&this->m_native.Inner);
     }
 
-    ConditionVariable::~ConditionVariable()
-    {
-        Platform::Destroy(this->_native);
-    }
+    ConditionVariable::~ConditionVariable() = default;
 
     void ConditionVariable::Wait(CriticalSection& lock)
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-        Platform::NativeCriticalSection& nativeLock = Platform::Get(lock._native);
-
         SleepConditionVariableCS(
-            &nativeThis.Inner,
-            &nativeLock.Inner,
+            &this->m_native.Inner,
+            &lock.m_native.Inner,
             INFINITE);
     }
 
     bool ConditionVariable::TryWait(CriticalSection& lock, Duration const& timeout)
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-        Platform::NativeCriticalSection& nativeLock = Platform::Get(lock._native);
-
         return SleepConditionVariableCS(
-                   &nativeThis.Inner,
-                   &nativeLock.Inner,
+                   &this->m_native.Inner,
+                   &lock.m_native.Inner,
                    Platform::win32_ValidateTimeoutDuration(timeout)) != FALSE;
     }
 
     void ConditionVariable::Notify()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-
         WakeConditionVariable(
-            &nativeThis.Inner);
+            &this->m_native.Inner);
     }
     void ConditionVariable::NotifyAll()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-
         WakeAllConditionVariable(
-            &nativeThis.Inner);
+            &this->m_native.Inner);
     }
 }

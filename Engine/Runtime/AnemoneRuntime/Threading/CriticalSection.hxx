@@ -1,23 +1,10 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <type_traits>
 #include <atomic>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeCriticalSectionStorage = UninitializedStorage<struct NativeCriticalSection, 40, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeCriticalSectionStorage = UninitializedStorage<struct NativeCriticalSection, 48, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeCriticalSectionStorage = UninitializedStorage<struct NativeCriticalSection, 40, 4>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::Threading
 {
@@ -28,7 +15,7 @@ namespace Anemone::Threading
         friend class ConditionVariable;
 
     private:
-        Platform::NativeCriticalSectionStorage _native;
+        Platform::NativeCriticalSection m_native;
 
     public:
         CriticalSection();

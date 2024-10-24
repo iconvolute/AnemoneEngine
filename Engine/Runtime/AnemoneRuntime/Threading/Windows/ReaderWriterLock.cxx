@@ -6,55 +6,38 @@ namespace Anemone::Threading
 {
     ReaderWriterLock::ReaderWriterLock()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Create(this->_native);
-
-        InitializeSRWLock(&nativeThis.Inner);
+        InitializeSRWLock(&this->m_native.Inner);
     }
 
-    ReaderWriterLock::~ReaderWriterLock()
-    {
-        Platform::Destroy(this->_native);
-    }
+    ReaderWriterLock::~ReaderWriterLock() = default;
 
     void ReaderWriterLock::EnterShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        AcquireSRWLockShared(&nativeThis.Inner);
+        AcquireSRWLockShared(&this->m_native.Inner);
     }
 
     bool ReaderWriterLock::TryEnterShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        return TryAcquireSRWLockShared(&nativeThis.Inner) != FALSE;
+        return TryAcquireSRWLockShared(&this->m_native.Inner) != FALSE;
     }
 
     void ReaderWriterLock::LeaveShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        ReleaseSRWLockShared(&nativeThis.Inner);
+        ReleaseSRWLockShared(&this->m_native.Inner);
     }
 
     void ReaderWriterLock::Enter()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        AcquireSRWLockExclusive(&nativeThis.Inner);
+        AcquireSRWLockExclusive(&this->m_native.Inner);
     }
 
     bool ReaderWriterLock::TryEnter()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        return TryAcquireSRWLockExclusive(&nativeThis.Inner) != FALSE;
+        return TryAcquireSRWLockExclusive(&this->m_native.Inner) != FALSE;
     }
 
     void ReaderWriterLock::Leave()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        ReleaseSRWLockExclusive(&nativeThis.Inner);
+        ReleaseSRWLockExclusive(&this->m_native.Inner);
     }
 }

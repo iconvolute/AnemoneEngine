@@ -38,34 +38,31 @@ namespace Anemone::System::Private
 namespace Anemone::System
 {
     DirectoryEnumerator::DirectoryEnumerator(std::string root)
-        : _root{std::move(root)}
+        : m_root{std::move(root)}
+        , m_native{INVALID_HANDLE_VALUE}
     {
-        Platform::Create(this->_native, Platform::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE});
     }
 
     DirectoryEnumerator::DirectoryEnumerator(DirectoryEnumerator&& other) noexcept
-        : _root{std::move(other._root)}
+        : m_root{std::exchange(other.m_root, {})}
+        , m_native{std::exchange(other.m_native, {INVALID_HANDLE_VALUE})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), Platform::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE}));
     }
 
     DirectoryEnumerator& DirectoryEnumerator::operator=(DirectoryEnumerator&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-            Platform::NativeDirectoryEnumerator& nativeOther = Platform::Get(other._native);
-
-            if (nativeThis.Handle != INVALID_HANDLE_VALUE)
+            if (this->m_native.Handle != INVALID_HANDLE_VALUE)
             {
-                if (not FindClose(nativeThis.Handle))
+                if (not FindClose(this->m_native.Handle))
                 {
                     AE_PANIC("Failed to close directory enumerator");
                 }
             }
 
-            this->_root = std::exchange(other._root, {});
-            nativeThis = std::exchange(nativeOther, Platform::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE});
+            this->m_root = std::exchange(other.m_root, {});
+            this->m_native = std::exchange(other.m_native, Platform::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE});
         }
 
         return *this;
@@ -73,31 +70,25 @@ namespace Anemone::System
 
     DirectoryEnumerator::~DirectoryEnumerator()
     {
-        Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle != INVALID_HANDLE_VALUE)
+        if (this->m_native.Handle != INVALID_HANDLE_VALUE)
         {
-            if (not FindClose(nativeThis.Handle))
+            if (not FindClose(this->m_native.Handle))
             {
                 AE_PANIC("Failed to close directory enumerator");
             }
         }
-
-        Platform::Destroy(this->_native);
     }
 
     std::optional<std::expected<DirectoryEntry, ErrorCode>> DirectoryEnumerator::Next()
     {
-        Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-
         WIN32_FIND_DATAW wfd;
 
-        if (nativeThis.Handle == INVALID_HANDLE_VALUE)
+        if (this->m_native.Handle == INVALID_HANDLE_VALUE)
         {
             // TODO This should be possible to using a Path functions.
             std::wstring wpath{};
 
-            if (Platform::win32_WidenString(wpath, this->_root))
+            if (Platform::win32_WidenString(wpath, this->m_root))
             {
                 if (not wpath.empty())
                 {
@@ -107,9 +98,9 @@ namespace Anemone::System
 
                     if (HANDLE const handle = FindFirstFileW(wpath.c_str(), &wfd); handle != INVALID_HANDLE_VALUE)
                     {
-                        nativeThis.Handle = handle;
+                        this->m_native.Handle = handle;
 
-                        return Private::FromNative(this->_root, wfd);
+                        return Private::FromNative(this->m_root, wfd);
                     }
 
                     if (DWORD const dwError = GetLastError(); dwError == ERROR_FILE_NOT_FOUND)
@@ -126,9 +117,9 @@ namespace Anemone::System
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        if (FindNextFileW(nativeThis.Handle, &wfd) != FALSE)
+        if (FindNextFileW(this->m_native.Handle, &wfd) != FALSE)
         {
-            return Private::FromNative(this->_root, wfd);
+            return Private::FromNative(this->m_root, wfd);
         }
 
         if (DWORD const dwError = GetLastError(); dwError == ERROR_NO_MORE_FILES)
@@ -143,6 +134,6 @@ namespace Anemone::System
 
     std::string_view DirectoryEnumerator::Root() const
     {
-        return this->_root;
+        return this->m_root;
     }
 }

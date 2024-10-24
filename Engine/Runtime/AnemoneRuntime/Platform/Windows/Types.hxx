@@ -3,24 +3,30 @@
 
 namespace Anemone::Platform
 {
+    struct NativeSocketEndPoint final
+    {
+        sockaddr_storage Inner;
+    };
+
     struct NativeIpEndPoint final
     {
         union
         {
-            SOCKADDR Address;
-            SOCKADDR_IN AddressV4;
-            SOCKADDR_IN6 AddressV6;
-        } Inner;
-    };
-
-    struct NativeLocalEndPoint final
-    {
-        SOCKADDR_UN Inner;
+            sockaddr Header;
+            sockaddr_in V4;
+            sockaddr_in6 V6;
+        } Address;
     };
 
     struct NativeSocket final
     {
         SOCKET Inner;
+    };
+
+
+    struct NativeLocalEndPoint final
+    {
+        SOCKADDR_UN Inner;
     };
 
     // todo: remove this

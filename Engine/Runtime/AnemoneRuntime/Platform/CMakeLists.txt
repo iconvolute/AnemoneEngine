@@ -9,5 +9,4 @@ target_sources(AnemoneRuntime
         "Detect.hxx"
         "Main.hxx"
         "Runtime.hxx"
-        "UninitializedStorage.hxx"
 )

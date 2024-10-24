@@ -8,74 +8,66 @@
 
 namespace Anemone::Network
 {
-    IpEndPoint::IpEndPoint()
+    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint()
     {
-        Platform::NativeIpEndPoint& nativeThis = Platform::Create(this->m_native);
-        nativeThis.Inner.AddressV4 = sockaddr_in{
-            .sin_family = AF_INET,
-            .sin_port = 0,
-            .sin_addr = std::bit_cast<in_addr>(IpAddressV4::Any().GetOctets()),
-            .sin_zero = {},
+        return Platform::NativeIpEndPoint{{.Header = {.sa_family = AF_UNSPEC}}};
+    }
+
+    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in const& address)
+    {
+        return Platform::NativeIpEndPoint{{.V4 = address}};
+    }
+
+    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in6 const& address)
+    {
+        return Platform::NativeIpEndPoint{{.V6 = address}};
+    }
+
+    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(in_addr const& address, uint16_t port)
+    {
+        return Platform::NativeIpEndPoint{
+            {
+                .V4 = sockaddr_in{
+                    .sin_family = AF_INET,
+                    .sin_port = Bitwise::HostToNetwork<uint16_t>(port),
+                    .sin_addr = address,
+                    .sin_zero = {},
+                },
+            },
         };
     }
 
-    IpEndPoint::IpEndPoint(IpEndPoint const& other)
+    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(in6_addr const& address, uint16_t port, uint32_t scopeId)
     {
-        Platform::Create(this->m_native, Platform::Get(other.m_native));
-    }
-
-    IpEndPoint::IpEndPoint(IpEndPoint&& other) noexcept
-    {
-        Platform::Create(this->m_native, Platform::Get(other.m_native));
-    }
-
-    IpEndPoint& IpEndPoint::operator=(IpEndPoint const& other)
-    {
-        if (this != std::addressof(other))
-        {
-            Platform::Get(this->m_native) = Platform::Get(other.m_native);
-        }
-
-        return *this;
-    }
-
-    IpEndPoint& IpEndPoint::operator=(IpEndPoint&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            Platform::Get(this->m_native) = Platform::Get(other.m_native);
-        }
-
-        return *this;
-    }
-
-    IpEndPoint::~IpEndPoint()
-    {
-        Platform::Destroy(this->m_native);
+        return Platform::NativeIpEndPoint{
+            {
+                .V6 = sockaddr_in6{
+                    .sin6_family = AF_INET6,
+                    .sin6_port = Bitwise::HostToNetwork<uint16_t>(port),
+                    .sin6_flowinfo = 0,
+                    .sin6_addr = address,
+                    .sin6_scope_id = scopeId,
+                },
+            },
+        };
     }
 
     IpEndPoint::IpEndPoint(IpAddress const& address, uint16_t port)
     {
-        Platform::NativeIpEndPoint& nativeThis = Platform::Create(this->m_native);
-
         if (auto innerAddressV4 = address.GetV4())
         {
-            nativeThis.Inner.AddressV4 = sockaddr_in{
-                .sin_family = AF_INET,
-                .sin_port = Bitwise::HostToNetwork<uint16_t>(port),
-                .sin_addr = std::bit_cast<in_addr>(innerAddressV4->GetOctets()),
-                .sin_zero = {},
-            };
+            this->m_native.Address.V4.sin_family = AF_INET;
+            this->m_native.Address.V4.sin_port = Bitwise::HostToNetwork<uint16_t>(port);
+            this->m_native.Address.V4.sin_addr = std::bit_cast<in_addr>(innerAddressV4->GetOctets());
+            // nativeThis.Address.V4.sin_zero = {};
         }
         else if (auto innerAddressV6 = address.GetV6())
         {
-            nativeThis.Inner.AddressV6 = sockaddr_in6{
-                .sin6_family = AF_INET6,
-                .sin6_port = Bitwise::HostToNetwork<uint16_t>(port),
-                .sin6_flowinfo = 0,
-                .sin6_addr = std::bit_cast<in6_addr>(innerAddressV6->GetOctets()),
-                .sin6_scope_id = 0,
-            };
+            this->m_native.Address.V6.sin6_family = AF_INET6;
+            this->m_native.Address.V6.sin6_port = Bitwise::HostToNetwork<uint16_t>(port);
+            this->m_native.Address.V6.sin6_flowinfo = 0;
+            this->m_native.Address.V6.sin6_addr = std::bit_cast<in6_addr>(innerAddressV6->GetOctets());
+            this->m_native.Address.V6.sin6_scope_id = innerAddressV6->GetScopeId();
         }
         else
         {
@@ -85,27 +77,24 @@ namespace Anemone::Network
 
     bool IpEndPoint::operator==(IpEndPoint const& other) const
     {
-        Platform::NativeIpEndPoint const& nativeThis = Platform::Get(this->m_native);
-        Platform::NativeIpEndPoint const& nativeOther = Platform::Get(other.m_native);
-
-        if (nativeThis.Inner.Address.sa_family != nativeOther.Inner.Address.sa_family)
+        if (this->m_native.Address.Header.sa_family != other.m_native.Address.Header.sa_family)
         {
             return false;
         }
 
-        if (nativeThis.Inner.Address.sa_family == AF_INET)
+        if (this->m_native.Address.Header.sa_family == AF_INET)
         {
-            sockaddr_in const& thisAddress = nativeThis.Inner.AddressV4;
-            sockaddr_in const& otherAddress = nativeOther.Inner.AddressV4;
+            sockaddr_in const& thisAddress = this->m_native.Address.V4;
+            sockaddr_in const& otherAddress = other.m_native.Address.V4;
 
             return (thisAddress.sin_port == otherAddress.sin_port) &&
                 (thisAddress.sin_addr.s_addr == otherAddress.sin_addr.s_addr);
         }
 
-        if (nativeThis.Inner.Address.sa_family == AF_INET6)
+        if (this->m_native.Address.Header.sa_family == AF_INET6)
         {
-            sockaddr_in6 const& thisAddress = nativeThis.Inner.AddressV6;
-            sockaddr_in6 const& otherAddress = nativeOther.Inner.AddressV6;
+            sockaddr_in6 const& thisAddress = this->m_native.Address.V6;
+            sockaddr_in6 const& otherAddress = other.m_native.Address.V6;
 
             return (thisAddress.sin6_port == otherAddress.sin6_port) &&
                 (memcmp(thisAddress.sin6_addr.s6_addr, otherAddress.sin6_addr.s6_addr, sizeof(thisAddress.sin6_addr)) == 0) &&
@@ -116,46 +105,42 @@ namespace Anemone::Network
         AE_PANIC("Invalid address family.");
     }
 
-    IpAddress IpEndPoint::GetAddress() const
+    std::optional<IpAddress> IpEndPoint::GetAddress() const
     {
-        Platform::NativeIpEndPoint const& nativeThis = Platform::Get(this->m_native);
-
-        if (nativeThis.Inner.Address.sa_family == AF_INET)
+        if (this->m_native.Address.Header.sa_family == AF_INET)
         {
             return IpAddress{
                 IpAddressV4{
-                    std::bit_cast<std::array<uint8_t, 4>>(nativeThis.Inner.AddressV4.sin_addr.s_addr),
+                    std::bit_cast<std::array<uint8_t, 4>>(this->m_native.Address.V4.sin_addr.s_addr),
                 },
             };
         }
 
-        if (nativeThis.Inner.Address.sa_family == AF_INET6)
+        if (this->m_native.Address.Header.sa_family == AF_INET6)
         {
             return IpAddress{
                 IpAddressV6{
-                    std::bit_cast<std::array<uint8_t, 16>>(nativeThis.Inner.AddressV6.sin6_addr.s6_addr),
-                    nativeThis.Inner.AddressV6.sin6_scope_id,
+                    std::bit_cast<std::array<uint8_t, 16>>(this->m_native.Address.V6.sin6_addr.s6_addr),
+                    this->m_native.Address.V6.sin6_scope_id,
                 },
             };
         }
 
-        AE_PANIC("Invalid address family.");
+        return {};
     }
 
-    uint16_t IpEndPoint::GetPort() const
+    std::optional<uint16_t> IpEndPoint::GetPort() const
     {
-        Platform::NativeIpEndPoint const& nativeThis = Platform::Get(this->m_native);
-
-        if (nativeThis.Inner.Address.sa_family == AF_INET)
+        if (this->m_native.Address.Header.sa_family == AF_INET)
         {
-            return Bitwise::NetworkToHost<uint16_t>(nativeThis.Inner.AddressV4.sin_port);
+            return Bitwise::NetworkToHost<uint16_t>(this->m_native.Address.V4.sin_port);
         }
 
-        if (nativeThis.Inner.Address.sa_family == AF_INET6)
+        if (this->m_native.Address.Header.sa_family == AF_INET6)
         {
-            return Bitwise::NetworkToHost<uint16_t>(nativeThis.Inner.AddressV6.sin6_port);
+            return Bitwise::NetworkToHost<uint16_t>(this->m_native.Address.V6.sin6_port);
         }
 
-        AE_PANIC("Invalid address family.");
+        return {};
     }
 }

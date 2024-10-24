@@ -4,13 +4,12 @@
 namespace Anemone::System
 {
     NamedMutex::NamedMutex(std::string_view name)
+        : m_native{}
     {
-        this->_name = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
-
-        Platform::NativeNamedMutex& nativeThis = Platform::Create(this->_native);
+        this->m_name = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
 
         Platform::win32_FilePathW wname{};
-        Platform::win32_WidenString(wname, this->_name);
+        Platform::win32_WidenString(wname, this->m_name);
 
         HANDLE const handle = CreateMutexW(nullptr, FALSE, wname.data());
 
@@ -20,31 +19,28 @@ namespace Anemone::System
         }
         else
         {
-            nativeThis.Handle = handle;
+            this->m_native.Handle = handle;
         }
     }
 
     NamedMutex::NamedMutex(NamedMutex&& other) noexcept
-        : _name{std::move(other._name)}
+        : m_native{std::exchange(other.m_native, {})}
+        , m_name{std::move(other.m_name)}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), {}));
     }
 
     NamedMutex& NamedMutex::operator=(NamedMutex&& other) noexcept
     {
-        if (this != &other)
+        if (this != std::addressof(other))
         {
-            this->_name = std::move(other._name);
+            this->m_name = std::exchange(other.m_name, {});
 
-            Platform::NativeNamedMutex& nativeThis = Platform::Get(this->_native);
-            Platform::NativeNamedMutex& nativeOther = Platform::Get(other._native);
-
-            if (nativeThis.Handle != nullptr)
+            if (this->m_native.Handle != nullptr)
             {
-                CloseHandle(nativeThis.Handle);
+                CloseHandle(this->m_native.Handle);
             }
 
-            nativeThis = std::exchange(nativeOther, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
@@ -52,22 +48,17 @@ namespace Anemone::System
 
     NamedMutex::~NamedMutex()
     {
-        Platform::NativeNamedMutex& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle != nullptr)
+        if (this->m_native.Handle != nullptr)
         {
-            CloseHandle(nativeThis.Handle);
+            CloseHandle(this->m_native.Handle);
         }
-
-        Platform::Destroy(this->_native);
     }
 
     void NamedMutex::Lock()
     {
-        Platform::NativeNamedMutex& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
-        DWORD const rc = WaitForSingleObject(nativeThis.Handle, INFINITE);
+        DWORD const rc = WaitForSingleObject(this->m_native.Handle, INFINITE);
 
         if (rc != WAIT_OBJECT_0)
         {
@@ -77,10 +68,10 @@ namespace Anemone::System
 
     bool NamedMutex::TryLock()
     {
-        Platform::NativeNamedMutex& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
-        DWORD const rc = WaitForSingleObject(nativeThis.Handle, 0);
+        DWORD const rc = WaitForSingleObject(this->m_native.Handle, 0);
+
         if (rc == WAIT_OBJECT_0)
         {
             return true;
@@ -96,10 +87,9 @@ namespace Anemone::System
 
     void NamedMutex::Unlock()
     {
-        Platform::NativeNamedMutex& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != nullptr);
+        AE_ASSERT(this->m_native.Handle != nullptr);
 
-        if (not ReleaseMutex(nativeThis.Handle))
+        if (not ReleaseMutex(this->m_native.Handle))
         {
             AE_PANIC("Failed to unlock named mutex.");
         }

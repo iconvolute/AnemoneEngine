@@ -7,9 +7,7 @@ namespace Anemone::Threading
 {
     ConditionVariable::ConditionVariable()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Create(this->_native);
-
-        if (int const rc = pthread_cond_init(&nativeThis.Inner, nullptr); rc != 0)
+        if (int const rc = pthread_cond_init(&this->m_native.Inner, nullptr); rc != 0)
         {
             AE_PANIC("pthread_cond_init (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -17,24 +15,17 @@ namespace Anemone::Threading
 
     ConditionVariable::~ConditionVariable()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_cond_destroy(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_cond_destroy(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_cond_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
-
-        Platform::Destroy(this->_native);
     }
 
     void ConditionVariable::Wait(CriticalSection& lock)
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-        Platform::NativeCriticalSection& nativeLock = Platform::Get(lock._native);
-
         int const rc = pthread_cond_wait(
-            &nativeThis.Inner,
-            &nativeLock.Inner);
+            &this->m_native.Inner,
+            &lock.m_native.Inner);
 
         if (rc != 0)
         {
@@ -44,16 +35,13 @@ namespace Anemone::Threading
 
     bool ConditionVariable::TryWait(CriticalSection& lock, Duration const& timeout)
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-        Platform::NativeCriticalSection& nativeLock = Platform::Get(lock._native);
-
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);
         Platform::posix_ValidateTimeout(ts, timeout);
 
         int const rc = pthread_cond_timedwait(
-            &nativeThis.Inner,
-            &nativeLock.Inner,
+            &this->m_native.Inner,
+            &lock.m_native.Inner,
             &ts);
 
         if (rc == ETIMEDOUT)
@@ -70,18 +58,14 @@ namespace Anemone::Threading
 
     void ConditionVariable::Notify()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_cond_signal(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_cond_signal(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
     void ConditionVariable::NotifyAll()
     {
-        Platform::NativeConditionVariable& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_cond_broadcast(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_cond_broadcast(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", rc, strerror(rc));
         }

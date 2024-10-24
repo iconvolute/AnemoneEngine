@@ -2,6 +2,8 @@
 #include "AnemoneRuntime/Storage/DataReader.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 
+#include <memory>
+
 namespace Anemone::Storage
 {
     class RUNTIME_API FileHandleReader : public DataReader

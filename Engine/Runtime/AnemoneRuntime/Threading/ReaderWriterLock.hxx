@@ -1,29 +1,16 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <type_traits>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeReaderWriterLockStorage = UninitializedStorage<struct NativeReaderWriterLock, 8, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeReaderWriterLockStorage = UninitializedStorage<struct NativeReaderWriterLock, 56, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeReaderWriterLockStorage = UninitializedStorage<struct NativeReaderWriterLock, 56, 4>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::Threading
 {
     class RUNTIME_API ReaderWriterLock final
     {
     private:
-        Platform::NativeReaderWriterLockStorage _native;
+        Platform::NativeReaderWriterLock m_native;
 
     public:
         ReaderWriterLock();

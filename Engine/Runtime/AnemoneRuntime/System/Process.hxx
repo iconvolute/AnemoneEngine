@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <string_view>
@@ -13,19 +13,6 @@ namespace Anemone
     struct Duration;
 }
 
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeProcessStorage = UninitializedStorage<struct NativeProcess, 16, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeProcessStorage = UninitializedStorage<struct NativeProcess, 16, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeProcessStorage = UninitializedStorage<struct NativeProcess, 16, 8>;
-#else
-#error "Not implemented"
-#endif
-}
-
 namespace Anemone::System
 {
     class FileHandle;
@@ -33,7 +20,7 @@ namespace Anemone::System
     class RUNTIME_API Process final
     {
     private:
-        Platform::NativeProcessStorage _native;
+        Platform::NativeProcess m_native;
 
     public:
         explicit Process(Platform::NativeProcess native);

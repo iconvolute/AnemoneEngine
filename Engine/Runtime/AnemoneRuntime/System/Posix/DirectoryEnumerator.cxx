@@ -4,6 +4,7 @@
 #include "AnemoneRuntime/System/Path.hxx"
 
 #include <string>
+#include <utility>
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -78,34 +79,31 @@ namespace Anemone::System::Private
 namespace Anemone::System
 {
     DirectoryEnumerator::DirectoryEnumerator(std::string root)
-        : _root{std::move(root)}
+        : m_root{std::move(root)}
+        , m_native{}
     {
-        Platform::Create(this->_native, Platform::NativeDirectoryEnumerator{nullptr});
     }
 
     DirectoryEnumerator::DirectoryEnumerator(DirectoryEnumerator&& other) noexcept
-        : _root{std::move(other._root)}
+        : m_root{std::exchange(other.m_root, {})}
+        , m_native{std::exchange(other.m_native, {})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), Platform::NativeDirectoryEnumerator{nullptr}));
     }
 
     DirectoryEnumerator& DirectoryEnumerator::operator=(DirectoryEnumerator&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-            Platform::NativeDirectoryEnumerator& nativeOther = Platform::Get(other._native);
-
-            if (nativeThis.Handle != nullptr)
+            if (this->m_native.Handle != nullptr)
             {
-                if (closedir(nativeThis.Handle) != 0)
+                if (closedir(this->m_native.Handle) != 0)
                 {
                     AE_PANIC("Failed to close directory enumerator (errno = {})", errno);
                 }
             }
 
-            this->_root = std::exchange(other._root, {});
-            nativeThis = std::exchange(nativeOther, Platform::NativeDirectoryEnumerator{nullptr});
+            this->m_root = std::exchange(other.m_root, {});
+            this->m_native = std::exchange(this->m_native, Platform::NativeDirectoryEnumerator{nullptr});
         }
 
         return *this;
@@ -113,30 +111,24 @@ namespace Anemone::System
 
     DirectoryEnumerator::~DirectoryEnumerator()
     {
-        Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle != nullptr)
+        if (this->m_native.Handle != nullptr)
         {
-            if (closedir(nativeThis.Handle) != 0)
+            if (closedir(this->m_native.Handle) != 0)
             {
                 AE_PANIC("Failed to close directory enumerator (errno = {})", errno);
             }
         }
-
-        Platform::Destroy(this->_native);
     }
 
     std::optional<std::expected<DirectoryEntry, ErrorCode>> DirectoryEnumerator::Next()
     {
-        Platform::NativeDirectoryEnumerator& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
-            DIR* handle = opendir(this->_root.c_str());
+            DIR* handle = opendir(this->m_root.c_str());
 
             if (handle != nullptr)
             {
-                nativeThis.Handle = handle;
+                this->m_native.Handle = handle;
             }
             else
             {
@@ -144,15 +136,15 @@ namespace Anemone::System
             }
         }
 
-        if (nativeThis.Handle != nullptr)
+        if (this->m_native.Handle != nullptr)
         {
             auto& error = errno;
 
             error = 0;
 
-            if (dirent* current = readdir(nativeThis.Handle))
+            if (dirent* current = readdir(this->m_native.Handle))
             {
-                std::string path{this->_root};
+                std::string path{this->m_root};
                 Path::Push(path, current->d_name);
 
                 return DirectoryEntry{
@@ -171,7 +163,7 @@ namespace Anemone::System
 
     std::string_view DirectoryEnumerator::Root() const
     {
-        return this->_root;
+        return this->m_root;
     }
 }
 

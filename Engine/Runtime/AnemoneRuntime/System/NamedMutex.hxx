@@ -1,30 +1,17 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/UninitializedStorage.hxx"
+#include "AnemoneRuntime/Platform/Types.hxx"
 
 #include <string_view>
 #include <string>
-
-namespace Anemone::Platform
-{
-#if ANEMONE_PLATFORM_WINDOWS
-    using NativeNamedMutexStorage = UninitializedStorage<struct NativeNamedMutex, 8, 8>;
-#elif ANEMONE_PLATFORM_LINUX
-    using NativeNamedMutexStorage = UninitializedStorage<struct NativeNamedMutex, 8, 8>;
-#elif ANEMONE_PLATFORM_ANDROID
-    using NativeNamedMutexStorage = UninitializedStorage<struct NativeNamedMutex, 8, 8>;
-#else
-#error "Not implemented"
-#endif
-}
 
 namespace Anemone::System
 {
     class RUNTIME_API NamedMutex final
     {
     private:
-        Platform::NativeNamedMutexStorage _native;
-        std::string _name{};
+        Platform::NativeNamedMutex m_native;
+        std::string m_name{};
 
     public:
         explicit NamedMutex(std::string_view name);

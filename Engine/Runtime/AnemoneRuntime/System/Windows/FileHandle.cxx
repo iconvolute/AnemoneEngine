@@ -7,36 +7,33 @@
 namespace Anemone::System
 {
     FileHandle::FileHandle(Platform::NativeFileHandle const& native)
+        : m_native{native}
     {
-        Platform::Create(this->_native, native);
     }
 
     FileHandle::FileHandle()
+        : m_native{INVALID_HANDLE_VALUE}
     {
-        Platform::Create(this->_native, Platform::NativeFileHandle{INVALID_HANDLE_VALUE});
     }
 
     FileHandle::FileHandle(FileHandle&& other) noexcept
+        : m_native{std::exchange(other.m_native, {INVALID_HANDLE_VALUE})}
     {
-        Platform::Create(this->_native, std::exchange(Platform::Get(other._native), Platform::NativeFileHandle{INVALID_HANDLE_VALUE}));
     }
 
     FileHandle& FileHandle::operator=(FileHandle&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-            Platform::NativeFileHandle& nativeOther = Platform::Get(other._native);
-
-            if (nativeThis.Handle != INVALID_HANDLE_VALUE)
+            if (this->m_native.Handle != INVALID_HANDLE_VALUE)
             {
-                if (not CloseHandle(nativeThis.Handle))
+                if (not CloseHandle(this->m_native.Handle))
                 {
-                    AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
+                    AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(this->m_native.Handle), GetLastError());
                 }
             }
 
-            nativeThis = std::exchange(nativeOther, Platform::NativeFileHandle{INVALID_HANDLE_VALUE});
+            this->m_native = std::exchange(other.m_native, Platform::NativeFileHandle{INVALID_HANDLE_VALUE});
         }
 
         return *this;
@@ -44,17 +41,13 @@ namespace Anemone::System
 
     FileHandle::~FileHandle()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-
-        if (nativeThis.Handle != INVALID_HANDLE_VALUE)
+        if (this->m_native.Handle != INVALID_HANDLE_VALUE)
         {
-            if (not CloseHandle(nativeThis.Handle))
+            if (not CloseHandle(this->m_native.Handle))
             {
-                AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(nativeThis.Handle), GetLastError());
+                AE_TRACE(Error, "Failed to close file: handle = {}, error = {}", fmt::ptr(this->m_native.Handle), GetLastError());
             }
         }
-
-        Platform::Destroy(this->_native);
     }
 
     std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
@@ -199,15 +192,15 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::Close()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-
-        HANDLE const handle = std::exchange(nativeThis.Handle, INVALID_HANDLE_VALUE);
+        HANDLE const handle = std::exchange(this->m_native.Handle, INVALID_HANDLE_VALUE);
         if (handle != INVALID_HANDLE_VALUE)
         {
             if (not CloseHandle(handle))
             {
                 return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
             }
+
+            this->m_native.Handle = INVALID_HANDLE_VALUE;
         }
 
         return {};
@@ -215,10 +208,9 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::Flush()
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
-        if (not FlushFileBuffers(nativeThis.Handle))
+        if (not FlushFileBuffers(this->m_native.Handle))
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -228,12 +220,11 @@ namespace Anemone::System
 
     std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         LARGE_INTEGER liLength{};
 
-        if (not GetFileSizeEx(nativeThis.Handle, &liLength))
+        if (not GetFileSizeEx(this->m_native.Handle, &liLength))
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -243,16 +234,15 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::SetLength(int64_t length)
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         LARGE_INTEGER const liLength = std::bit_cast<LARGE_INTEGER>(length);
 
-        BOOL result = SetFilePointerEx(nativeThis.Handle, liLength, nullptr, FILE_BEGIN);
+        BOOL result = SetFilePointerEx(this->m_native.Handle, liLength, nullptr, FILE_BEGIN);
 
         if (result != FALSE)
         {
-            result = SetEndOfFile(nativeThis.Handle);
+            result = SetEndOfFile(this->m_native.Handle);
         }
 
         if (result == FALSE)
@@ -265,13 +255,12 @@ namespace Anemone::System
 
     std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
-        Platform::NativeFileHandle const& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         LARGE_INTEGER liPosition{};
         LARGE_INTEGER liDistanceToMove{};
 
-        if (not SetFilePointerEx(nativeThis.Handle, liDistanceToMove, &liPosition, SEEK_CUR))
+        if (not SetFilePointerEx(this->m_native.Handle, liDistanceToMove, &liPosition, SEEK_CUR))
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -281,10 +270,9 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
-        if (not SetFilePointerEx(nativeThis.Handle, std::bit_cast<LARGE_INTEGER>(position), nullptr, FILE_BEGIN))
+        if (not SetFilePointerEx(this->m_native.Handle, std::bit_cast<LARGE_INTEGER>(position), nullptr, FILE_BEGIN))
         {
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
         }
@@ -294,15 +282,14 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer, int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
         OVERLAPPED overlapped = Platform::win32_GetOverlappedForPosition(position);
 
-        if (not ReadFile(nativeThis.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not ReadFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
 
@@ -312,7 +299,7 @@ namespace Anemone::System
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(nativeThis.Handle, &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->m_native.Handle, &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
                 }
@@ -328,15 +315,14 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer, int64_t position)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
         OVERLAPPED overlapped = Platform::win32_GetOverlappedForPosition(position);
 
-        if (not WriteFile(nativeThis.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not WriteFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
 
@@ -346,7 +332,7 @@ namespace Anemone::System
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(nativeThis.Handle, &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->m_native.Handle, &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
                 }
@@ -362,13 +348,12 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
-        if (not ReadFile(nativeThis.Handle, buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not ReadFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 
@@ -387,13 +372,12 @@ namespace Anemone::System
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
-        Platform::NativeFileHandle& nativeThis = Platform::Get(this->_native);
-        AE_ASSERT(nativeThis.Handle != INVALID_HANDLE_VALUE);
+        AE_ASSERT(this->m_native.Handle != INVALID_HANDLE_VALUE);
 
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
-        if (not WriteFile(nativeThis.Handle, buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not WriteFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 

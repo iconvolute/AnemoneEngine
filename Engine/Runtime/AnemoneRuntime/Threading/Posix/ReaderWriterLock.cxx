@@ -6,9 +6,7 @@ namespace Anemone::Threading
 {
     ReaderWriterLock::ReaderWriterLock()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Create(this->_native);
-
-        if (int const rc = pthread_rwlock_init(&nativeThis.Inner, nullptr); rc != 0)
+        if (int const rc = pthread_rwlock_init(&this->m_native.Inner, nullptr); rc != 0)
         {
             AE_PANIC("pthread_rwlock_init (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -16,21 +14,15 @@ namespace Anemone::Threading
 
     ReaderWriterLock::~ReaderWriterLock()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_destroy(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_destroy(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
-
-        Platform::Destroy(this->_native);
     }
 
     void ReaderWriterLock::EnterShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_rdlock(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_rdlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_rdlock (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -38,9 +30,7 @@ namespace Anemone::Threading
 
     bool ReaderWriterLock::TryEnterShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_tryrdlock(&nativeThis.Inner); rc == 0)
+        if (int const rc = pthread_rwlock_tryrdlock(&this->m_native.Inner); rc == 0)
         {
             return true;
         }
@@ -57,9 +47,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLock::LeaveShared()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_unlock(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_unlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -67,9 +55,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLock::Enter()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_wrlock(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_wrlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_wrlock (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -77,9 +63,7 @@ namespace Anemone::Threading
 
     bool ReaderWriterLock::TryEnter()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_trywrlock(&nativeThis.Inner); rc == 0)
+        if (int const rc = pthread_rwlock_trywrlock(&this->m_native.Inner); rc == 0)
         {
             return true;
         }
@@ -96,9 +80,7 @@ namespace Anemone::Threading
 
     void ReaderWriterLock::Leave()
     {
-        Platform::NativeReaderWriterLock& nativeThis = Platform::Get(this->_native);
-
-        if (int const rc = pthread_rwlock_unlock(&nativeThis.Inner); rc != 0)
+        if (int const rc = pthread_rwlock_unlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }
