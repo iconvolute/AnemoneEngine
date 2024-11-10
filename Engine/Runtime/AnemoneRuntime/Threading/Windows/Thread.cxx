@@ -36,8 +36,14 @@ namespace Anemone::Threading::Private
             AE_PANIC("Thread started without context.");
         }
 
-        Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
-        runnable->Run();
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+        {
+            Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
+            runnable->Run();
+        }
+
+        CoUninitialize();
 
         return 0;
     }
