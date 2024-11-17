@@ -18,6 +18,19 @@ namespace Anemone::UI
         Baseline,
     };
 
+    enum class TextOverflowPosition
+    {
+        Start,
+        Center,
+        End,
+    };
+
+    enum class TextOverflow
+    {
+        Clip,
+        Ellipsis,
+    };
+
     enum class TextTrimming
     {
         WrapWithOverflow,
@@ -150,5 +163,12 @@ namespace Anemone::UI
         Hot,
         Pressed,
         Disabled,
+    };
+
+    enum class Overflow
+    {
+        Visible,
+        Hidden,
+        Scroll,
     };
 }

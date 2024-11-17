@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"

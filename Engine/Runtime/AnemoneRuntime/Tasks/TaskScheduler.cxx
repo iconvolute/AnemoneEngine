@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Instant.hxx"
 
 #include "TaskScheduler.hxx"
@@ -21,10 +21,10 @@ namespace Anemone::Tasks
 
         for (uint32_t i = 0; i < options.WorkerThreadsCount; ++i)
         {
-            this->m_Threads[i] = Threading::Thread{
-                Threading::ThreadStart{
+            this->m_Threads[i] = Thread{
+                ThreadStart{
                     .Name = fmt::format("TaskWorker {}", i),
-                    .Priority = Threading::ThreadPriority::Normal,
+                    .Priority = ThreadPriority::Normal,
                     .Callback = this->m_Workers[i].get(),
                 }};
         }
@@ -151,7 +151,7 @@ namespace Anemone::Tasks
     {
         AE_ASSERT(awaiter);
 
-        Threading::WaitForCompletion(
+        WaitForCompletion(
             [&]
         {
             return awaiter->IsCompleted();
@@ -179,7 +179,7 @@ namespace Anemone::Tasks
         Instant const started = Instant::Now();
         Duration elapsed{};
 
-        Threading::WaitForCompletion(
+        WaitForCompletion(
             [&]
         {
             return (elapsed >= timeout) or awaiter->IsCompleted();
@@ -203,7 +203,7 @@ namespace Anemone::Tasks
         Instant const started = Instant::Now();
         Duration elapsed{};
 
-        Threading::WaitForCompletion(
+        WaitForCompletion(
             [&]
         {
             return elapsed >= timeout;

@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Duration.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 

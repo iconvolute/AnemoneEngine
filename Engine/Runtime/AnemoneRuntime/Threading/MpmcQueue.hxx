@@ -5,7 +5,7 @@
 #include <memory>
 #include <bit>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     // Implementation notes:
     // - capacity must be a power of 2, so we don't need to worry about overflow in sequence counters

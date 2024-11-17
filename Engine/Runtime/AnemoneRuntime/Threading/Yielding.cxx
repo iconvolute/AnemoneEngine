@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 
-namespace Anemone::Threading
+namespace Anemone
 {
     void SpinWait::Spin()
     {

@@ -11,7 +11,6 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("MPMC Queue - Multiple Threads")
 {
     using namespace Anemone;
-    using namespace Anemone::Threading;
 
     struct Context final
     {
@@ -295,7 +294,6 @@ TEST_CASE("MPMC Queue - Multiple Threads")
 TEST_CASE("MPMC Queue - Single Thread")
 {
     using namespace Anemone;
-    using namespace Anemone::Threading;
 
     struct Tracking final
     {

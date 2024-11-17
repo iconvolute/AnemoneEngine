@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
 
-namespace Anemone::Threading
+namespace Anemone
 {
     //! Represents a runnable object.
     //!

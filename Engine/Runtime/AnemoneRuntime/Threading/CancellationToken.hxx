@@ -1,7 +1,7 @@
 #pragma once
 #include <atomic>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     class CancellationToken final
     {

@@ -3,7 +3,7 @@
 #include <atomic>
 #include <type_traits>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename T>
     class SequentialLock final

@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/App/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/App/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/App/Windows/WindowsRuntime.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::App
 {

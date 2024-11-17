@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
-namespace Anemone::Threading
+namespace Anemone
 {
     class SpinWait final
     {
@@ -34,7 +34,7 @@ namespace Anemone::Threading
     };
 }
 
-namespace Anemone::Threading
+namespace Anemone
 {
     enum class ThreadYieldTarget
     {

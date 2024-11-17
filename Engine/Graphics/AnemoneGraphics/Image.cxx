@@ -1,6 +1,5 @@
-#include <AnemoneGraphics/Image.hxx>
-
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneGraphics/Image.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::Graphics
 {

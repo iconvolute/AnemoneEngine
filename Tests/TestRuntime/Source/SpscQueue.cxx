@@ -10,7 +10,6 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("SPSC Queue - Single Thread")
 {
     using namespace Anemone;
-    using namespace Anemone::Threading;
 
     struct Tracking final
     {

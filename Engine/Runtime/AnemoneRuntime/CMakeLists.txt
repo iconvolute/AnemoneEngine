@@ -51,6 +51,7 @@ target_sources(AnemoneRuntime
 add_subdirectory("App")
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostic")
+add_subdirectory("Diagnostics")
 add_subdirectory("Hash")
 add_subdirectory("Math")
 add_subdirectory("Memory")

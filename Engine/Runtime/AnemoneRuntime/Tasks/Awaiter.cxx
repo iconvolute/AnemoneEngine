@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <utility>
 #include <type_traits>
@@ -65,7 +65,7 @@ namespace Anemone::Tasks
     void Awaiter::AddWaitingTask(Task& task)
     {
         // TODO: How to verify if task is not on any list?
-        Threading::UniqueLock lock{this->m_Lock};
+        UniqueLock _{this->m_Lock};
         this->m_WaitList.PushBack(&task);
     }
 }

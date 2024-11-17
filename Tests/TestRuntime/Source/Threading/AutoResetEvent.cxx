@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/AutoResetEventSlim.hxx"
+#include "AnemoneRuntime/Threading/UserAutoResetEvent.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
@@ -10,17 +10,16 @@
 
 TEST_CASE("Threading / AutoResetEvent")
 {
-    using namespace Anemone::Threading;
     using namespace Anemone;
 
     struct SharedState
     {
         std::atomic_size_t PushSet{};
         std::atomic_size_t PushWait{};
-        AutoResetEventSlim Push{false};
+        UserAutoResetEvent Push{false};
         std::atomic_size_t PopSet{};
         std::atomic_size_t PopWait{};
-        AutoResetEventSlim Pop{false};
+        UserAutoResetEvent Pop{false};
 
         std::atomic_uint64_t Checksum{};
     };

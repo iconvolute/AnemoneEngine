@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/ManualResetEventSlim.hxx"
+#include "AnemoneRuntime/Threading/UserManualResetEvent.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
@@ -10,7 +10,6 @@
 
 TEST_CASE("Threading / ManualResetEvent")
 {
-    using namespace Anemone::Threading;
     using namespace Anemone;
 
     struct SharedState
@@ -19,10 +18,10 @@ TEST_CASE("Threading / ManualResetEvent")
         std::atomic_size_t MiddleWait{};
         std::atomic_size_t AfterWait{};
 
-        ManualResetEventSlim Start{false};
-        ManualResetEventSlim Middle1{false};
-        ManualResetEventSlim Middle2{false};
-        ManualResetEventSlim End{false};
+        UserManualResetEvent Start{false};
+        UserManualResetEvent Middle1{false};
+        UserManualResetEvent Middle2{false};
+        UserManualResetEvent End{false};
 
         std::atomic_uint64_t Checksum{};
     };
@@ -31,9 +30,9 @@ TEST_CASE("Threading / ManualResetEvent")
     {
     public:
         SharedState& State;
-        ManualResetEventSlim BeforeWait;
-        ManualResetEventSlim MiddleWait;
-        ManualResetEventSlim AfterWait;
+        UserManualResetEvent BeforeWait;
+        UserManualResetEvent MiddleWait;
+        UserManualResetEvent AfterWait;
 
     protected:
         void OnRun() override

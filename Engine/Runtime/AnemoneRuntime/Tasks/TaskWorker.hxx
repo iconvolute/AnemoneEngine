@@ -6,7 +6,7 @@ namespace Anemone::Tasks
 {
     class TaskScheduler;
 
-    class TaskWorker final : public Threading::Runnable
+    class TaskWorker final : public Runnable
     {
     public:
         TaskScheduler* m_Scheduler{};

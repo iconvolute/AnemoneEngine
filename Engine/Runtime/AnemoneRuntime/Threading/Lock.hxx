@@ -1,6 +1,8 @@
 #pragma once
+#include <type_traits>
+#include <utility>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename LockT>
     concept UniqueLockable = requires(LockT lock) {
@@ -15,7 +17,7 @@ namespace Anemone::Threading
     };
 }
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename LockT>
         requires(UniqueLockable<LockT>)
@@ -68,4 +70,18 @@ namespace Anemone::Threading
             this->_lock.LeaveShared();
         }
     };
+
+    template <typename Lock, typename Callback>
+    auto WithLock(Lock& lock, Callback&& callback) -> std::invoke_result_t<Callback&&>
+    {
+        UniqueLock _{lock};
+        return std::forward<Callback>(callback)();
+    }
+
+    template <typename Lock, typename Callback>
+    auto WithSharedLock(Lock& lock, Callback&& callback) -> std::invoke_result_t<Callback&&>
+    {
+        SharedLock _{lock};
+        return std::forward<Callback>(callback)();
+    }
 }

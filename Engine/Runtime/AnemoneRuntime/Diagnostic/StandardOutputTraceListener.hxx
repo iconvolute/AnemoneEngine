@@ -1,11 +1,11 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone::Diagnostic
 {
     class StandardOutputTraceListener final
-        : public Diagnostic::TraceListener
+        : public TraceListener
     {
     private:
         FILE* m_output = stdout;

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/FileSystem.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
 

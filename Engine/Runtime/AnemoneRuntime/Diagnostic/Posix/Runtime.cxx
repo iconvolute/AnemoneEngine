@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostic/Runtime.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
 
@@ -29,17 +29,17 @@ namespace Anemone::Diagnostic
     }
 
     class AndroidLogTraceListener final
-        : public Diagnostic::TraceListener
+        : public TraceListener
     {
     public:
         AndroidLogTraceListener()
         {
-            GTrace->AddListener(*this);
+            Trace::AddListener(*this);
         }
 
         ~AndroidLogTraceListener() override
         {
-            GTrace->RemoveListener(*this);
+            Trace::RemoveListener(*this);
         }
 
         void WriteLine(TraceLevel level, std::string_view message) override
@@ -63,12 +63,10 @@ namespace Anemone::Diagnostic
     {
         (void)context;
 
-        GTrace.Create();
-
         // if (context.UseStandardOutput)
         {
             GStandardOutputTraceListener.Create();
-            GTrace->AddListener(GStandardOutputTraceListener.Get());
+            Trace::AddListener(GStandardOutputTraceListener.Get());
         }
 
 #if ANEMONE_PLATFORM_ANDROID
@@ -82,14 +80,12 @@ namespace Anemone::Diagnostic
 
         // if (context.UseStandardOutput)
         {
-            GTrace->RemoveListener(GStandardOutputTraceListener.Get());
+            Trace::RemoveListener(GStandardOutputTraceListener.Get());
             GStandardOutputTraceListener.Destroy();
         }
 
 #if ANEMONE_PLATFORM_ANDROID
         GAndroidLogTraceListener.Destroy();
 #endif
-
-        GTrace.Destroy();
     }
 }

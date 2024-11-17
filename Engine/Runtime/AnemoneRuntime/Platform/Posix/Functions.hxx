@@ -1,9 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Platform/Posix/Headers.hxx"
-#include "AnemoneRuntime/Platform/Posix/Types.hxx"
 
 #include <atomic>
 
@@ -163,20 +162,123 @@ namespace Anemone::Platform
     }
 }
 
+// https://www.remlab.net/op/futex-condvar.shtml
+// https://www.remlab.net/op/futex-misc.shtml
+
 namespace Anemone::Platform
 {
-    anemone_forceinline long linux_FutexWait(std::atomic<int>& futex, int expected, timespec const* timeout) noexcept
+    anemone_forceinline void posix_FutexWait(std::atomic<int>& futex, int expected, timespec const* timeout) noexcept
     {
-        return syscall(SYS_futex, &futex, FUTEX_WAIT_PRIVATE, expected, timeout, nullptr, 0);
+        int const rc = syscall(SYS_futex, &futex, FUTEX_WAIT_PRIVATE, expected, timeout, nullptr, 0);
+
+        if (rc == -1)
+        {
+            AE_PANIC("FutexWait (rc: {}, '{}')", errno, strerror(errno));
+        }
     }
 
-    anemone_forceinline long linux_FutexWakeAll(std::atomic<int>& futex) noexcept
+    anemone_forceinline void posix_FutexWakeOne(std::atomic<int>& futex)
     {
-        return syscall(SYS_futex, &futex, FUTEX_WAKE_PRIVATE, INT_MAX, nullptr, nullptr, 0);
+        int const rc = syscall(SYS_futex, &futex, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, 1, nullptr, nullptr, 0);
+
+        if (rc == -1)
+        {
+            AE_PANIC("FutexWakeOne (rc: {}, '{}')", errno, strerror(errno));
+        }
     }
 
-    anemone_forceinline long linux_FutexWakeOne(std::atomic<int>& futex) noexcept
+    anemone_forceinline void posix_FutexWakeAll(std::atomic<int>& futex)
     {
-        return syscall(SYS_futex, &futex, FUTEX_WAKE_PRIVATE, 1, nullptr, nullptr, 0);
+        int const rc = syscall(SYS_futex, &futex, FUTEX_WAKE | FUTEX_PRIVATE_FLAG, INT32_MAX, nullptr, nullptr, 0);
+
+        if (rc == -1)
+        {
+            AE_PANIC("FutexWakeAll (rc: {}, '{}')", errno, strerror(errno));
+        }
+    }
+    
+    anemone_forceinline void posix_FutexWait(std::atomic<int>& futex, int expected)
+    {
+        while (true)
+        {
+            int const rc = syscall(SYS_futex, &futex, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expected, nullptr, nullptr, 0);
+
+            if (rc == -1)
+            {
+                if (errno == EAGAIN)
+                {
+                    return;
+                }
+                else
+                {
+                    AE_PANIC("FutexWait (rc: {}, '{}')", errno, strerror(errno));
+                }
+            }
+            else if (rc == 0)
+            {
+                if (futex.load() != expected)
+                {
+                    return;
+                }
+            }
+        }
+    }
+
+    template <typename PredicateT>
+    anemone_forceinline void posix_FutexWaitUntil(std::atomic<int>& futex, PredicateT&& predicate)
+    {
+        int value = futex.load();
+
+        while (not std::forward<PredicateT>(predicate)(value))
+        {
+            posix_FutexWait(futex, value);
+            value = futex.load();
+        }
+    }
+
+    anemone_forceinline bool posix_FutexWaitTimeout(std::atomic<int>& futex, int expected, Duration const& timeout)
+    {
+        timespec tsTimeout = Platform::posix_FromDuration(timeout);
+        timespec tsStart{};
+        clock_gettime(CLOCK_MONOTONIC, &tsStart);
+
+        timespec tsElapsed{};
+
+        while (true)
+        {
+            if (not Platform::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
+            {
+                return false;
+            }
+
+            timespec tsPartialTimeout = Platform::posix_TimespecDifference(tsTimeout, tsElapsed);
+
+            int const rc = syscall(SYS_futex, &futex, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expected, &tsPartialTimeout, nullptr, 0);
+
+            if (rc != 0)
+            {
+                int const error = errno;
+
+                if (error == ETIMEDOUT)
+                {
+                    return false;
+                }
+
+                if (error != EAGAIN)
+                {
+                    AE_PANIC("FutexWaitTimeout (rc: {}, '{}')", error, strerror(error));
+                }
+            }
+
+            timespec tsCurrent{};
+            clock_gettime(CLOCK_MONOTONIC, &tsCurrent);
+
+            tsElapsed = Platform::posix_TimespecDifference(tsCurrent, tsStart);
+
+            if (futex.load() != expected)
+            {
+                return true;
+            }
+        }
     }
 }

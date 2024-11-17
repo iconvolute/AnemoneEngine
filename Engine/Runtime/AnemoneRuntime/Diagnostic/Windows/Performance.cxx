@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostic/Performance.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <Psapi.h>

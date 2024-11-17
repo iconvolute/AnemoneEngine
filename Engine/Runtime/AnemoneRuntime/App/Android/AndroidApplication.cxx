@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/App/Android/AndroidApplication.hxx"
 #include "AnemoneRuntime/App/Android/AndroidWindow.hxx"
 #include "AnemoneRuntime/App/Android/AndroidRuntime.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::App
 {

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Duration.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <iterator>
 

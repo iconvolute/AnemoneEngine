@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS || ANEMONE_PLATFORM_GAMING_DESKTOP
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"

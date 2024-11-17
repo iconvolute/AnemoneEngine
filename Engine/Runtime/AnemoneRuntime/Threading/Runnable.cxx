@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Threading/Runnable.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
-namespace Anemone::Threading
+namespace Anemone
 {
     Runnable::~Runnable() = default;
 

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::System

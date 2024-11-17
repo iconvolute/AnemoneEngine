@@ -33,7 +33,7 @@ namespace Anemone::Tasks
     private:
         std::atomic<uint32_t> m_Value{};
         std::atomic<uint32_t> m_ReferenceCount{};
-        Threading::Spinlock m_Lock{};
+        Spinlock m_Lock{};
         IntrusiveList<Task, Task> m_WaitList{};
 
     public:
@@ -58,7 +58,7 @@ namespace Anemone::Tasks
         {
             AE_ASSERT(list.IsEmpty());
 
-            Threading::UniqueLock lock{this->m_Lock};
+            UniqueLock _{this->m_Lock};
 
             if (this->IsCompleted())
             {

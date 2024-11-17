@@ -1,12 +1,11 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Platform/Types.hxx"
 #include "AnemoneRuntime/Threading/Runnable.hxx"
 
 #include <optional>
 #include <string_view>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     //! Available thread priorities.
     enum class ThreadPriority
@@ -47,36 +46,12 @@ namespace Anemone::Threading
             return {};
         }
     };
-
-    //! Represents a thread.
-    class RUNTIME_API Thread final
-    {
-    private:
-        Platform::NativeThread m_native;
-
-    public:
-        //! Creates a new thread object. Does not start the thread.
-        Thread();
-
-        //! Starts a new thread.
-        explicit Thread(ThreadStart const& start);
-
-        Thread(Thread const&) = delete;
-
-        Thread(Thread&& other) noexcept;
-
-        Thread& operator=(Thread const&) = delete;
-
-        Thread& operator=(Thread&& other) noexcept;
-
-        ~Thread();
-
-    public:
-        void Join();
-        [[nodiscard]] bool IsJoinable() const;
-        [[nodiscard]] ThreadId GetId() const;
-        void Detach();
-    };
-
-    RUNTIME_API ThreadId GetThisThreadId();
 }
+
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Threading/Windows/WindowsThread.hxx"
+#elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
+#include "AnemoneRuntime/Threading/Posix/PosixThread.hxx"
+#else
+#error Not implemented
+#endif

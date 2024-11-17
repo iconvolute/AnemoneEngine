@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <utility>
 #include <type_traits>

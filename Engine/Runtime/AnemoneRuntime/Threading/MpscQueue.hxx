@@ -1,12 +1,12 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <memory>
 #include <bit>
 #include <atomic>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename T>
     class MpscQueue final

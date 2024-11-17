@@ -3,7 +3,7 @@
 
 #include <cstddef>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename LockType, size_t N>
     class CriticalSectionPool final

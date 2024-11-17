@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <type_traits>
 #include <utility>
@@ -358,7 +358,7 @@ namespace Anemone
             return AsValue(node);
         }
 
-        static constexpr void Remove(T* item)
+        constexpr void Remove(T* item)
         {
             Node* node = AsNode(item);
 

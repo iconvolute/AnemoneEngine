@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostic/Runtime.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 #include "AnemoneRuntime/Diagnostic/StandardOutputTraceListener.hxx"
@@ -90,18 +90,16 @@ namespace Anemone::Diagnostic
     {
         (void)context;
 
-        GTrace.Create();
-
         // if (context.UseDebugOutput)
         {
             GDebugOutputTraceListener.Create();
-            GTrace->AddListener(GDebugOutputTraceListener.Get());
+            Trace::AddListener(GDebugOutputTraceListener.Get());
         }
 
         // if (context.UseStandardOutput)
         {
             GStandardOutputTraceListener.Create();
-            GTrace->AddListener(GStandardOutputTraceListener.Get());
+            Trace::AddListener(GStandardOutputTraceListener.Get());
         }
 
         // GEtwLogListener.Create();
@@ -114,16 +112,14 @@ namespace Anemone::Diagnostic
 
         // if (context.UseStandardOutput)
         {
-            GTrace->RemoveListener(GStandardOutputTraceListener.Get());
+            Trace::RemoveListener(GStandardOutputTraceListener.Get());
             GStandardOutputTraceListener.Destroy();
         }
 
         // if (context.UseDebugOutput)
         {
-            GTrace->RemoveListener(GDebugOutputTraceListener.Get());
+            Trace::RemoveListener(GDebugOutputTraceListener.Get());
             GDebugOutputTraceListener.Destroy();
         }
-
-        GTrace.Destroy();
     }
 }

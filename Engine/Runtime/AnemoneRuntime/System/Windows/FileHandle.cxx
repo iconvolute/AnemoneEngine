@@ -1,7 +1,7 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone::System

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Storage/MemoryReader.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <algorithm>
 

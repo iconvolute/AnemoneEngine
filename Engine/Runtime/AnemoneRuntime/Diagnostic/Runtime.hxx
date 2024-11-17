@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Runtime.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 

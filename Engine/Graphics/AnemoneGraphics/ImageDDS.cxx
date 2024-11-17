@@ -1,7 +1,7 @@
 #include "AnemoneGraphics/DxgiFormat.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
 #include "AnemoneGraphics/Image.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <vector>
 

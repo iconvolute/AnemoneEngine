@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/App/Linux/LinuxApplication.hxx"
 #include "AnemoneRuntime/App/Linux/LinuxWindow.hxx"
 #include "AnemoneRuntime/App/Linux/LinuxRuntime.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::App
 {

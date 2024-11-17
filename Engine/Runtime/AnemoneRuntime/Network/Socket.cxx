@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Network/Socket.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <optional>
 

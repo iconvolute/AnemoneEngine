@@ -4,23 +4,30 @@
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Runtime.hxx"
 #include "AnemoneRuntime/Diagnostic/StackTrace.hxx"
-#include "AnemoneRuntime/Diagnostic/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneRuntime/Tasks/Task.hxx"
+#include "AnemoneRuntime/Tasks/Awaiter.hxx"
+#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 #include <fmt/format.h>
 #include <atomic>
 
+#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/Unicode.hxx"
+#include "AnemoneRuntime/Hash/FNV.hxx"
 
 AE_DECLARE_PROFILE(Main);
 AE_DECLARE_PROFILE(Outer);
 AE_DECLARE_PROFILE(Inner);
 
 #include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include "AnemoneRuntime/Math/Types.hxx"
 #include "AnemoneRuntime/Math/Transform2.hxx"
+#include "AnemoneRuntime/Math/Matrix3x2.hxx"
 
 struct VertexPacked
 {
@@ -56,12 +63,353 @@ anemone_noinline Anemone::Math::Matrix3x2F Too(Anemone::Math::Transform2F const&
 
 void TestTasking();
 
+namespace Anemone::Network
+{
+    class LocalSocket
+    {
+    public:
+        virtual ~LocalSocket() = default;
+    };
+}
+
+#if ANEMONE_PLATFORM_WINDOWS
+
+#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+
+#include <afunix.h>
+
+using NativeUnixSocket = SOCKET;
+
+class UnixSocket final
+{
+    NativeUnixSocket m_handle;
+
+public:
+    UnixSocket()
+        : m_handle{}
+    {
+    }
+
+    UnixSocket(NativeUnixSocket handle)
+        : m_handle{handle}
+    {
+    }
+
+    UnixSocket(UnixSocket const&) = delete;
+    UnixSocket(UnixSocket&& other) noexcept
+        : m_handle{std::exchange(other.m_handle, {})}
+    {
+    }
+
+    UnixSocket& operator=(UnixSocket const&) = delete;
+    UnixSocket& operator=(UnixSocket&& other) noexcept
+    {
+        if (this != std::addressof(other))
+        {
+            this->Close();
+            this->m_handle = std::exchange(other.m_handle, {});
+        }
+
+        return *this;
+    }
+
+    ~UnixSocket()
+    {
+        this->Close();
+    }
+
+    static std::expected<UnixSocket, Anemone::ErrorCode> Create()
+    {
+        UnixSocket h{socket(AF_UNIX, SOCK_STREAM, 0)};
+        return h;
+    }
+
+    void Close()
+    {
+        if (this->m_handle != INVALID_SOCKET)
+        {
+            closesocket(this->m_handle);
+            this->m_handle = INVALID_SOCKET;
+        }
+    }
+
+    NativeUnixSocket GetHandle() const
+    {
+        return this->m_handle;
+    }
+
+    bool IsValid() const
+    {
+        return this->m_handle != INVALID_SOCKET;
+    }
+
+    static sockaddr_un CreateSocketAddress(std::string_view name)
+    {
+        AE_TRACE(Info, "Creating socket address for '{}'", name);
+        sockaddr_un result{};
+        result.sun_family = AF_UNIX;
+
+        auto const id = Anemone::Hash::FNV1A128::FromString(name);
+
+        fmt::format_to(result.sun_path, "anemone_{:016x}{:016x}.sock", id[1], id[0]);
+
+        return result;
+    }
+
+    std::expected<void, Anemone::ErrorCode> Bind(std::string_view path)
+    {
+        AE_TRACE(Info, "Binding socket to '{}'", path);
+        sockaddr_un addr = CreateSocketAddress(path);
+
+        ::DeleteFileA(addr.sun_path);
+
+        if (bind(this->m_handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        return {};
+    }
+
+    std::expected<void, Anemone::ErrorCode> Connect(std::string_view path)
+    {
+        AE_TRACE(Info, "Connecting socket to '{}'", path);
+        sockaddr_un addr = CreateSocketAddress(path);
+
+        if (connect(this->m_handle, reinterpret_cast<sockaddr*>(&addr), sizeof(addr)) != 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        AE_TRACE(Info, "Connected socket to '{}'", path);
+        return {};
+    }
+
+    std::expected<void, Anemone::ErrorCode> Listen(int backlog)
+    {
+        AE_TRACE(Info, "Listening on socket with backlog '{}'", backlog);
+        if (listen(this->m_handle, backlog) != 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        return {};
+    }
+
+    std::expected<UnixSocket, Anemone::ErrorCode> Accept()
+    {
+        AE_TRACE(Info, "Accepting connection on socket");
+        sockaddr_un addr{};
+        int len = sizeof(addr);
+        NativeUnixSocket const client = accept(this->m_handle, reinterpret_cast<sockaddr*>(&addr), &len);
+
+        if (client == INVALID_SOCKET)
+        {
+            AE_TRACE(Error, "Failed to accept socket: {}", WSAGetLastError());
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        AE_TRACE(Info, "Accepted connection on socket");
+        return UnixSocket{client};
+    }
+
+    std::expected<size_t, Anemone::ErrorCode> Send(std::span<std::byte const> data)
+    {
+        AE_TRACE(Info, "Sending data of size '{}'", data.size());
+        int const result = send(this->m_handle, reinterpret_cast<char const*>(data.data()), static_cast<int>(data.size()), 0);
+
+        if (result < 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        AE_TRACE(Info, "Sent data of size '{}'", result);
+        return static_cast<size_t>(result);
+    }
+
+    std::expected<size_t, Anemone::ErrorCode> Receive(std::span<std::byte> data)
+    {
+        AE_TRACE(Info, "Receiving data of size '{}'", data.size());
+        int const result = recv(this->m_handle, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), 0);
+
+        if (result < 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        AE_TRACE(Info, "Received data of size '{}'", result);
+        return static_cast<size_t>(result);
+    }
+
+    // gets local address
+    std::expected<sockaddr_storage, Anemone::ErrorCode> GetLocalAddress()
+    {
+        sockaddr_storage addr{};
+        int len = sizeof(addr);
+
+        if (getsockname(this->m_handle, reinterpret_cast<sockaddr*>(&addr), &len) != 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        return addr;
+    }
+
+    // gets remote address
+    std::expected<sockaddr_storage, Anemone::ErrorCode> GetRemoteAddress()
+    {
+        sockaddr_storage addr{};
+        int len = sizeof(addr);
+
+        if (getpeername(this->m_handle, reinterpret_cast<sockaddr*>(&addr), &len) != 0)
+        {
+            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+        }
+
+        return addr;
+    }
+};
+
+#pragma comment(lib, "Ws2_32.lib")
+#endif
+
+
+#include "AnemoneRuntime/Network/IpEndPoint.hxx"
+#include "AnemoneRuntime/Network/Socket.hxx"
+
+
+// note: networking done via Client/Server abstract classes
+// - LocalClient, LocalServer
+// - TcpClient, TcpServer
+// - UdpClient, UdpServer
+
+// plain networking supported via Socket and SocketEndPoint generic types
+
+// SocketEndPoint (EndPoint) serves as a type erased end point object.
+
+namespace Anemone::Network2
+{
+    struct EndPoint final
+    {
+    };
+
+    struct IpV4EndPoint final
+    {
+        // Network::IpAddress
+    };
+}
+
+AE_DECLARE_PROFILE(ClientWorker);
+AE_DECLARE_PROFILE(ServerWorker);
+
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
+
 int main(int argc, char* argv[])
 {
     Anemone::RuntimeInitializer runtime{argc, argv};
-    Anemone::Math::Matrix3x2F fd = Too({});
-    AE_TRACE(Info, "{}", fd.M12);
+    {
+        
+        Anemone::CriticalSection cs{};
+        Anemone::UniqueLock _{cs};
 
+        if (argc > 0)
+        {
+            //AE_PANIC("Hell of panic from {}", argv[0]);
+        }
+    }
+    {
+        Anemone::Trace::WriteLine(Anemone::TraceLevel::Verbose, "Hello World!");
+        //AE_ASSERT(false);
+    }
+    {
+#if true
+        Anemone::Network::IpAddress i1 = Anemone::Network::IpAddressV6::Localhost();
+        Anemone::Network::IpAddress i2 = Anemone::Network::IpAddressV4::Localhost();
+        i2 = i1;
+
+        Anemone::Network::IpEndPoint e0{};
+        Anemone::Network::IpEndPoint e1{i2, 2137};
+        {
+            if (auto client = Anemone::Network::Socket::Create(
+                    Anemone::Network::AddressFamily::InterNetwork,
+                    Anemone::Network::SocketType::Stream,
+                    Anemone::Network::ProtocolType::Tcp))
+            {
+                Anemone::Network::SocketEndPoint ep{};
+
+                if (auto err = client->Connect(ep))
+                {
+                }
+                else
+                {
+                    AE_TRACE(Error, "Failed to connect: {}", err.error());
+                }
+            }
+        }
+
+#endif
+
+        std::string ss;
+        // if (e1.ToString(ss))
+        {
+            AE_TRACE(Info, "IpEndPoint: {}: {}", ss, fmt::ptr(&e1));
+        }
+        // else
+        {
+            AE_TRACE(Error, "IpEndPoint: failed");
+        }
+    }
+#if ANEMONE_PLATFORM_WINDOWS
+    {
+        UnixSocket server = UnixSocket::Create().value();
+
+        [[maybe_unused]] auto bb = server.Bind("test.sock");
+        [[maybe_unused]] auto bc = server.GetLocalAddress();
+
+
+        class T : public Anemone::Tasks::Task
+        {
+        protected:
+            void OnExecute() override
+            {
+                AE_PROFILE_SCOPE(ClientWorker);
+                AE_TRACE(Info, "Client task started");
+                UnixSocket client = UnixSocket::Create().value();
+                [[maybe_unused]] auto cc = client.Connect("test.sock");
+                Anemone::Tasks::GTaskScheduler->Delay(Anemone::Duration::FromMilliseconds(1000));
+                [[maybe_unused]] auto dd = client.Send(std::as_bytes(std::span{"hello world"}));
+                [[maybe_unused]] auto la = client.GetLocalAddress();
+                [[maybe_unused]] auto ra = client.GetRemoteAddress();
+                client.Close();
+                Anemone::Tasks::GTaskScheduler->Delay(Anemone::Duration::FromMilliseconds(1000));
+                AE_TRACE(Info, "Client task finished");
+            }
+        };
+
+        Anemone::Tasks::AwaiterHandle awaiter{new Anemone::Tasks::Awaiter()};
+        Anemone::Tasks::AwaiterHandle dependency{new Anemone::Tasks::Awaiter()};
+        Anemone::Tasks::TaskHandle t = new T();
+        Anemone::Tasks::GTaskScheduler->Dispatch(*t, awaiter, dependency);
+
+
+        std::array<std::byte, 64> buffer{};
+        [[maybe_unused]] auto ee = server.Listen(5);
+
+        while (auto other = server.Accept())
+        {
+            AE_PROFILE_SCOPE(ServerWorker);
+            other->Receive(buffer);
+            [[maybe_unused]] auto la = other->GetLocalAddress();
+            [[maybe_unused]] auto ra = other->GetRemoteAddress();
+            AE_TRACE(Info, "Received: {}", std::string_view{reinterpret_cast<char*>(buffer.data()), buffer.size()});
+            break;
+        }
+
+        Anemone::Tasks::GTaskScheduler->Wait(awaiter);
+    }
+#endif
+
+#if false
     {
         class App : public Anemone::App::Application
         {
@@ -122,6 +470,7 @@ int main(int argc, char* argv[])
             app.ProcessMessages();
         }
     }
+#endif
 
     auto const& processor = Anemone::System::GetProcessorProperties();
 
@@ -163,13 +512,13 @@ int main(int argc, char* argv[])
             });
         }
 
-        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
+        Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
         {
             AE_PROFILE_SCOPE(Outer);
-            Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
+            Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
             {
                 AE_PROFILE_SCOPE(Inner);
-                Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
+                Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
 
                 // AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
 
@@ -179,9 +528,9 @@ int main(int argc, char* argv[])
                 // std::atomic<int>* p = nullptr;
                 // p->store(42);
             }
-            Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
+            Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
         }
-        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(500));
+        Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
     }
 
     return 0;
@@ -203,15 +552,14 @@ void ReportTimeUsage(T t)
 
 AE_DECLARE_PROFILE(ParallelFor4);
 
-#if false
-#define TRACEPOINT(format, ...) AE_TRACE(Verbose, "({}): {} at {:x}: " format, Anemone::DateTime::Now(), __func__, Anemone::Threading::GetThisThreadId().Value __VA_OPT__(, ) __VA_ARGS__);
+#if true
+#define TRACEPOINT(format, ...) AE_TRACE(Verbose, "({}): {} at {:x}: " format, Anemone::DateTime::Now(), __func__, Anemone::GetThisThreadId().Value __VA_OPT__(, ) __VA_ARGS__);
 
 #else
 #define TRACEPOINT(...)
 #endif
 
 
-#include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Crypto/Sha512.hxx"
 
 class MyFancyTaskWithAlignment : public Anemone::Tasks::Task
@@ -251,7 +599,7 @@ public:
 
         this->m_Output = hash;
 #else
-        Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(100));
+        Anemone::SleepThread(Anemone::Duration::FromMilliseconds(100));
 #endif
 
         TRACEPOINT("finished: ptr={}, id={}", fmt::ptr(this), this->GetId());
@@ -263,16 +611,15 @@ AE_DECLARE_PROFILE(ParallelFor1);
 AE_DECLARE_PROFILE(ParallelFor2);
 AE_DECLARE_PROFILE(ParallelFor3);
 
-#include "AnemoneRuntime/Threading/CriticalSectionSlim.hxx"
+#include "AnemoneRuntime/Threading/UserCriticalSection.hxx"
 #include "AnemoneRuntime/Threading/ConcurrentAccess.hxx"
 #include "AnemoneRuntime/Tasks/ParallelFor.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 void TestTasking()
 {
     {
         using namespace Anemone::Tasks;
-        using namespace Anemone::Threading;
+        using namespace Anemone;
 
         {
 #ifdef UNSYNCED1
@@ -299,7 +646,7 @@ void TestTasking()
                     }
 #endif
                     TRACEPOINT("ParallelFor: [{}:{}): {}", first, last, last - first);
-                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(50));
+                    Anemone::SleepThread(Anemone::Duration::FromMilliseconds(50));
                 },
                     [&](size_t count)
                 {
@@ -309,7 +656,7 @@ void TestTasking()
                     AE_ASSERT(processed == count);
 #endif
                     TRACEPOINT("ParallelFor: done [0:{})", count);
-                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(10));
+                    Anemone::SleepThread(Anemone::Duration::FromMilliseconds(10));
                 });
             });
 #ifdef UNSYNCED1
@@ -317,7 +664,7 @@ void TestTasking()
 #endif
         }
         {
-            CriticalSectionSlim scs{};
+            UserCriticalSection scs{};
             size_t processed = 0;
             constexpr size_t total = 128 * 1024 + 63;
 
@@ -330,10 +677,10 @@ void TestTasking()
                 {
                     AE_PROFILE_SCOPE(ParallelFor3);
                     {
-                        UniqueLock lock{scs};
+                        UniqueLock _{scs};
                         processed += (last - first);
                     }
-                    Anemone::Threading::SleepThread(Anemone::Duration::FromMilliseconds(5));
+                    Anemone::SleepThread(Anemone::Duration::FromMilliseconds(5));
                 },
                     [&](size_t count)
                 {
@@ -364,7 +711,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(10));
+        // Anemone::SleepThread(Anemone::Duration::FromSeconds(10));
         TRACEPOINT("<< waiting for workers to finish mid test");
 
         {
@@ -384,7 +731,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(10));
+        // Anemone::SleepThread(Anemone::Duration::FromSeconds(10));
         TRACEPOINT("<< waiting for workers to finish mid test");
 
         {
@@ -406,7 +753,7 @@ void TestTasking()
         }
         TRACEPOINT(">> waiting for workers to finish mid test");
         AE_TRACE(Verbose, "------------------------------------------");
-        // Anemone::Threading::SleepThread(Anemone::Duration::FromSeconds(2));
+        // Anemone::SleepThread(Anemone::Duration::FromSeconds(2));
         TRACEPOINT("<< waiting for workers to finish mid test");
         {
             AwaiterHandle root{new Awaiter{}};

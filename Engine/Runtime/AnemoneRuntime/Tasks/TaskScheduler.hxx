@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
-#include "AnemoneRuntime/Threading/SemaphoreSlim.hxx"
+#include "AnemoneRuntime/Threading/UserSemaphore.hxx"
 #include "AnemoneRuntime/Tasks/TaskQueue.hxx"
 #include "AnemoneRuntime/Tasks/TaskWorker.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
@@ -37,10 +37,10 @@ namespace Anemone::Tasks
 
     public:
         TaskQueue m_Queue{};
-        std::vector<Threading::Thread> m_Threads{};
+        std::vector<Thread> m_Threads{};
         std::vector<std::unique_ptr<TaskWorker>> m_Workers{};
-        Threading::CancellationToken m_CancellationToken{};
-        Threading::SemaphoreSlim m_Semaphore{0};
+        CancellationToken m_CancellationToken{};
+        UserSemaphore m_Semaphore{0};
         uint32_t m_WorkerThreadsCount{};
 
     public:

@@ -1,11 +1,11 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <atomic>
 #include <type_traits>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     class ConcurrentAccess final
     {

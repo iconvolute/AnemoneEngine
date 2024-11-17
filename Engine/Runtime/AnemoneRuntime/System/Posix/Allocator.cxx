@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Allocator.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::System::Private
 {

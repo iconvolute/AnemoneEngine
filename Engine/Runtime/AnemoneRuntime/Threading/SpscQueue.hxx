@@ -3,7 +3,7 @@
 #include <memory>
 #include <atomic>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     template <typename T>
     class SpscQueue final

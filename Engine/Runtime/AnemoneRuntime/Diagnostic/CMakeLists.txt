@@ -1,15 +1,9 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Debug.cxx"
-        "Debug.hxx"
         "Performance.hxx"
         "Runtime.hxx"
         "StackTrace.hxx"
         "StandardOutputTraceListener.hxx"
-        "Trace.cxx"
-        "Trace.hxx"
-        "TraceLevel.hxx"
-        "TraceListener.hxx"
 )
 
 if(WIN32)

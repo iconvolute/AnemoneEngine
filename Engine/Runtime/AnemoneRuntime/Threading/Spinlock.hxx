@@ -1,13 +1,13 @@
 #pragma once
 #include "AnemoneRuntime/Threading/Yielding.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Diagnostic/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <atomic>
 #include <type_traits>
 
-namespace Anemone::Threading
+namespace Anemone
 {
     //! Represents a spinlock.
     //!
@@ -60,7 +60,7 @@ namespace Anemone::Threading
     };
 }
 
-namespace Anemone::Threading
+namespace Anemone
 {
     class RecursiveSpinlock final
     {

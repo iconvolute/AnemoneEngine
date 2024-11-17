@@ -534,6 +534,15 @@
 #define ANEMONE_FEATURE_JITDEBUGGER false
 #endif
 
+// Futex support
+#if ANEMONE_PLATFORM_WINDOWS || ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
+#define ANEMONE_FEATURE_FUTEX true
+#endif
+
+#ifndef ANEMONE_FEATURE_FUTEX
+#define ANEMONE_FEATURE_FUTEX false
+#endif
+
 //
 //--------------------------------------------------------------------------------------------------
 
