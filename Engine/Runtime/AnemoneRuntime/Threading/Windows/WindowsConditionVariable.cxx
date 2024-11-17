@@ -1,33 +1,33 @@
-#include "AnemoneRuntime/Threading/Windows/WindowsConditionVariable.hxx"
-#include "AnemoneRuntime/Threading/Windows/WindowsCriticalSection.hxx"
+#include "AnemoneRuntime/Threading/ConditionVariable.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone
 {
-    WindowsConditionVariable::WindowsConditionVariable()
+    ConditionVariable::ConditionVariable()
     {
-        InitializeConditionVariable(&this->m_native);
+        InitializeConditionVariable(&this->m_native.Inner);
     }
 
-    WindowsConditionVariable::~WindowsConditionVariable() = default;
+    ConditionVariable::~ConditionVariable() = default;
 
-    void WindowsConditionVariable::Wait(WindowsCriticalSection& lock)
+    void ConditionVariable::Wait(CriticalSection& lock)
     {
-        SleepConditionVariableCS(&this->m_native, &lock.m_native, INFINITE);
+        SleepConditionVariableCS(&this->m_native.Inner, &lock.m_native.Inner, INFINITE);
     }
 
-    bool WindowsConditionVariable::TryWait(WindowsCriticalSection& lock, Duration const& timeout)
+    bool ConditionVariable::TryWait(CriticalSection& lock, Duration const& timeout)
     {
-        return SleepConditionVariableCS(&this->m_native, &lock.m_native, Platform::win32_ValidateTimeoutDuration(timeout)) != FALSE;
+        return SleepConditionVariableCS(&this->m_native.Inner, &lock.m_native.Inner, Platform::win32_ValidateTimeoutDuration(timeout)) != FALSE;
     }
 
-    void WindowsConditionVariable::Notify()
+    void ConditionVariable::Notify()
     {
-        WakeConditionVariable(&this->m_native);
+        WakeConditionVariable(&this->m_native.Inner);
     }
 
-    void WindowsConditionVariable::NotifyAll()
+    void ConditionVariable::NotifyAll()
     {
-        WakeAllConditionVariable(&this->m_native);
+        WakeAllConditionVariable(&this->m_native.Inner);
     }
 }

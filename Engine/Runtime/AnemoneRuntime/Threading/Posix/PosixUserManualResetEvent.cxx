@@ -1,31 +1,31 @@
-#include "AnemoneRuntime/Threading/Posix/PosixUserManualResetEvent.hxx"
+#include "AnemoneRuntime/Threading/UserManualResetEvent.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone
 {
-    PosixUserManualResetEvent::PosixUserManualResetEvent(bool signaled)
+    UserManualResetEvent::UserManualResetEvent(bool signaled)
         : m_Inner{signaled ? StateSignaled : StateReset}
     {
     }
 
-    bool PosixUserManualResetEvent::Reset()
+    bool UserManualResetEvent::Reset()
     {
         return !!this->m_Inner.exchange(StateReset);
     }
 
-    void PosixUserManualResetEvent::Set()
+    void UserManualResetEvent::Set()
     {
         this->m_Inner.store(StateSignaled, std::memory_order::release);
 
         Platform::posix_FutexWakeAll(this->m_Inner);
     }
 
-    bool PosixUserManualResetEvent::IsSignaled() const
+    bool UserManualResetEvent::IsSignaled() const
     {
         return !!this->m_Inner.load(std::memory_order::acquire);
     }
 
-    void PosixUserManualResetEvent::Wait()
+    void UserManualResetEvent::Wait()
     {
         while (not this->TryAcquire())
         {

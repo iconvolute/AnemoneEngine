@@ -2,6 +2,17 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
+#if !ANEMONE_FEATURE_FUTEX
+
+#include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
+
+namespace Anemone
+{
+    using UserReaderWriterLock = ReaderWriterLock;
+}
+
+#else
+
 #include <atomic>
 #include <type_traits>
 
@@ -59,3 +70,5 @@ namespace Anemone
         bool TryEnterUpgrade();
     };
 }
+
+#endif

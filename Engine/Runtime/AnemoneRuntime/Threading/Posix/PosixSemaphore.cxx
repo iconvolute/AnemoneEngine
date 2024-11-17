@@ -4,15 +4,15 @@
 
 namespace Anemone
 {
-    PosixSemaphore::PosixSemaphore(int32_t initialCount, int32_t maxCount)
+    Semaphore::Semaphore(int32_t initialCount, int32_t maxCount)
     {
         AE_ASSERT(initialCount >= 0);
         AE_ASSERT(maxCount >= 1);
 
-        this->m_max = maxCount;
-        this->m_current = initialCount;
+        this->m_native.Limit = maxCount;
+        this->m_native.Current = initialCount;
 
-        if (pthread_mutex_init(&this->m_mutex, nullptr))
+        if (pthread_mutex_init(&this->m_native.Mutex, nullptr))
         {
             AE_PANIC("pthread_mutex_init (rc: {}, `{}`)", errno, strerror(errno));
         }
@@ -28,7 +28,7 @@ namespace Anemone
             AE_PANIC("pthread_condattr_setclock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
-        if (pthread_cond_init(&this->m_cond, &attr))
+        if (pthread_cond_init(&this->m_native.Cond, &attr))
         {
             AE_PANIC("pthread_cond_init (rc: {}, `{}`)", errno, strerror(errno));
         }
@@ -39,58 +39,58 @@ namespace Anemone
         }
     }
 
-    PosixSemaphore::~PosixSemaphore()
+    Semaphore::~Semaphore()
     {
-        if (pthread_cond_destroy(&this->m_cond) != 0)
+        if (pthread_cond_destroy(&this->m_native.Cond) != 0)
         {
             AE_PANIC("pthread_cond_destroy (rc: {}, `{}`)", errno, strerror(errno));
         }
 
-        if (pthread_mutex_destroy(&this->m_mutex) != 0)
+        if (pthread_mutex_destroy(&this->m_native.Mutex) != 0)
         {
             AE_PANIC("pthread_mutex_destroy (rc: {}, `{}`)", errno, strerror(errno));
         }
     }
 
-    void PosixSemaphore::Acquire()
+    void Semaphore::Acquire()
     {
-        if (pthread_mutex_lock(&this->m_mutex))
+        if (pthread_mutex_lock(&this->m_native.Mutex))
         {
             AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
-        while (this->m_current < 1)
+        while (this->m_native.Current < 1)
         {
-            if (pthread_cond_wait(&this->m_cond, &this->m_mutex))
+            if (pthread_cond_wait(&this->m_native.Cond, &this->m_native.Mutex))
             {
                 AE_PANIC("pthread_cond_wait (rc: {}, `{}`)", errno, strerror(errno));
             }
         }
 
-        --this->m_current;
+        --this->m_native.Current;
 
-        if (pthread_mutex_unlock(&this->m_mutex))
+        if (pthread_mutex_unlock(&this->m_native.Mutex))
         {
             AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
         }
     }
 
-    bool PosixSemaphore::TryAcquire(Duration const& timeout)
+    bool Semaphore::TryAcquire(Duration const& timeout)
     {
         timespec ts{};
         clock_gettime(CLOCK_MONOTONIC, &ts);
         Platform::posix_ValidateTimeout(ts, timeout);
 
-        if (pthread_mutex_lock(&this->m_mutex))
+        if (pthread_mutex_lock(&this->m_native.Mutex))
         {
             AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
         int rc = 0;
 
-        while (this->m_current < 1)
+        while (this->m_native.Current < 1)
         {
-            if ((rc = pthread_cond_timedwait(&this->m_cond, &this->m_mutex, &ts)))
+            if ((rc = pthread_cond_timedwait(&this->m_native.Cond, &this->m_native.Mutex, &ts)))
             {
                 if (rc == ETIMEDOUT)
                 {
@@ -103,40 +103,40 @@ namespace Anemone
 
         if (rc == 0)
         {
-            --this->m_current;
+            --this->m_native.Current;
         }
 
-        pthread_mutex_unlock(&this->m_mutex);
+        pthread_mutex_unlock(&this->m_native.Mutex);
         return rc == 0;
     }
 
-    bool PosixSemaphore::TryAcquire()
+    bool Semaphore::TryAcquire()
     {
         return this->TryAcquire(Duration::FromMilliseconds(0));
     }
 
-    void PosixSemaphore::Release()
+    void Semaphore::Release()
     {
-        if (pthread_mutex_lock(&this->m_mutex))
+        if (pthread_mutex_lock(&this->m_native.Mutex))
         {
             AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", errno, strerror(errno));
         }
 
-        if (this->m_current < this->m_max)
+        if (this->m_native.Current < this->m_native.Limit)
         {
-            ++this->m_current;
+            ++this->m_native.Current;
         }
         else
         {
             AE_PANIC("semaphore overflow");
         }
 
-        if (pthread_cond_signal(&this->m_cond))
+        if (pthread_cond_signal(&this->m_native.Cond))
         {
             AE_PANIC("pthread_cond_signal (rc: {}, `{}`)", errno, strerror(errno));
         }
 
-        if (pthread_mutex_unlock(&this->m_mutex))
+        if (pthread_mutex_unlock(&this->m_native.Mutex))
         {
             AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", errno, strerror(errno));
         }

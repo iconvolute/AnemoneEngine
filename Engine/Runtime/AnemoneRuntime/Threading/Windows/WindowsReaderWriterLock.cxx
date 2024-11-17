@@ -1,42 +1,42 @@
-#include "AnemoneRuntime/Threading/Windows/WindowsReaderWriterLock.hxx"
+#include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone
 {
-    WindowsReaderWriterLock::WindowsReaderWriterLock()
+    ReaderWriterLock::ReaderWriterLock()
     {
-        InitializeSRWLock(&this->m_native);
+        InitializeSRWLock(&this->m_native.Inner);
     }
 
-    WindowsReaderWriterLock::~WindowsReaderWriterLock() = default;
+    ReaderWriterLock::~ReaderWriterLock() = default;
 
-    void WindowsReaderWriterLock::EnterShared()
+    void ReaderWriterLock::EnterShared()
     {
-        AcquireSRWLockShared(&this->m_native);
+        AcquireSRWLockShared(&this->m_native.Inner);
     }
 
-    bool WindowsReaderWriterLock::TryEnterShared()
+    bool ReaderWriterLock::TryEnterShared()
     {
-        return TryAcquireSRWLockShared(&this->m_native) != FALSE;
+        return TryAcquireSRWLockShared(&this->m_native.Inner) != FALSE;
     }
 
-    void WindowsReaderWriterLock::LeaveShared()
+    void ReaderWriterLock::LeaveShared()
     {
-        ReleaseSRWLockShared(&this->m_native);
+        ReleaseSRWLockShared(&this->m_native.Inner);
     }
 
-    void WindowsReaderWriterLock::Enter()
+    void ReaderWriterLock::Enter()
     {
-        AcquireSRWLockExclusive(&this->m_native);
+        AcquireSRWLockExclusive(&this->m_native.Inner);
     }
 
-    bool WindowsReaderWriterLock::TryEnter()
+    bool ReaderWriterLock::TryEnter()
     {
-        return TryAcquireSRWLockExclusive(&this->m_native) != FALSE;
+        return TryAcquireSRWLockExclusive(&this->m_native.Inner) != FALSE;
     }
 
-    void WindowsReaderWriterLock::Leave()
+    void ReaderWriterLock::Leave()
     {
-        ReleaseSRWLockExclusive(&this->m_native);
+        ReleaseSRWLockExclusive(&this->m_native.Inner);
     }
 }

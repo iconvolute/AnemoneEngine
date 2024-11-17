@@ -1,31 +1,31 @@
-#include "AnemoneRuntime/Threading/Windows/WindowsUserAutoResetEvent.hxx"
+#include "AnemoneRuntime/Threading/UserAutoResetEvent.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 namespace Anemone
 {
-    WindowsUserAutoResetEvent::WindowsUserAutoResetEvent(bool signaled)
+    UserAutoResetEvent::UserAutoResetEvent(bool signaled)
         : m_Inner{signaled ? StateSignaled : StateReset}
     {
     }
 
-    bool WindowsUserAutoResetEvent::Reset()
+    bool UserAutoResetEvent::Reset()
     {
         return !!this->m_Inner.exchange(StateReset);
     }
 
-    void WindowsUserAutoResetEvent::Set()
+    void UserAutoResetEvent::Set()
     {
         this->m_Inner.store(StateSignaled, std::memory_order::release);
 
         WakeByAddressSingle(&this->m_Inner);
     }
 
-    bool WindowsUserAutoResetEvent::IsSignaled() const
+    bool UserAutoResetEvent::IsSignaled() const
     {
         return !!this->m_Inner.load(std::memory_order::acquire);
     }
 
-    void WindowsUserAutoResetEvent::Wait()
+    void UserAutoResetEvent::Wait()
     {
         while (not this->TryAcquire())
         {
@@ -35,7 +35,7 @@ namespace Anemone
 }
 /*
 
-    bool WindowsUserAutoResetEvent::Wait(Duration const& timeout)
+    bool UserAutoResetEvent::Wait(Duration const& timeout)
     {
         Private::NativeEvent& nativeThis = Platform::Get(this->_native);
 

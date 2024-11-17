@@ -1,22 +1,15 @@
 target_sources(AnemoneRuntime
     PRIVATE
+        "PosixNative.hxx"
+
         "PosixConditionVariable.cxx"
-        "PosixConditionVariable.hxx"
         "PosixCriticalSection.cxx"
-        "PosixCriticalSection.hxx"
         "PosixReaderWriterLock.cxx"
-        "PosixReaderWriterLock.hxx"
         "PosixSemaphore.cxx"
-        "PosixSemaphore.hxx"
         "PosixThread.cxx"
-        "PosixThread.hxx"
         "PosixUserAutoResetEvent.cxx"
-        "PosixUserAutoResetEvent.hxx"
         "PosixUserCriticalSection.cxx"
-        "PosixUserCriticalSection.hxx"
         "PosixUserManualResetEvent.cxx"
-        "PosixUserManualResetEvent.hxx"
         "PosixUserSemaphore.cxx"
-        "PosixUserSemaphore.hxx"
         "PosixYielding.cxx"
 )

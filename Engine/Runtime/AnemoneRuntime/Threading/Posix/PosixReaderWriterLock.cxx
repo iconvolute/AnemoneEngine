@@ -4,33 +4,33 @@
 
 namespace Anemone
 {
-    PosixReaderWriterLock::PosixReaderWriterLock()
+    ReaderWriterLock::ReaderWriterLock()
     {
-        if (int const rc = pthread_rwlock_init(&this->m_native, nullptr); rc != 0)
+        if (int const rc = pthread_rwlock_init(&this->m_native.Inner, nullptr); rc != 0)
         {
             AE_PANIC("pthread_rwlock_init (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    PosixReaderWriterLock::~PosixReaderWriterLock()
+    ReaderWriterLock::~ReaderWriterLock()
     {
-        if (int const rc = pthread_rwlock_destroy(&this->m_native); rc != 0)
+        if (int const rc = pthread_rwlock_destroy(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    void PosixReaderWriterLock::EnterShared()
+    void ReaderWriterLock::EnterShared()
     {
-        if (int const rc = pthread_rwlock_rdlock(&this->m_native); rc != 0)
+        if (int const rc = pthread_rwlock_rdlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_rdlock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    bool PosixReaderWriterLock::TryEnterShared()
+    bool ReaderWriterLock::TryEnterShared()
     {
-        if (int const rc = pthread_rwlock_tryrdlock(&this->m_native); rc == 0)
+        if (int const rc = pthread_rwlock_tryrdlock(&this->m_native.Inner); rc == 0)
         {
             return true;
         }
@@ -45,25 +45,25 @@ namespace Anemone
         }
     }
 
-    void PosixReaderWriterLock::LeaveShared()
+    void ReaderWriterLock::LeaveShared()
     {
-        if (int const rc = pthread_rwlock_unlock(&this->m_native); rc != 0)
+        if (int const rc = pthread_rwlock_unlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    void PosixReaderWriterLock::Enter()
+    void ReaderWriterLock::Enter()
     {
-        if (int const rc = pthread_rwlock_wrlock(&this->m_native); rc != 0)
+        if (int const rc = pthread_rwlock_wrlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_wrlock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    bool PosixReaderWriterLock::TryEnter()
+    bool ReaderWriterLock::TryEnter()
     {
-        if (int const rc = pthread_rwlock_trywrlock(&this->m_native); rc == 0)
+        if (int const rc = pthread_rwlock_trywrlock(&this->m_native.Inner); rc == 0)
         {
             return true;
         }
@@ -78,9 +78,9 @@ namespace Anemone
         }
     }
 
-    void PosixReaderWriterLock::Leave()
+    void ReaderWriterLock::Leave()
     {
-        if (int const rc = pthread_rwlock_unlock(&this->m_native); rc != 0)
+        if (int const rc = pthread_rwlock_unlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_rwlock_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }

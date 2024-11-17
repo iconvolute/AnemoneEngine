@@ -1,22 +1,14 @@
 target_sources(AnemoneRuntime
     PRIVATE
+        "WindowsNative.hxx"
         "WindowsConditionVariable.cxx"
-        "WindowsConditionVariable.hxx"
         "WindowsCriticalSection.cxx"
-        "WindowsCriticalSection.hxx"
         "WindowsReaderWriterLock.cxx"
-        "WindowsReaderWriterLock.hxx"
         "WindowsSemaphore.cxx"
-        "WindowsSemaphore.hxx"
         "WindowsThread.cxx"
-        "WindowsThread.hxx"
         "WindowsUserAutoResetEvent.cxx"
-        "WindowsUserAutoResetEvent.hxx"
         "WindowsUserCriticalSection.cxx"
-        "WindowsUserCriticalSection.hxx"
         "WindowsUserManualResetEvent.cxx"
-        "WindowsUserManualResetEvent.hxx"
         "WindowsUserSemaphore.cxx"
-        "WindowsUserSemaphore.hxx"
         "WindowsYielding.cxx"
 )

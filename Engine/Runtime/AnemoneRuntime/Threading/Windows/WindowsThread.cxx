@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Threading/Windows/WindowsThread.hxx"
+#include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
@@ -51,13 +51,13 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    WindowsThread::WindowsThread()
+    Thread::Thread()
+        : m_native{}
     {
-        this->m_handle = nullptr;
-        this->m_id = 0;
     }
 
-    WindowsThread::WindowsThread(ThreadStart const& start)
+    Thread::Thread(ThreadStart const& start)
+        : m_native{}
     {
         if (start.Callback == nullptr)
         {
@@ -74,15 +74,15 @@ namespace Anemone
             dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
         }
 
-        this->m_handle = CreateThread(
+        this->m_native.Handle = CreateThread(
             nullptr,
             stackSize,
             Private::ThreadEntryPoint,
             start.Callback,
             dwCreationFlags,
-            &this->m_id);
+            &this->m_native.Id);
 
-        if (this->m_handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Cannot create thread");
         }
@@ -92,27 +92,26 @@ namespace Anemone
             Platform::win32_string_buffer<wchar_t, 128> wname{};
             Platform::win32_WidenString(wname, *start.Name);
 
-            SetThreadDescription(this->m_handle, wname);
+            SetThreadDescription(this->m_native.Handle, wname);
         }
 
         if (start.Priority)
         {
-            SetThreadPriority(this->m_handle, Private::ConvertThreadPriority(*start.Priority));
+            SetThreadPriority(this->m_native.Handle, Private::ConvertThreadPriority(*start.Priority));
         }
 
-        if (ResumeThread(this->m_handle) == static_cast<DWORD>(-1))
+        if (ResumeThread(this->m_native.Handle) == static_cast<DWORD>(-1))
         {
             AE_PANIC("Cannot resume thread");
         }
     }
 
-    WindowsThread::WindowsThread(WindowsThread&& other) noexcept
-        : m_handle{std::exchange(other.m_handle, {})}
-        , m_id{std::exchange(other.m_id, {})}
+    Thread::Thread(Thread&& other) noexcept
+        : m_native{std::exchange(other.m_native, {})}
     {
     }
 
-    WindowsThread& WindowsThread::operator=(WindowsThread&& other) noexcept
+    Thread& Thread::operator=(Thread&& other) noexcept
     {
         if (this != std::addressof(other))
         {
@@ -121,14 +120,13 @@ namespace Anemone
                 this->Join();
             }
 
-            this->m_handle = std::exchange(other.m_handle, {});
-            this->m_id = std::exchange(other.m_id, {});
+            this->m_native = std::exchange(other.m_native, {});
         }
 
         return *this;
     }
 
-    WindowsThread::~WindowsThread()
+    Thread::~Thread()
     {
         if (this->IsJoinable())
         {
@@ -136,47 +134,45 @@ namespace Anemone
         }
     }
 
-    void WindowsThread::Join()
+    void Thread::Join()
     {
-        if (this->m_handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Failed to join thread");
         }
 
-        if (this->m_id == GetCurrentThreadId())
+        if (this->m_native.Id == GetCurrentThreadId())
         {
             AE_PANIC("Joining thread from itself");
         }
 
-        WaitForSingleObject(this->m_handle, INFINITE);
+        WaitForSingleObject(this->m_native.Handle, INFINITE);
 
-        CloseHandle(this->m_handle);
+        CloseHandle(this->m_native.Handle);
 
-        this->m_handle = nullptr;
-        this->m_id = 0;
+        this->m_native = {};
     }
 
-    [[nodiscard]] bool WindowsThread::IsJoinable() const
+    [[nodiscard]] bool Thread::IsJoinable() const
     {
-        return this->m_handle != nullptr;
+        return this->m_native.Handle != nullptr;
     }
 
-    [[nodiscard]] ThreadId WindowsThread::GetId() const
+    [[nodiscard]] ThreadId Thread::GetId() const
     {
-        return ThreadId{this->m_id};
+        return ThreadId{this->m_native.Id};
     }
 
-    void WindowsThread::Detach()
+    void Thread::Detach()
     {
-        if (this->m_handle == nullptr)
+        if (this->m_native.Handle == nullptr)
         {
             AE_PANIC("Failed to detach from thread");
         }
 
-        CloseHandle(this->m_handle);
+        CloseHandle(this->m_native.Handle);
 
-        this->m_handle = nullptr;
-        this->m_id = 0;
+        this->m_native = {};
     }
 
     ThreadId GetThisThreadId()

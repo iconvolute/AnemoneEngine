@@ -32,6 +32,7 @@ namespace Anemone
     void Debug::Crash()
     {
         anemone_debugbreak();
+        abort();
     }
 
     bool Debug::IsDebuggerAttached()

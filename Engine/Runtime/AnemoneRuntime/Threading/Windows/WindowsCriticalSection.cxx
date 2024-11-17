@@ -1,29 +1,29 @@
-#include "AnemoneRuntime/Threading/Windows/WindowsCriticalSection.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 namespace Anemone
 {
-    WindowsCriticalSection::WindowsCriticalSection()
+    CriticalSection::CriticalSection()
     {
-        InitializeCriticalSectionEx(&this->m_native, 4096, CRITICAL_SECTION_NO_DEBUG_INFO);
+        InitializeCriticalSectionEx(&this->m_native.Inner, 4096, CRITICAL_SECTION_NO_DEBUG_INFO);
     }
 
-    WindowsCriticalSection::~WindowsCriticalSection()
+    CriticalSection::~CriticalSection()
     {
-        DeleteCriticalSection(&this->m_native);
+        DeleteCriticalSection(&this->m_native.Inner);
     }
 
-    void WindowsCriticalSection::Enter()
+    void CriticalSection::Enter()
     {
-        EnterCriticalSection(&this->m_native);
+        EnterCriticalSection(&this->m_native.Inner);
     }
 
-    void WindowsCriticalSection::Leave()
+    void CriticalSection::Leave()
     {
-        LeaveCriticalSection(&this->m_native);
+        LeaveCriticalSection(&this->m_native.Inner);
     }
 
-    bool WindowsCriticalSection::TryEnter()
+    bool CriticalSection::TryEnter()
     {
-        return TryEnterCriticalSection(&this->m_native);
+        return TryEnterCriticalSection(&this->m_native.Inner);
     }
 }

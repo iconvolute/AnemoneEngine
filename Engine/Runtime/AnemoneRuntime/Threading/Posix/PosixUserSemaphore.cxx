@@ -1,15 +1,15 @@
-#include "AnemoneRuntime/Threading/Posix/PosixUserSemaphore.hxx"
+#include "AnemoneRuntime/Threading/UserSemaphore.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {
-    PosixUserSemaphore::~PosixUserSemaphore()
+    UserSemaphore::~UserSemaphore()
     {
         AE_ASSERT(this->m_Count.load() == 0);
     }
 
-    void PosixUserSemaphore::Release(int32_t count)
+    void UserSemaphore::Release(int32_t count)
     {
         if (count == 0)
         {
@@ -42,7 +42,7 @@ namespace Anemone
         }
     }
 
-    void PosixUserSemaphore::Acquire()
+    void UserSemaphore::Acquire()
     {
         int32_t current = this->m_Count.load(std::memory_order::relaxed);
 
@@ -64,7 +64,7 @@ namespace Anemone
         }
     }
 
-    bool PosixUserSemaphore::TryAcquire()
+    bool UserSemaphore::TryAcquire()
     {
         int32_t current = this->m_Count.load();
 
@@ -77,7 +77,7 @@ namespace Anemone
         return this->m_Count.compare_exchange_weak(current, current - 1);
     }
 
-    void PosixUserSemaphore::Wait()
+    void UserSemaphore::Wait()
     {
         this->m_Waiting.fetch_add(1);
 

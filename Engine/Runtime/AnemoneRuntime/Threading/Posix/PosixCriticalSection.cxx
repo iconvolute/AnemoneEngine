@@ -1,9 +1,9 @@
-#include "AnemoneRuntime/Threading/Posix/PosixCriticalSection.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {
-    PosixCriticalSection::PosixCriticalSection()
+    CriticalSection::CriticalSection()
     {
         pthread_mutexattr_t attr{};
 
@@ -17,7 +17,7 @@ namespace Anemone
             AE_PANIC("pthread_mutexattr_settype (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (int const rc = pthread_mutex_init(&this->m_native, &attr); rc != 0)
+        if (int const rc = pthread_mutex_init(&this->m_native.Inner, &attr); rc != 0)
         {
             AE_PANIC("pthread_mutex_init (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -28,33 +28,33 @@ namespace Anemone
         }
     }
 
-    PosixCriticalSection::~PosixCriticalSection()
+    CriticalSection::~CriticalSection()
     {
-        if (int const rc = pthread_mutex_destroy(&this->m_native); rc != 0)
+        if (int const rc = pthread_mutex_destroy(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_mutex_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    void PosixCriticalSection::Enter()
+    void CriticalSection::Enter()
     {
-        if (int const rc = pthread_mutex_lock(&this->m_native); rc != 0)
+        if (int const rc = pthread_mutex_lock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_mutex_lock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    void PosixCriticalSection::Leave()
+    void CriticalSection::Leave()
     {
-        if (int const rc = pthread_mutex_unlock(&this->m_native); rc != 0)
+        if (int const rc = pthread_mutex_unlock(&this->m_native.Inner); rc != 0)
         {
             AE_PANIC("pthread_mutex_unlock (rc: {}, `{}`)", rc, strerror(rc));
         }
     }
 
-    bool PosixCriticalSection::TryEnter()
+    bool CriticalSection::TryEnter()
     {
-        if (int const rc = pthread_mutex_trylock(&this->m_native); rc != 0)
+        if (int const rc = pthread_mutex_trylock(&this->m_native.Inner); rc != 0)
         {
             if (rc == EBUSY)
             {

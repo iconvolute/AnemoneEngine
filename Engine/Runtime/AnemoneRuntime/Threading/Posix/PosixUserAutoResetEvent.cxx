@@ -1,31 +1,31 @@
-#include "AnemoneRuntime/Threading/Posix/PosixUserAutoResetEvent.hxx"
+#include "AnemoneRuntime/Threading/UserAutoResetEvent.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone
 {
-    PosixUserAutoResetEvent::PosixUserAutoResetEvent(bool signaled)
+    UserAutoResetEvent::UserAutoResetEvent(bool signaled)
         : m_Inner{signaled ? StateSignaled : StateReset}
     {
     }
 
-    bool PosixUserAutoResetEvent::Reset()
+    bool UserAutoResetEvent::Reset()
     {
         return !!this->m_Inner.exchange(StateReset);
     }
 
-    void PosixUserAutoResetEvent::Set()
+    void UserAutoResetEvent::Set()
     {
         this->m_Inner.store(StateSignaled, std::memory_order::release);
 
         Platform::posix_FutexWakeOne(this->m_Inner);
     }
 
-    bool PosixUserAutoResetEvent::IsSignaled() const
+    bool UserAutoResetEvent::IsSignaled() const
     {
         return !!this->m_Inner.load(std::memory_order::acquire);
     }
 
-    void PosixUserAutoResetEvent::Wait()
+    void UserAutoResetEvent::Wait()
     {
         while (not this->TryAcquire())
         {
@@ -34,7 +34,7 @@ namespace Anemone
     }
 
 #if false
-    bool PosixUserAutoResetEvent::Wait(Duration const& timeout)
+    bool UserAutoResetEvent::Wait(Duration const& timeout)
     {
         Private::NativeEvent& nativeThis = Platform::Get(this->_native);
 

@@ -1,10 +1,10 @@
-#include "AnemoneRuntime/Threading/Posix/PosixUserCriticalSection.hxx"
+#include "AnemoneRuntime/Threading/UserCriticalSection.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/Posix/Functions.hxx"
 
 namespace Anemone
 {
-    void PosixUserCriticalSection::Enter()
+    void UserCriticalSection::Enter()
     {
         while (true)
         {
@@ -17,12 +17,12 @@ namespace Anemone
         }
     }
 
-    bool PosixUserCriticalSection::TryEnter()
+    bool UserCriticalSection::TryEnter()
     {
         return this->m_Flag.exchange(StateLocked, std::memory_order::acquire) == StateUnlocked;
     }
 
-    void PosixUserCriticalSection::Leave()
+    void UserCriticalSection::Leave()
     {
         AE_ASSERT(this->m_Flag.load(std::memory_order::relaxed) != StateUnlocked);
 
