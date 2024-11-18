@@ -149,7 +149,7 @@ public:
         sockaddr_un result{};
         result.sun_family = AF_UNIX;
 
-        auto const id = Anemone::Hash::FNV1A128::FromString(name);
+        auto const id = Anemone::FNV1A128::FromString(name);
 
         fmt::format_to(result.sun_path, "anemone_{:016x}{:016x}.sock", id[1], id[0]);
 

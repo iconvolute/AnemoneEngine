@@ -4,7 +4,7 @@
 #include <span>
 #include <array>
 
-namespace Anemone::Hash
+namespace Anemone
 {
     struct FNV1A32 final
     {
@@ -54,7 +54,7 @@ namespace Anemone::Hash
     };
 }
 
-namespace Anemone::Hash
+namespace Anemone
 {
     struct FNV1A64 final
     {
@@ -104,7 +104,7 @@ namespace Anemone::Hash
     };
 }
 
-namespace Anemone::Hash
+namespace Anemone
 {
     struct FNV1A128 final
     {

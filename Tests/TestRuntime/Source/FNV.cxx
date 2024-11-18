@@ -4,7 +4,7 @@
 
 TEST_CASE("FNV Hash")
 {
-    using namespace Anemone::Hash;
+    using namespace Anemone;
 
     SECTION("FNV1A32")
     {

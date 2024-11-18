@@ -14,7 +14,7 @@ namespace Anemone::Storage
 
         [[nodiscard]] static constexpr BinarySignature Create(std::string_view name)
         {
-            return {Hash::FNV1A64::FromString(name)};
+            return {FNV1A64::FromString(name)};
         }
     };
 
