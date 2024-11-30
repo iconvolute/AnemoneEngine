@@ -1,6 +1,9 @@
 #include "AnemoneRuntime/App/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/App/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/App/Windows/WindowsRuntime.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
+#include <dwmapi.h>
 
 namespace Anemone::App
 {
@@ -77,6 +80,23 @@ namespace Anemone::App
             nullptr,
             GWindowsAppState->Instance,
             this);
+
+        {
+            DWORD preference = DWMWCP_DONOTROUND;
+
+            if (HRESULT hr = DwmSetWindowAttribute(hWindow, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(DWORD)); FAILED(hr))
+            {
+                AE_TRACE(Critical, "Failed to set DWM window attribute: {}", hr);
+            }
+        }
+
+        {
+            BOOL enable = TRUE;
+            if (HRESULT hr = DwmSetWindowAttribute(hWindow, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL)); FAILED(hr))
+            {
+                AE_TRACE(Critical, "Failed to set DWM window attribute: {}", hr);
+            }
+        }
 
         AE_ENSURE(hWindow != nullptr);
 
