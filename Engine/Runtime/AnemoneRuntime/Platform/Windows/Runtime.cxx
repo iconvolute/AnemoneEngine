@@ -227,6 +227,18 @@ namespace Anemone::Platform
         return EXCEPTION_EXECUTE_HANDLER;
     }
 #endif
+
+    static void SetupConsoleMode(HANDLE hStream)
+    {
+        DWORD dwMode;
+
+        if (GetConsoleMode(hStream, &dwMode))
+        {
+            dwMode |= ENABLE_PROCESSED_OUTPUT;
+            dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            SetConsoleMode(hStream, dwMode);
+        }
+    }
 }
 
 namespace Anemone::Platform
@@ -247,6 +259,9 @@ namespace Anemone::Platform
 
         // When process hangs, DWM will ghost the window. This is not desirable for us.
         DisableProcessWindowsGhosting();
+
+        SetupConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE));
+        SetupConsoleMode(GetStdHandle(STD_ERROR_HANDLE));
 
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
