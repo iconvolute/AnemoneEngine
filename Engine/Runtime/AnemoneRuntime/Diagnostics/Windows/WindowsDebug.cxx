@@ -91,7 +91,11 @@ namespace Anemone
 
     void Debug::Crash()
     {
+#if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
+#endif
+
+        __fastfail(FAST_FAIL_FATAL_APP_EXIT);
     }
 
     bool Debug::IsDebuggerAttached()
