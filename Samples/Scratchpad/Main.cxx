@@ -308,18 +308,18 @@ int main(int argc, char* argv[])
 {
     Anemone::RuntimeInitializer runtime{argc, argv};
     {
-        
+
         Anemone::CriticalSection cs{};
         Anemone::UniqueLock _{cs};
 
         if (argc > 0)
         {
-            //AE_PANIC("Hell of panic from {}", argv[0]);
+            // AE_PANIC("Hell of panic from {}", argv[0]);
         }
     }
     {
         Anemone::Trace::WriteLine(Anemone::TraceLevel::Verbose, "Hello World!");
-        //AE_ASSERT(false);
+        // AE_ASSERT(false);
     }
     {
 #if true

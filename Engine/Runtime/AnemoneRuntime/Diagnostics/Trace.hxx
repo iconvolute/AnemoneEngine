@@ -54,6 +54,7 @@ namespace Anemone
         {
             return level >= DefaultTraceLevel;
         }
+
     public:
         Trace() = delete;
 

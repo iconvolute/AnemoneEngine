@@ -60,7 +60,7 @@ namespace Anemone
         return static_cast<AssertAction>(result);
 #else
         return AssertAction::Abort;
-#endif        
+#endif
     }
 
     void PlatformHandlePanic()
@@ -112,7 +112,7 @@ namespace Anemone
         while (not IsDebuggerAttached())
         {
             SleepEx(100, TRUE);
-        }        
+        }
     }
 
     bool Debug::AttachDebugger()

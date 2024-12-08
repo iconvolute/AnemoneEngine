@@ -77,7 +77,7 @@ namespace Anemone
 
         RUNTIME_API static CompressionFormatRegistry& Get();
     };
-    
+
     enum class CompressionMethod : uint32_t
     {
         Unknown,
