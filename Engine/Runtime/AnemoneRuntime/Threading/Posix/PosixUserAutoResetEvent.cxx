@@ -17,7 +17,7 @@ namespace Anemone
     {
         this->m_Inner.store(StateSignaled, std::memory_order::release);
 
-        Platform::posix_FutexWakeOne(this->m_Inner);
+        Interop::posix_FutexWakeOne(this->m_Inner);
     }
 
     bool UserAutoResetEvent::IsSignaled() const
@@ -29,16 +29,16 @@ namespace Anemone
     {
         while (not this->TryAcquire())
         {
-            Platform::posix_FutexWait(this->m_Inner, StateReset);
+            Interop::posix_FutexWait(this->m_Inner, StateReset);
         }
     }
 
 #if false
     bool UserAutoResetEvent::Wait(Duration const& timeout)
     {
-        Private::NativeEvent& nativeThis = Platform::Get(this->_native);
+        Private::NativeEvent& nativeThis = Interop::Get(this->_native);
 
-        timespec tsTimeout = Platform::Private::posix_FromDuration(timeout);
+        timespec tsTimeout = Interop::Private::posix_FromDuration(timeout);
 
         timespec tsStart{};
         clock_gettime(CLOCK_MONOTONIC, &tsStart);
@@ -47,14 +47,14 @@ namespace Anemone
 
         while (not this->TryAcquire())
         {
-            if (not Platform::Private::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
+            if (not Interop::Private::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
             {
                 return false;
             }
 
-            timespec tsPartialTimeout = Platform::Private::posix_TimespecDifference(tsTimeout, tsElapsed);
+            timespec tsPartialTimeout = Interop::Private::posix_TimespecDifference(tsTimeout, tsElapsed);
 
-            auto const rc = Platform::Private::linux_FutexWait(nativeThis.Inner, 1, &tsPartialTimeout);
+            auto const rc = Interop::Private::linux_FutexWait(nativeThis.Inner, 1, &tsPartialTimeout);
 
             if (rc != 0)
             {
@@ -74,7 +74,7 @@ namespace Anemone
             timespec tsCurrent{};
             clock_gettime(CLOCK_MONOTONIC, &tsCurrent);
 
-            tsElapsed = Platform::Private::posix_TimespecDifference(tsCurrent, tsStart);
+            tsElapsed = Interop::Private::posix_TimespecDifference(tsCurrent, tsStart);
         }
 
         return true;

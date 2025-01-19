@@ -11,10 +11,10 @@ namespace Anemone::System
     class RUNTIME_API SharedLibrary final
     {
     private:
-        Platform::NativeSharedLibrary m_native;
+        Interop::NativeSharedLibrary m_native;
 
     public:
-        SharedLibrary(Platform::NativeSharedLibrary const& native);
+        SharedLibrary(Interop::NativeSharedLibrary const& native);
 
     public:
         SharedLibrary();

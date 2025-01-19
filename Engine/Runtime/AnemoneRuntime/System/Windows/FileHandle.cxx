@@ -6,7 +6,7 @@
 
 namespace Anemone::System
 {
-    FileHandle::FileHandle(Platform::NativeFileHandle const& native)
+    FileHandle::FileHandle(Interop::NativeFileHandle const& native)
         : m_native{native}
     {
     }
@@ -33,7 +33,7 @@ namespace Anemone::System
                 }
             }
 
-            this->m_native = std::exchange(other.m_native, Platform::NativeFileHandle{INVALID_HANDLE_VALUE});
+            this->m_native = std::exchange(other.m_native, Interop::NativeFileHandle{INVALID_HANDLE_VALUE});
         }
 
         return *this;
@@ -133,9 +133,9 @@ namespace Anemone::System
             dwFlags |= FILE_FLAG_NO_BUFFERING;
         }
 
-        Platform::win32_FilePathW wpath{};
+        Interop::win32_FilePathW wpath{};
 
-        if (Platform::win32_WidenString(wpath, path))
+        if (Interop::win32_WidenString(wpath, path))
         {
             SECURITY_ATTRIBUTES sa{
                 .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -160,7 +160,7 @@ namespace Anemone::System
 
             if (result != INVALID_HANDLE_VALUE)
             {
-                return FileHandle{Platform::NativeFileHandle{result}};
+                return FileHandle{Interop::NativeFileHandle{result}};
             }
 
             return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));
@@ -171,8 +171,8 @@ namespace Anemone::System
 
     std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
     {
-        Platform::NativeFileHandle nativeRead{INVALID_HANDLE_VALUE};
-        Platform::NativeFileHandle nativeWrite{INVALID_HANDLE_VALUE};
+        Interop::NativeFileHandle nativeRead{INVALID_HANDLE_VALUE};
+        Interop::NativeFileHandle nativeWrite{INVALID_HANDLE_VALUE};
 
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -287,7 +287,7 @@ namespace Anemone::System
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
-        OVERLAPPED overlapped = Platform::win32_GetOverlappedForPosition(position);
+        OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
         if (not ReadFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
@@ -320,7 +320,7 @@ namespace Anemone::System
         DWORD dwRequested = static_cast<DWORD>(std::min<size_t>(buffer.size(), std::numeric_limits<DWORD>::max()));
         DWORD dwProcessed = 0;
 
-        OVERLAPPED overlapped = Platform::win32_GetOverlappedForPosition(position);
+        OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
         if (not WriteFile(this->m_native.Handle, buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {

@@ -1,9 +1,0 @@
-target_sources(AnemoneRuntime
-    PRIVATE
-        "AndroidApplication.cxx"
-        "AndroidApplication.hxx"
-        "AndroidRuntime.cxx"
-        "AndroidRuntime.hxx"
-        "AndroidWindow.cxx"
-        "AndroidWindow.hxx"
-)

@@ -1,5 +1,7 @@
 target_sources(AnemoneRuntime
     PRIVATE
+        "Assert.cxx"
+        "Assert.hxx"
         "Debug.cxx"
         "Debug.hxx"
         "Trace.cxx"

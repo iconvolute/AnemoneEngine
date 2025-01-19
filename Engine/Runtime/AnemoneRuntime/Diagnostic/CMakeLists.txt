@@ -1,7 +1,5 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Performance.hxx"
-        "Runtime.hxx"
         "StackTrace.hxx"
         "StandardOutputTraceListener.hxx"
 )

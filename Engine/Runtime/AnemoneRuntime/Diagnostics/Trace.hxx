@@ -1,18 +1,16 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <source_location>
 #include <string_view>
 #include <fmt/format.h>
 
-
-namespace Anemone
+namespace Anemone::Diagnostics
 {
-    class Trace;
-
-    enum class TraceLevel
+    enum class TraceLevel : uint8_t
     {
         Verbose,
         Info,
@@ -22,9 +20,9 @@ namespace Anemone
         None,
     };
 
-    class TraceListener : private IntrusiveListNode<TraceListener, Trace>
+    class TraceListener : private IntrusiveListNode<TraceListener>
     {
-        friend struct IntrusiveList<TraceListener, Trace>;
+        friend struct IntrusiveList<TraceListener>;
 
     public:
         virtual ~TraceListener() = default;
@@ -36,8 +34,12 @@ namespace Anemone
         }
     };
 
-    class Trace final
+    class RUNTIME_API Trace final
     {
+    private:
+        CriticalSection m_lock;
+        IntrusiveList<TraceListener> m_listeners;
+
     public:
         static constexpr TraceLevel DefaultTraceLevel = []() -> TraceLevel
         {
@@ -54,32 +56,53 @@ namespace Anemone
         {
             return level >= DefaultTraceLevel;
         }
-    public:
-        Trace() = delete;
-
-    private:
-        RUNTIME_API static void WriteLineFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
 
     public:
+        Trace() = default;
+
+        void WriteLineFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
+
         template <typename... Args>
-        static void WriteLine(TraceLevel level, std::string_view format, Args const&... args)
+        void WriteLine(TraceLevel level, std::string_view format, Args const&... args)
         {
-            WriteLineFormatted(level, format, fmt::make_format_args(args...));
+            this->WriteLineFormatted(level, format, fmt::make_format_args(args...));
         }
 
-        RUNTIME_API static void Flush();
+        void Flush();
 
-    public:
-        RUNTIME_API static void AddListener(TraceListener& listener);
-        RUNTIME_API static void RemoveListener(TraceListener& listener);
+        void AddListener(TraceListener& listener);
+
+        void RemoveListener(TraceListener& listener);
     };
+
+    RUNTIME_API extern UninitializedObject<Trace> GTrace;
 }
 
 #define AE_TRACE(level, format, ...) \
     do \
     { \
-        if constexpr (::Anemone::Trace::CanDispatch(::Anemone::TraceLevel::level)) \
+        if constexpr (::Anemone::Diagnostics::Trace::CanDispatch(::Anemone::Diagnostics::TraceLevel::level)) \
         { \
-            ::Anemone::Trace::WriteLine(::Anemone::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+            ::Anemone::Diagnostics::GTrace->WriteLine(::Anemone::Diagnostics::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)
+
+
+class RUNTIME_API XTrace
+{
+public:
+    size_t m_count{};
+
+public:
+    anemone_noinline void Formatted(Anemone::Diagnostics::TraceLevel level, std::string_view format, fmt::format_args args);
+
+    template <typename... Args>
+    void Log(Anemone::Diagnostics::TraceLevel level, std::string_view format, Args const&... args)
+    {
+        this->Formatted(level, format, fmt::make_format_args(args...));
+    }
+};
+
+#include "AnemoneRuntime/UninitializedObject.hxx"
+
+RUNTIME_API extern Anemone::UninitializedObject<XTrace> GXtrace;

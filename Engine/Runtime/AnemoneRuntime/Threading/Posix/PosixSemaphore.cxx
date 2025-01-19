@@ -79,7 +79,7 @@ namespace Anemone
     {
         timespec ts{};
         clock_gettime(CLOCK_MONOTONIC, &ts);
-        Platform::posix_ValidateTimeout(ts, timeout);
+        Interop::posix_ValidateTimeout(ts, timeout);
 
         if (pthread_mutex_lock(&this->m_native.Mutex))
         {

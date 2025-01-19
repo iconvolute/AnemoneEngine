@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/Headers.hxx"
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     struct NativeSocketEndPoint final
     {

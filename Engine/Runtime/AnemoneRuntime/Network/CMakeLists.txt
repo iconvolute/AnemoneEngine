@@ -1,9 +1,3 @@
-if (WIN32)
-add_subdirectory("Windows")
-elseif(ANDROID OR LINUX)
-add_subdirectory("Posix")
-endif()
-
 target_sources(AnemoneRuntime
     PRIVATE
         "Detail.hxx"
@@ -13,7 +7,6 @@ target_sources(AnemoneRuntime
         "IpEndPoint.hxx"
         "Local.cxx"
         "Local.hxx"
-        "Runtime.hxx"
         "Socket.cxx"
         "Socket.hxx"
         "Tcp.cxx"

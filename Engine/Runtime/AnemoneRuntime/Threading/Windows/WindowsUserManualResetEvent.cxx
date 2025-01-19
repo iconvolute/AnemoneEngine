@@ -29,16 +29,16 @@ namespace Anemone
     {
         while (not this->TryAcquire())
         {
-            Platform::win32_FutexWait(this->m_Inner, StateReset);
+            Interop::win32_FutexWait(this->m_Inner, StateReset);
         }
     }
 
 #if false
     bool ManualResetEventSlim::Wait(Duration const& timeout)
     {
-        Private::NativeEvent& nativeThis = Platform::Get(this->_native);
+        Private::NativeEvent& nativeThis = Interop::Get(this->_native);
 
-        DWORD dwTimeout = Platform::Private::win32_ValidateTimeoutDuration(timeout);
+        DWORD dwTimeout = Interop::Private::win32_ValidateTimeoutDuration(timeout);
 
         if (dwTimeout == 0)
         {
@@ -79,9 +79,9 @@ namespace Anemone
 
     bool ManualResetEvent::Wait(Duration const& timeout)
     {
-        Private::NativeEvent& nativeThis = Platform::Get(this->_native);
+        Private::NativeEvent& nativeThis = Interop::Get(this->_native);
 
-        timespec tsTimeout = Platform::Private::posix_FromDuration(timeout);
+        timespec tsTimeout = Interop::Private::posix_FromDuration(timeout);
 
         timespec tsStart{};
         clock_gettime(CLOCK_MONOTONIC, &tsStart);
@@ -90,14 +90,14 @@ namespace Anemone
 
         while (not this->TryAcquire())
         {
-            if (not Platform::Private::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
+            if (not Interop::Private::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
             {
                 return false;
             }
 
-            timespec tsPartialTimeout = Platform::Private::posix_TimespecDifference(tsTimeout, tsElapsed);
+            timespec tsPartialTimeout = Interop::Private::posix_TimespecDifference(tsTimeout, tsElapsed);
 
-            auto const rc = Platform::Private::linux_FutexWait(nativeThis.Inner, 1, &tsPartialTimeout);
+            auto const rc = Interop::Private::linux_FutexWait(nativeThis.Inner, 1, &tsPartialTimeout);
 
             if (rc != 0)
             {
@@ -117,7 +117,7 @@ namespace Anemone
             timespec tsCurrent{};
             clock_gettime(CLOCK_MONOTONIC, &tsCurrent);
 
-            tsElapsed = Platform::Private::posix_TimespecDifference(tsCurrent, tsStart);
+            tsElapsed = Interop::Private::posix_TimespecDifference(tsCurrent, tsStart);
         }
 
         return true;

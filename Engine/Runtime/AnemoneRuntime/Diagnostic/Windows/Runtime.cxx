@@ -7,7 +7,7 @@
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
 
-namespace Anemone::Diagnostic
+namespace Anemone::Diagnostics
 {
     // {EE0B606D-9C16-43E9-AE90-1D1E8EE3F79B}
     TRACELOGGING_DEFINE_PROVIDER(
@@ -16,7 +16,7 @@ namespace Anemone::Diagnostic
         (0xee0b606d, 0x9c16, 0x43e9, 0xae, 0x90, 0x1d, 0x1e, 0x8e, 0xe3, 0xf7, 0x9b));
 }
 
-namespace Anemone::Diagnostic
+namespace Anemone::Diagnostics
 {
     // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
     class EtwLogListener : public TraceListener
@@ -82,43 +82,40 @@ namespace Anemone::Diagnostic
 
 namespace Anemone::Diagnostic
 {
-    static UninitializedObject<DebugOutputTraceListener> GDebugOutputTraceListener{};
-    static UninitializedObject<StandardOutputTraceListener> GStandardOutputTraceListener{};
+    static UninitializedObject<Diagnostics::DebugOutputTraceListener> GDebugOutputTraceListener{};
+    static UninitializedObject<Diagnostics::StandardOutputTraceListener> GStandardOutputTraceListener{};
     // static UninitializedObject<EtwLogListener> GEtwLogListener{};
 
-    void InitializeRuntime(RuntimeInitializeContext& context)
+    void InitializeRuntime()
     {
-        (void)context;
-
         // if (context.UseDebugOutput)
         {
             GDebugOutputTraceListener.Create();
-            Trace::AddListener(GDebugOutputTraceListener.Get());
+            Diagnostics::GTrace->AddListener(GDebugOutputTraceListener.Get());
         }
 
         // if (context.UseStandardOutput)
         {
             GStandardOutputTraceListener.Create();
-            Trace::AddListener(GStandardOutputTraceListener.Get());
+            Diagnostics::GTrace->AddListener(GStandardOutputTraceListener.Get());
         }
 
         // GEtwLogListener.Create();
     }
 
-    void FinalizeRuntime(RuntimeFinalizeContext& context)
+    void FinalizeRuntime()
     {
-        (void)context;
         // GEtwLogListener.Destroy();
 
         // if (context.UseStandardOutput)
         {
-            Trace::RemoveListener(GStandardOutputTraceListener.Get());
+            Diagnostics::GTrace->RemoveListener(GStandardOutputTraceListener.Get());
             GStandardOutputTraceListener.Destroy();
         }
 
         // if (context.UseDebugOutput)
         {
-            Trace::RemoveListener(GDebugOutputTraceListener.Get());
+            Diagnostics::GTrace->RemoveListener(GDebugOutputTraceListener.Get());
             GDebugOutputTraceListener.Destroy();
         }
     }

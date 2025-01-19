@@ -10,7 +10,7 @@ namespace Anemone::System
     class RUNTIME_API NamedMutex final
     {
     private:
-        Platform::NativeNamedMutex m_native;
+        Interop::NativeNamedMutex m_native;
         std::string m_name{};
 
     public:

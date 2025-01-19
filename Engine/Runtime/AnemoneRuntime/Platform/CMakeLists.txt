@@ -1,12 +1,21 @@
-if (WIN32)
-add_subdirectory("Windows")
-elseif(ANDROID OR LINUX)
+add_subdirectory("Android")
+add_subdirectory("Linux")
 add_subdirectory("Posix")
-endif()
+add_subdirectory("Windows")
 
 target_sources(AnemoneRuntime
     PRIVATE
         "Detect.hxx"
         "Main.hxx"
-        "Runtime.hxx"
+
+        "Platform.hxx"
+
+        "PlatformEvents.hxx"
+
+        "SplashScreen.hxx"
+
+        "Types.hxx"
+
+        "Window.cxx"
+        "Window.hxx"
 )

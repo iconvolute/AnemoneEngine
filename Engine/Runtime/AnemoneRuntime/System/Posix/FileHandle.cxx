@@ -96,7 +96,7 @@ namespace Anemone::System::Private
 
 namespace Anemone::System
 {
-    FileHandle::FileHandle(Platform::NativeFileHandle const& native)
+    FileHandle::FileHandle(Interop::NativeFileHandle const& native)
         : m_native{native}
     {
     }
@@ -107,7 +107,7 @@ namespace Anemone::System
     }
 
     FileHandle::FileHandle(FileHandle&& other) noexcept
-        : m_native{std::exchange(other.m_native, Platform::NativeFileHandle{-1})}
+        : m_native{std::exchange(other.m_native, Interop::NativeFileHandle{-1})}
     {
     }
 
@@ -123,7 +123,7 @@ namespace Anemone::System
                 }
             }
 
-            this->m_native = std::exchange(other.m_native, Platform::NativeFileHandle{-1});
+            this->m_native = std::exchange(other.m_native, Interop::NativeFileHandle{-1});
         }
 
         return *this;
@@ -178,7 +178,7 @@ namespace Anemone::System
                 }
             }
 
-            return FileHandle{Platform::NativeFileHandle{fd}};
+            return FileHandle{Interop::NativeFileHandle{fd}};
         }
 
         return std::unexpected(Private::ErrorCodeFromErrno(errno));
@@ -193,8 +193,8 @@ namespace Anemone::System
             return std::unexpected(Private::ErrorCodeFromErrno(errno));
         }
 
-        read = FileHandle{Platform::NativeFileHandle{fd[0]}};
-        write = FileHandle{Platform::NativeFileHandle{fd[1]}};
+        read = FileHandle{Interop::NativeFileHandle{fd[0]}};
+        write = FileHandle{Interop::NativeFileHandle{fd[1]}};
 
         return {};
     }

@@ -37,7 +37,7 @@ namespace Anemone
     {
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);
-        Platform::posix_ValidateTimeout(ts, timeout);
+        Interop::posix_ValidateTimeout(ts, timeout);
 
         int const rc = pthread_cond_timedwait(
             &this->m_native.Inner,

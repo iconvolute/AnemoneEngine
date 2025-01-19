@@ -13,7 +13,7 @@ namespace Anemone
                 return;
             }
 
-            Platform::posix_FutexWait(this->m_Flag, StateLocked);
+            Interop::posix_FutexWait(this->m_Flag, StateLocked);
         }
     }
 
@@ -28,6 +28,6 @@ namespace Anemone
 
         this->m_Flag.store(StateUnlocked, std::memory_order::release);
 
-        Platform::posix_FutexWakeOne(this->m_Flag);
+        Interop::posix_FutexWakeOne(this->m_Flag);
     }
 }

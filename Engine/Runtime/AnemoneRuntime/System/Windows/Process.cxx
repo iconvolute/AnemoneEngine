@@ -5,7 +5,7 @@
 
 namespace Anemone::System
 {
-    Process::Process(Platform::NativeProcess native)
+    Process::Process(Interop::NativeProcess native)
         : m_native{native}
     {
     }
@@ -46,8 +46,8 @@ namespace Anemone::System
 
     static std::expected<void, ErrorCode> CreatePipeForRedirection(FileHandle& parentHandle, FileHandle& childHandle, bool parentInputs)
     {
-        Platform::NativeFileHandle nativeParent{INVALID_HANDLE_VALUE};
-        Platform::NativeFileHandle nativeChild{INVALID_HANDLE_VALUE};
+        Interop::NativeFileHandle nativeParent{INVALID_HANDLE_VALUE};
+        Interop::NativeFileHandle nativeChild{INVALID_HANDLE_VALUE};
 
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -189,18 +189,18 @@ namespace Anemone::System
         std::wstring wParams{};
         std::wstring wWorkingDirectory{};
 
-        Platform::win32_WidenString(wPath, path);
+        Interop::win32_WidenString(wPath, path);
 
         if (params)
         {
-            Platform::win32_WidenString(wParams, params.value());
+            Interop::win32_WidenString(wParams, params.value());
             wParams.insert(0, L" ");
             wParams.insert(0, wPath);
         }
 
         if (workingDirectory)
         {
-            Platform::win32_WidenString(wWorkingDirectory, workingDirectory.value());
+            Interop::win32_WidenString(wWorkingDirectory, workingDirectory.value());
         }
 
         BOOL bCreated = CreateProcessW(
@@ -236,7 +236,7 @@ namespace Anemone::System
 
             CloseHandle(process_information.hThread);
 
-            return Process{Platform::NativeProcess{
+            return Process{Interop::NativeProcess{
                 .Handle = process_information.hProcess,
                 .Id = process_information.dwProcessId,
                 .Owned = true,

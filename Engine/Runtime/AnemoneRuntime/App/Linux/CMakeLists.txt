@@ -1,9 +1,0 @@
-target_sources(AnemoneRuntime
-    PRIVATE
-        "LinuxApplication.cxx"
-        "LinuxApplication.hxx"
-        "LinuxRuntime.cxx"
-        "LinuxRuntime.hxx"
-        "LinuxWindow.cxx"
-        "LinuxWindow.hxx"
-)

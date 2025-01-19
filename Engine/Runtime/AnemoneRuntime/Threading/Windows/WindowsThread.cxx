@@ -6,46 +6,49 @@
 
 namespace Anemone::Private
 {
-    constexpr int ConvertThreadPriority(ThreadPriority value)
+    namespace
     {
-        switch (value)
+        constexpr int ConvertThreadPriority(ThreadPriority value)
         {
-        case ThreadPriority::TimeCritical:
-            return THREAD_PRIORITY_TIME_CRITICAL;
-        case ThreadPriority::Highest:
-            return THREAD_PRIORITY_HIGHEST;
-        case ThreadPriority::AboveNormal:
-            return THREAD_PRIORITY_ABOVE_NORMAL;
-        case ThreadPriority::Normal:
+            switch (value)
+            {
+            case ThreadPriority::TimeCritical:
+                return THREAD_PRIORITY_TIME_CRITICAL;
+            case ThreadPriority::Highest:
+                return THREAD_PRIORITY_HIGHEST;
+            case ThreadPriority::AboveNormal:
+                return THREAD_PRIORITY_ABOVE_NORMAL;
+            case ThreadPriority::Normal:
+                return THREAD_PRIORITY_NORMAL;
+            case ThreadPriority::BelowNormal:
+                return THREAD_PRIORITY_BELOW_NORMAL;
+            case ThreadPriority::Lower:
+                return THREAD_PRIORITY_NORMAL - 1;
+            case ThreadPriority::Lowest:
+                return THREAD_PRIORITY_LOWEST;
+            }
+
             return THREAD_PRIORITY_NORMAL;
-        case ThreadPriority::BelowNormal:
-            return THREAD_PRIORITY_BELOW_NORMAL;
-        case ThreadPriority::Lower:
-            return THREAD_PRIORITY_NORMAL - 1;
-        case ThreadPriority::Lowest:
-            return THREAD_PRIORITY_LOWEST;
         }
 
-        return THREAD_PRIORITY_NORMAL;
-    }
-
-    static DWORD WINAPI ThreadEntryPoint(LPVOID lpThreadParameter)
-    {
-        if (lpThreadParameter == nullptr)
+        DWORD WINAPI ThreadEntryPoint(LPVOID lpThreadParameter)
         {
-            AE_PANIC("Thread started without context.");
+            if (lpThreadParameter == nullptr)
+            {
+                AE_PANIC("Thread started without context.");
+            }
+
+            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+            {
+                Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
+                runnable->Run();
+            }
+
+            CoUninitialize();
+
+            return 0;
         }
-
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
-        {
-            Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
-            runnable->Run();
-        }
-
-        CoUninitialize();
-
-        return 0;
     }
 }
 
@@ -89,8 +92,8 @@ namespace Anemone
 
         if (start.Name)
         {
-            Platform::win32_string_buffer<wchar_t, 128> wname{};
-            Platform::win32_WidenString(wname, *start.Name);
+            Interop::win32_string_buffer<wchar_t, 128> wname{};
+            Interop::win32_WidenString(wname, *start.Name);
 
             SetThreadDescription(this->m_native.Handle, wname);
         }

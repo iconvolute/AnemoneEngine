@@ -22,8 +22,8 @@ namespace Anemone::System::Private
 
     static DirectoryEntry FromNative(std::string_view root, WIN32_FIND_DATAW const& wfd)
     {
-        Platform::win32_string_buffer<char, 512> narrow{};
-        Platform::win32_NarrowString(narrow, wfd.cFileName);
+        Interop::win32_string_buffer<char, 512> narrow{};
+        Interop::win32_NarrowString(narrow, wfd.cFileName);
 
         std::string path{root};
         Path::Push(path, narrow.as_view());
@@ -62,7 +62,7 @@ namespace Anemone::System
             }
 
             this->m_root = std::exchange(other.m_root, {});
-            this->m_native = std::exchange(other.m_native, Platform::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE});
+            this->m_native = std::exchange(other.m_native, Interop::NativeDirectoryEnumerator{INVALID_HANDLE_VALUE});
         }
 
         return *this;
@@ -88,11 +88,11 @@ namespace Anemone::System
             // TODO This should be possible to using a Path functions.
             std::wstring wpath{};
 
-            if (Platform::win32_WidenString(wpath, this->m_root))
+            if (Interop::win32_WidenString(wpath, this->m_root))
             {
                 if (not wpath.empty())
                 {
-                    Platform::win32_PathAddDirectorySeparator(wpath);
+                    Interop::win32_PathAddDirectorySeparator(wpath);
 
                     wpath += L'*';
 

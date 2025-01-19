@@ -13,7 +13,7 @@ namespace Anemone
                 return;
             }
 
-            Platform::win32_FutexWait(this->m_Flag, StateLocked);
+            Interop::win32_FutexWait(this->m_Flag, StateLocked);
         }
     }
 

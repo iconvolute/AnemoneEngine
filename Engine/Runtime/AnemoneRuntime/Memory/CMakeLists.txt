@@ -7,8 +7,6 @@ endif()
 target_sources(AnemoneRuntime
     PRIVATE
         "Allocator.hxx"
-        "Runtime.cxx"
-        "Runtime.hxx"
         "SlabAllocator.hxx"
         "SystemAllocator.hxx"
 )

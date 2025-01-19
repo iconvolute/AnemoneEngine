@@ -32,7 +32,7 @@ namespace Anemone
     {
         return WaitForSingleObject(
                    this->m_native.Inner,
-                   Platform::win32_ValidateTimeoutDuration(timeout)) != WAIT_TIMEOUT;
+                   Interop::win32_ValidateTimeoutDuration(timeout)) != WAIT_TIMEOUT;
     }
 
     bool Semaphore::TryAcquire()

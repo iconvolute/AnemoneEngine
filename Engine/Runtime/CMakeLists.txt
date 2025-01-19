@@ -32,7 +32,7 @@ elseif(LINUX)
 target_link_libraries(AnemoneRuntime
     PRIVATE
         "unwind"
-        "uuid"
+        #"uuid"
         "dl"
 )
 elseif(ANDROID)

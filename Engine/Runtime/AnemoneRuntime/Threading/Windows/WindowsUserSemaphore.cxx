@@ -84,7 +84,7 @@ namespace Anemone
 
         if (current == 0)
         {
-            Platform::win32_FutexWait(this->m_Count, 0);
+            Interop::win32_FutexWait(this->m_Count, 0);
         }
 
         this->m_Waiting.fetch_sub(1, std ::memory_order::relaxed);

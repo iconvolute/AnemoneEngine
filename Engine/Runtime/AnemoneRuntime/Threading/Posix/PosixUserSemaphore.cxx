@@ -30,14 +30,14 @@ namespace Anemone
         else if (waiting < count)
         {
             // Releasing more threads than waiters.
-            Platform::posix_FutexWakeAll(this->m_Count);
+            Interop::posix_FutexWakeAll(this->m_Count);
         }
         else
         {
             // Releasing fewer threads than waiters.
             for (int32_t i = 0; i < count; ++i)
             {
-                Platform::posix_FutexWakeOne(this->m_Count);
+                Interop::posix_FutexWakeOne(this->m_Count);
             }
         }
     }
@@ -85,7 +85,7 @@ namespace Anemone
 
         if (current == 0)
         {
-            Platform::posix_FutexWait(this->m_Count, 0);
+            Interop::posix_FutexWait(this->m_Count, 0);
         }
 
         this->m_Waiting.fetch_sub(1, std ::memory_order::relaxed);

@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-namespace Anemone::Diagnostic
+namespace Anemone::Diagnostics
 {
     class StandardOutputTraceListener final
         : public TraceListener

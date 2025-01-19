@@ -29,7 +29,7 @@ namespace Anemone
     {
         while (not this->TryAcquire())
         {
-            Platform::win32_FutexWait(this->m_Inner, StateReset);
+            Interop::win32_FutexWait(this->m_Inner, StateReset);
         }
     }
 }
@@ -37,9 +37,9 @@ namespace Anemone
 
     bool UserAutoResetEvent::Wait(Duration const& timeout)
     {
-        Private::NativeEvent& nativeThis = Platform::Get(this->_native);
+        Private::NativeEvent& nativeThis = Interop::Get(this->_native);
 
-        DWORD dwTimeout = Platform::Private::win32_ValidateTimeoutDuration(timeout);
+        DWORD dwTimeout = Interop::Private::win32_ValidateTimeoutDuration(timeout);
 
         if (dwTimeout == 0)
         {

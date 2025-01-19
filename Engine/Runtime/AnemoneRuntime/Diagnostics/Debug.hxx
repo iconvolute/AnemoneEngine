@@ -19,17 +19,6 @@ namespace Anemone
     public:
         Debug() = delete;
 
-    public:
-        RUNTIME_API static void Breakpoint();
-
-        [[noreturn]] RUNTIME_API static void Crash();
-
-        RUNTIME_API static bool IsDebuggerAttached();
-
-        RUNTIME_API static void WaitForDebugger();
-
-        RUNTIME_API static bool AttachDebugger();
-
     public: // Assertions
         RUNTIME_API static AssertAction HandleAssertionFormatted(
             std::source_location const& location,

@@ -53,10 +53,10 @@ namespace Anemone::System
     class RUNTIME_API FileHandle final
     {
     private:
-        Platform::NativeFileHandle m_native;
+        Interop::NativeFileHandle m_native;
 
     public:
-        explicit FileHandle(Platform::NativeFileHandle const& native);
+        explicit FileHandle(Interop::NativeFileHandle const& native);
 
         FileHandle();
         FileHandle(FileHandle const&) = delete;
@@ -80,7 +80,7 @@ namespace Anemone::System
 
         [[nodiscard]] static std::expected<void, ErrorCode> CreatePipe(FileHandle& read, FileHandle& write);
 
-        [[nodiscard]] Platform::NativeFileHandle const& GetNative() const
+        [[nodiscard]] Interop::NativeFileHandle const& GetNative() const
         {
             return this->m_native;
         }

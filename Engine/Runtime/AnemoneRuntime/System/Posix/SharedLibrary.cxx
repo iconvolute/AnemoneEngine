@@ -7,7 +7,7 @@
 
 namespace Anemone::System
 {
-    SharedLibrary::SharedLibrary(Platform::NativeSharedLibrary const& native)
+    SharedLibrary::SharedLibrary(Interop::NativeSharedLibrary const& native)
         : m_native{native}
     {
     }
@@ -44,7 +44,7 @@ namespace Anemone::System
         if (void* h = dlopen(std::string{path}.c_str(), RTLD_LAZY))
         {
             return SharedLibrary{
-                Platform::NativeSharedLibrary{
+                Interop::NativeSharedLibrary{
                     .Handle = h,
                 }};
         }

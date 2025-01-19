@@ -4,6 +4,4 @@ target_sources(AnemoneRuntime
         "Profiler.hxx"
         "ProfilerNvidia.cxx"
         "ProfilerNvidia.hxx"
-        "Runtime.cxx"
-        "Runtime.hxx"
 )

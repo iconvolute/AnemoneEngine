@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     struct NativeIpEndPoint final
     {

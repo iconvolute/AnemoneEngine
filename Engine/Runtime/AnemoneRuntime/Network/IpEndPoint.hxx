@@ -8,7 +8,7 @@ namespace Anemone::Network
     class RUNTIME_API IpEndPoint final
     {
     private:
-        Platform::NativeIpEndPoint m_native;
+        Interop::NativeIpEndPoint m_native;
 
     public:
         IpEndPoint() = default;

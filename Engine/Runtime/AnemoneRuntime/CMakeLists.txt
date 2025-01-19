@@ -32,8 +32,6 @@ target_sources(AnemoneRuntime
         "Memory.hxx"
         "Reference.hxx"
         "Reflection.hxx"
-        "Runtime.cxx"
-        "Runtime.hxx"
         "Singleton.hxx"
         "String.cxx"
         "String.hxx"
@@ -48,7 +46,6 @@ target_sources(AnemoneRuntime
         "Version.hxx"
 )
 
-add_subdirectory("App")
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostic")
 add_subdirectory("Diagnostics")

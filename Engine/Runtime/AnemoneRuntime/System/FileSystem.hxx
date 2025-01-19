@@ -33,7 +33,7 @@ namespace Anemone::System
     {
     private:
         std::string m_root;
-        Platform::NativeDirectoryEnumerator m_native;
+        Interop::NativeDirectoryEnumerator m_native;
 
     public:
         explicit DirectoryEnumerator(std::string root);

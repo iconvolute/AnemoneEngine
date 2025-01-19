@@ -6,7 +6,7 @@
 
 #include <atomic>
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     inline constexpr int64_t posix_DateAdjustOffset = 62135596800;
     inline constexpr int64_t posix_NanosecondsInSecond = 1'000'000'000;
@@ -165,7 +165,7 @@ namespace Anemone::Platform
 // https://www.remlab.net/op/futex-condvar.shtml
 // https://www.remlab.net/op/futex-misc.shtml
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     anemone_forceinline void posix_FutexWait(std::atomic<int>& futex, int expected, timespec const* timeout) noexcept
     {
@@ -238,7 +238,7 @@ namespace Anemone::Platform
 
     anemone_forceinline bool posix_FutexWaitTimeout(std::atomic<int>& futex, int expected, Duration const& timeout)
     {
-        timespec tsTimeout = Platform::posix_FromDuration(timeout);
+        timespec tsTimeout = Interop::posix_FromDuration(timeout);
         timespec tsStart{};
         clock_gettime(CLOCK_MONOTONIC, &tsStart);
 
@@ -246,12 +246,12 @@ namespace Anemone::Platform
 
         while (true)
         {
-            if (not Platform::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
+            if (not Interop::posix_CompareGreaterEqual(tsElapsed, tsTimeout))
             {
                 return false;
             }
 
-            timespec tsPartialTimeout = Platform::posix_TimespecDifference(tsTimeout, tsElapsed);
+            timespec tsPartialTimeout = Interop::posix_TimespecDifference(tsTimeout, tsElapsed);
 
             int const rc = syscall(SYS_futex, &futex, FUTEX_WAIT | FUTEX_PRIVATE_FLAG, expected, &tsPartialTimeout, nullptr, 0);
 
@@ -273,7 +273,7 @@ namespace Anemone::Platform
             timespec tsCurrent{};
             clock_gettime(CLOCK_MONOTONIC, &tsCurrent);
 
-            tsElapsed = Platform::posix_TimespecDifference(tsCurrent, tsStart);
+            tsElapsed = Interop::posix_TimespecDifference(tsCurrent, tsStart);
 
             if (futex.load() != expected)
             {

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Profiler/Runtime.hxx"
+#include "AnemoneRuntime/Platform/Detect.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
@@ -7,6 +7,7 @@
 
 namespace Anemone::Profiler
 {
+#if false
 #if ANEMONE_BUILD_PROFILING
     Profiler* GProfiler = nullptr;
 #endif
@@ -29,4 +30,5 @@ namespace Anemone::Profiler
         delete GProfiler;
 #endif
     }
+#endif
 }

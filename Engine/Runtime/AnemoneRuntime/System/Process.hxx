@@ -20,10 +20,10 @@ namespace Anemone::System
     class RUNTIME_API Process final
     {
     private:
-        Platform::NativeProcess m_native;
+        Interop::NativeProcess m_native;
 
     public:
-        explicit Process(Platform::NativeProcess native);
+        explicit Process(Interop::NativeProcess native);
 
     public:
         Process();

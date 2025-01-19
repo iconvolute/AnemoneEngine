@@ -18,7 +18,7 @@ namespace Anemone
 
     bool ConditionVariable::TryWait(CriticalSection& lock, Duration const& timeout)
     {
-        return SleepConditionVariableCS(&this->m_native.Inner, &lock.m_native.Inner, Platform::win32_ValidateTimeoutDuration(timeout)) != FALSE;
+        return SleepConditionVariableCS(&this->m_native.Inner, &lock.m_native.Inner, Interop::win32_ValidateTimeoutDuration(timeout)) != FALSE;
     }
 
     void ConditionVariable::Notify()

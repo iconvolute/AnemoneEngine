@@ -10,8 +10,8 @@ namespace Anemone
     class UninitializedObject final
     {
     private:
-        alignas(T) std::byte _buffer[sizeof(T)]{};
         T* _instance = nullptr;
+        alignas(T) std::byte _buffer[sizeof(T)]{};
 
     public:
         UninitializedObject() = default;

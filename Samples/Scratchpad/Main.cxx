@@ -1,4 +1,262 @@
 #include "AnemoneRuntime/Platform/Main.hxx"
+#include "AnemoneRuntime/Platform/Platform.hxx"
+
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
+#endif
+
+#include <string>
+#include <string_view>
+
+#include "AnemoneRuntime/Platform/PlatformEvents.hxx"
+#include "AnemoneRuntime/Platform/SplashScreen.hxx"
+#include "AnemoneRuntime/Platform/Window.hxx"
+
+// AnemoneRuntime/Platform.hxx
+
+namespace Anemone
+{
+    enum class SpecialFolder
+    {
+        Desktop,
+        Documents,
+        Downloads,
+        Temporary,
+        ApplicationData,
+        LocalApplicationData,
+    };
+
+    struct FileSystem
+    {
+        static std::string GetSpecialFolder(SpecialFolder folder);
+    };
+}
+
+class EH : public Anemone::Platform::IPlatformEvents
+{
+public:
+    ~EH() override = default;
+    void OnMouseEnter(Anemone::Platform::Window& window, Anemone::Platform::MouseEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+
+    }
+
+    void OnMouseLeave(Anemone::Platform::Window& window, Anemone::Platform::MouseEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+    void OnMouseMove(Anemone::Platform::Window& window, Anemone::Platform::MouseMoveEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseWheel(Anemone::Platform::Window& window, Anemone::Platform::MouseWheelEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonDown(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    {
+        fmt::println("mouse button down: {}", std::to_underlying(args.Key));
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonUp(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    {
+        fmt::println("mouse button up: {}", std::to_underlying(args.Key));
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonDoubleClick(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnKeyDown(Anemone::Platform::Window& window, Anemone::Platform::KeyEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnKeyUp(Anemone::Platform::Window& window, Anemone::Platform::KeyEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnCharacterReceived(Anemone::Platform::Window& window, Anemone::Platform::CharacterReceivedEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnGamepadAnalog(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadAnalogEventArgs& args) override
+    {
+        (void)device;
+        (void)args;
+    }
+
+    void OnGamepadButtonDown(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadButtonEventArgs& args) override
+    {
+        (void)device;
+        (void)args;
+    }
+
+    void OnGamepadButtonUp(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadButtonEventArgs& args) override
+    {
+        (void)device;
+        (void)args;
+    }
+
+    void OnWindowClose(Anemone::Platform::Window& window, Anemone::Platform::WindowCloseEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowActivated(Anemone::Platform::Window& window, Anemone::Platform::WindowActivatedEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowSizeChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowSizeChangedEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowLocationChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowLocationChangedEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowResizeStarted(Anemone::Platform::Window& window, Anemone::Platform::WindowEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowResizeCompleted(Anemone::Platform::Window& window, Anemone::Platform::WindowEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnWindowDpiChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowDpiChangedEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnEndSession(Anemone::Platform::EndSessionEventArgs& args) override
+    {
+        (void)args;
+    }
+
+    void OnSystemSuspending() override
+    {
+    }
+
+    void OnSystemResuming() override
+    {
+    }
+
+    void OnDisplayChange() override
+    {
+    }
+
+
+};
+
+int main(int argc, char* argv[])
+{
+    (void)argc;
+    (void)argv;
+    Anemone::Platform::Internal::Initialize(argc, argv);
+    fmt::println("os1: {}", Anemone::Platform::GetSystemId());
+    fmt::println("os2: {}", Anemone::Platform::GetSystemVersion());
+
+    std::array<std::byte, 32> random{};
+    Anemone::Platform::GetRandom(random);
+    for (auto b : random)
+    {
+        fmt::println("Random byte: {}", static_cast<uint8_t>(b));
+    }
+
+    EH eh{};
+    Anemone::Platform::SetPlatformEvents(&eh);
+#if ANEMONE_PLATFORM_WINDOWS
+    if (Anemone::Interop::win32_registry_key key{
+            HKEY_LOCAL_MACHINE,
+            LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)",
+            KEY_READ,
+        })
+    {
+        Anemone::Interop::win32_string_buffer<wchar_t, 512> buffer{};
+        if (key.read_string(L"ProductName", buffer))
+        {
+            std::string value{};
+            Anemone::Interop::win32_NarrowString(value, buffer.as_view());
+            fmt::println("ProductName: {}", value);
+        }
+    }
+#endif
+
+    Anemone::SplashScreen::Show();
+
+#if ANEMONE_PLATFORM_WINDOWS
+    SleepEx(3'000, FALSE);
+#endif
+
+    Anemone::SplashScreen::Hide();
+
+    auto window = Anemone::Platform::Window::Create(Anemone::Platform::WindowType::Game);
+    if (window)
+    {
+        window->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window->SetInputEnabled(true);
+
+        while (window->IsVisible())
+        {
+            Anemone::Platform::ProcessMessages();
+        }
+    }
+
+#if ANEMONE_PLATFORM_WINDOWS
+    DWORD qq{};
+    Anemone::Interop::win32_QueryRegistry(
+        qq,
+        HKEY_LOCAL_MACHINE,
+        LR"(SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion)",
+        L"CurrentMajorVersionNumber");
+    Anemone::Interop::win32_QueryRegistry(
+        qq,
+        HKEY_LOCAL_MACHINE,
+        LR"(SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion)",
+        L"CurrentMinorVersionNumber");
+    Anemone::Interop::win32_string_buffer<wchar_t, 128> winver{};
+    Anemone::Interop::win32_QueryRegistry(
+        winver,
+        HKEY_LOCAL_MACHINE,
+        LR"(SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion)",
+        L"CurrentBuildNumber");
+#endif
+
+    Anemone::Platform::Internal::Finalize();
+    return 0;
+}
+
+#if false
 #include "AnemoneRuntime/Instant.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Threading/Yielding.hxx"
@@ -28,6 +286,8 @@ AE_DECLARE_PROFILE(Inner);
 #include "AnemoneRuntime/Math/Types.hxx"
 #include "AnemoneRuntime/Math/Transform2.hxx"
 #include "AnemoneRuntime/Math/Matrix3x2.hxx"
+
+#include <WinSock2.h>
 
 struct VertexPacked
 {
@@ -62,6 +322,77 @@ anemone_noinline Anemone::Math::Matrix3x2F Too(Anemone::Math::Transform2F const&
 #include "AnemoneRuntime/App/Application.hxx"
 
 void TestTasking();
+
+namespace Anemone::System // platform specific primitives
+{
+    class File;
+    class Directory;
+    class NetworkSocket;
+    class NetworkAddress; // ip address; stores IPv4 as IPv6 mapped
+}
+
+namespace Anemone::Storage //
+{
+
+}
+
+namespace Anemone::Threading
+{
+    // auto & reset event - possible implementations
+    // - CreateEvent (WinAPI)
+    // - SRWLOCK + CONDITION_VARIABLE (WinAPI)
+    // - WaitOnAddress (WinAPI)
+    // - futex (Linux)
+    // - pthread_cond_t + pthread_mutex_t (Linux)
+    // - eventfd (Linux)
+
+#if ANEMONE_PLATFORM_LINUX
+    class LinuxManualResetEvent
+    {
+        int32_t m_descriptor = -1;
+
+    public:
+        LinuxManualResetEvent(bool signaled)
+        {
+            this->m_descriptor = eventfd(signaled ? 1 : 0, EFD_CLOEXEC | EFD_NONBLOCK);
+            AE_ASSERT(this->m_descriptor != -1, "Failed to create eventfd");
+        }
+
+        void Set()
+        {
+            uint64_t const increment = 1;
+
+            if (write(this->m_descriptor, &increment, sizeof(increment)) < 0)
+            {
+                AE_ASSERT(errno == EAGAIN, "Failed to set eventfd");
+            }
+        }
+
+        void Reset()
+        {
+            uint64_t previous = 0;
+
+            if (read(this->m_descriptor, &previous, sizeof(previous)) < 0)
+            {
+                AE_ASSERT(errno == EAGAIN, "Failed to reset eventfd");
+            }
+        }
+
+        void Wait()
+        {
+            pollfd pfd{
+                .fd = this->m_descriptor,
+                .events = POLLIN,
+                .revents = 0};
+
+            if (poll(&pfd, 1, -1) < 0)
+            {
+                AE_ASSERT(false, "Failed to wait on eventfd");
+            }
+        }
+    };
+#endif
+}
 
 namespace Anemone::Network
 {
@@ -303,23 +634,38 @@ AE_DECLARE_PROFILE(ClientWorker);
 AE_DECLARE_PROFILE(ServerWorker);
 
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
+
+
+#include <random>
 
 int main(int argc, char* argv[])
 {
     Anemone::RuntimeInitializer runtime{argc, argv};
     {
-        
+    }
+    GXtrace.Create();
+    {
+        Anemone::Math::Random rng{static_cast<uint64_t>(argc)};
+        Anemone::Math::UniformDistribution dist{0.0, 1.0};
+        double const d = dist(rng);
+        GXtrace->Log(Anemone::Diagnostics::TraceLevel::Critical,"Hello {}", "World");
+        GXtrace->Log(Anemone::Diagnostics::TraceLevel::Critical, "This is a test: {}", d);
+    }
+    GXtrace.Destroy();
+    {
         Anemone::CriticalSection cs{};
         Anemone::UniqueLock _{cs};
 
         if (argc > 0)
         {
-            //AE_PANIC("Hell of panic from {}", argv[0]);
+            // AE_PANIC("Hell of panic from {}", argv[0]);
         }
     }
     {
-        Anemone::Trace::WriteLine(Anemone::TraceLevel::Verbose, "Hello World!");
-        //AE_ASSERT(false);
+        Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "Hello {}", "World");
+        Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "This is a test: {}", 42);
+        // AE_ASSERT(false);
     }
     {
 #if true
@@ -409,7 +755,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-#if false
+#if true
     {
         class App : public Anemone::App::Application
         {
@@ -875,3 +1221,4 @@ void TestTasking()
         AE_TRACE(Verbose, ">> finish ------------------------------------------");
     }
 }
+#endif

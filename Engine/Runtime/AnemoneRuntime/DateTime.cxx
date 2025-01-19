@@ -1,13 +1,6 @@
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
-
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
-#elif ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
-#else
-#error "Not implemented"
-#endif
+#include "AnemoneRuntime/Platform/Platform.hxx"
 
 #include <array>
 #include <iterator>
@@ -71,59 +64,12 @@ namespace Anemone
 {
     DateTime DateTime::Now()
     {
-#if ANEMONE_PLATFORM_WINDOWS
-
-        FILETIME ft;
-        Platform::win32_GetLocalTimeAsFileTime(ft);
-        return Platform::win32_into_DateTime(ft);
-
-#elif ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-
-        struct timespec ts;
-
-        [[maybe_unused]] int const result = clock_gettime(CLOCK_REALTIME, &ts);
-        AE_ASSERT(result == 0);
-
-        int64_t const bias = DateTimeOffset::GetCurrentTimeZoneBias().Seconds;
-
-        return DateTime{
-            .Inner = {
-                .Seconds = ts.tv_sec - bias + Platform::posix_DateAdjustOffset,
-                .Nanoseconds = ts.tv_nsec,
-            }};
-
-#else
-#error "Not implemented"
-#endif
+        return Platform::GetCurrentDateTime();
     }
 
     DateTime DateTime::UtcNow()
     {
-#if ANEMONE_PLATFORM_WINDOWS
-
-        FILETIME ft;
-        GetSystemTimePreciseAsFileTime(&ft);
-
-        return Platform::win32_into_DateTime(ft);
-
-#elif ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-
-        struct timespec ts;
-
-        // Get local time
-        [[maybe_unused]] int const result = clock_gettime(CLOCK_REALTIME, &ts);
-        AE_ASSERT(result == 0);
-
-        return DateTime{
-            .Inner = {
-                .Seconds = ts.tv_sec + Platform::posix_DateAdjustOffset,
-                .Nanoseconds = ts.tv_nsec,
-            },
-        };
-
-#else
-#error "Not implemented"
-#endif
+        return Platform::GetCurrentDateTimeUtc();
     }
 
     std::optional<DateTime> DateTime::FromMembers(DateTimeMembers const& members)
@@ -355,59 +301,12 @@ namespace Anemone
     {
         return DateTimeOffset{
             .Local = DateTime::Now(),
-            .Bias = DateTimeOffset::GetCurrentTimeZoneBias(),
+            .Bias = Platform::GetCurrentTimeZoneBias(),
         };
     }
 
     Duration DateTimeOffset::GetCurrentTimeZoneBias()
     {
-#if ANEMONE_PLATFORM_WINDOWS
-
-        DYNAMIC_TIME_ZONE_INFORMATION dtzi;
-
-        int64_t seconds = 0;
-
-        switch (GetDynamicTimeZoneInformation(&dtzi))
-        {
-        case TIME_ZONE_ID_INVALID:
-            AE_PANIC("Cannot obtain timezone ID: {}", GetLastError());
-            break;
-
-        default:
-        case TIME_ZONE_ID_UNKNOWN:
-            break;
-
-        case TIME_ZONE_ID_STANDARD:
-            seconds += static_cast<int64_t>(dtzi.StandardBias) * 60;
-            break;
-
-        case TIME_ZONE_ID_DAYLIGHT:
-            seconds += static_cast<int64_t>(dtzi.DaylightBias) * 60;
-            break;
-        }
-
-        seconds += static_cast<int64_t>(dtzi.Bias) * 60;
-
-        return Duration{
-            .Seconds = seconds,
-            .Nanoseconds = 0,
-        };
-
-#elif ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-
-        time_t seconds = 0;
-        tm tmGMT{};
-        tm tmLocal{};
-        gmtime_r(&seconds, &tmGMT);
-        localtime_r(&seconds, &tmLocal);
-
-        return Duration{
-            .Seconds = mktime(&tmGMT) - mktime(&tmLocal),
-            .Nanoseconds = 0,
-        };
-
-#else
-#error "Not implemented"
-#endif
+        return Platform::GetCurrentTimeZoneBias();
     }
 }

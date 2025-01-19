@@ -72,13 +72,13 @@ namespace Anemone::Network::Detail
 
 namespace Anemone::Network
 {
-    Socket::Socket(Platform::NativeSocket const& native)
+    Socket::Socket(Interop::NativeSocket const& native)
         : m_native{native}
     {
     }
 
     Socket::Socket(Socket&& other) noexcept
-        : m_native{std::exchange(other.m_native, Platform::NativeSocket{})}
+        : m_native{std::exchange(other.m_native, Interop::NativeSocket{})}
     {
     }
 
@@ -101,7 +101,7 @@ namespace Anemone::Network
 #endif
             }
 
-            this->m_native = std::exchange(other.m_native, Platform::NativeSocket{});
+            this->m_native = std::exchange(other.m_native, Interop::NativeSocket{});
         }
 
         return *this;
@@ -153,7 +153,7 @@ namespace Anemone::Network
         }
 #endif
 
-        return Socket{Platform::NativeSocket{handle}};
+        return Socket{Interop::NativeSocket{handle}};
     }
 
     std::expected<void, ErrorCode> Socket::Close()
@@ -211,7 +211,7 @@ namespace Anemone::Network
             return std::unexpected(Detail::GetLastSocketError());
         }
 
-        return Socket{Platform::NativeSocket{handle}};
+        return Socket{Interop::NativeSocket{handle}};
     }
 
     std::expected<void, ErrorCode> Socket::Connect(SocketEndPoint const& endPoint)

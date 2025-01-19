@@ -103,7 +103,7 @@ namespace Anemone::System
             }
 
             this->m_root = std::exchange(other.m_root, {});
-            this->m_native = std::exchange(this->m_native, Platform::NativeDirectoryEnumerator{nullptr});
+            this->m_native = std::exchange(this->m_native, Interop::NativeDirectoryEnumerator{nullptr});
         }
 
         return *this;
@@ -195,9 +195,9 @@ namespace Anemone::System
         if (stat64(spath.c_str(), &r) == 0)
         {
             return FileInfo{
-                .CreationTime = Platform::posix_into_DateTime(r.st_ctim),
-                .LastAccessTime = Platform::posix_into_DateTime(r.st_atim),
-                .LastWriteTime = Platform::posix_into_DateTime(r.st_mtim),
+                .CreationTime = Interop::posix_into_DateTime(r.st_ctim),
+                .LastAccessTime = Interop::posix_into_DateTime(r.st_atim),
+                .LastWriteTime = Interop::posix_into_DateTime(r.st_mtim),
                 .Size = static_cast<int64_t>(r.st_size),
                 .Type = Private::posix_into_FileType(r),
                 .Readonly = access(spath.c_str(), W_OK) != 0,

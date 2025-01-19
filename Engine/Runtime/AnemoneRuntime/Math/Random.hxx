@@ -18,7 +18,7 @@ namespace Anemone::Math
     private:
         std::array<uint64_t, 4> _state;
 
-    private:
+    public:
         [[nodiscard]] uint64_t GenerateBits();
 
     public:
@@ -60,6 +60,35 @@ namespace Anemone::Math
     };
 
     RUNTIME_API void GenerateReadableString(Random& generator, std::span<char> buffer);
+
+    template <typename T>
+    struct UniformDistribution
+    {
+        T Min;
+        T Max;
+
+        [[nodiscard]] T operator()(Random& generator) const;
+    };
+
+    template <>
+    anemone_noinline inline float UniformDistribution<float>::operator()(Random& generator) const
+    {
+        uint64_t const bits = generator.GenerateBits();
+        float const sample = Float32::Compose(0, bits >> 32) - 1.0f;
+        float const scale = (this->Max - this->Min);
+        float const result = (sample * scale) + this->Min;
+        return result;
+    }
+
+    template <>
+    anemone_noinline inline double UniformDistribution<double>::operator()(Random& generator) const
+    {
+        uint64_t const bits = generator.GenerateBits();
+        double const sample = Float64::Compose(0, bits) - 1.0;
+        double const scale = (this->Max - this->Min);
+        double const result = (sample * scale) + this->Min;
+        return result;
+    }
 
     [[nodiscard]] RUNTIME_API Float2 NextFloat2(Random& generator);
 

@@ -4,7 +4,7 @@
 
 namespace Anemone::System
 {
-    SharedLibrary::SharedLibrary(Platform::NativeSharedLibrary const& native)
+    SharedLibrary::SharedLibrary(Interop::NativeSharedLibrary const& native)
         : m_native{native}
     {
     }
@@ -44,12 +44,12 @@ namespace Anemone::System
 
     std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(std::string_view path)
     {
-        Platform::win32_FilePathW wpath{};
-        Platform::win32_WidenString(wpath, path);
+        Interop::win32_FilePathW wpath{};
+        Interop::win32_WidenString(wpath, path);
 
         if (HMODULE h = LoadLibraryW(wpath.data()))
         {
-            return SharedLibrary{Platform::NativeSharedLibrary{h}};
+            return SharedLibrary{Interop::NativeSharedLibrary{h}};
         }
 
         return std::unexpected(Private::ErrorCodeFromWin32Error(GetLastError()));

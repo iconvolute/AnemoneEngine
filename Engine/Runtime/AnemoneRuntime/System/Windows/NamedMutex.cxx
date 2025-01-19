@@ -8,8 +8,8 @@ namespace Anemone::System
     {
         this->m_name = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
 
-        Platform::win32_FilePathW wname{};
-        Platform::win32_WidenString(wname, this->m_name);
+        Interop::win32_FilePathW wname{};
+        Interop::win32_WidenString(wname, this->m_name);
 
         HANDLE const handle = CreateMutexW(nullptr, FALSE, wname.data());
 

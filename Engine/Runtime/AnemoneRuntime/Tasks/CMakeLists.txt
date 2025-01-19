@@ -5,7 +5,6 @@ target_sources(AnemoneRuntime
         "Factory.hxx"
         "ParallelFor.hxx"
         "Runtime.cxx"
-        "Runtime.hxx"
         "Task.cxx"
         "Task.hxx"
         "TaskQueue.hxx"

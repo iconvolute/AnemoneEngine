@@ -1,5 +1,4 @@
-#include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Runtime.hxx"
+#include "AnemoneRuntime/Platform/Platform.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -9,7 +8,11 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 int main(int argc, char* argv[])
 {
-    Anemone::RuntimeInitializer runtime{argc, argv};
+    Anemone::Platform::Internal::Initialize(argc, argv);
 
-    return Catch::Session().run(argc, argv);
+    int const result = Catch::Session().run(argc, argv);
+
+    Anemone::Platform::Internal::Finalize();
+
+    return result;
 }

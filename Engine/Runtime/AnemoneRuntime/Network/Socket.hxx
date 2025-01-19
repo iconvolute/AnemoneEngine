@@ -34,10 +34,10 @@ namespace Anemone::Network
     class RUNTIME_API Socket final
     {
     private:
-        Platform::NativeSocket m_native;
+        Interop::NativeSocket m_native;
 
     private:
-        explicit Socket(Platform::NativeSocket const& native);
+        explicit Socket(Interop::NativeSocket const& native);
 
     public:
         Socket(Socket const&) = delete;

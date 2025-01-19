@@ -8,24 +8,24 @@
 
 namespace Anemone::Network
 {
-    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint()
+    constexpr Interop::NativeIpEndPoint CreateNativeIpEndPoint()
     {
-        return Platform::NativeIpEndPoint{{.Header = {.sa_family = AF_UNSPEC}}};
+        return Interop::NativeIpEndPoint{{.Header = {.sa_family = AF_UNSPEC}}};
     }
 
-    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in const& address)
+    constexpr Interop::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in const& address)
     {
-        return Platform::NativeIpEndPoint{{.V4 = address}};
+        return Interop::NativeIpEndPoint{{.V4 = address}};
     }
 
-    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in6 const& address)
+    constexpr Interop::NativeIpEndPoint CreateNativeIpEndPoint(sockaddr_in6 const& address)
     {
-        return Platform::NativeIpEndPoint{{.V6 = address}};
+        return Interop::NativeIpEndPoint{{.V6 = address}};
     }
 
-    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(in_addr const& address, uint16_t port)
+    constexpr Interop::NativeIpEndPoint CreateNativeIpEndPoint(in_addr const& address, uint16_t port)
     {
-        return Platform::NativeIpEndPoint{
+        return Interop::NativeIpEndPoint{
             {
                 .V4 = sockaddr_in{
                     .sin_family = AF_INET,
@@ -37,9 +37,9 @@ namespace Anemone::Network
         };
     }
 
-    constexpr Platform::NativeIpEndPoint CreateNativeIpEndPoint(in6_addr const& address, uint16_t port, uint32_t scopeId)
+    constexpr Interop::NativeIpEndPoint CreateNativeIpEndPoint(in6_addr const& address, uint16_t port, uint32_t scopeId)
     {
-        return Platform::NativeIpEndPoint{
+        return Interop::NativeIpEndPoint{
             {
                 .V6 = sockaddr_in6{
                     .sin6_family = AF_INET6,

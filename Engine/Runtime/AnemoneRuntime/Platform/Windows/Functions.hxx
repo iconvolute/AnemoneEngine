@@ -20,7 +20,7 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 
 ANEMONE_EXTERNAL_HEADERS_END
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     anemone_forceinline HCURSOR win32_LoadSystemCursor(LPCWSTR id)
     {
@@ -255,7 +255,7 @@ namespace Anemone::Platform
     using win32_FilePathA = win32_string_buffer<char, MAX_PATH>;
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     template <size_t CapacityT>
     anemone_forceinline bool win32_QueryFullProcessImageName(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
@@ -573,6 +573,143 @@ namespace Anemone::Platform
         return succeeded;
     }
 
+    anemone_forceinline bool win32_QueryRegistry(DWORD& result, HKEY key, const wchar_t* subkey, const wchar_t* name)
+    {
+        if ((key == nullptr) or (subkey == nullptr) or (name == nullptr))
+        {
+            return false;
+        }
+
+        for (int32_t const flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
+        {
+            HKEY current = nullptr;
+
+            if (RegOpenKeyExW(key, subkey, 0, static_cast<REGSAM>(KEY_READ | flag), &current) == ERROR_SUCCESS)
+            {
+                DWORD dwSize = sizeof(DWORD);
+                LSTATUS const status = RegQueryValueExW(
+                    current,
+                    name,
+                    nullptr,
+                    nullptr,
+                    reinterpret_cast<LPBYTE>(&result),
+                    &dwSize);
+
+                if (status == ERROR_SUCCESS)
+                {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    struct win32_registry_key final
+    {
+    private:
+        HKEY m_key{};
+
+    public:
+        win32_registry_key() = default;
+
+        explicit win32_registry_key(HKEY key, const wchar_t* subKey, REGSAM access = KEY_READ | KEY_WRITE)
+        {
+            if (RegOpenKeyExW(key, subKey, 0, access, &this->m_key) != ERROR_SUCCESS)
+            {
+                this->m_key = nullptr;
+            }
+        }
+
+        win32_registry_key(HKEY key)
+            : m_key{key}
+        {
+        }
+
+        win32_registry_key(win32_registry_key const&) = delete;
+
+        win32_registry_key(win32_registry_key&& other) noexcept
+            : m_key{std::exchange(other.m_key, nullptr)}
+        {
+        }
+
+        win32_registry_key& operator=(win32_registry_key const&) = delete;
+
+        win32_registry_key& operator=(win32_registry_key&& other) noexcept
+        {
+            if (this != std::addressof(other))
+            {
+                this->close();
+                this->m_key = std::exchange(other.m_key, nullptr);
+            }
+
+            return *this;
+        }
+
+        ~win32_registry_key() noexcept
+        {
+            this->close();
+        }
+
+        void close() noexcept
+        {
+            if (this->m_key)
+            {
+                RegCloseKey(this->m_key);
+                this->m_key = nullptr;
+            }
+        }
+
+        [[nodiscard]] HKEY get() const noexcept
+        {
+            return this->m_key;
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept
+        {
+            return this->m_key != nullptr;
+        }
+
+        template <size_t CapacityT>
+        bool read_string(const wchar_t* name, win32_string_buffer<wchar_t, CapacityT>& result)
+        {
+            return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+            {
+                DWORD dwType = 0;
+                DWORD dwSize = static_cast<DWORD>(buffer.size());
+                LSTATUS const status = RegQueryValueExW(
+                    this->m_key,
+                    name,
+                    nullptr,
+                    &dwType,
+                    reinterpret_cast<LPBYTE>(buffer.data()),
+                    &dwSize);
+
+                if (dwType != REG_SZ)
+                {
+                    // Invalid type
+                    capacity = 0;
+                    return false;
+                }
+
+                if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
+                {
+                    DWORD const dwFinal = (dwSize / sizeof(wchar_t));
+                    capacity = dwFinal;
+                    return true;
+                }
+
+                capacity = 0;
+                return false;
+            });
+        }
+
+        bool delete_value(const wchar_t* name)
+        {
+            return RegDeleteValueW(this->m_key, name) == ERROR_SUCCESS;
+        }
+    };
+
     template <size_t CapacityT>
     anemone_forceinline bool win32_GetSystemDirectory(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
     {
@@ -702,9 +839,20 @@ namespace Anemone::Platform
     template <size_t CapacityT>
     anemone_forceinline bool win32_GetTempPath(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        using Fn = decltype(&::GetTempPathW);
+
+        HMODULE const hKernel32 = GetModuleHandleW(L"kernel32.dll");
+
+        Fn getTempPath = reinterpret_cast<Fn>(reinterpret_cast<void*>(GetProcAddress(hKernel32, "GetTempPath2W"))); // NOLINT(bugprone-casting-through-void)
+
+        if (not getTempPath)
         {
-            DWORD const length = GetTempPathW(static_cast<DWORD>(buffer.size()), buffer.data());
+            getTempPath = &::GetTempPathW;
+        }
+
+        return win32_adapt_string_buffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
+        {
+            DWORD const length = getTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
 
             if (length != 0)
             {
@@ -765,7 +913,7 @@ namespace Anemone::Platform
     // GetModuleFileNameW
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     anemone_forceinline bool win32_GetThreadContext(DWORD threadId, CONTEXT& context)
     {
@@ -802,7 +950,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     constexpr wchar_t win32_DirectorySeparator = L'\\';
 
@@ -896,7 +1044,7 @@ namespace Anemone::Platform
 
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     static constexpr int64_t win32_DateAdjustOffset = 504911231999999999;
     inline constexpr int64_t win32_TicksPerSecond = 1'000'000'000 / 100;
@@ -940,7 +1088,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     inline constexpr size_t win32_DefaultBufferSize = size_t{64} << 10u;
 
@@ -955,7 +1103,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     inline DWORD win32_ValidateTimeoutDuration(Duration const& value) noexcept
     {
@@ -980,7 +1128,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     anemone_forceinline void win32_FutexWait(std::atomic<int>& futex, int expected)
     {
@@ -1011,7 +1159,7 @@ namespace Anemone::Platform
 
     anemone_forceinline bool win32_FutexWaitTimeout(std::atomic<int>& futex, int expected, Duration const& timeout)
     {
-        DWORD dwTimeout = Platform::win32_ValidateTimeoutDuration(timeout);
+        DWORD dwTimeout = win32_ValidateTimeoutDuration(timeout);
 
         UINT64 start;
         QueryUnbiasedInterruptTime(&start);
@@ -1061,7 +1209,7 @@ namespace Anemone::Platform
     {
         // Handle spurious wakes by checking the value after the wait.
 
-        DWORD const dwTimeout = Platform::win32_ValidateTimeoutDuration(timeout);
+        DWORD const dwTimeout = win32_ValidateTimeoutDuration(timeout);
 
         while (true)
         {
@@ -1093,7 +1241,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     inline bool win32_LocalSystemTimeToFileTime(const SYSTEMTIME& localTime, FILETIME& fileTime)
     {
@@ -1118,7 +1266,7 @@ namespace Anemone::Platform
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone::Interop
 {
     constexpr Math::PointF win32_into_Point(POINT const& value) noexcept
     {
@@ -1187,4 +1335,80 @@ namespace Anemone::Platform
             .bottom = static_cast<LONG>(value.Y + value.Height),
         };
     }
+}
+
+namespace Anemone::Interop
+{
+    class win32_ClipboardSession final
+    {
+    private:
+        bool m_opened{};
+
+    public:
+        win32_ClipboardSession() noexcept
+        {
+            if (OpenClipboard(nullptr))
+            {
+                this->m_opened = true;
+            }
+        }
+
+        win32_ClipboardSession(win32_ClipboardSession const&) = delete;
+        win32_ClipboardSession(win32_ClipboardSession&&) = delete;
+        win32_ClipboardSession& operator=(win32_ClipboardSession const&) = delete;
+        win32_ClipboardSession& operator=(win32_ClipboardSession&&) = delete;
+
+        ~win32_ClipboardSession() noexcept
+        {
+            if (this->m_opened)
+            {
+                CloseClipboard();
+            }
+        }
+
+        [[nodiscard]] explicit operator bool() const noexcept
+        {
+            return this->m_opened;
+        }
+    };
+
+    class win32_HGlobalMemoryLock final
+    {
+    private:
+        HGLOBAL m_handle{};
+        void* m_data{};
+
+    public:
+        win32_HGlobalMemoryLock(HGLOBAL handle) noexcept
+            : m_handle{handle}
+        {
+            if (handle != nullptr)
+            {
+                this->m_data = GlobalLock(handle);
+            }
+        }
+        win32_HGlobalMemoryLock(win32_HGlobalMemoryLock const&) = delete;
+        win32_HGlobalMemoryLock(win32_HGlobalMemoryLock&&) = delete;
+        win32_HGlobalMemoryLock& operator=(win32_HGlobalMemoryLock const&) = delete;
+        win32_HGlobalMemoryLock& operator=(win32_HGlobalMemoryLock&&) = delete;
+        ~win32_HGlobalMemoryLock() noexcept
+        {
+            if (this->m_data != nullptr)
+            {
+                GlobalUnlock(this->m_handle);
+            }
+        }
+        [[nodiscard]] explicit operator bool() const noexcept
+        {
+            return this->m_data != nullptr;
+        }
+        [[nodiscard]] void* data() noexcept
+        {
+            return this->m_data;
+        }
+        [[nodiscard]] void const* data() const noexcept
+        {
+            return this->m_data;
+        }
+    };
 }

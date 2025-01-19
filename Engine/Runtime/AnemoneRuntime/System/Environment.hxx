@@ -7,62 +7,22 @@
 #include <string>
 #include <vector>
 
-namespace Anemone::System
+namespace Anemone
 {
-    RUNTIME_API bool GetEnvironmentVariable(std::string& result, std::string_view name);
-    RUNTIME_API bool SetEnvironmentVariable(std::string_view name, std::string_view value);
-    RUNTIME_API bool RemoveEnvironmentVariable(std::string_view name);
-}
-
-namespace Anemone::System
-{
-    RUNTIME_API bool GetClipboardContent(std::string& value);
-    RUNTIME_API bool SetClipboardContent(std::string_view value);
-}
-
-namespace Anemone::System
-{
-    enum class DisplayOrientation : uint8_t
+    struct ISubsystem
     {
-        Unknown,
-        Landscape,
-        LandscapeFlipped,
-        Portrait,
-        PortraitFlipped,
+        virtual ~ISubsystem() = 0;
+        virtual bool IsRunning() const = 0;
+        virtual void Start() = 0;
+        virtual void Stop() = 0;
     };
 
-    struct DisplayInfo final
+    struct ISubsystemDescriptor
     {
-        std::string Name;
-        std::string Id;
-        bool Primary;
-        DisplayOrientation Orientation;
-        Math::RectF DisplayRectangle;
-        Math::RectF WorkAreaRectangle;
+        virtual ~ISubsystemDescriptor() = 0;
+        virtual std::string_view GetName() const = 0;
+        virtual ISubsystem* Create() const = 0;
     };
-
-    struct DisplayMetrics final
-    {
-        std::vector<DisplayInfo> Displays;
-        Math::RectF VirtualDisplayRect;
-        Math::RectF PrimaryDisplayWorkArea;
-        Math::SizeF PrimaryDisplaySize;
-    };
-
-    RUNTIME_API void GetDisplayMetrics(DisplayMetrics& displayMetrics);
-}
-
-namespace Anemone::System
-{
-    struct ColorRef final
-    {
-        float Red;
-        float Green;
-        float Blue;
-        float Alpha;
-    };
-
-    [[nodiscard]] RUNTIME_API ColorRef GetScreenPixel(Math::PointF position, float gamma);
 }
 
 namespace Anemone::System

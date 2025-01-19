@@ -57,12 +57,12 @@ namespace Anemone
 
     void SleepThread(int32_t milliseconds)
     {
-        SleepEx(Platform::win32_ValidateTimeoutDuration(milliseconds), TRUE);
+        SleepEx(Interop::win32_ValidateTimeoutDuration(milliseconds), TRUE);
     }
 
     void SleepThread(Duration const& timeout)
     {
-        SleepEx(Platform::win32_ValidateTimeoutDuration(timeout), TRUE);
+        SleepEx(Interop::win32_ValidateTimeoutDuration(timeout), TRUE);
     }
 
     void PauseThread()
