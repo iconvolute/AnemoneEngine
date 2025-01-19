@@ -196,7 +196,7 @@ namespace Anemone::Interop
             AE_PANIC("FutexWakeAll (rc: {}, '{}')", errno, strerror(errno));
         }
     }
-    
+
     anemone_forceinline void posix_FutexWait(std::atomic<int>& futex, int expected)
     {
         while (true)
