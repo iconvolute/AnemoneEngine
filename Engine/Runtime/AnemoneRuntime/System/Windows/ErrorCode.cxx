@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/ErrorCode.hxx"
 
-#include "AnemoneRuntime/Platform/Windows/Headers.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone::System::Private
 {

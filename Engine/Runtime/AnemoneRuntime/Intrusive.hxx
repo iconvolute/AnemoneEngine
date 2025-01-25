@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <type_traits>
 #include <utility>
@@ -370,6 +370,24 @@ namespace Anemone
 
             item->FLink = nullptr;
             item->BLink = nullptr;
+        }
+
+        constexpr void RemoveAll()
+        {
+            Node* node = this->Head.FLink;
+
+            while (node != &this->Head)
+            {
+                // Unlink the node.
+                Node* next = node->FLink;
+                node->FLink = nullptr;
+                node->BLink = nullptr;
+                node = next;
+            }
+
+            // Clear the head.
+            this->Head.FLink = &this->Head;
+            this->Head.BLink = &this->Head;
         }
 
         constexpr void Clear()

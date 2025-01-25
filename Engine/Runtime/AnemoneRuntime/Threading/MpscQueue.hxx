@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <memory>
 #include <bit>

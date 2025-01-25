@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Process.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone::System
 {

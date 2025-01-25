@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/UserSemaphore.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone
 {

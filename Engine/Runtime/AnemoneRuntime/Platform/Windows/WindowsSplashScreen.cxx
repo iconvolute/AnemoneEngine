@@ -1,10 +1,11 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsSplashScreen.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     namespace
     {
-        struct WindowsSplashScreen final
+        struct WindowsSplashScreenStatics final
         {
             HANDLE Thread{};
             ATOM WindowClass{};
@@ -12,9 +13,9 @@ namespace Anemone::Private
             HANDLE Sync{};
         };
 
-        WindowsSplashScreen GSplashScreen{};
+        WindowsSplashScreenStatics GWindowsSplashScreenStatics{};
 
-        LRESULT CALLBACK SplashScreenWndProc(
+        LRESULT CALLBACK WindowsSplashScreenWndProc(
             HWND hwnd,
             UINT msg,
             WPARAM wparam,
@@ -48,14 +49,14 @@ namespace Anemone::Private
             return DefWindowProcW(hwnd, msg, wparam, lparam);
         }
 
-        DWORD WINAPI SplashScreenThread(LPVOID)
+        DWORD WINAPI WindowsSplashScreenThread(LPVOID)
         {
             HMODULE hInstance = GetModuleHandleW(nullptr);
 
             WNDCLASSEXW wcex{};
             wcex.cbSize = sizeof(wcex);
             wcex.style = CS_HREDRAW | CS_VREDRAW;
-            wcex.lpfnWndProc = SplashScreenWndProc;
+            wcex.lpfnWndProc = WindowsSplashScreenWndProc;
             wcex.cbClsExtra = 0;
             wcex.cbWndExtra = 0;            
             wcex.hInstance = hInstance;
@@ -66,9 +67,9 @@ namespace Anemone::Private
             wcex.lpszClassName = L"AnemoneSplashScreen";
             wcex.hIconSm = LoadIconW(nullptr, IDI_APPLICATION);
 
-            GSplashScreen.WindowClass = RegisterClassExW(&wcex);
+            GWindowsSplashScreenStatics.WindowClass = RegisterClassExW(&wcex);
 
-            if (!GSplashScreen.WindowClass)
+            if (!GWindowsSplashScreenStatics.WindowClass)
             {
                 return 0;
             }
@@ -82,9 +83,9 @@ namespace Anemone::Private
             int const positionX = centerX - width / 2;
             int const positionY = centerY - height / 2;
 
-            GSplashScreen.Window = CreateWindowExW(
+            GWindowsSplashScreenStatics.Window = CreateWindowExW(
                 WS_EX_TOOLWINDOW | WS_EX_LAYERED,
-                MAKEINTATOM(GSplashScreen.WindowClass),
+                MAKEINTATOM(GWindowsSplashScreenStatics.WindowClass),
                 L"Anemone",
                 WS_POPUP,
                 positionX,
@@ -96,14 +97,14 @@ namespace Anemone::Private
                 hInstance,
                 nullptr);
 
-            SetEvent(GSplashScreen.Sync);
+            SetEvent(GWindowsSplashScreenStatics.Sync);
 
-            if (GSplashScreen.Window)
+            if (GWindowsSplashScreenStatics.Window)
             {
-                SetLayeredWindowAttributes(GSplashScreen.Window, 0, 0x44, LWA_ALPHA);
+                SetLayeredWindowAttributes(GWindowsSplashScreenStatics.Window, 0, 0x44, LWA_ALPHA);
 
-                ShowWindow(GSplashScreen.Window, SW_SHOW);
-                UpdateWindow(GSplashScreen.Window);
+                ShowWindow(GWindowsSplashScreenStatics.Window, SW_SHOW);
+                UpdateWindow(GWindowsSplashScreenStatics.Window);
 
                 while (true)
                 {
@@ -120,7 +121,7 @@ namespace Anemone::Private
                 }
             }
 
-            UnregisterClassW(MAKEINTATOM(GSplashScreen.WindowClass), hInstance);
+            UnregisterClassW(MAKEINTATOM(GWindowsSplashScreenStatics.WindowClass), hInstance);
 
             return 0;
         }
@@ -129,52 +130,52 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    void SplashScreen::Show()
+    void WindowsSplashScreen::Show()
     {
-        if (Private::GSplashScreen.Thread == nullptr)
+        if (Internal::GWindowsSplashScreenStatics.Thread == nullptr)
         {
-            Private::GSplashScreen.Sync = CreateEventW(nullptr, FALSE, FALSE, nullptr);
-            Private::GSplashScreen.Thread = CreateThread(
+            Internal::GWindowsSplashScreenStatics.Sync = CreateEventW(nullptr, FALSE, FALSE, nullptr);
+            Internal::GWindowsSplashScreenStatics.Thread = CreateThread(
                 nullptr,
                 0,
-                Private::SplashScreenThread,
+                Internal::WindowsSplashScreenThread,
                 nullptr,
                 0,
                 nullptr);
         }
     }
 
-    void SplashScreen::Hide()
+    void WindowsSplashScreen::Hide()
     {
-        if (Private::GSplashScreen.Thread != nullptr)
+        if (Internal::GWindowsSplashScreenStatics.Thread != nullptr)
         {
-            WaitForSingleObject(Private::GSplashScreen.Sync, INFINITE);
+            WaitForSingleObject(Internal::GWindowsSplashScreenStatics.Sync, INFINITE);
 
-            if (Private::GSplashScreen.Window)
+            if (Internal::GWindowsSplashScreenStatics.Window)
             {
-                PostMessageW(Private::GSplashScreen.Window, WM_CLOSE, 0, 0);
+                PostMessageW(Internal::GWindowsSplashScreenStatics.Window, WM_CLOSE, 0, 0);
             }
 
-            WaitForSingleObject(Private::GSplashScreen.Thread, INFINITE);
+            WaitForSingleObject(Internal::GWindowsSplashScreenStatics.Thread, INFINITE);
 
-            CloseHandle(Private::GSplashScreen.Thread);
-            CloseHandle(Private::GSplashScreen.Sync);
+            CloseHandle(Internal::GWindowsSplashScreenStatics.Thread);
+            CloseHandle(Internal::GWindowsSplashScreenStatics.Sync);
 
-            Private::GSplashScreen.Thread = nullptr;
+            Internal::GWindowsSplashScreenStatics.Thread = nullptr;
         }
     }
 
-    bool SplashScreen::IsVisible()
+    bool WindowsSplashScreen::IsVisible()
     {
-        return Private::GSplashScreen.Thread != nullptr;
+        return Internal::GWindowsSplashScreenStatics.Thread != nullptr;
     }
 
-    void SplashScreen::SetText(std::string_view text)
+    void WindowsSplashScreen::SetText(std::string_view text)
     {
         (void)text;
     }
 
-    void SplashScreen::SetProgress(float progress)
+    void WindowsSplashScreen::SetProgress(float progress)
     {
         (void)progress;
     }

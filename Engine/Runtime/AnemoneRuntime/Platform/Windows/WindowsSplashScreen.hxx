@@ -1,11 +1,18 @@
 #pragma once
-#include "AnemoneRuntime/Platform/SplashScreen.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Detect.hxx"
 
-namespace Anemone::Platform::Internal
-{
-}
+#include <string_view>
 
-namespace Anemone::Platform
+namespace Anemone
 {
+    struct WindowsSplashScreen final
+    {
+        void Show();
+        void Hide();
+        bool IsVisible();
+        void SetText(std::string_view text);
+        void SetProgress(float progress);
+    };
+
+    using SplashScreen = WindowsSplashScreen;
 }

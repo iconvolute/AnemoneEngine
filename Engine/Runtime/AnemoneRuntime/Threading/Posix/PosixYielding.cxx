@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #if ANEMONE_ARCHITECTURE_X64
 #include <xmmintrin.h>

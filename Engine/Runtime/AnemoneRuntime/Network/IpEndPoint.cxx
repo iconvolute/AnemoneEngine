@@ -103,6 +103,7 @@ namespace Anemone::Network
         }
 
         AE_PANIC("Invalid address family.");
+        return false;
     }
 
     std::optional<IpAddress> IpEndPoint::GetAddress() const

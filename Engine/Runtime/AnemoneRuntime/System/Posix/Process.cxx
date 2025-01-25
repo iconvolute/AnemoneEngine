@@ -1,9 +1,9 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Duration.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #if ANEMONE_PLATFORM_LINUX
 

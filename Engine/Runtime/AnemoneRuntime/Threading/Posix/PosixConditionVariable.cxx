@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 namespace Anemone
 {

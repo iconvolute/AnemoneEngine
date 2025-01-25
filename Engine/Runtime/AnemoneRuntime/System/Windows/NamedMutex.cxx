@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/NamedMutex.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone::System
 {
@@ -83,6 +83,7 @@ namespace Anemone::System
         }
 
         AE_PANIC("Failed to lock mutex");
+        return false;
     }
 
     void NamedMutex::Unlock()

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #include <string>
 #include <utility>

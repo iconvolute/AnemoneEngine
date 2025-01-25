@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/Platform.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/Environment.hxx"
 
 #include <array>
 #include <iterator>
@@ -64,12 +64,12 @@ namespace Anemone
 {
     DateTime DateTime::Now()
     {
-        return Platform::GetCurrentDateTime();
+        return Environment::GetCurrentDateTime();
     }
 
     DateTime DateTime::UtcNow()
     {
-        return Platform::GetCurrentDateTimeUtc();
+        return Environment::GetCurrentDateTimeUtc();
     }
 
     std::optional<DateTime> DateTime::FromMembers(DateTimeMembers const& members)
@@ -300,13 +300,13 @@ namespace Anemone
     DateTimeOffset DateTimeOffset::Now()
     {
         return DateTimeOffset{
-            .Local = DateTime::Now(),
-            .Bias = Platform::GetCurrentTimeZoneBias(),
+            .Local = Environment::GetCurrentDateTime(),
+            .Bias = Environment::GetCurrentTimeZoneBias(),
         };
     }
 
     Duration DateTimeOffset::GetCurrentTimeZoneBias()
     {
-        return Platform::GetCurrentTimeZoneBias();
+        return Environment::GetCurrentTimeZoneBias();
     }
 }

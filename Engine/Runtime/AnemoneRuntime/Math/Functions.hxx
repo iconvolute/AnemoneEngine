@@ -871,6 +871,14 @@ namespace Anemone::Math
     {
         return Trapezoid<T>(a, b, c, d, t) * (max - min) + min;
     }
+
+    template <typename T>
+    T LowPassFilter(T input, T last, T rc, T dt)
+        requires(std::is_floating_point_v<T>)
+    {
+        T alpha = dt / (rc + dt);
+        return ((T(1) - alpha) * last) + (alpha * input);
+    }
 }
 
 namespace Anemone::Math

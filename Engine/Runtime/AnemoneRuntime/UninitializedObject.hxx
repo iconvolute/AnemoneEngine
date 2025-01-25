@@ -1,17 +1,18 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <cstddef>
 #include <memory>
 
 namespace Anemone
 {
+    // TODO: Rename this to more descriptive name
     template <typename T>
     class UninitializedObject final
     {
     private:
-        T* _instance = nullptr;
         alignas(T) std::byte _buffer[sizeof(T)]{};
+        bool m_initialized;
 
     public:
         UninitializedObject() = default;
@@ -24,64 +25,63 @@ namespace Anemone
     public:
         [[nodiscard]] explicit operator bool() const
         {
-            return this->_instance != nullptr;
+            return this->m_initialized;
         }
 
         [[nodiscard]] T& Get()
         {
-            return *this->_instance;
+            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
         [[nodiscard]] T const& Get() const
         {
-            return *this->_instance;
+            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
         [[nodiscard]] T* operator->()
         {
-            return this->_instance;
+            return std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
         [[nodiscard]] T const* operator->() const
         {
-            return this->_instance;
+            return std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
         [[nodiscard]] T& operator*()
         {
-            return *this->_instance;
+            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
         [[nodiscard]] T const& operator*() const
         {
-            return *this->_instance;
+            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
     public:
         bool IsInitialized() const
         {
-            return this->_instance != nullptr;
+            return this->m_initialized;
         }
 
         template <typename... Args>
         void Create(Args&&... args)
         {
-            if (this->_instance != nullptr)
+            if (this->m_initialized)
             {
                 AE_PANIC("Object already initialized");
             }
 
-            this->_instance = std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
+            std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
         }
 
         void Destroy()
         {
-            if (this->_instance == nullptr)
+            if (this->m_initialized)
             {
                 AE_PANIC("Object not initialized");
             }
-            std::destroy_at(this->_instance);
-            this->_instance = nullptr;
+            std::destroy_at(reinterpret_cast<T*>(this->_buffer));
         }
     };
 }

@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Window.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseWindow.hxx"
 
-namespace Anemone::Platform
+namespace Anemone
 {
     class WindowsWindow final
         : public Window
@@ -79,6 +79,6 @@ namespace Anemone::Platform
         Math::RectF GetClientBounds() const override;
 
     public:
-        static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
+        static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);        
     };
 }

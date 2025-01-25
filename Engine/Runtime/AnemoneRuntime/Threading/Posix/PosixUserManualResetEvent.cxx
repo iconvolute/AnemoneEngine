@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/UserManualResetEvent.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 namespace Anemone
 {

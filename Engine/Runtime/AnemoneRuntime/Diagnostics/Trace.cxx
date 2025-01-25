@@ -1,11 +1,10 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <iterator>
+#include <utility>
 
-namespace Anemone::Diagnostics::Private
+namespace Anemone::Diagnostics::Internal
 {
-    static constexpr size_t DefaultTraceBufferSize = 512;
-
     constexpr char GetCharacter(TraceLevel level)
     {
         switch (level)
@@ -13,7 +12,7 @@ namespace Anemone::Diagnostics::Private
         case TraceLevel::Verbose:
             return 'V';
 
-        case TraceLevel::Info:
+        case TraceLevel::Information:
             return 'I';
 
         case TraceLevel::Warning:
@@ -25,6 +24,9 @@ namespace Anemone::Diagnostics::Private
         case TraceLevel::Critical:
             return 'C';
 
+        case TraceLevel::Debug:
+            return 'D';
+
         case TraceLevel::None:
             return 'N';
         }
@@ -35,60 +37,61 @@ namespace Anemone::Diagnostics::Private
 
 namespace Anemone::Diagnostics
 {
+    UninitializedObject<Trace> GTrace{};
+
+    Trace::Trace() = default;
+
+    Trace::~Trace()
+    {
+        this->_listeners.Clear();
+    }
+
+    void Trace::AddListener(TraceListener& listener)
+    {
+        UniqueLock lock{this->_lock};
+
+        this->_listeners.PushBack(&listener);
+    }
+
+    void Trace::RemoveListener(TraceListener& listener)
+    {
+        UniqueLock lock{this->_lock};
+
+        this->_listeners.Remove(&listener);
+    }
+
     void Trace::WriteLineFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
     {
-        fmt::basic_memory_buffer<char, Private::DefaultTraceBufferSize> buffer{};
+        fmt::memory_buffer buffer{};
+
         auto out = std::back_inserter(buffer);
         (*out++) = '[';
-        (*out++) = Private::GetCharacter(level);
+        (*out++) = Internal::GetCharacter(level);
         (*out++) = ']';
         (*out++) = ' ';
         out = fmt::vformat_to(out, format, args);
 
-        std::string_view view{buffer.data(), buffer.size()};
+        const char* message = buffer.data();
+        size_t const size = buffer.size();
+
         (*out) = '\0';
 
-        UniqueLock _{this->m_lock};
+        SharedLock lock{this->_lock};
 
-        this->m_listeners.ForEach([&](TraceListener& listener)
+        this->_listeners.ForEach([&](TraceListener& listener)
         {
-            listener.WriteLine(level, view);
+            listener.WriteLine(level, message, size);
         });
     }
 
-    
     void Trace::Flush()
     {
-        UniqueLock _{this->m_lock};
+        SharedLock lock{this->_lock};
 
-        this->m_listeners.ForEach([](TraceListener& listener)
+        this->_listeners.ForEach([](TraceListener& listener)
         {
             listener.Flush();
         });
     }
 
-    void Trace::AddListener(TraceListener& listener)
-    {
-        UniqueLock _{this->m_lock};
-
-        this->m_listeners.PushBack(&listener);
-    }
-
-    void Trace::RemoveListener(TraceListener& listener)
-    {
-        UniqueLock _{this->m_lock};
-
-        this->m_listeners.Remove(&listener);
-    }
-
-    UninitializedObject<Trace> GTrace;
 }
-
-anemone_noinline void XTrace::Formatted(Anemone::Diagnostics::TraceLevel level, std::string_view format, fmt::format_args args)
-{
-    ++this->m_count;
-    (void)level;
-    fmt::vprint(format, args);
-}
-
-Anemone::UninitializedObject<XTrace> GXtrace;

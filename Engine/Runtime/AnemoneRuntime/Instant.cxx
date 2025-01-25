@@ -1,8 +1,8 @@
 #include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS || ANEMONE_PLATFORM_GAMING_DESKTOP
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN

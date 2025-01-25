@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/UserCriticalSection.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone
 {

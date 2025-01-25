@@ -1,5 +1,5 @@
 #include "AnemoneVM/CodeGenerator.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::VM
 {

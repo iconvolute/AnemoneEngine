@@ -1,34 +1,50 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Platform.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BasePlatform.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 
-namespace Anemone::Platform
-{
-    RUNTIME_API void ReportApplicationStop(std::string_view reason);
-    RUNTIME_API bool IsProcessEmulated();
-    RUNTIME_API void HandleCrash(EXCEPTION_POINTERS* pExceptionPointers);
-};
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Platform::Internal
+#include <string>
+
+// *** NOTE ***
+// This file should be included only in the Windows platform implementation files.
+
+namespace Anemone::Internal
 {
     struct WindowsPlatformStatics final
     {
-        HINSTANCE InstanceHandle{};
+        HINSTANCE InstanceHandle;
 
-        HICON ApplicationIcon{};
+        ProcessorProperties Processor{};
 
-        HCURSOR ArrowCursor{};
-        HCURSOR IBeamCursor{};
-        HCURSOR WaitCursor{};
-        HCURSOR CrossCursor{};
-        HCURSOR SizeNWSECursor{};
-        HCURSOR SizeNESWCursor{};
-        HCURSOR SizeWECursor{};
-        HCURSOR SizeNSCursor{};
-        HCURSOR SizeAllCursor{};
+        DateTime ApplicationStartupTime{};
 
-        ATOM MainWindowClass{};
+        std::string SystemVersion{};
+        std::string SystemId{};
+
+        std::string ComputerName{};
+        std::string UserName{};
+
+        std::string ExecutablePath{};
+        std::string StartupPath{};
+        std::string ProfilePath{};
+        std::string DesktopPath{};
+        std::string DocumentsPath{};
+        std::string DownloadsPath{};
+        std::string TemporaryPath{};
     };
 
-    RUNTIME_API extern UninitializedObject<WindowsPlatformStatics> GWindowsPlatformStatics;
+    extern UninitializedObject<WindowsPlatformStatics> GWindowsPlatformStatics;
+}
+
+namespace Anemone
+{
+    struct WindowsPlatform final
+    {
+        static RUNTIME_API void Initialize();
+        static RUNTIME_API void Finalize();
+    };
+
+    using Platform = WindowsPlatform;
 }

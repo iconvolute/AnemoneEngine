@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Crypto/Sha256.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Memory.hxx"
 
 #include <cstring>

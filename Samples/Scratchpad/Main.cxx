@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Main.hxx"
+#include "AnemoneRuntime/Platform/EntryPoint.hxx"
 #include "AnemoneRuntime/Platform/Platform.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
@@ -8,9 +8,13 @@
 #include <string>
 #include <string_view>
 
+#if false
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/PlatformEvents.hxx"
 #include "AnemoneRuntime/Platform/SplashScreen.hxx"
+#include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Platform/Window.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 // AnemoneRuntime/Platform.hxx
 
@@ -32,133 +36,214 @@ namespace Anemone
     };
 }
 
-class EH : public Anemone::Platform::IPlatformEvents
+
+#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+
+#include <thread>
+
+// OutputDebugStringW allocates memory; use OutputDebugStringA instead
+// ErrorReporting - silent vs verbose
+// Assert / Panic functions
+// Not everything is restartable / testable.
+// - memory manager may "leak" when tried to "restart" it in a process itself
+
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
+struct stdout_loglistener : public Anemone::Diagnostics::TraceListener
+{
+    Anemone::CriticalSection m_lock{};
+
+    void WriteLine(Anemone::Diagnostics::TraceLevel level, const char* message, size_t size) override
+    {
+        (void)level;
+        Anemone::UniqueLock lock{this->m_lock};
+        fwrite(message, size, 1, stdout);
+        fputc('\n', stdout);
+    }
+
+    void Flush() override
+    {
+        Anemone::UniqueLock lock{this->m_lock};
+        fflush(stdout);
+    }
+};
+
+struct debug_loglistener : public Anemone::Diagnostics::TraceListener
+{
+    void WriteLine(Anemone::Diagnostics::TraceLevel level, const char* message, size_t size) override
+    {
+        (void)level;
+        (void)size;
+        OutputDebugStringA(message);
+        OutputDebugStringA("\n");
+    }
+};
+
+stdout_loglistener sl{};
+debug_loglistener dl{};
+
+#include "AnemoneRuntime/Threading/Event.hxx"
+
+template <typename F>
+void Execute(F&& f)
+{
+    __try
+    {
+        std::forward<F>(f)();
+    }
+    __except (Anemone::Platform::HandleCrash(GetExceptionInformation()), /*EXCEPTION_CONTINUE_SEARCH*/ EXCEPTION_EXECUTE_HANDLER)
+    {
+    }
+}
+
+#include <winmeta.h>
+#include <TraceLoggingProvider.h>
+#include <TraceLoggingActivity.h>
+
+TRACELOGGING_DEFINE_PROVIDER(
+    GTraceLoggingProvider,
+    "AnemoneEngine.Runtime",
+    (0xc0b8bb2a, 0x7e1e, 0x5a0b, 0x0a, 0xcd, 0x3e, 0xe6, 0x18, 0x78, 0x95, 0xed));
+#endif
+
+#include "AnemoneRuntime/Platform/Platform.hxx"
+#include "AnemoneRuntime/Platform/Application.hxx"
+#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Platform/StackTrace.hxx"
+
+class EH : public Anemone::IApplicationEvents
 {
 public:
     ~EH() override = default;
-    void OnMouseEnter(Anemone::Platform::Window& window, Anemone::Platform::MouseEventArgs& args) override
-    {
-        (void)window;
-        (void)args;
-
-    }
-
-    void OnMouseLeave(Anemone::Platform::Window& window, Anemone::Platform::MouseEventArgs& args) override
-    {
-        (void)window;
-        (void)args;
-    }
-    void OnMouseMove(Anemone::Platform::Window& window, Anemone::Platform::MouseMoveEventArgs& args) override
+    void OnMouseEnter(Anemone::Window& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseWheel(Anemone::Platform::Window& window, Anemone::Platform::MouseWheelEventArgs& args) override
+    void OnMouseLeave(Anemone::Window& window, Anemone::MouseEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+    void OnMouseMove(Anemone::Window& window, Anemone::MouseMoveEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonDown(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    void OnMouseWheel(Anemone::Window& window, Anemone::MouseWheelEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonDown(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
         fmt::println("mouse button down: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
+
+        Anemone::StackTrace::Walk([](void* ptr, std::string_view name)
+        {
+            fmt::println("  {} {}", ptr, name);
+        });
     }
 
-    void OnMouseButtonUp(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    void OnMouseButtonUp(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
         fmt::println("mouse button up: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonDoubleClick(Anemone::Platform::Window& window, Anemone::Platform::MouseButtonEventArgs& args) override
+    void OnMouseButtonDoubleClick(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnKeyDown(Anemone::Platform::Window& window, Anemone::Platform::KeyEventArgs& args) override
+    void OnKeyDown(Anemone::Window& window, Anemone::KeyEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+
+        AE_ASSERT(false);
+    }
+
+    void OnKeyUp(Anemone::Window& window, Anemone::KeyEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnKeyUp(Anemone::Platform::Window& window, Anemone::Platform::KeyEventArgs& args) override
+    void OnCharacterReceived(Anemone::Window& window, Anemone::CharacterReceivedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnCharacterReceived(Anemone::Platform::Window& window, Anemone::Platform::CharacterReceivedEventArgs& args) override
-    {
-        (void)window;
-        (void)args;
-    }
-
-    void OnGamepadAnalog(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadAnalogEventArgs& args) override
+    void OnGamepadAnalog(Anemone::InputDeviceId device, Anemone::GamepadAnalogEventArgs& args) override
     {
         (void)device;
         (void)args;
     }
 
-    void OnGamepadButtonDown(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadButtonEventArgs& args) override
+    void OnGamepadButtonDown(Anemone::InputDeviceId device, Anemone::GamepadButtonEventArgs& args) override
     {
         (void)device;
         (void)args;
     }
 
-    void OnGamepadButtonUp(Anemone::Platform::InputDeviceId device, Anemone::Platform::GamepadButtonEventArgs& args) override
+    void OnGamepadButtonUp(Anemone::InputDeviceId device, Anemone::GamepadButtonEventArgs& args) override
     {
         (void)device;
         (void)args;
     }
 
-    void OnWindowClose(Anemone::Platform::Window& window, Anemone::Platform::WindowCloseEventArgs& args) override
+    void OnWindowClose(Anemone::Window& window, Anemone::WindowCloseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowActivated(Anemone::Platform::Window& window, Anemone::Platform::WindowActivatedEventArgs& args) override
+    void OnWindowActivated(Anemone::Window& window, Anemone::WindowActivatedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowSizeChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowSizeChangedEventArgs& args) override
+    void OnWindowSizeChanged(Anemone::Window& window, Anemone::WindowSizeChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowLocationChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowLocationChangedEventArgs& args) override
+    void OnWindowLocationChanged(Anemone::Window& window, Anemone::WindowLocationChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeStarted(Anemone::Platform::Window& window, Anemone::Platform::WindowEventArgs& args) override
+    void OnWindowResizeStarted(Anemone::Window& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeCompleted(Anemone::Platform::Window& window, Anemone::Platform::WindowEventArgs& args) override
+    void OnWindowResizeCompleted(Anemone::Window& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowDpiChanged(Anemone::Platform::Window& window, Anemone::Platform::WindowDpiChangedEventArgs& args) override
+    void OnWindowDpiChanged(Anemone::Window& window, Anemone::WindowDpiChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnEndSession(Anemone::Platform::EndSessionEventArgs& args) override
+    void OnEndSession(Anemone::EndSessionEventArgs& args) override
     {
         (void)args;
     }
@@ -174,17 +259,68 @@ public:
     void OnDisplayChange() override
     {
     }
-
-
 };
+EH eh{};
 
 int main(int argc, char* argv[])
 {
+    Anemone::Platform::Initialize();
+    Anemone::Application::Initialize();
+    Anemone::Application::SetEvents(&eh);
+
+    if (auto window = Anemone::Application::MakeWindow(Anemone::WindowType::Form))
+    {
+        window->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window->SetInputEnabled(true);
+
+        while (window->IsVisible())
+        {
+            Anemone::Application::ProcessMessages();
+        }
+    }
+
+    Anemone::Application::Finalize();
+    Anemone::Platform::Finalize();
     (void)argc;
     (void)argv;
+
+#if false
+    Execute([&]
+    {
+        AE_PANIC("Hello {}", 42);
+    });
+
+    (void)argc;
+    (void)argv;
+    AE_PANIC("Hello {}", 42);
     Anemone::Platform::Internal::Initialize(argc, argv);
+    Anemone::Diagnostics::GTrace.Create();
+    Anemone::Platform::Internal::SetupTraceListeners();
+    Anemone::Diagnostics::GTrace->AddListener(sl);
+    Anemone::Diagnostics::GTrace->AddListener(dl);
+
+    AE_TRACE(Verbose, "Verbose");
+    AE_TRACE(Debug, "Debug");
+    AE_TRACE(Information, "Information");
+    AE_TRACE(Warning, "Warning");
+    AE_TRACE(Error, "Error");
+    AE_TRACE(Critical, "Critical");
+
+    AE_ASSERT(false);
+
+    _mm_pause();
+    Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Information, "'Hello {} {}'", 42, "World");
+    _mm_pause();
+
+    _mm_pause();
+
+
     fmt::println("os1: {}", Anemone::Platform::GetSystemId());
     fmt::println("os2: {}", Anemone::Platform::GetSystemVersion());
+    Anemone::Platform::WalkStackTrace([](void* ptr, std::string_view name)
+    {
+        fmt::println(" at {} {}", ptr, name);
+    });
 
     std::array<std::byte, 32> random{};
     Anemone::Platform::GetRandom(random);
@@ -252,7 +388,11 @@ int main(int argc, char* argv[])
         L"CurrentBuildNumber");
 #endif
 
+    Anemone::Diagnostics::GTrace->RemoveListener(dl);
+    Anemone::Diagnostics::GTrace->RemoveListener(sl);
+    Anemone::Diagnostics::GTrace.Destroy();
     Anemone::Platform::Internal::Finalize();
+#endif
     return 0;
 }
 
@@ -659,13 +799,13 @@ int main(int argc, char* argv[])
 
         if (argc > 0)
         {
-            // AE_PANIC("Hell of panic from {}", argv[0]);
+            AE_PANIC("Hell of panic from {}", argv[0]);
         }
     }
     {
         Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "Hello {}", "World");
         Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "This is a test: {}", 42);
-        // AE_ASSERT(false);
+        AE_ASSERT(false);
     }
     {
 #if true
@@ -866,11 +1006,11 @@ int main(int argc, char* argv[])
                 AE_PROFILE_SCOPE(Inner);
                 Anemone::SleepThread(Anemone::Duration::FromMilliseconds(500));
 
-                // AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
+                AE_ASSERT(false, "This is a test of the emergency broadcast system: {}", 42);
 
                 TestTasking();
 
-                // AE_TRACE(Critical, "Crashed!?");
+                AE_TRACE(Critical, "Crashed!?");
                 // std::atomic<int>* p = nullptr;
                 // p->store(42);
             }

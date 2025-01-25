@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone
 {

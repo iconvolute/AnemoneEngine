@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Bitwise.hxx"
 #include "AnemoneRuntime/Float.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <limits>
 #include <algorithm>

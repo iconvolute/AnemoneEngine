@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Storage/FileHandleReader.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::Storage
 {

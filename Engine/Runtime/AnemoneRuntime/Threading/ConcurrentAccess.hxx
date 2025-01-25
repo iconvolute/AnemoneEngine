@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <atomic>

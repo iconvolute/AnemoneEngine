@@ -1,6 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
-#include "AnemoneRuntime/Platform/PlatformEvents.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Flags.hxx"
 
@@ -8,12 +9,12 @@
 #include <Xinput.h>
 
 
-namespace Anemone::Platform
+namespace Anemone
 {
     class WindowsWindow;
 }
 
-namespace Anemone::Platform::Internal
+namespace Anemone::Internal
 {
     class WindowsInput final
     {

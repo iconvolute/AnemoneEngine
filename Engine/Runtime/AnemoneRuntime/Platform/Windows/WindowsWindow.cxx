@@ -2,11 +2,12 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
-#include "AnemoneRuntime/Platform/PlatformEvents.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
 
 #include <dwmapi.h>
 
-namespace Anemone::Platform::Internal
+namespace Anemone::Internal
 {
     struct NativeWindowStyle final
     {
@@ -70,13 +71,8 @@ namespace Anemone::Platform::Internal
     }
 }
 
-namespace Anemone::Platform
+namespace Anemone
 {
-    std::unique_ptr<Window> Window::Create(WindowType type)
-    {
-        return std::make_unique<WindowsWindow>(type);
-    }
-
     WindowsWindow::WindowsWindow(WindowType type)
         : m_type{type}
     {
@@ -84,7 +80,7 @@ namespace Anemone::Platform
 
         HWND const handle = CreateWindowExW(
             dwExStyle,
-            MAKEINTATOM(Internal::GWindowsPlatformStatics->MainWindowClass),
+            MAKEINTATOM(Internal::GWindowsApplicationStatics->MainWindowClass),
             L"Anemone",
             dwStyle,
             CW_USEDEFAULT,
@@ -117,14 +113,19 @@ namespace Anemone::Platform
         if (handle == nullptr)
         {
             // TODO Log error
-            ReportApplicationStop("Failed to create window.");
+            Debugger::ReportApplicationStop("Failed to create window.");
         }
 
-        ShowWindow(handle, SW_SHOW);
+        ShowWindow(handle, SW_SHOWNORMAL);
+        UpdateWindow(handle);
+
+        Internal::GWindowsApplicationStatics->WindowsCollection.PushBack(this);
     }
 
     WindowsWindow::~WindowsWindow()
     {
+        Internal::GWindowsApplicationStatics->WindowsCollection.Remove(this);
+
         if (this->m_windowHandle != nullptr)
         {
             DestroyWindow(this->m_windowHandle);
@@ -376,39 +377,50 @@ namespace Anemone::Platform
             break;
 
         case CursorType::Arrow:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->ArrowCursor;
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->ArrowCursor;
             break;
 
-        case CursorType::IBeam:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->IBeamCursor;
+        case CursorType::ArrowWait:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->ArrowWaitCursor;
             break;
-
-        case CursorType::Wait:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->WaitCursor;
+        case CursorType::Text:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->TextCursor;
             break;
-
-        case CursorType::Cross:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->CrossCursor;
+        case CursorType::SizeHorizontal:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeHorizontalCursor;
             break;
-
-        case CursorType::SizeNWSE:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->SizeNWSECursor;
+        case CursorType::SizeVertical:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeVerticalCursor;
             break;
-
-        case CursorType::SizeNESW:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->SizeNESWCursor;
+        case CursorType::SizeLeft:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeLeftCursor;
             break;
-
-        case CursorType::SizeWE:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->SizeWECursor;
+        case CursorType::SizeTop:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopCursor;
             break;
-
-        case CursorType::SizeNS:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->SizeNSCursor;
+        case CursorType::SizeRight:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeRightCursor;
             break;
-
+        case CursorType::SizeBottom:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomCursor;
+            break;
+        case CursorType::SizeTopLeft:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopLeftCursor;
+            break;
+        case CursorType::SizeTopRight:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopRightCursor;
+            break;
+        case CursorType::SizeBottomLeft:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomLeftCursor;
+            break;
+        case CursorType::SizeBottomRight:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomRightCursor;
+            break;
         case CursorType::SizeAll:
-            this->m_cursorHandle = Internal::GWindowsPlatformStatics->SizeAllCursor;
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeAllCursor;
+            break;
+        case CursorType::Cross:
+            this->m_cursorHandle = Internal::GWindowsApplicationStatics->CrossCursor;
             break;
         }
     }
@@ -459,9 +471,9 @@ namespace Anemone::Platform
             }
         }
 
-        // AE_ASSERT(window != nullptr);
+        AE_ASSERT(window != nullptr);
 
-        IPlatformEvents* eventHandler = Internal::GPlatformStatics->EventHandler;
+        IApplicationEvents* events = Internal::GWindowsApplicationStatics->Events;
 
         bool handled = false;
 
@@ -477,7 +489,7 @@ namespace Anemone::Platform
             case WM_CLOSE:
                 {
                     WindowCloseEventArgs e{};
-                    eventHandler->OnWindowClose(*window, e);
+                    events->OnWindowClose(*window, e);
 
                     if (e.Cancel)
                     {
@@ -514,7 +526,7 @@ namespace Anemone::Platform
                             .Repeat = (keyFlags & KF_REPEAT) == KF_REPEAT,
                         };
 
-                        eventHandler->OnCharacterReceived(*window, e);
+                        events->OnCharacterReceived(*window, e);
                     }
                     break;
                 }
@@ -539,7 +551,7 @@ namespace Anemone::Platform
                         rc.bottom - rc.top,
                         SWP_NOZORDER | SWP_NOACTIVATE);
 
-                    eventHandler->OnWindowDpiChanged(*window, e);
+                    events->OnWindowDpiChanged(*window, e);
                     break;
                 }
 
@@ -549,13 +561,13 @@ namespace Anemone::Platform
                     {
                     case PBT_APMSUSPEND:
                         {
-                            eventHandler->OnSystemSuspending();
+                            events->OnSystemSuspending();
                             break;
                         }
 
                     case PBT_APMRESUMESUSPEND:
                         {
-                            eventHandler->OnSystemResuming();
+                            events->OnSystemResuming();
                             break;
                         }
 
@@ -570,7 +582,7 @@ namespace Anemone::Platform
 
             case WM_DISPLAYCHANGE:
                 {
-                    eventHandler->OnDisplayChange();
+                    events->OnDisplayChange();
                     break;
                 }
 
@@ -592,7 +604,7 @@ namespace Anemone::Platform
                     window->m_resizing = true;
 
                     WindowEventArgs e{};
-                    eventHandler->OnWindowResizeStarted(*window, e);
+                    events->OnWindowResizeStarted(*window, e);
 
                     break;
                 }
@@ -602,7 +614,7 @@ namespace Anemone::Platform
                     {
                         window->m_resizing = false;
                         WindowEventArgs e{};
-                        eventHandler->OnWindowResizeCompleted(*window, e);
+                        events->OnWindowResizeCompleted(*window, e);
                     }
 
                     {
@@ -611,7 +623,7 @@ namespace Anemone::Platform
                         WindowSizeChangedEventArgs e{
                             .Size = Interop::win32_into_Size(rc),
                         };
-                        eventHandler->OnWindowSizeChanged(*window, e);
+                        events->OnWindowSizeChanged(*window, e);
                     }
                     {
                         RECT rc;
@@ -619,7 +631,7 @@ namespace Anemone::Platform
                         WindowLocationChangedEventArgs e{
                             .Location = Interop::win32_into_Point(rc),
                         };
-                        eventHandler->OnWindowLocationChanged(*window, e);
+                        events->OnWindowLocationChanged(*window, e);
                     }
 
                     break;
@@ -637,7 +649,7 @@ namespace Anemone::Platform
                                     .Height = static_cast<float>(HIWORD(lparam)),
                                 },
                             };
-                            eventHandler->OnWindowSizeChanged(*window, e);
+                            events->OnWindowSizeChanged(*window, e);
                         }
                     }
 
@@ -719,7 +731,7 @@ namespace Anemone::Platform
                         Internal::GWindowsInputStatics->Activate();
                     }
 
-                    eventHandler->OnWindowActivated(*window, e);
+                    events->OnWindowActivated(*window, e);
                     break;
                 }
 
@@ -745,7 +757,7 @@ namespace Anemone::Platform
                         .CloseApplication = (lparam & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
                     };
 
-                    eventHandler->OnEndSession(e);
+                    events->OnEndSession(e);
 
                     break;
                 }

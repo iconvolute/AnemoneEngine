@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone
 {

@@ -1,21 +1,17 @@
-add_subdirectory("Android")
+add_subdirectory("Base")
 add_subdirectory("Linux")
-add_subdirectory("Posix")
+add_subdirectory("Unix")
 add_subdirectory("Windows")
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "Application.hxx"
+        "Clipboard.hxx"
+        "Debugger.hxx"
         "Detect.hxx"
-        "Main.hxx"
-
+        "EntryPoint.hxx"
+        "Environment.hxx"
         "Platform.hxx"
-
-        "PlatformEvents.hxx"
-
-        "SplashScreen.hxx"
-
+        "StackTrace.hxx"
         "Types.hxx"
-
-        "Window.cxx"
-        "Window.hxx"
 )

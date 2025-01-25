@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Memory/SystemAllocator.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -48,5 +48,7 @@ namespace Anemone::Memory
         (void)allocation;
         (void)layout;
         AE_PANIC("Not supported");
+
+        return {};
     }
 }

@@ -1,9 +1,6 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Allocator.cxx"
-        "Crypto.cxx"
         "DirectoryEnumerator.cxx"
-        "Environment.cxx"
         "ErrorCode.cxx"
         "FileHandle.cxx"
         "NamedMutex.cxx"

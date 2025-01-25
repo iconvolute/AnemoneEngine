@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <utility>
 #include <type_traits>

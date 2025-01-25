@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/FileSystem.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/Posix/Functions.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/System/Path.hxx"
 
 #include <string>

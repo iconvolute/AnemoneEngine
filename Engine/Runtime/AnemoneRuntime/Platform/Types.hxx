@@ -5,7 +5,7 @@
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/Types.hxx"
 #elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Platform/Posix/Types.hxx"
+#include "AnemoneRuntime/Platform/Unix/Types.hxx"
 #else
 #error "Not implemented"
 #endif

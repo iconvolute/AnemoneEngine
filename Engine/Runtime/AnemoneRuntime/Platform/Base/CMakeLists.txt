@@ -1,0 +1,10 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "BaseApplication.hxx"
+        "BaseClipboard.hxx"
+        "BaseDebugger.hxx"
+        "BaseEnvironment.hxx"
+        "BaseHeaders.hxx"
+        "BasePlatform.hxx"
+        "BaseWindow.hxx"
+)
