@@ -43,7 +43,6 @@ namespace Anemone
         }
 
         return success;
-        
     }
 
     bool WindowsClipboard::SetText(std::string_view value)

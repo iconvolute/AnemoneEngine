@@ -24,7 +24,7 @@ namespace Anemone
         }
 
         pthread_mutex_unlock(&GEnvironmentLock);
-        
+
         return success;
     }
 
@@ -103,14 +103,14 @@ namespace Anemone
     {
         return Internal::GLinuxPlatformStatics->ApplicationStartupTime;
     }
-    
+
     MemoryProperties LinuxEnvironment::GetMemoryProperties()
     {
         // Get memory properties
-        struct sysinfo info = { 0 };
+        struct sysinfo info = {0};
         sysinfo(&info);
         // Get address space limits
-        struct rlimit64 limits = { 0 };
+        struct rlimit64 limits = {0};
 
         getrlimit64(RLIMIT_AS, &limits);
 
@@ -204,7 +204,7 @@ namespace Anemone
 
     ProcessorUsage LinuxEnvironment::GetProcessorUsage()
     {
-        struct rusage usage = { 0 };
+        struct rusage usage = {0};
         getrusage(RUSAGE_SELF, &usage);
 
         return ProcessorUsage{

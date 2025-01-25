@@ -58,7 +58,7 @@ namespace Anemone::Internal
             wcex.style = CS_HREDRAW | CS_VREDRAW;
             wcex.lpfnWndProc = WindowsSplashScreenWndProc;
             wcex.cbClsExtra = 0;
-            wcex.cbWndExtra = 0;            
+            wcex.cbWndExtra = 0;
             wcex.hInstance = hInstance;
             wcex.hIcon = LoadIconW(nullptr, IDI_APPLICATION);
             wcex.hCursor = LoadCursorW(nullptr, IDC_ARROW);

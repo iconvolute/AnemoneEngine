@@ -79,6 +79,6 @@ namespace Anemone
         Math::RectF GetClientBounds() const override;
 
     public:
-        static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);        
+        static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
     };
 }

@@ -95,7 +95,7 @@ namespace Anemone
         uint64_t PeakUsedVirtual;
         uint64_t PeakUsedPhysical;
     };
-    
+
     struct ProcessorUsage final
     {
         Duration UserTime;

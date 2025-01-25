@@ -35,9 +35,9 @@ namespace Anemone::Diagnostics
         }
         else
         {
-            //Platform::DebugPrint("=== assertion failed ===\n");
-            //Platform::DebugPrint("tracing not initialized\n");
-            //Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
+            // Platform::DebugPrint("=== assertion failed ===\n");
+            // Platform::DebugPrint("tracing not initialized\n");
+            // Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
         }
 
         // TODO: Flush any log messages.
@@ -69,7 +69,7 @@ namespace Anemone::Diagnostics
             GTrace->WriteLine(TraceLevel::Critical, "=== panic ===");
             GTrace->WriteLine(TraceLevel::Critical, "location: {}:{}", location.file_name(), location.line());
             GTrace->WriteLine(TraceLevel::Critical, "message: {}", std::string_view{message.data(), message.size()});
-            
+
             StackTrace::Walk([&](void* address, std::string_view name)
             {
                 fmt::println("{} {}", address, name);
@@ -77,9 +77,9 @@ namespace Anemone::Diagnostics
         }
         else
         {
-            //Platform::DebugPrint("=== panic ===\n");
-            //Platform::DebugPrint("tracing not initialized\n");
-            //Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
+            // Platform::DebugPrint("=== panic ===\n");
+            // Platform::DebugPrint("tracing not initialized\n");
+            // Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
         }
 
         Debugger::Attach();

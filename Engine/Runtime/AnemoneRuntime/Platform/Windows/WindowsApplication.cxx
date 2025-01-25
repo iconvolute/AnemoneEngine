@@ -19,7 +19,7 @@ namespace Anemone
         Internal::GWindowsApplicationStatics.Create();
         Internal::GWindowsInputStatics.Create();
 
-        
+
         Internal::GWindowsApplicationStatics->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
             Internal::GWindowsPlatformStatics->InstanceHandle,
             MAKEINTRESOURCE(Internal::IDI_MAIN_ICON),
@@ -67,7 +67,6 @@ namespace Anemone
         {
             Debugger::ReportApplicationStop("Failed to register window class.");
         }
-
     }
 
     void WindowsApplication::Finalize()
@@ -92,7 +91,7 @@ namespace Anemone
         }
 
         // Pool input devices.
-        Internal::GWindowsInputStatics->Poll();        
+        Internal::GWindowsInputStatics->Poll();
     }
 
     void WindowsApplication::SetEvents(IApplicationEvents* events)

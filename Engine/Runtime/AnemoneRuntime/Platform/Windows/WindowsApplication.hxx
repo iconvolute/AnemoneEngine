@@ -34,7 +34,6 @@ namespace Anemone::Internal
         ATOM MainWindowClass{};
 
         IntrusiveList<Window> WindowsCollection{};
-
     };
 
     extern UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;

@@ -221,7 +221,7 @@ namespace Anemone
         }
 
 #endif
-        }
+    }
 
     void WindowsStackTrace::Walk(FunctionRef<void(void* address, std::string_view symbol)> callback)
     {

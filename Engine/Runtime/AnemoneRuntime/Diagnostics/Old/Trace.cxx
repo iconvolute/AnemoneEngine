@@ -56,7 +56,7 @@ namespace Anemone::Diagnostics
         });
     }
 
-    
+
     void Trace::Flush()
     {
         UniqueLock _{this->m_lock};
