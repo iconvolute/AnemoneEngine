@@ -88,13 +88,16 @@ namespace Anemone::Internal
 
         void SetupConsoleMode(HANDLE hStream)
         {
-            DWORD dwMode;
-
-            if (GetConsoleMode(hStream, &dwMode))
+            if (hStream)
             {
-                dwMode |= ENABLE_PROCESSED_OUTPUT;
-                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                SetConsoleMode(hStream, dwMode);
+                DWORD dwMode = 0;
+
+                if (GetConsoleMode(hStream, &dwMode))
+                {
+                    dwMode |= ENABLE_PROCESSED_OUTPUT;
+                    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                    SetConsoleMode(hStream, dwMode);
+                }
             }
         }
 

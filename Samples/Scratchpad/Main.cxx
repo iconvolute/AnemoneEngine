@@ -111,6 +111,8 @@ TRACELOGGING_DEFINE_PROVIDER(
 #include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 
+#include <print>
+
 class EH : public Anemone::IApplicationEvents
 {
 public:
@@ -278,6 +280,13 @@ int main(
     Anemone::Platform::Initialize();
     Anemone::Application::Initialize();
     Anemone::Application::SetEvents(&eh);
+
+    fmt::println("cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
+    fmt::println("cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+    fmt::println("cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetProcessorProperties().EfficiencyCores);
+    fmt::println("cpu-PerformanceCores: '{}'", Anemone::Environment::GetProcessorProperties().PerformanceCores);
+    fmt::println("cpu-PhysicalCores:    '{}'", Anemone::Environment::GetProcessorProperties().PhysicalCores);
+    fmt::println("cpu-LogicalCores:     '{}'", Anemone::Environment::GetProcessorProperties().LogicalCores);
 
     if (auto window = Anemone::Application::MakeWindow(Anemone::WindowType::Form))
     {
