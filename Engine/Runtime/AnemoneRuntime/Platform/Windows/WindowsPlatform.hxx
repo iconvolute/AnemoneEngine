@@ -33,6 +33,10 @@ namespace Anemone::Internal
         std::string DocumentsPath{};
         std::string DownloadsPath{};
         std::string TemporaryPath{};
+        std::string DeviceId{};
+        std::string DeviceManufacturer{};
+        std::string DeviceName{};
+        std::string DeviceVersion{};
     };
 
     extern UninitializedObject<WindowsPlatformStatics> GWindowsPlatformStatics;

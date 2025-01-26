@@ -36,6 +36,8 @@ namespace Anemone
         uint32_t CacheSizeLevel1;
         uint32_t CacheSizeLevel2;
         uint32_t CacheSizeLevel3;
+        std::string Name;
+        std::string Vendor;
     };
 
     enum class ProcessorCharacteristics : uint8_t

@@ -366,14 +366,12 @@ namespace Anemone
 
     std::string_view WindowsEnvironment::GetDeviceUniqueId()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Internal::GWindowsPlatformStatics->DeviceId;
     }
 
     std::string_view WindowsEnvironment::GetDeviceName()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Internal::GWindowsPlatformStatics ->DeviceName;
     }
 
     std::string WindowsEnvironment::GetDeviceModel()
@@ -496,5 +494,17 @@ namespace Anemone
             BCRYPT_USE_SYSTEM_PREFERRED_RNG);
 
         AE_ENSURE(BCRYPT_SUCCESS(status));
+    }
+
+    bool WindowsEnvironment::IsConsoleApplication()
+    {
+        HMODULE hExecutable = GetModuleHandleW(nullptr);
+
+        return Interop::win32_IsConsoleApplication(hExecutable);
+    }
+
+    bool WindowsEnvironment::IsConsoleRedirecting()
+    {
+        return GetStdHandle(STD_OUTPUT_HANDLE) != nullptr;
     }
 }

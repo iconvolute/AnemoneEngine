@@ -5,4 +5,11 @@ target_sources(Scratchpad
 )
 target_link_libraries(Scratchpad PUBLIC AnemoneRuntime)
 
+if (WIN32)
+set_target_properties(Scratchpad
+    PROPERTIES
+        WIN32_EXECUTABLE TRUE
+)
+endif()
+
 add_subdirectory("Resources")

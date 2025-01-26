@@ -217,16 +217,15 @@ namespace Anemone::Internal
                     result.CacheLineSize = cacheLineSize;
                 }
             }
-#if false
+
             // Query CPU name from registry
             Interop::win32_string_buffer<wchar_t, 128> buffer{};
 
             Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(ProcessorNameString)");
-            Interop::win32_NarrowString(properties.Name, buffer.as_view());
+            Interop::win32_NarrowString(result.Name, buffer.as_view());
 
             Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(VendorIdentifier)");
-            Interop::win32_NarrowString(properties.Vendor, buffer.as_view());
-#endif
+            Interop::win32_NarrowString(result.Vendor, buffer.as_view());
 
             return result;
         }
@@ -389,6 +388,18 @@ namespace Anemone
         Interop::win32_GetTempPath(buffer);
         Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->TemporaryPath, buffer.as_view());
         System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->TemporaryPath);
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
+        Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DeviceId, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemManufacturer)");
+        Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DeviceManufacturer, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemProductName)");
+        Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DeviceName, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemVersion)");
+        Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DeviceVersion, buffer.as_view());
 
         std::string buildMachine{};
 

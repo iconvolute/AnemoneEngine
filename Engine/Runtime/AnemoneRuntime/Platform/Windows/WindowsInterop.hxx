@@ -1411,3 +1411,17 @@ namespace Anemone::Interop
         }
     };
 }
+
+namespace Anemone::Interop
+{
+    anemone_forceinline PIMAGE_NT_HEADERS win32_GetImageNtHeaders(HMODULE h)
+    {
+        return std::bit_cast<PIMAGE_NT_HEADERS>(reinterpret_cast<UINT_PTR>(h) + reinterpret_cast<PIMAGE_DOS_HEADER>(h)->e_lfanew);
+    }
+
+    anemone_forceinline bool win32_IsConsoleApplication(HMODULE h)
+    {
+        PIMAGE_NT_HEADERS const ntHeaders = win32_GetImageNtHeaders(h);
+        return (ntHeaders->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI);
+    }
+}

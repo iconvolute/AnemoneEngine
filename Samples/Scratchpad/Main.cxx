@@ -262,7 +262,18 @@ public:
 };
 EH eh{};
 
-int main(int argc, char* argv[])
+#if ANEMONE_PLATFORM_WINDOWS
+
+int WINAPI WinMain(
+    [[maybe_unused]] _In_ HINSTANCE hInstance,
+    [[maybe_unused]] _In_opt_ HINSTANCE hPrevInstance,
+    [[maybe_unused]] _In_ LPSTR lpCmdLine,
+    [[maybe_unused]] _In_ int nShowCmd)
+#else
+int main(
+    [[maybe_unused]] int argc,
+    [[maybe_unused]] char* argv[])
+#endif
 {
     Anemone::Platform::Initialize();
     Anemone::Application::Initialize();
@@ -281,8 +292,7 @@ int main(int argc, char* argv[])
 
     Anemone::Application::Finalize();
     Anemone::Platform::Finalize();
-    (void)argc;
-    (void)argv;
+
 
 #if false
     Execute([&]

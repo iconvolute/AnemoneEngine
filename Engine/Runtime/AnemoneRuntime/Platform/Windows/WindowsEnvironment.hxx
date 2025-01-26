@@ -49,6 +49,12 @@ namespace Anemone
         static RUNTIME_API Duration GetCurrentTimeZoneBias();
 
         static RUNTIME_API void GetRandom(std::span<std::byte> buffer);
+
+        // Returns the value indicating if the application is a console application.
+        static RUNTIME_API bool IsConsoleApplication();
+
+        // Returns the value indicating if console output is redirected.
+        static RUNTIME_API bool IsConsoleRedirecting();
     };
 
     using Environment = WindowsEnvironment;
