@@ -9,6 +9,14 @@ namespace Anemone::Interop
         DWORD ThreadId;
         EXCEPTION_RECORD ExceptionRecord;
         CONTEXT Context;
+        PVOID XmmRegisters;
+        PVOID YmmRegisters;
+        PVOID ZmmRegisters;
+        PVOID ZmmhRegisters;
+        DWORD XmmRegistersLength;
+        DWORD YmmRegistersLength;
+        DWORD ZmmRegistersLength;
+        DWORD ZmmhRegistersLength;
     };
 
     struct Mapping

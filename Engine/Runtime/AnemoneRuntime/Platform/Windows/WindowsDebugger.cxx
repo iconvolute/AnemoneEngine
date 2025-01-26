@@ -158,6 +158,13 @@ namespace Anemone
         {
             crashDetails.ExceptionRecord = *pExceptionPointers->ExceptionRecord;
             crashDetails.Context = *pExceptionPointers->ContextRecord;
+
+#if ANEMONE_ARCHITECTURE_X64
+            crashDetails.XmmRegisters = LocateXStateFeature(pExceptionPointers->ContextRecord, XSTATE_LEGACY_SSE, &crashDetails.XmmRegistersLength);
+            crashDetails.YmmRegisters = LocateXStateFeature(pExceptionPointers->ContextRecord, XSTATE_AVX, &crashDetails.YmmRegistersLength);
+            crashDetails.ZmmRegisters = LocateXStateFeature(pExceptionPointers->ContextRecord, XSTATE_AVX512_ZMM, &crashDetails.ZmmRegistersLength);
+            crashDetails.ZmmhRegisters = LocateXStateFeature(pExceptionPointers->ContextRecord, XSTATE_AVX512_ZMM_H, &crashDetails.ZmmhRegistersLength);
+#endif
         }
 
         {
