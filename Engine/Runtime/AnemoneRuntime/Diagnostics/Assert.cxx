@@ -18,27 +18,19 @@ namespace Anemone::Diagnostics
     {
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
 
-        if (GTrace)
-        {
-            fmt::memory_buffer message{};
-            fmt::vformat_to(std::back_inserter(message), format, args);
 
-            GTrace->WriteLine(TraceLevel::Critical, "=== assertion failed ===");
-            GTrace->WriteLine(TraceLevel::Critical, "location: {}:{}", location.file_name(), location.line());
-            GTrace->WriteLine(TraceLevel::Critical, "expression: {}", expression);
-            GTrace->WriteLine(TraceLevel::Critical, "message: {}", std::string_view{message.data(), message.size()});
+        fmt::memory_buffer message{};
+        fmt::vformat_to(std::back_inserter(message), format, args);
 
-            StackTrace::Walk([&](void* address, std::string_view name)
-            {
-                fmt::println("{} {}", address, name);
-            });
-        }
-        else
+        Trace::TraceMessage(TraceLevel::Fatal, "=== assertion failed ===");
+        Trace::TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
+        Trace::TraceMessage(TraceLevel::Fatal, "expression: {}", expression);
+        Trace::TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
+
+        StackTrace::Walk([&](void* address, std::string_view name)
         {
-            // Platform::DebugPrint("=== assertion failed ===\n");
-            // Platform::DebugPrint("tracing not initialized\n");
-            // Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
-        }
+            Trace::TraceMessage("{} {}", address, name);
+        });
 
         // TODO: Flush any log messages.
         if (Debugger::Attach())
@@ -61,26 +53,17 @@ namespace Anemone::Diagnostics
         std::string_view format,
         fmt::format_args args)
     {
-        if (GTrace)
-        {
-            fmt::memory_buffer message{};
-            fmt::vformat_to(std::back_inserter(message), format, args);
+        fmt::memory_buffer message{};
+        fmt::vformat_to(std::back_inserter(message), format, args);
 
-            GTrace->WriteLine(TraceLevel::Critical, "=== panic ===");
-            GTrace->WriteLine(TraceLevel::Critical, "location: {}:{}", location.file_name(), location.line());
-            GTrace->WriteLine(TraceLevel::Critical, "message: {}", std::string_view{message.data(), message.size()});
+        Trace::TraceMessage(TraceLevel::Fatal, "=== panic ===");
+        Trace::TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
+        Trace::TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
 
-            StackTrace::Walk([&](void* address, std::string_view name)
-            {
-                fmt::println("{} {}", address, name);
-            });
-        }
-        else
+        StackTrace::Walk([&](void* address, std::string_view name)
         {
-            // Platform::DebugPrint("=== panic ===\n");
-            // Platform::DebugPrint("tracing not initialized\n");
-            // Platform::DebugPrint("location: {}:{}\n", location.file_name(), location.line());
-        }
+            Trace::TraceMessage("{} {}", address, name);
+        });
 
         Debugger::Attach();
     }
