@@ -46,3 +46,19 @@ namespace Anemone
         void HandleToken(std::string_view token);
     };
 }
+
+namespace Anemone
+{
+    class CommandLine final
+    {
+    private:
+        static int _argc;
+        static char** _argv;
+
+    public:
+        RUNTIME_API static void Initialize(int argc, char* argv[]);
+
+        RUNTIME_API static auto GetOption(std::string_view name) -> std::optional<std::string_view>;
+        RUNTIME_API static void GetPositional(std::vector<std::string_view>& positional);
+    };
+}

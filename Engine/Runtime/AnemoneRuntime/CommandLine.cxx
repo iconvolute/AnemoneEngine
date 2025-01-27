@@ -4,6 +4,76 @@
 
 namespace Anemone
 {
+    int CommandLine::_argc = 0;
+    char** CommandLine::_argv = nullptr;
+
+    void CommandLine::Initialize(int argc, char* argv[])
+    {
+        CommandLine::_argc = argc;
+        CommandLine::_argv = argv;
+    }
+
+    auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
+    {
+        std::optional<std::string_view> result{};
+
+        for (int i = 1; i < CommandLine::_argc; ++i)
+        {
+            std::string_view option{CommandLine::_argv[i]};
+
+            if (option.starts_with('-'))
+            {
+                // Option '-short' or '--long'
+                option.remove_prefix(1);
+
+                if (option.starts_with('-'))
+                {
+                    // Long option '--option'
+                    option.remove_prefix(1);
+                }
+
+                if (option.starts_with(name))
+                {
+                    // Option matched.
+                    option.remove_prefix(name.size());
+
+                    if (option.starts_with(':') or option.starts_with('='))
+                    {
+                        // Matched '--option=value' or '--option:value'.
+                        option.remove_prefix(1);
+                        result = option;
+                    }
+                    else
+                    {
+                        // Override result.
+                        result = std::string_view{};
+                    }
+                }
+            }
+        }
+
+        return result;
+    }
+
+    void CommandLine::GetPositional(std::vector<std::string_view>& positional)
+    {
+        for (int i = 1; i < CommandLine::_argc; ++i)
+        {
+            std::string_view option{CommandLine::_argv[i]};
+
+            if (option.starts_with('-'))
+            {
+                // Not a positional argument.
+                continue;
+            }
+
+            positional.emplace_back(option);
+        }
+    }
+}
+
+namespace Anemone
+{
     // Specification:
     //
     // Named parameters are using '-' or '--' as prefix. Value separator is '=' or ':'.
