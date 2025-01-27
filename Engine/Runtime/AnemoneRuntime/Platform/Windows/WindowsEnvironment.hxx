@@ -10,7 +10,7 @@ namespace Anemone
         static RUNTIME_API bool SetEnvironmentVariable(std::string name, std::string_view value);
         static RUNTIME_API bool RemoveEnvironmentVariable(std::string_view name);
 
-        static RUNTIME_API ProcessorProperties GetProcessorProperties();
+        static RUNTIME_API ProcessorProperties const& GetProcessorProperties();
         static RUNTIME_API std::vector<ProcessorTopology> GetProcessorTopology();
 
         static RUNTIME_API void GetDisplayMetrics(DisplayMetrics& metrics);

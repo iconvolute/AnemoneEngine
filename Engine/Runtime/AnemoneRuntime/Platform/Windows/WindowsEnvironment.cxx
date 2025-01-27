@@ -47,7 +47,7 @@ namespace Anemone
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
     }
 
-    ProcessorProperties WindowsEnvironment::GetProcessorProperties()
+    ProcessorProperties const& WindowsEnvironment::GetProcessorProperties()
     {
         return Internal::GWindowsPlatformStatics->Processor;
     }

@@ -50,7 +50,7 @@ namespace Anemone
         return result;
     }
 
-    ProcessorProperties LinuxEnvironment::GetProcessorProperties()
+    ProcessorProperties const& LinuxEnvironment::GetProcessorProperties()
     {
         return Internal::GLinuxPlatformStatics->Processor;
     }
