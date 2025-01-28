@@ -113,6 +113,9 @@ TRACELOGGING_DEFINE_PROVIDER(
 
 #include <print>
 
+#include "AnemoneRuntime/CommandLine.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
 class EH : public Anemone::IApplicationEvents
 {
 public:
@@ -264,7 +267,13 @@ public:
 };
 EH eh{};
 
-#if ANEMONE_PLATFORM_WINDOWS
+anemone_noinline void test()
+{
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+}
+
+#if !ANEMONE_PLATFORM_WINDOWS
 
 int WINAPI WinMain(
     [[maybe_unused]] _In_ HINSTANCE hInstance,
@@ -278,15 +287,84 @@ int main(
 #endif
 {
     Anemone::Platform::Initialize();
+    Anemone::CommandLine::Initialize(__argc, __argv);
     Anemone::Application::Initialize();
     Anemone::Application::SetEvents(&eh);
 
-    fmt::println("cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
-    fmt::println("cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
-    fmt::println("cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetProcessorProperties().EfficiencyCores);
-    fmt::println("cpu-PerformanceCores: '{}'", Anemone::Environment::GetProcessorProperties().PerformanceCores);
-    fmt::println("cpu-PhysicalCores:    '{}'", Anemone::Environment::GetProcessorProperties().PhysicalCores);
-    fmt::println("cpu-LogicalCores:     '{}'", Anemone::Environment::GetProcessorProperties().LogicalCores);
+    if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
+    {
+        AE_TRACE(Error, "Positional arguments:");
+
+        for (auto const& arg : args)
+        {
+            AE_TRACE(Error, "  '{}'", arg);
+            fmt::println("  '{}'", arg);
+        }
+
+        if (auto const value = Anemone::CommandLine::GetOption("a"); value.has_value())
+        {
+            AE_TRACE(Error, "Named argument 'a': '{}'", *value);
+            fmt::println("Named argument 'a': '{}'", *value);
+        }
+        else
+        {
+            fmt::println("Named argument 'a' not found");
+        }
+
+        if (auto const value = Anemone::CommandLine::GetOption("b"); value.has_value())
+        {
+            AE_TRACE(Error, "Named argument 'b': '{}'", *value);
+            fmt::println("Named argument 'b': '{}'", *value);
+        }
+        else
+        {
+            fmt::println("Named argument 'b' not found");
+        }
+
+        if (auto const value = Anemone::CommandLine::GetOption("c"); value.has_value())
+        {
+            AE_TRACE(Error, "Named argument 'c': '{}'", *value);
+            fmt::println("Named argument 'c': '{}'", *value);
+        }
+        else
+        {
+            fmt::println("Named argument 'c' not found");
+        }
+    }
+    test();
+
+    AE_TRACE(Error, "Hello, World!");
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetProcessorProperties().EfficiencyCores);
+    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::Environment::GetProcessorProperties().PerformanceCores);
+    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::Environment::GetProcessorProperties().PhysicalCores);
+    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::Environment::GetProcessorProperties().LogicalCores);
+
+#if ANEMONE_PLATFORM_WINDOWS
+    if (Anemone::Environment::IsConsoleApplication())
+    {
+        MessageBoxW(nullptr, L"Console", L"Console", MB_OK | MB_ICONINFORMATION);
+    }
+    else
+    {
+        MessageBoxW(nullptr, L"No Console", L"No Console", MB_OK | MB_ICONERROR);
+    }
+
+    if (Anemone::Environment::IsConsoleRedirecting())
+    {
+        MessageBoxW(nullptr, L"Redirecting", L"Redirecting", MB_OK | MB_ICONINFORMATION);
+    }
+    else
+    {
+        MessageBoxW(nullptr, L"No Redirecting", L"No Redirecting", MB_OK | MB_ICONERROR);
+    }
+#endif
+
+    fmt::println("cpu-name:    '{}'", Anemone::Environment::GetProcessorProperties().Name);
+    fmt::println("cpu-vendor:  '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+    /*fmt::println("device-name: '{}'", Anemone::Environment::GetDeviceName());
+    fmt::println("device-id:   '{}'", Anemone::Environment::GetDeviceUniqueId());*/
 
     if (auto window = Anemone::Application::MakeWindow(Anemone::WindowType::Form))
     {

@@ -29,7 +29,7 @@ namespace Anemone::Diagnostics
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            Trace::TraceMessage("{} {}", address, name);
+            Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
         // TODO: Flush any log messages.
@@ -62,7 +62,7 @@ namespace Anemone::Diagnostics
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            Trace::TraceMessage("{} {}", address, name);
+            Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
         Debugger::Attach();
