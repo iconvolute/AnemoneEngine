@@ -17,11 +17,24 @@ extern "C"
 #error "This header must be included from the application"
 #endif
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
-#endif
+#include "AnemoneRuntime/Platform/Platform.hxx"
+#include "AnemoneRuntime/Platform/Application.hxx"
+#include "AnemoneRuntime/CommandLine.hxx"
 
-int AnemoneMain(int argc, char** argv);
+inline int AnemoneMain(int argc, char** argv);
+
+inline void EntryPoint_Initialize(int argc, char** argv)
+{
+    Anemone::Platform::Initialize();
+    Anemone::CommandLine::Initialize(argc, argv);
+    Anemone::Application::Initialize();
+}
+
+inline void EntrypPoint_Finalize()
+{
+    Anemone::Application::Finalize();
+    Anemone::Platform::Finalize();
+}
 
 #if ANEMONE_PLATFORM_WINDOWS && defined(ANEMONE_APPLICATION_UI)
 
@@ -32,14 +45,29 @@ int WINAPI WinMain(
     [[maybe_unused]] _In_ LPSTR lpCmdLine,
     [[maybe_unused]] _In_ int nShowCmd)
 {
-    return AnemoneMain(__argc, __argv);
+    int argc = __argc;
+    char** argv = __argv;
+
+    EntryPoint_Initialize(argc, argv);
+
+    int const result = AnemoneMain(argc, argv);
+
+    EntrypPoint_Finalize();
+
+    return result;
 }
 
 #else
 
 int main(int argc, char** argv)
 {
-    return AnemoneMain(argc, argv);
+    EntryPoint_Initialize(argc, argv);
+
+    int const result = AnemoneMain(argc, argv);
+
+    EntrypPoint_Finalize();
+
+    return result;
 }
 
 #endif
