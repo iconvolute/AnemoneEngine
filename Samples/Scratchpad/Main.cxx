@@ -153,6 +153,8 @@ public:
         {
             fmt::println("  {} {}", ptr, name);
         });
+
+        AE_ASSERT(false);
     }
 
     void OnMouseButtonUp(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
@@ -275,10 +277,11 @@ anemone_noinline void test()
 
 int AnemoneMain(int argc, char** argv)
 {
-    Anemone::Platform::Initialize();
-    Anemone::CommandLine::Initialize(argc, argv);
-    Anemone::Application::Initialize();
     Anemone::Application::SetEvents(&eh);
+
+#if ANEMONE_PLATFORM_WINDOWS
+    fmt::println("online: {}", Anemone::Environment::IsOnline());
+#endif
 
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
     {
@@ -365,10 +368,6 @@ int AnemoneMain(int argc, char** argv)
             Anemone::Application::ProcessMessages();
         }
     }
-
-    Anemone::Application::Finalize();
-    Anemone::Platform::Finalize();
-
 
 #if false
     Execute([&]
