@@ -1,12 +1,8 @@
-#include "AnemoneRuntime/Platform/Platform.hxx"
-
-ANEMONE_EXTERNAL_HEADERS_BEGIN
+#include "AnemoneRuntime/Platform/EntryPoint.hxx"
 
 #include <catch_amalgamated.hpp>
 
-ANEMONE_EXTERNAL_HEADERS_END
-
-int main(int argc, char* argv[])
+int AnemoneMain(int argc, char* argv[])
 {
     /// Anemone::Platform::Internal::Initialize(argc, argv);
 

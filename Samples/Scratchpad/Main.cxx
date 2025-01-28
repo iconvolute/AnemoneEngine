@@ -273,21 +273,10 @@ anemone_noinline void test()
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
 }
 
-#if !ANEMONE_PLATFORM_WINDOWS
-
-int WINAPI WinMain(
-    [[maybe_unused]] _In_ HINSTANCE hInstance,
-    [[maybe_unused]] _In_opt_ HINSTANCE hPrevInstance,
-    [[maybe_unused]] _In_ LPSTR lpCmdLine,
-    [[maybe_unused]] _In_ int nShowCmd)
-#else
-int main(
-    [[maybe_unused]] int argc,
-    [[maybe_unused]] char* argv[])
-#endif
+int AnemoneMain(int argc, char** argv)
 {
     Anemone::Platform::Initialize();
-    Anemone::CommandLine::Initialize(__argc, __argv);
+    Anemone::CommandLine::Initialize(argc, argv);
     Anemone::Application::Initialize();
     Anemone::Application::SetEvents(&eh);
 

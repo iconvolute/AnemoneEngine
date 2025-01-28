@@ -346,20 +346,56 @@ function(anemone_add_module target_name)
 
 endfunction()
 
-function(anemone_add_executable target_name)
+function(_anemone_add_executable target_name)
     add_executable(${target_name})
     _anemone_target_add_options(${target_name})
     _anemone_target_enable_warnings(${target_name})
     _anemone_target_install(${target_name})
     _anemone_target_add_includes(${target_name})
+    
+    target_compile_definitions(${target_name}
+        PRIVATE
+            "ANEMONE_APPLICATION"
+    )
+
+endfunction()
+
+
+function(anemone_add_ui_executable target_name)
+    _anemone_add_executable(${target_name})
+
+    if (WIN32)
+    set_target_properties(${target_name}
+        PROPERTIES
+            WIN32_EXECUTABLE TRUE
+    )
+    endif()
+    
+    target_compile_definitions(${target_name}
+        PRIVATE
+            "ANEMONE_APPLICATION_UI"
+    )
+
+endfunction()
+
+function(anemone_add_console_executable target_name)
+    _anemone_add_executable(${target_name})
+
+    target_compile_definitions(${target_name}
+        PRIVATE
+            "ANEMONE_APPLICATION_CONSOLE"
+    )
+
 endfunction()
 
 function(anemone_add_test target_name)
-    add_executable(${target_name})
-    _anemone_target_add_options(${target_name})
-    _anemone_target_enable_warnings(${target_name})
-    _anemone_target_install(${target_name})
-    _anemone_target_add_includes(${target_name})
+    _anemone_add_executable(${target_name})
+    
+    target_compile_definitions(${target_name}
+        PRIVATE
+            "ANEMONE_APPLICATION_CONSOLE"
+            "ANEMONE_APPLICATION_TEST"
+    )
 
     add_test(
         NAME ${target_name}

@@ -33,11 +33,15 @@ namespace Anemone::Diagnostics
         });
 
         // TODO: Flush any log messages.
+
+        // TODO: Re-enable once we will be sure that it also works on linux
+#if false
         if (Debugger::Attach())
         {
             // Debugger is attached. Continue execution.
             return true;
         }
+#endif
 
 #if ANEMONE_BUILD_SHIPPING
         // Always execute breakpoint in shipping builds. It will propagate to the crash handler.
@@ -65,6 +69,10 @@ namespace Anemone::Diagnostics
             Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
+
+        // TODO: Re-enable once we will be sure that it also works on linux
+#if false
         Debugger::Attach();
+#endif
     }
 }
