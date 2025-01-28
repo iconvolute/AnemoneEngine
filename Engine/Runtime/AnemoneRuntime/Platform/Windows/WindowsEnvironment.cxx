@@ -507,4 +507,18 @@ namespace Anemone
     {
         return GetStdHandle(STD_OUTPUT_HANDLE) != nullptr;
     }
+
+    bool WindowsEnvironment::IsOnline()
+    {
+        VARIANT_BOOL connected = VARIANT_FALSE;
+        HRESULT const hr = Internal::GWindowsPlatformStatics->NetworkListManager->get_IsConnectedToInternet(&connected);
+
+        if (SUCCEEDED(hr))
+        {
+            return connected != VARIANT_FALSE;
+        }
+
+        // Assume offline.
+        return false;
+    }
 }

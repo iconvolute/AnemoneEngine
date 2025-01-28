@@ -4,8 +4,11 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 
 #include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
 #include <string>
+#include <wrl/client.h>
+#include <netlistmgr.h>
 
 // *** NOTE ***
 // This file should be included only in the Windows platform implementation files.
@@ -37,6 +40,8 @@ namespace Anemone::Internal
         std::string DeviceManufacturer{};
         std::string DeviceName{};
         std::string DeviceVersion{};
+
+        Microsoft::WRL::ComPtr<INetworkListManager> NetworkListManager{};
     };
 
     extern UninitializedObject<WindowsPlatformStatics> GWindowsPlatformStatics;

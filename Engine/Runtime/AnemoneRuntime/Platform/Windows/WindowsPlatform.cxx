@@ -301,6 +301,20 @@ namespace Anemone
         Internal::GWindowsPlatformStatics->ApplicationStartupTime = Environment::GetCurrentDateTime();
         Internal::GWindowsPlatformStatics->Processor = Internal::DetermineProcessorProperties();
 
+        // Setup network list manager.
+        {
+            HRESULT const hr = CoCreateInstance(
+                CLSID_NetworkListManager,
+                nullptr,
+                CLSCTX_ALL,
+                IID_PPV_ARGS(Internal::GWindowsPlatformStatics->NetworkListManager.GetAddressOf()));
+
+            if (FAILED(hr))
+            {
+                Debugger::ReportApplicationStop("Failed to initialize network list manager.");
+            }
+        }
+
         Interop::win32_string_buffer<wchar_t, 512> buffer{};
 
         if (Interop::win32_GetSystemDirectory(buffer))
@@ -417,6 +431,8 @@ namespace Anemone
 
     void WindowsPlatform::Finalize()
     {
+        Internal::GWindowsPlatformStatics->NetworkListManager = nullptr;
+
         if (WSACleanup() != 0)
         {
             Debugger::ReportApplicationStop("Failed to finalize networking.");

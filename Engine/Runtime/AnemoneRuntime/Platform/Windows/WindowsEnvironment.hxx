@@ -55,6 +55,8 @@ namespace Anemone
 
         // Returns the value indicating if console output is redirected.
         static RUNTIME_API bool IsConsoleRedirecting();
+
+        static RUNTIME_API bool IsOnline();
     };
 
     using Environment = WindowsEnvironment;
