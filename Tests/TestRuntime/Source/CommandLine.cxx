@@ -193,4 +193,18 @@ TEST_CASE("Command Line - Parsing")
         CHECK(params[0].first == "name1");
         CHECK(params[0].second == "value of 1 positional2 --name2=");
     }
+
+    SECTION("Positional with quote")
+    {
+        std::vector<std::string_view> positional{};
+        std::vector<std::string_view> options{};
+        std::vector<std::pair<std::string_view, std::string_view>> params{};
+
+        CommandLine::Parse(R"(positional1"with \"terminated\" quote")", positional, options, params);
+
+        REQUIRE(positional.size() == 1);
+        CHECK(positional[0] == R"(positional1"with \"terminated\" quote")");
+        CHECK(options.empty());
+        CHECK(params.empty());
+    }
 }

@@ -121,11 +121,11 @@ namespace Anemone
         bool escaped = false;
 
         auto it = s.begin();
-        auto end = s.end();
+        auto const end = s.end();
 
         while (it != end)
         {
-            char ch = *it;
+            char const ch = *it;
 
             if (quoted)
             {
@@ -133,7 +133,6 @@ namespace Anemone
                 if (ch == '\\')
                 {
                     escaped = true;
-                    ++it;
                 }
                 else if (ch == '\"')
                 {
@@ -142,7 +141,6 @@ namespace Anemone
                     {
                         // Escaped quote. Continue parsing.
                         escaped = false;
-                        ++it;
                     }
                     else
                     {
@@ -153,8 +151,6 @@ namespace Anemone
                         break;
                     }
                 }
-
-                ++it;
             }
             else
             {
@@ -171,8 +167,9 @@ namespace Anemone
                     quoted = true;
                 }
 
-                ++it;
             }
+
+            ++it;
         }
 
         std::string_view result{s.begin(), it};
