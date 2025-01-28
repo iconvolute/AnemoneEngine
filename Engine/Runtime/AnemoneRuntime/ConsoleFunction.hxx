@@ -1,6 +1,5 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Detect.hxx"
-#include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/FunctionRef.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 
@@ -63,10 +62,10 @@ namespace Anemone
             return this->m_name;
         }
 
-        virtual void Execute(CommandlineParser const& arguments) = 0;
+        virtual void Execute(std::string_view args) = 0;
     };
 
-    template <typename CallbackT = void(CommandlineParser const&)>
+    template <typename CallbackT = void(std::string_view args)>
     class ConsoleFunction final : public IConsoleFunction
     {
     private:
@@ -75,13 +74,13 @@ namespace Anemone
     public:
         explicit ConsoleFunction(std::string_view name, CallbackT&& callback)
             : IConsoleFunction{name}
-            , m_callback{std::forward<CallbackT>(callback)}
+            , m_callback{std::move(callback)}
         {
         }
 
-        void Execute(CommandlineParser const& arguments) override
+        void Execute(std::string_view args) override
         {
-            this->m_callback(arguments);
+            this->m_callback(args);
         }
     };
 }
