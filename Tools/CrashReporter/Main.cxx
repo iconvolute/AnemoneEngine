@@ -273,7 +273,7 @@ void LogZmmRegister(size_t index, M512 const& value) noexcept
 #if defined(_M_ARM64)
 void LogNeonRegister(size_t index, ARM64_NT_NEON128 const& value) noexcept
 {
-    std::println("  V:{:<7} {:016X} {:016X}",
+    std::println("  V{:<7} {:016X} {:016X}",
         index,
         static_cast<uint64_t>(value.High),
         static_cast<uint64_t>(value.Low));
@@ -360,7 +360,7 @@ void PrintContext(HANDLE hProcess, CrashDetails const& context)
     {
         for (size_t i = 0; i < 32; ++i)
         {
-            LogNeonRegister(0, context.Context.V[i]);
+            LogNeonRegister(i, context.Context.V[i]);
         }
 
         LogRegister64("FPCR", context.Context.Fpcr);

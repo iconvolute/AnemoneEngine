@@ -277,6 +277,8 @@ anemone_noinline void test()
 
 int AnemoneMain(int argc, char** argv)
 {
+    (void)argc;
+    (void)argv;
     Anemone::Application::SetEvents(&eh);
 
 #if ANEMONE_PLATFORM_WINDOWS
