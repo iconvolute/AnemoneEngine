@@ -10,7 +10,7 @@ TEST_CASE("RectF")
     {
         SECTION("From bounds")
         {
-            RectF const r = RectF::CreateBounds(1.0f, 2.0f, 4.0f, 7.0f);
+            RectF const r = RectF::FromBounds(1.0f, 2.0f, 4.0f, 7.0f);
 
             CHECK(r.Left() == 1.0f);
             CHECK(r.Top() == 2.0f);

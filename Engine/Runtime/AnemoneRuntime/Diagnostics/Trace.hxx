@@ -2,7 +2,6 @@
 #include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <string_view>
 #include <fmt/format.h>
@@ -40,7 +39,7 @@ namespace Anemone
 
     public:
         virtual void TraceEvent(TraceLevel level, const char* message, size_t size) = 0;
-        virtual void Flush();
+        virtual void Flush() { }
     };
 }
 
@@ -49,7 +48,6 @@ namespace Anemone
     class Trace final
     {
     public:
-
         static constexpr bool CanDispatch(TraceLevel level)
         {
 #if ANEMONE_BUILD_SHIPPING

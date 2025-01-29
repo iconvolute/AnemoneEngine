@@ -106,9 +106,19 @@ namespace Anemone::Interop
             this->trim(value.size());
         }
 
+        constexpr explicit win32_string_buffer(const char* value, size_t length)
+        {
+            this->resize_for_override(length + 1);
+            std::copy(value, value + length, this->m_Data);
+            this->trim(length);
+        }
+
         win32_string_buffer(win32_string_buffer const&) = delete;
+
         win32_string_buffer(win32_string_buffer&&) = delete;
+
         win32_string_buffer& operator=(win32_string_buffer const&) = delete;
+
         win32_string_buffer& operator=(win32_string_buffer&&) = delete;
 
         ~win32_string_buffer() noexcept = default;
@@ -171,6 +181,11 @@ namespace Anemone::Interop
         [[nodiscard]] constexpr size_t capacity() const noexcept
         {
             return this->m_Capacity;
+        }
+
+        [[nodiscard]] constexpr size_t size() const noexcept
+        {
+            return this->m_Size;
         }
 
         [[nodiscard]] constexpr operator const CharT*() const noexcept
@@ -1423,5 +1438,12 @@ namespace Anemone::Interop
     {
         PIMAGE_NT_HEADERS const ntHeaders = win32_GetImageNtHeaders(h);
         return (ntHeaders->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI);
+    }
+
+    // HARD REQUIREMENT: Buffer must be zero terminated!
+    anemone_forceinline void win32_OutputDebugString(const char* s, size_t n)
+    {
+        ULONG_PTR const args[2] = {n, reinterpret_cast<ULONG_PTR>(s)};
+        RaiseException(DBG_PRINTEXCEPTION_C, 0, 2, args);
     }
 }

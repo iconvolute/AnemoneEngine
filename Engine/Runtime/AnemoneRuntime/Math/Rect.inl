@@ -53,7 +53,7 @@ namespace Anemone::Math
     {
         if (points.empty())
         {
-            return RectF::CreateNaN();
+            return RectF::NaN();
         }
 
         float minX = points[0].X;
@@ -70,7 +70,7 @@ namespace Anemone::Math
             maxY = std::max(points[i].Y, maxY);
         }
 
-        return RectF::CreateBounds(minX, minY, maxX, maxY);
+        return RectF::FromBounds(minX, minY, maxX, maxY);
     }
 
     constexpr float RectF::Left() const

@@ -235,6 +235,11 @@ namespace Anemone::Internal
 
         LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
         {
+            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
+            {
+                return EXCEPTION_CONTINUE_EXECUTION;
+            }
+
             Debugger::HandleCrash(lpExceptionPointers);
             return EXCEPTION_CONTINUE_SEARCH;
         }

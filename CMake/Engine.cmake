@@ -242,6 +242,7 @@ function(_anemone_target_enable_warnings target_name)
                     /wd5267 # definition of implicit assignment operator for is deprecated because it has a user-provided destructor
                     /wd4324 # structure was padded due to alignment specifier
                     /wd4746 # volatile access of '<expression>' is subject to /volatile:[iso|ms] setting; consider using __iso_volatile_load/store intrinsic functions.
+                    /wd5030 # attribute [[xxx]] is not recognized
             )
         else()
             #target_compile_options(

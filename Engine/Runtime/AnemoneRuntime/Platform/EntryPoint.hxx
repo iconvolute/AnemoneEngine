@@ -20,6 +20,7 @@ extern "C"
 #include "AnemoneRuntime/Platform/Platform.hxx"
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/CommandLine.hxx"
+#include "AnemoneRuntime/Platform/PlatformTraceListeners.hxx"
 
 inline int AnemoneMain(int argc, char** argv);
 
@@ -27,12 +28,14 @@ inline void EntryPoint_Initialize(int argc, char** argv)
 {
     Anemone::Platform::Initialize();
     Anemone::CommandLine::Initialize(argc, argv);
+    Anemone::PlatformTraceListeners::Initialize();
     Anemone::Application::Initialize();
 }
 
 inline void EntrypPoint_Finalize()
 {
     Anemone::Application::Finalize();
+    Anemone::PlatformTraceListeners::Finalize();
     Anemone::Platform::Finalize();
 }
 

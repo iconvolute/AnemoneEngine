@@ -32,6 +32,9 @@ target_sources(AnemoneRuntime
         "WindowsPlatform.cxx"
         "WindowsPlatform.hxx"
 
+        "WindowsPlatformTraceListeners.cxx"
+        "WindowsPlatformTraceListeners.hxx"
+
         "WindowsProcess.cxx"
         "WindowsProcess.hxx"
 

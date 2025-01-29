@@ -21,7 +21,7 @@ namespace Anemone
 {
     template <typename LockT>
         requires(UniqueLockable<LockT>)
-    class [[nodiscard]] UniqueLock final
+    class [[nodiscard, jetbrains::guard]] UniqueLock final
     {
     private:
         LockT& _lock;
@@ -47,7 +47,7 @@ namespace Anemone
 
     template <typename LockT>
         requires(SharedLockable<LockT>)
-    class [[nodiscard]] SharedLock final
+    class [[nodiscard, jetbrains::guard]] SharedLock final
     {
     private:
         LockT& _lock;
