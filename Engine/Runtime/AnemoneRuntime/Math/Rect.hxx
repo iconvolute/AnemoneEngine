@@ -1,5 +1,4 @@
 #pragma once
-#include <compare>
 #include <span>
 
 namespace Anemone::Math
@@ -18,14 +17,16 @@ namespace Anemone::Math
         [[nodiscard]] constexpr bool operator==(RectF const& other) const = default;
         [[nodiscard]] constexpr bool operator!=(RectF const& other) const = default;
 
-        [[nodiscard]] constexpr static RectF Create(float x, float y, float width, float height);
-        [[nodiscard]] constexpr static RectF Create(float x, float y, float size);
-        [[nodiscard]] constexpr static RectF CreateBounds(float left, float top, float right, float bottom);
-        [[nodiscard]] constexpr static RectF Create(PointF p1, PointF p2);
-        [[nodiscard]] constexpr static RectF Create(PointF location, SizeF size);
-        [[nodiscard]] constexpr static RectF CreateCentered(PointF center, SizeF size);
-        [[nodiscard]] constexpr static RectF CreateEmpty();
-        [[nodiscard]] constexpr static RectF CreateNaN();
+        [[nodiscard]] constexpr static RectF FromLocationSize(float x, float y, float width, float height);
+        [[nodiscard]] constexpr static RectF FromLocationSize(float x, float y, float size);
+        [[nodiscard]] constexpr static RectF FromBounds(float left, float top, float right, float bottom);
+        [[nodiscard]] constexpr static RectF FromPoints(PointF p1, PointF p2);
+        [[nodiscard]] constexpr static RectF FromLocationSize(PointF location, SizeF size);
+        [[nodiscard]] constexpr static RectF FromCenterSize(PointF location, SizeF size);
+        [[nodiscard]] constexpr static RectF Empty();
+        [[nodiscard]] constexpr static RectF NaN();
+
+        [[nodiscard]] constexpr static RectF FromPoints(std::span<PointF const> points);
 
         [[nodiscard]] constexpr float Left() const;
         [[nodiscard]] constexpr float Top() const;

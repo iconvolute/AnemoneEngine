@@ -1,5 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Math/Rect.hxx"
+#include <algorithm>
+
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Thickness.hxx"
@@ -7,45 +8,69 @@
 
 namespace Anemone::Math
 {
-    constexpr RectF RectF::Create(float x, float y, float width, float height)
+    constexpr RectF RectF::FromLocationSize(float x, float y, float width, float height)
     {
         return {x, y, width, height};
     }
 
-    constexpr RectF RectF::Create(float x, float y, float size)
+    constexpr RectF RectF::FromLocationSize(float x, float y, float size)
     {
         return {x, y, size, size};
     }
 
-    constexpr RectF RectF::CreateBounds(float left, float top, float right, float bottom)
+    constexpr RectF RectF::FromBounds(float left, float top, float right, float bottom)
     {
         return {left, top, right - left, bottom - top};
     }
 
-    constexpr RectF RectF::Create(PointF p1, PointF p2)
+    constexpr RectF RectF::FromPoints(PointF p1, PointF p2)
     {
         return {p1.X, p1.Y, p2.X - p1.X, p2.Y - p1.Y};
     }
 
-    constexpr RectF RectF::Create(PointF location, SizeF size)
+    constexpr RectF RectF::FromLocationSize(PointF location, SizeF size)
     {
         return {location.X, location.Y, size.Width, size.Height};
     }
 
-    constexpr RectF RectF::CreateCentered(PointF location, SizeF size)
+    constexpr RectF RectF::FromCenterSize(PointF location, SizeF size)
     {
         return {location.X - (size.Width / 2.0f), location.Y - (size.Height / 2.0f), size.Width, size.Height};
     }
 
-    constexpr RectF RectF::CreateEmpty()
+    constexpr RectF RectF::Empty()
     {
         return {};
     }
 
-    constexpr RectF RectF::CreateNaN()
+    constexpr RectF RectF::NaN()
     {
         float const nan = std::numeric_limits<float>::quiet_NaN();
         return {nan, nan, nan, nan};
+    }
+
+    constexpr RectF RectF::FromPoints(std::span<const PointF> points)
+    {
+        if (points.empty())
+        {
+            return RectF::CreateNaN();
+        }
+
+        float minX = points[0].X;
+        float minY = points[0].Y;
+
+        float maxX = minX;
+        float maxY = minY;
+
+        for (size_t i = 1; i < points.size(); ++i)
+        {
+            minX = std::min(points[i].X, minX);
+            minY = std::min(points[i].Y, minY);
+            maxX = std::max(points[i].X, maxX);
+            maxY = std::max(points[i].Y, maxY);
+        }
+
+        return RectF::CreateBounds(minX, minY, maxX, maxY);
     }
 
     constexpr float RectF::Left() const
@@ -178,19 +203,33 @@ namespace Anemone::Math
 
     constexpr RectF Intersect(RectF self, RectF other)
     {
-        RectF result{};
+        float const rightSelf = self.X + self.Width;
+        float const rightOther = other.X + other.Width;
 
-        float const x1 = Max(self.X, other.X);
-        float const x2 = Min(self.X + self.Width, other.X + other.Width);
-        float const y1 = Max(self.Y, other.Y);
-        float const y2 = Min(self.Y + self.Height, other.Y + other.Height);
+        float const bottomSelf = self.Y + self.Height;
+        float const bottomOther = other.Y + other.Height;
 
-        if ((x2 >= x1) && (y2 >= y1))
+        float const maxX = (self.X > other.X) ? self.X : other.X;
+        float const maxY = (self.Y > other.Y) ? self.Y : other.Y;
+
+        float const minX = (rightSelf < rightOther) ? rightSelf : rightOther;
+        float const minY = (bottomSelf < bottomOther) ? bottomSelf : bottomOther;
+
+        RectF result;
+
+        if ((minX > maxX) and (minY > maxY))
         {
-            result.X = x1;
-            result.Y = y1;
-            result.Width = x2 - x1;
-            result.Height = y2 - y1;
+            result.X = maxX;
+            result.Y = maxY;
+            result.Width = minX - maxX;
+            result.Height = minY - maxY;
+        }
+        else
+        {
+            result.X = 0.0f;
+            result.Y = 0.0f;
+            result.Width = 0.0f;
+            result.Height = 0.0f;
         }
 
         return result;
@@ -203,12 +242,19 @@ namespace Anemone::Math
 
     constexpr RectF Union(RectF self, RectF other)
     {
-        float const x1 = Min(self.X, other.X);
-        float const x2 = Max(self.X + self.Width, other.X + other.Width);
-        float const y1 = Min(self.Y, other.Y);
-        float const y2 = Max(self.Y + self.Height, other.Y + other.Height);
+        float const minX = (self.X < other.X) ? self.X : other.X;
+        float const minY = (self.Y < other.Y) ? self.Y : other.Y;
 
-        return RectF{x1, y1, x2 - x1, y2 - y1};
+        float const rightSelf = self.X + self.Width;
+        float const rightOther = other.X + other.Width;
+        float const maxX = (rightSelf > rightOther) ? rightSelf : rightOther;
+
+        float const bottomSelf = self.Y + self.Height;
+        float const bottomOther = other.Y + other.Height;
+
+        float const maxY = (bottomSelf > bottomOther) ? bottomSelf : bottomOther;
+
+        return RectF{minX, minY, maxX - minX, maxY - minY};
     }
 
     constexpr RectF Transpose(RectF self)
