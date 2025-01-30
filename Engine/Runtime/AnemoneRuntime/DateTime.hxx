@@ -54,7 +54,7 @@ namespace Anemone
         [[nodiscard]] RUNTIME_API DateTimeMembers ToMembers() const;
     };
 
-    inline constexpr DateTime UnixEpoch{.Inner{.Seconds = 62135596800}};
+    inline constexpr DateTime UnixEpoch{.Inner{.Seconds = 62135596800, .Nanoseconds = 0}};
 
     [[nodiscard]] RUNTIME_API bool ToString(std::string& result, DateTimeMembers const& value, std::string_view format);
 

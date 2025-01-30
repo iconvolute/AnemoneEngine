@@ -417,7 +417,7 @@ namespace Anemone::Math
         };
     }
 
-    Float3 InsideUnitCircle(Random& generator)
+    Float2 InsideUnitCircle(Random& generator)
     {
         auto [r, t] = NextFloat2(generator);
 
@@ -432,7 +432,7 @@ namespace Anemone::Math
         };
     }
 
-    Float3 OnUnitCircle(Random& generator)
+    Float2 OnUnitCircle(Random& generator)
     {
         float const theta = generator.NextFloat(Pi2<float>);
 

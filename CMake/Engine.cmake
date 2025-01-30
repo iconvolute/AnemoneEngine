@@ -7,7 +7,7 @@ endif()
 function(_anemone_target_add_options target_name)
     target_compile_definitions(${target_name}
         # Platform
-        PRIVATE            
+        PRIVATE
             $<$<BOOL:${ANEMONE_PLATFORM_WINDOWS}>:-DANEMONE_PLATFORM_WINDOWS=1>
             $<$<BOOL:${ANEMONE_PLATFORM_LINUX}>:-DANEMONE_PLATFORM_LINUX=1>
             $<$<BOOL:${ANEMONE_PLATFORM_ANDROID}>:-DANEMONE_PLATFORM_ANDROID=1>
@@ -245,28 +245,30 @@ function(_anemone_target_enable_warnings target_name)
                     /wd5030 # attribute [[xxx]] is not recognized
             )
         else()
-            #target_compile_options(
-            #    ${target_name}
-            #    PRIVATE
-            #        -Wall
-            #        -Wextra
-            #        -Weverything
-            #        -Wno-trigraphs
-            #        -Wno-c++98-compat
-            #        -Wno-c++20-compat
-            #        -Wno-c++98-compat-pedantic
-            #        -Wno-pre-c++14-compat
-            #        -Wno-pre-c++17-compat
-            #        -Wno-pre-c++20-compat
-            #        -Wno-padded
-            #        -Wno-missing-variable-declarations
-            #        -Wno-float-equal
-            #        -Wno-unsafe-buffer-usage
-            #        -Wno-documentation-unknown-command
-            #        -Wno-switch-default
-            #        -Wno-double-promotion
-            #        -Wno-undefined-func-template
-            #)
+            target_compile_options(
+                ${target_name}
+                PRIVATE
+                    -Wall
+                    -Wextra
+                    #-Weverything
+                    #-Wno-trigraphs
+                    #-Wno-c++98-compat
+                    #-Wno-c++20-compat
+                    #-Wno-c++98-compat-pedantic
+                    #-Wno-pre-c++14-compat
+                    #-Wno-pre-c++17-compat
+                    #-Wno-pre-c++20-compat
+                    #-Wno-padded
+                    #-Wno-missing-variable-declarations
+                    #-Wno-float-equal
+                    #-Wno-unsafe-buffer-usage
+                    #-Wno-documentation-unknown-command
+                    #-Wno-switch-default
+                    #-Wno-double-promotion
+                    #-Wno-undefined-func-template
+                    -Wno-attributes
+                    -Wno-missing-field-initializers
+            )
         endif()
     endif()
 
@@ -353,7 +355,7 @@ function(_anemone_add_executable target_name)
     _anemone_target_enable_warnings(${target_name})
     _anemone_target_install(${target_name})
     _anemone_target_add_includes(${target_name})
-    
+
     target_compile_definitions(${target_name}
         PRIVATE
             "ANEMONE_APPLICATION"
@@ -371,7 +373,7 @@ function(anemone_add_ui_executable target_name)
             WIN32_EXECUTABLE TRUE
     )
     endif()
-    
+
     target_compile_definitions(${target_name}
         PRIVATE
             "ANEMONE_APPLICATION_UI"
@@ -391,7 +393,7 @@ endfunction()
 
 function(anemone_add_test target_name)
     _anemone_add_executable(${target_name})
-    
+
     target_compile_definitions(${target_name}
         PRIVATE
             "ANEMONE_APPLICATION_CONSOLE"

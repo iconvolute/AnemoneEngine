@@ -40,7 +40,9 @@ namespace Anemone
 {
     void* LinuxSystemAllocator::ReserveUncommitted(size_t size, bool writable, bool executable)
     {
-        void* result = mmap(nullptr, size, PROT_NONE, MAP_NORESERVE | MAP_PRIVATE | MAP_ANON, -1, 0);
+        int const protection = Internal::ToPosixProtection(writable, executable);
+
+        void* result = mmap(nullptr, size, protection, MAP_NORESERVE | MAP_PRIVATE | MAP_ANON, -1, 0);
 
         if (result == MAP_FAILED)
         {
@@ -88,7 +90,7 @@ namespace Anemone
         int const protection = Internal::ToPosixProtection(writable, executable);
         int const flags = MAP_PRIVATE | MAP_ANON;
 
-        void* result = mmap(result, size, protection, flags, -1, 0);
+        void* result = mmap(nullptr, size, protection, flags, -1, 0);
 
         if (result == MAP_FAILED)
         {

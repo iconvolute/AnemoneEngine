@@ -126,6 +126,11 @@ namespace Anemone::System
         posix_spawn_file_actions_t files{};
         posix_spawn_file_actions_init(&files);
 
+        if (workingDirectory)
+        {
+            posix_spawn_file_actions_addchdir_np(&files, std::string{*workingDirectory}.c_str());
+        }
+
         if (redirectInput or redirectOutput or redirectError)
         {
             if (redirectInput)

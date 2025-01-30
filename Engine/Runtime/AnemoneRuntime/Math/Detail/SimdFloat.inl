@@ -8356,8 +8356,6 @@ namespace Anemone::Math::Detail
         float32x4_t const qz_qz_qy_qx = vcombine_f32(qz_qz, qy_qx);
         // = [2x, 2y]
         float32x2_t const q2x_q2y = vget_low_f32(q2x_q2y_q2z_q2w);
-        // = [2z, 2w]
-        float32x2_t const q2z_q2w = vget_high_f32(q2x_q2y_q2z_q2w);
         // = [2y, 2x]
         float32x2_t const q2y_q2x = vrev64_f32(q2x_q2y);
         // = [2y, 2x, 2x, 2y]
@@ -8572,12 +8570,8 @@ namespace Anemone::Math::Detail
         // = [cr, sr]
         float32x2_t const cr_sr = vrev64_f32(sr_cr);
 
-        // = [cp, cp, cr, cp]
-        float32x4_t const cp_cp_cr_cp = vcombine_f32(cp_cp, cr_cp);
         // = [cp, sr, cr, cp]
         float32x4_t const cp_sr_cr_cp = vcombine_f32(cp_sr, cr_cp);
-        // = [cp, cp, cp, cy]
-        float32x4_t const cp_cp_cp_cy = vcombine_f32(cp_cp, cp_cy);
         // = [sy, cp, cp, cy]
         float32x4_t const sy_cp_cp_cy = vcombine_f32(sy_cp, cp_cy);
         // = [cr, sr, cr, sr]

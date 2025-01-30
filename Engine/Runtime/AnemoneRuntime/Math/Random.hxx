@@ -95,8 +95,8 @@ namespace Anemone::Math
     [[nodiscard]] RUNTIME_API Float3 InsideUnitSphere(Random& generator);
     [[nodiscard]] RUNTIME_API Float3 OnUnitSphere(Random& generator);
 
-    [[nodiscard]] RUNTIME_API Float3 InsideUnitCircle(Random& generator);
-    [[nodiscard]] RUNTIME_API Float3 OnUnitCircle(Random& generator);
+    [[nodiscard]] RUNTIME_API Float2 InsideUnitCircle(Random& generator);
+    [[nodiscard]] RUNTIME_API Float2 OnUnitCircle(Random& generator);
 
     [[nodiscard]] inline Math::Vector3F NextVector3F(Random& generator)
     {
