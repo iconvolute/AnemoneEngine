@@ -22,7 +22,7 @@ namespace Anemone::System::Private
 
     static DirectoryEntry FromNative(std::string_view root, WIN32_FIND_DATAW const& wfd)
     {
-        Interop::win32_string_buffer<char, 512> narrow{};
+        Interop::string_buffer<char, 512> narrow{};
         Interop::win32_NarrowString(narrow, wfd.cFileName);
 
         std::string path{root};

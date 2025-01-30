@@ -293,7 +293,7 @@ namespace Anemone
 
     void WindowsWindow::SetTitle(std::string_view value)
     {
-        Interop::win32_string_buffer<wchar_t, 128> wTitle{};
+        Interop::string_buffer<wchar_t, 128> wTitle{};
         Interop::win32_WidenString(wTitle, value);
 
         SetWindowTextW(this->m_windowHandle, wTitle.data());

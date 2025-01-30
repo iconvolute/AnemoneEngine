@@ -222,7 +222,7 @@ namespace Anemone::Internal
             }
 
             // Query CPU name from registry
-            Interop::win32_string_buffer<wchar_t, 128> buffer{};
+            Interop::string_buffer<wchar_t, 128> buffer{};
 
             Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(ProcessorNameString)");
             Interop::win32_NarrowString(result.Name, buffer.as_view());
@@ -320,7 +320,7 @@ namespace Anemone
             }
         }
 
-        Interop::win32_string_buffer<wchar_t, 512> buffer{};
+        Interop::string_buffer<wchar_t, 512> buffer{};
 
         if (Interop::win32_GetSystemDirectory(buffer))
         {

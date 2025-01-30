@@ -1,4 +1,5 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"

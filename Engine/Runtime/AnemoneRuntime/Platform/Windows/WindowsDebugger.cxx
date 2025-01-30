@@ -99,7 +99,7 @@ namespace Anemone
 
     void WindowsDebugger::ReportApplicationStop(std::string_view reason)
     {
-        Interop::win32_string_buffer<wchar_t, 128> buffer{};
+        Interop::string_buffer<wchar_t, 128> buffer{};
         Interop::win32_WidenString(buffer, reason);
 
         MessageBoxW(

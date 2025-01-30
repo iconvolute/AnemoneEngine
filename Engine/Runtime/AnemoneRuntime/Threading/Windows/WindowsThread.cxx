@@ -92,7 +92,7 @@ namespace Anemone
 
         if (start.Name)
         {
-            Interop::win32_string_buffer<wchar_t, 128> wname{};
+            Interop::string_buffer<wchar_t, 128> wname{};
             Interop::win32_WidenString(wname, *start.Name);
 
             SetThreadDescription(this->m_native.Handle, wname);

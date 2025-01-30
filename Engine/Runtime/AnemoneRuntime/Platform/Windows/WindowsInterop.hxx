@@ -1,4 +1,5 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Duration.hxx"
@@ -6,11 +7,6 @@
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
-
-#include <span>
-#include <string_view>
-#include <cassert>
-#include <memory>
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -83,199 +79,17 @@ namespace Anemone::Interop
                    conditionMask) != FALSE;
     }
 
-    template <typename CharT, size_t StaticCapacityT>
-    class win32_string_buffer final
-    {
-    private:
-        CharT* m_Data{};
-        std::unique_ptr<CharT[]> m_Dynamic{};
-        size_t m_Capacity{StaticCapacityT};
-        size_t m_Size{};
-        CharT m_Static[StaticCapacityT];
-
-    public:
-        constexpr win32_string_buffer() noexcept
-            : m_Data{m_Static}
-        {
-        }
-
-        constexpr explicit win32_string_buffer(std::basic_string_view<CharT> value)
-        {
-            this->resize_for_override(value.size() + 1);
-            std::copy(value.begin(), value.end(), this->m_Data);
-            this->trim(value.size());
-        }
-
-        constexpr explicit win32_string_buffer(const char* value, size_t length)
-        {
-            this->resize_for_override(length + 1);
-            std::copy(value, value + length, this->m_Data);
-            this->trim(length);
-        }
-
-        win32_string_buffer(win32_string_buffer const&) = delete;
-
-        win32_string_buffer(win32_string_buffer&&) = delete;
-
-        win32_string_buffer& operator=(win32_string_buffer const&) = delete;
-
-        win32_string_buffer& operator=(win32_string_buffer&&) = delete;
-
-        ~win32_string_buffer() noexcept = default;
-
-        constexpr void resize_for_override(size_t size)
-        {
-            if (size < StaticCapacityT)
-            {
-                // Reset back to static buffer.
-                this->m_Dynamic = nullptr;
-                this->m_Data = this->m_Static;
-                this->m_Capacity = StaticCapacityT;
-                this->m_Size = size;
-            }
-            else if (size > this->m_Capacity)
-            {
-                size_t const capacity = size;
-
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity);
-                this->m_Data = this->m_Dynamic.get();
-                this->m_Capacity = capacity;
-                this->m_Size = size;
-            }
-        }
-
-        constexpr void resize(size_t size)
-        {
-            // Test if need to copy data from static to dynamic buffer
-            if (size > StaticCapacityT)
-            {
-                size_t const capacity = size;
-
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity);
-                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Dynamic.get());
-                this->m_Data = this->m_Dynamic.get();
-                this->m_Capacity = capacity;
-            }
-            // Test if need to copy data from dynamic to static buffer
-            else if (this->m_Dynamic and (size <= StaticCapacityT))
-            {
-                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Static);
-                this->m_Dynamic = nullptr;
-                this->m_Data = this->m_Static;
-                this->m_Capacity = StaticCapacityT;
-            }
-            // Trim the buffer
-            else
-            {
-                this->m_Size = size;
-            }
-        }
-
-        constexpr void trim(size_t size) noexcept
-        {
-            assert(size <= this->m_Capacity);
-            this->m_Data[size] = {};
-            this->m_Size = size;
-        }
-
-        [[nodiscard]] constexpr size_t capacity() const noexcept
-        {
-            return this->m_Capacity;
-        }
-
-        [[nodiscard]] constexpr size_t size() const noexcept
-        {
-            return this->m_Size;
-        }
-
-        [[nodiscard]] constexpr operator const CharT*() const noexcept
-        {
-            return this->m_Data;
-        }
-
-        [[nodiscard]] constexpr CharT* data() noexcept
-        {
-            return this->m_Data;
-        }
-
-        [[nodiscard]] constexpr const CharT* data() const noexcept
-        {
-            return this->m_Data;
-        }
-
-        [[nodiscard]] constexpr std::basic_string_view<CharT> as_view() const noexcept
-        {
-            return std::basic_string_view<CharT>{this->m_Data, this->m_Size};
-        }
-
-        [[nodiscard]] constexpr std::span<CharT> as_span() noexcept
-        {
-            return std::span<CharT>{this->m_Data, this->m_Size};
-        }
-
-        [[nodiscard]] constexpr std::span<CharT const> as_span() const noexcept
-        {
-            return std::span<CharT const>{this->m_Data, this->m_Size};
-        }
-
-        [[nodiscard]] constexpr std::span<CharT> as_buffer_span() noexcept
-        {
-            return std::span<CharT>{this->m_Data, this->m_Capacity};
-        }
-
-        [[nodiscard]] constexpr std::span<CharT const> as_buffer_span() const noexcept
-        {
-            return std::span<CharT const>{this->m_Data, this->m_Capacity};
-        }
-    };
-
-    template <typename StringBufferT, typename CallbackT>
-    bool win32_adapt_string_buffer(StringBufferT& buffer, CallbackT callback) noexcept
-    {
-        size_t requiredCapacity{};
-        if (not callback(buffer.as_buffer_span(), requiredCapacity))
-        {
-            buffer.trim(0);
-            return false;
-        }
-
-        if (requiredCapacity <= buffer.capacity())
-        {
-            assert(requiredCapacity != 0);
-            buffer.trim(requiredCapacity - 1);
-            return true;
-        }
-
-        size_t bufferLength{};
-        do
-        {
-            bufferLength = requiredCapacity;
-
-            buffer.resize_for_override(bufferLength);
-
-            if (not callback(buffer.as_buffer_span(), requiredCapacity))
-            {
-                buffer.trim(0);
-                return false;
-            }
-        } while (requiredCapacity > bufferLength);
-
-        assert(requiredCapacity != 0);
-        buffer.trim(requiredCapacity - 1);
-        return true;
-    }
-
-    using win32_FilePathW = win32_string_buffer<wchar_t, MAX_PATH>;
-    using win32_FilePathA = win32_string_buffer<char, MAX_PATH>;
+    using win32_FilePathW = string_buffer<wchar_t, MAX_PATH>;
+    using win32_FilePathA = string_buffer<char, MAX_PATH>;
 }
 
 namespace Anemone::Interop
 {
     template <size_t CapacityT>
-    anemone_forceinline bool win32_QueryFullProcessImageName(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_QueryFullProcessImageName(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
         HANDLE const hProcess = GetCurrentProcess();
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size());
 
@@ -337,7 +151,7 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_WidenString(win32_string_buffer<wchar_t, CapacityT>& result, std::string_view value) noexcept
+    anemone_forceinline bool win32_WidenString(string_buffer<wchar_t, CapacityT>& result, std::string_view value) noexcept
     {
         int const length = static_cast<int>(value.length());
 
@@ -425,7 +239,7 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_NarrowString(win32_string_buffer<char, CapacityT>& result, std::wstring_view value) noexcept
+    anemone_forceinline bool win32_NarrowString(string_buffer<char, CapacityT>& result, std::wstring_view value) noexcept
     {
         int const length = static_cast<int>(value.length());
 
@@ -475,9 +289,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetCurrentDirectory(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetCurrentDirectory(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
             if (DWORD const dwLength = GetCurrentDirectoryW(static_cast<DWORD>(buffer.size()), buffer.data()); dwLength != 0)
             {
@@ -509,9 +323,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetEnvironmentVariable(win32_string_buffer<wchar_t, CapacityT>& result, const wchar_t* name) noexcept
+    anemone_forceinline bool win32_GetEnvironmentVariable(string_buffer<wchar_t, CapacityT>& result, const wchar_t* name) noexcept
     {
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             SetLastError(ERROR_SUCCESS);
             DWORD dwLength = GetEnvironmentVariableW(name, buffer.data(), static_cast<DWORD>(buffer.size()));
@@ -533,7 +347,7 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_QueryRegistry(win32_string_buffer<wchar_t, CapacityT>& result, HKEY key, const wchar_t* subkey, const wchar_t* name) noexcept
+    anemone_forceinline bool win32_QueryRegistry(string_buffer<wchar_t, CapacityT>& result, HKEY key, const wchar_t* subkey, const wchar_t* name) noexcept
     {
         if ((key == nullptr) or (subkey == nullptr) or (name == nullptr))
         {
@@ -553,7 +367,7 @@ namespace Anemone::Interop
 
             if (RegOpenKeyExW(key, subkey, 0, static_cast<REGSAM>(KEY_READ | flag), &current) == ERROR_SUCCESS)
             {
-                if (win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+                if (adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
                 {
                     DWORD const dwLength = static_cast<DWORD>(buffer.size());
 
@@ -685,9 +499,9 @@ namespace Anemone::Interop
         }
 
         template <size_t CapacityT>
-        bool read_string(const wchar_t* name, win32_string_buffer<wchar_t, CapacityT>& result)
+        bool read_string(const wchar_t* name, string_buffer<wchar_t, CapacityT>& result)
         {
-            return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+            return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
                 DWORD dwType = 0;
                 DWORD dwSize = static_cast<DWORD>(buffer.size());
@@ -725,9 +539,9 @@ namespace Anemone::Interop
     };
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetSystemDirectory(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetSystemDirectory(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
             UINT const length = GetSystemDirectoryW(buffer.data(), static_cast<UINT>(buffer.size()));
 
@@ -744,9 +558,9 @@ namespace Anemone::Interop
 
     // TODO: Test this function
     template <size_t CapacityT>
-    anemone_forceinline bool GetFullPathName(win32_string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept
+    anemone_forceinline bool GetFullPathName(string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept
     {
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD const length = GetFullPathNameW(path, static_cast<DWORD>(buffer.size()), buffer.data(), nullptr);
 
@@ -762,7 +576,7 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetUserDefaultLocaleName(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetUserDefaultLocaleName(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
         std::span<wchar_t> writable = result.as_buffer_span();
         if (int const length = GetUserDefaultLocaleName(writable.data(), static_cast<int>(writable.size())); length > 0)
@@ -776,9 +590,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetComputerName(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetComputerName(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size());
             if (GetComputerNameW(buffer.data(), &dwSize))
@@ -801,9 +615,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetComputerNameExW(COMPUTER_NAME_FORMAT format, win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetComputerNameExW(COMPUTER_NAME_FORMAT format, string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size());
             if (GetComputerNameExW(format, buffer.data(), &dwSize))
@@ -826,9 +640,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetUserName(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetUserName(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
-        return win32_adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size());
             if (GetUserNameW(buffer.data(), &dwSize))
@@ -851,7 +665,7 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetTempPath(win32_string_buffer<wchar_t, CapacityT>& result) noexcept
+    anemone_forceinline bool win32_GetTempPath(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
         using Fn = decltype(&::GetTempPathW);
 
@@ -864,7 +678,7 @@ namespace Anemone::Interop
             getTempPath = &::GetTempPathW;
         }
 
-        return win32_adapt_string_buffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD const length = getTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
 
@@ -880,9 +694,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetLongPathName(win32_string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept
+    anemone_forceinline bool win32_GetLongPathName(string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept
     {
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD const length = GetLongPathNameW(path, buffer.data(), static_cast<DWORD>(buffer.size()));
 
@@ -898,9 +712,9 @@ namespace Anemone::Interop
     }
 
     template <size_t CapacityT>
-    anemone_forceinline bool win32_GetUserPreferredUILanguages(win32_string_buffer<wchar_t, CapacityT>& result, DWORD flags, ULONG& numLanguages)
+    anemone_forceinline bool win32_GetUserPreferredUILanguages(string_buffer<wchar_t, CapacityT>& result, DWORD flags, ULONG& numLanguages)
     {
-        return win32_adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             ULONG uSize = static_cast<ULONG>(buffer.size());
 
@@ -1114,6 +928,13 @@ namespace Anemone::Interop
         overlapped.Offset = li.LowPart;
         overlapped.OffsetHigh = li.HighPart;
         return overlapped;
+    }
+
+    constexpr void win32_UpdateOverlappedPosition(OVERLAPPED& overlapped, int64_t position)
+    {
+        LARGE_INTEGER const li = std::bit_cast<LARGE_INTEGER>(position);
+        overlapped.Offset = li.LowPart;
+        overlapped.OffsetHigh = li.HighPart;
     }
 }
 

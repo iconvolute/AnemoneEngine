@@ -15,10 +15,10 @@ namespace Anemone
     bool WindowsEnvironment::GetEnvironmentVariable(std::string& result, std::string_view name)
     {
         result.clear();
-        Interop::win32_string_buffer<wchar_t, 128> wname{};
+        Interop::string_buffer<wchar_t, 128> wname{};
         Interop::win32_WidenString(wname, name);
 
-        if (Interop::win32_string_buffer<wchar_t, 512> wresult{};
+        if (Interop::string_buffer<wchar_t, 512> wresult{};
             Interop::win32_GetEnvironmentVariable(wresult, wname))
         {
             Interop::win32_NarrowString(result, wresult.as_view());
@@ -30,10 +30,10 @@ namespace Anemone
 
     bool WindowsEnvironment::SetEnvironmentVariable(std::string name, std::string_view value)
     {
-        Interop::win32_string_buffer<wchar_t, 128> wname{};
+        Interop::string_buffer<wchar_t, 128> wname{};
         Interop::win32_WidenString(wname, name);
 
-        Interop::win32_string_buffer<wchar_t, 512> wvalue{};
+        Interop::string_buffer<wchar_t, 512> wvalue{};
         Interop::win32_WidenString(wvalue, value);
 
         return SetEnvironmentVariableW(wname, wvalue) != FALSE;
@@ -41,7 +41,7 @@ namespace Anemone
 
     bool WindowsEnvironment::RemoveEnvironmentVariable(std::string_view name)
     {
-        Interop::win32_string_buffer<wchar_t, 128> wname{};
+        Interop::string_buffer<wchar_t, 128> wname{};
         Interop::win32_WidenString(wname, name);
 
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
@@ -71,7 +71,7 @@ namespace Anemone
 
         GetMonitorInfoW(handle, &miex);
 
-        Interop::win32_string_buffer<char, 128> name{};
+        Interop::string_buffer<char, 128> name{};
         Interop::win32_NarrowString(name, miex.szDevice);
 
         AE_ASSERT(!displayMetrics.Displays.empty());

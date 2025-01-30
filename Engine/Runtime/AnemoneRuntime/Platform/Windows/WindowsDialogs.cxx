@@ -117,8 +117,8 @@ namespace Anemone
     {
         WindowsWindow const* const native = static_cast<WindowsWindow const*>(window);
 
-        Interop::win32_string_buffer<wchar_t, 128> wtitle{};
-        Interop::win32_string_buffer<wchar_t, 512> wmessage{};
+        Interop::string_buffer<wchar_t, 128> wtitle{};
+        Interop::string_buffer<wchar_t, 512> wmessage{};
 
         Interop::win32_WidenString(wtitle, title);
         Interop::win32_WidenString(wmessage, message);
@@ -287,7 +287,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr) and not title.empty())
         {
-            Interop::win32_string_buffer<wchar_t, 128> wtitle{};
+            Interop::string_buffer<wchar_t, 128> wtitle{};
             Interop::win32_WidenString(wtitle, title);
 
             hr = dialog->SetTitle(wtitle.data());
@@ -330,7 +330,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr) and not title.empty())
         {
-            Interop::win32_string_buffer<wchar_t, 128> wtitle{};
+            Interop::string_buffer<wchar_t, 128> wtitle{};
             Interop::win32_WidenString(wtitle, title);
             hr = dialog->SetTitle(wtitle.data());
         }
@@ -384,7 +384,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr) and not title.empty())
         {
-            Interop::win32_string_buffer<wchar_t, 128> wtitle{};
+            Interop::string_buffer<wchar_t, 128> wtitle{};
             Interop::win32_WidenString(wtitle, title);
 
             hr = dialog->SetTitle(wtitle.data());

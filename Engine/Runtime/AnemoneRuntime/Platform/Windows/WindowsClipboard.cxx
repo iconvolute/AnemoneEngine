@@ -53,7 +53,7 @@ namespace Anemone
         {
             EmptyClipboard();
 
-            Interop::win32_string_buffer<wchar_t, 512> buffer{};
+            Interop::string_buffer<wchar_t, 512> buffer{};
             Interop::win32_WidenString(buffer, value);
             std::wstring_view const data = buffer.as_view();
 
