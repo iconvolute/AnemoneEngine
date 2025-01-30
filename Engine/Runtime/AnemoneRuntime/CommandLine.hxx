@@ -26,6 +26,10 @@ namespace Anemone
         RUNTIME_API static std::optional<std::string_view> GetOption(
             std::string_view name);
 
+        RUNTIME_API static void GetOption(
+            std::string_view name,
+            std::vector<std::string_view>& values);
+
         RUNTIME_API static void GetPositional(
             std::vector<std::string_view>& positional);
 

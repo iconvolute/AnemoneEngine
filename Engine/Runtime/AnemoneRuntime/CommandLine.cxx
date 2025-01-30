@@ -20,6 +20,43 @@ namespace Anemone
         GCommandLineInitialized.store(true);
     }
 
+    constexpr std::optional<std::string_view> ExtractTokenValue(std::string_view token, std::string_view name)
+    {
+        std::optional<std::string_view> result{};
+
+        if (token.starts_with('-'))
+        {
+            // Option '-short' or '--long'
+            token.remove_prefix(1);
+
+            if (token.starts_with('-'))
+            {
+                // Long option '--option'
+                token.remove_prefix(1);
+            }
+
+            if (token.starts_with(name))
+            {
+                // Option matched.
+                token.remove_prefix(name.size());
+
+                if (token.starts_with(':') or token.starts_with('='))
+                {
+                    // Matched '--option=value' or '--option:value'.
+                    token.remove_prefix(1);
+                    result = token;
+                }
+                else
+                {
+                    // Override result.
+                    result = std::string_view{};
+                }
+            }
+        }
+
+        return result;
+    }
+
     auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
     {
         AE_ASSERT(GCommandLineInitialized.load(), "CommandLine not initialized");
@@ -28,40 +65,32 @@ namespace Anemone
 
         for (int i = 1; i < CommandLine::_argc; ++i)
         {
-            std::string_view option{CommandLine::_argv[i]};
+            std::string_view token{CommandLine::_argv[i]};
 
-            if (option.starts_with('-'))
+            if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
-                // Option '-short' or '--long'
-                option.remove_prefix(1);
+                result = *value;
 
-                if (option.starts_with('-'))
-                {
-                    // Long option '--option'
-                    option.remove_prefix(1);
-                }
-
-                if (option.starts_with(name))
-                {
-                    // Option matched.
-                    option.remove_prefix(name.size());
-
-                    if (option.starts_with(':') or option.starts_with('='))
-                    {
-                        // Matched '--option=value' or '--option:value'.
-                        option.remove_prefix(1);
-                        result = option;
-                    }
-                    else
-                    {
-                        // Override result.
-                        result = std::string_view{};
-                    }
-                }
+                // NOTE: do not break this loop - we explicitly want last value provided by the user.
             }
         }
 
         return result;
+    }
+
+    void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
+    {
+        AE_ASSERT(GCommandLineInitialized.load(), "CommandLine not initialized");
+
+        for (int i = 1; i < CommandLine::_argc; ++i)
+        {
+            std::string_view token{CommandLine::_argv[i]};
+
+            if (auto value = ExtractTokenValue(token, name))
+            {
+                values.emplace_back(*value);
+            }
+        }
     }
 
     void CommandLine::GetPositional(std::vector<std::string_view>& positional)
