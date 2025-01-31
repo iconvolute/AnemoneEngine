@@ -194,7 +194,7 @@ namespace Anemone
 
         if (handle >= 0)
         {
-            if (close(this->_handle))
+            if (close(handle))
             {
                 return std::unexpected(ErrorCode::InvalidHandle);
             }
@@ -305,6 +305,7 @@ namespace Anemone
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
+                break;
             }
         }
 
@@ -346,6 +347,7 @@ namespace Anemone
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
+                break;
             }
         }
 
@@ -387,6 +389,7 @@ namespace Anemone
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
+                break;
             }
         }
 
@@ -426,6 +429,7 @@ namespace Anemone
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
+                break;
             }
         }
 

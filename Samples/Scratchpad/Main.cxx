@@ -276,6 +276,7 @@ anemone_noinline void test()
 }
 
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
+#include "AnemoneRuntime/Hash/FNV.hxx"
 
 int AnemoneMain(int argc, char** argv)
 {
@@ -283,13 +284,56 @@ int AnemoneMain(int argc, char** argv)
     (void)argv;
     Anemone::Application::SetEvents(&eh);
 
+    Anemone::FNV1A128 original{};
+
     if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::CreateAlways, Anemone::FileAccess::Write))
     {
-        std::string_view s = "Hello World!";
-        h->Write(std::as_bytes(std::span{s.data(), s.size()}));
+        std::string_view s = "Hello World!\n";
+
+        auto sb = std::as_bytes(std::span{s.data(), s.size()});
+
+        for (size_t i = 0; i < 64; ++i)
+        {
+            original.Update(sb);
+            h->Write(sb);
+        }
+
         h->Flush();
         h->Close();
     }
+
+    Anemone::FNV1A128 current{};
+
+    if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
+    {
+        std::vector<std::byte> buffer(16);
+        auto sb = std::as_writable_bytes(std::span{buffer});
+
+        while (true)
+        {
+            if (auto r = h->Read(sb))
+            {
+                if (*r == 0)
+                {
+                    break;
+                }
+
+                current.Update(sb.subspan(0, *r));
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        h->Close();
+    }
+
+    auto hashOriginal = original.Finalize();
+    auto hashCurrent = current.Finalize();
+
+    fmt::println("hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], hashCurrent[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(hashCurrent[0]));
+    fmt::println("hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
 
 #if ANEMONE_PLATFORM_WINDOWS
     fmt::println("online: {}", Anemone::Environment::IsOnline());
@@ -313,6 +357,15 @@ int AnemoneMain(int argc, char** argv)
         else
         {
             fmt::println("Named argument 'a' not found");
+        }
+
+        std::vector<std::string_view> values{};
+        Anemone::CommandLine::GetOption("b", values);
+
+        for (auto value : values)
+        {
+            AE_TRACE(Error, "Named argument 'b-list': '{}'", value);
+            fmt::println("Named argument 'b-list': '{}'", value);
         }
 
         if (auto const value = Anemone::CommandLine::GetOption("b"); value.has_value())
