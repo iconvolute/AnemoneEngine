@@ -129,7 +129,7 @@ namespace Anemone::Storage
             }
         }
 
-        return std::unexpected(ErrorCode::InvalidSeek);
+        return std::unexpected(ErrorCode::InvalidArgument);
     }
 
     std::expected<int64_t, ErrorCode> FileHandleWriter::GetPosition() const

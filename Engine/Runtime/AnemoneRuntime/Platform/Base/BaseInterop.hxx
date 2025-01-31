@@ -126,6 +126,11 @@ namespace Anemone::Interop
             return this->m_Data;
         }
 
+        [[nodiscard]] constexpr const char* c_str() const noexcept
+        {
+            return this->m_Data;
+        }
+
         [[nodiscard]] constexpr std::basic_string_view<CharT> as_view() const noexcept
         {
             return std::basic_string_view<CharT>{this->m_Data, this->m_Size};

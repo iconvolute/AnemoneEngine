@@ -25,7 +25,7 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::NotEnoughMemory);
+                    return std::unexpected(ErrorCode::OutOfMemory);
                 }
 
                 return required;
@@ -36,7 +36,7 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::OperationNotSupported);
+        return std::unexpected(ErrorCode::NotSupported);
     }
 
     std::expected<size_t, ErrorCode> CompressBlock(
@@ -60,13 +60,13 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::NotEnoughMemory);
+                    return std::unexpected(ErrorCode::OutOfMemory);
                 }
 
                 if (output.size() < required)
                 {
                     // Output buffer is too small.
-                    return std::unexpected(ErrorCode::NotEnoughMemory);
+                    return std::unexpected(ErrorCode::OutOfMemory);
                 }
 
                 int processed;
@@ -95,7 +95,7 @@ namespace Anemone
                 }
                 else
                 {
-                    return std::unexpected(ErrorCode::NoBufferSpace);
+                    return std::unexpected(ErrorCode::InvalidArgument);
                 }
             }
 
@@ -104,7 +104,7 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::OperationNotSupported);
+        return std::unexpected(ErrorCode::NotSupported);
     }
 
     std::expected<size_t, ErrorCode> DecompressBlock(
@@ -131,7 +131,7 @@ namespace Anemone
 
                 if (processed < 0)
                 {
-                    return std::unexpected(ErrorCode::NoBufferSpace);
+                    return std::unexpected(ErrorCode::InvalidArgument);
                 }
 
                 return static_cast<size_t>(processed);
@@ -142,6 +142,6 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::OperationNotSupported);
+        return std::unexpected(ErrorCode::NotSupported);
     }
 }

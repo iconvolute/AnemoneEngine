@@ -19,6 +19,9 @@ target_sources(AnemoneRuntime
         "WindowsEnvironment.cxx"
         "WindowsEnvironment.hxx"
 
+        "WindowsFileHandle.cxx"
+        "WindowsFileHandle.hxx"
+
         "WindowsHeaders.hxx"
 
         "WindowsInput.cxx"

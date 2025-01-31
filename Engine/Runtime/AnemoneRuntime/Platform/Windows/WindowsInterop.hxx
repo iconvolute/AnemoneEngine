@@ -936,6 +936,11 @@ namespace Anemone::Interop
         overlapped.Offset = li.LowPart;
         overlapped.OffsetHigh = li.HighPart;
     }
+
+    constexpr DWORD win32_ValidateIoRequestLength(size_t value)
+    {
+        return static_cast<DWORD>(std::min(value, size_t{UINT32_MAX}));
+    }
 }
 
 namespace Anemone::Interop
@@ -1259,6 +1264,12 @@ namespace Anemone::Interop
     {
         PIMAGE_NT_HEADERS const ntHeaders = win32_GetImageNtHeaders(h);
         return (ntHeaders->OptionalHeader.Subsystem == IMAGE_SUBSYSTEM_WINDOWS_CUI);
+    }
+
+    anemone_forceinline bool win32_IsConsoleHandle(HANDLE h)
+    {
+        DWORD dwMode = 0;
+        return GetConsoleMode(h, &dwMode) != FALSE;
     }
 
     // HARD REQUIREMENT: Buffer must be zero terminated!

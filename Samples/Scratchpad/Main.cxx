@@ -275,11 +275,21 @@ anemone_noinline void test()
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
 }
 
+#include "AnemoneRuntime/Platform/FileHandle.hxx"
+
 int AnemoneMain(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
     Anemone::Application::SetEvents(&eh);
+
+    if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::CreateAlways, Anemone::FileAccess::Write))
+    {
+        std::string_view s = "Hello World!";
+        h->Write(std::as_bytes(std::span{s.data(), s.size()}));
+        h->Flush();
+        h->Close();
+    }
 
 #if ANEMONE_PLATFORM_WINDOWS
     fmt::println("online: {}", Anemone::Environment::IsOnline());

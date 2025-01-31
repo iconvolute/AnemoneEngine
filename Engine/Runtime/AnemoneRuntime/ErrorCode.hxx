@@ -6,88 +6,16 @@
 
 namespace Anemone
 {
-    enum class ErrorCode : uint16_t
+    enum class ErrorCode : uint32_t
     {
-        Success,
-        AddressFamilyNotSupported,
-        AddressInUse,
-        AddressNotAvailable,
-        AlreadyConnected,
-        ArgumentListTooLong,
-        ArgumentOutOfDomain,
-        BadAddress,
-        BadFileDescriptor,
-        BadMessage,
-        BrokenPipe,
-        ConnectionAborted,
-        ConnectionAlreadyInProgress,
-        ConnectionRefused,
-        ConnectionReset,
-        CrossDeviceLink,
-        DestinationAddressRequired,
-        DeviceOrResourceBusy,
-        DirectoryNotEmpty,
-        ExecutableFormatError,
-        FileExists,
-        FileTooLarge,
-        FileNameTooLong,
-        FunctionNotSupported,
-        HostUnreachable,
-        IdentifierRemoved,
-        IllegalByteSequence,
-        InappropriateIoControlOperation,
-        Interrupted,
         InvalidArgument,
-        InvalidSeek,
-        IoError,
-        IsADirectory,
-        MessageSize,
-        NetworkDown,
-        NetworkReset,
-        NetworkUnreachable,
-        NoBufferSpace,
-        NoChildProcess,
-        NoLink,
-        NoLockAvailable,
-        NoMessageAvailable,
-        NoMessage,
-        NoProtocolOption,
-        NoSpaceOnDevice,
-        NoStreamResources,
-        NoSuchDeviceOrAddress,
-        NoSuchDevice,
-        NoSuchFileOrDirectory,
-        NoSuchProcess,
-        NotADirectory,
-        NotASocket,
-        NotAStream,
-        NotConnected,
-        NotEnoughMemory,
+        InvalidOperation,
+        InvalidHandle,
         NotSupported,
-        OperationCanceled,
-        OperationInProgress,
-        OperationNotPermitted,
-        OperationNotSupported,
-        OperationWouldBlock,
-        OwnerDead,
-        PermissionDenied,
-        ProtocolError,
-        ProtocolNotSupported,
-        ReadOnlyFileSystem,
-        ResourceDeadlockWouldOccur,
-        ResourceUnavailableTryAgain,
-        ResultOutOfRange,
-        StateNotRecoverable,
-        StreamTimeout,
-        TextFileBusy,
-        TimedOut,
-        TooManyFilesOpenInSystem,
-        TooManyFilesOpen,
-        TooManyLinks,
-        TooManySymbolicLinkLevels,
-        ValueTooLarge,
-        WrongProtocolType,
+        NotImplemented,
+        OutOfMemory,
         EndOfFile,
+        IoError,
         Unknown,
     };
 }
@@ -100,7 +28,7 @@ namespace Anemone::System::Private
 }
 
 template <>
-struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint16_t>
+struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint32_t>
 {
     constexpr auto parse(auto& context)
     {
@@ -109,6 +37,6 @@ struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint16_t>
 
     constexpr auto format(Anemone::ErrorCode const& value, auto& context) const
     {
-        return fmt::format_to(context.out(), "{}", static_cast<uint16_t>(value));
+        return fmt::format_to(context.out(), "{:08x}", static_cast<uint32_t>(value));
     }
 };

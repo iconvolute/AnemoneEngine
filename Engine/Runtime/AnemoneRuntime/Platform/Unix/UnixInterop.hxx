@@ -171,6 +171,11 @@ namespace Anemone::Interop
     {
         return static_cast<pid_t>(syscall(SYS_getpid));
     }
+
+    [[nodiscard]] constexpr int unix_ValidateIoRequestLength(size_t value)
+    {
+        return static_cast<int>(std::min(value, size_t{INT32_MAX}));
+    }
 }
 
 // https://www.remlab.net/op/futex-condvar.shtml

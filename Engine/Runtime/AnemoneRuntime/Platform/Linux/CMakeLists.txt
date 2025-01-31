@@ -14,6 +14,9 @@ target_sources(AnemoneRuntime
         "LinuxEnvironment.cxx"
         "LinuxEnvironment.hxx"
 
+        "LinuxFileHandle.cxx"
+        "LinuxFileHandle.hxx"
+
         #"LinuxInput.cxx"
         #"LinuxInput.hxx"
 

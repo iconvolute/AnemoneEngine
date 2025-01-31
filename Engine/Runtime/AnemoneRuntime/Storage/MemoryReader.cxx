@@ -34,7 +34,7 @@ namespace Anemone::Storage
     {
         if ((position < 0) or (static_cast<size_t>(position) > this->_buffer.size()))
         {
-            return std::unexpected(ErrorCode::InvalidSeek);
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
         this->_buffer_position = static_cast<size_t>(position);

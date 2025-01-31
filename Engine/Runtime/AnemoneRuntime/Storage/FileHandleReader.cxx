@@ -164,7 +164,7 @@ namespace Anemone::Storage
         }
         else
         {
-            return std::unexpected(ErrorCode::InvalidSeek);
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
         // Update file position.

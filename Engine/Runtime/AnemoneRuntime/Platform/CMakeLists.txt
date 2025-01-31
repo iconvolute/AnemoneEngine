@@ -11,7 +11,12 @@ target_sources(AnemoneRuntime
         "Detect.hxx"
         "EntryPoint.hxx"
         "Environment.hxx"
+        "FileHandle.hxx"
+        "NamedMutex.hxx"
         "Platform.hxx"
+        "PlatformTraceListeners.hxx"
+        "Process.hxx"
         "StackTrace.hxx"
+        "SystemAllocator.hxx"
         "Types.hxx"
 )
