@@ -35,8 +35,8 @@ namespace Anemone
 
         RUNTIME_API static void Parse(
             std::string_view commandLine,
-            std::vector<std::string_view>& args,
-            std::vector<std::string_view>& options,
-            std::vector<std::pair<std::string_view, std::string_view>>& params);
+            std::vector<std::string_view>& positional,
+            std::vector<std::string_view>& switches,
+            std::vector<std::pair<std::string_view, std::string_view>>& options);
     };
 }

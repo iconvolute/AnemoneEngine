@@ -208,9 +208,9 @@ namespace Anemone
 
     void CommandLine::Parse(
         std::string_view commandLine,
-        std::vector<std::string_view>& args,
-        std::vector<std::string_view>& options,
-        std::vector<std::pair<std::string_view, std::string_view>>& params)
+        std::vector<std::string_view>& positional,
+        std::vector<std::string_view>& switches,
+        std::vector<std::pair<std::string_view, std::string_view>>& options)
     {
         while (not commandLine.empty())
         {
@@ -236,18 +236,18 @@ namespace Anemone
                         // Remove quote from value.
                         value = UnquoteToken(value);
 
-                        params.emplace_back(name, value);
+                        options.emplace_back(name, value);
                     }
                     else
                     {
                         // Token itself is an option.
-                        options.emplace_back(token);
+                        switches.emplace_back(token);
                     }
                 }
                 else
                 {
                     // Positional parameter.
-                    args.emplace_back(UnquoteToken(token));
+                    positional.emplace_back(UnquoteToken(token));
                 }
             }
         }
