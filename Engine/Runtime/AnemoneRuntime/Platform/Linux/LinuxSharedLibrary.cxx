@@ -1,4 +1,6 @@
 #include "AnemoneRuntime/Platform/Linux/LinuxSharedLibrary.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <utility>
 #include <dlfcn.h>
@@ -14,7 +16,15 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            this->Close();
+            if (this->_handle)
+            {
+                if (dlclose(this->_handle))
+                {
+                    AE_TRACE(Error, "Failed to close shared library: handle={}, error={}",
+                        fmt::ptr(this->_handle),
+                        dlerror());
+                }
+            }
 
             this->_handle = std::exchange(other._handle, nullptr);
         }
@@ -24,30 +34,50 @@ namespace Anemone
 
     LinuxSharedLibrary::~LinuxSharedLibrary()
     {
-        this->Close();
-    }
-
-    void LinuxSharedLibrary::Close()
-    {
-        if (this->_handle != nullptr)
+        if (this->_handle)
         {
-            dlclose(this->_handle);
-            this->_handle = nullptr;
+            if (dlclose(this->_handle))
+            {
+                AE_TRACE(Error, "Failed to close shared library: handle={}, error={}",
+                    fmt::ptr(this->_handle),
+                    dlerror());
+            }
         }
     }
 
-    void* LinuxSharedLibrary::GetSymbol(const char* name) const
+    std::expected<LinuxSharedLibrary, ErrorCode> LinuxSharedLibrary::Open(
+        std::string_view path)
     {
-        return dlsym(this->_handle, name);
-    }
+        Interop::unix_Path uPath{path};
 
-    std::expected<LinuxSharedLibrary, ErrorCode> LinuxSharedLibrary::Open(std::string_view path)
-    {
-        if (void* h = dlopen(std::string{path}.c_str(), RTLD_LAZY))
+        if (void* h = dlopen(uPath.c_str(), RTLD_LAZY))
         {
             return LinuxSharedLibrary{h};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
+    }
+
+    std::expected<void, ErrorCode> LinuxSharedLibrary::Close()
+    {
+        if (this->_handle)
+        {
+            if (dlclose(this->_handle))
+            {
+                return std::unexpected(ErrorCode::InvalidHandle);
+            }
+        }
+
+        return {};
+    }
+
+    std::expected<void*, ErrorCode> LinuxSharedLibrary::GetSymbol(const char* name) const
+    {
+        if (void* symbol = dlsym(this->_handle, name))
+        {
+            return symbol;
+        }
+
+        return std::unexpected(ErrorCode::NotFound);
     }
 }

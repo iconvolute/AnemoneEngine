@@ -1,9 +1,4 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "DirectoryEnumerator.cxx"
         "ErrorCode.cxx"
-        "FileHandle.cxx"
-        "NamedMutex.cxx"
-        "Process.cxx"
-        "SharedLibrary.cxx"
 )

@@ -1,7 +1,6 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsErrorCode.hxx"
 
 namespace Anemone
 {

@@ -4,7 +4,6 @@
 
 namespace Anemone
 {
-
     WindowsSharedLibrary::WindowsSharedLibrary(WindowsSharedLibrary&& other) noexcept
         : _handle{std::exchange(other._handle, nullptr)}
     {
@@ -14,7 +13,14 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            this->Close();
+            if (this->_handle != nullptr)
+            {
+                if (not FreeLibrary(this->_handle))
+                {
+                    AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
+                }
+            }
+
             this->_handle = std::exchange(other._handle, nullptr);
         }
 
@@ -23,37 +29,53 @@ namespace Anemone
 
     WindowsSharedLibrary::~WindowsSharedLibrary()
     {
-        this->Close();
-    }
-
-    void WindowsSharedLibrary::Close()
-    {
-        if (this->_handle)
+        if (this->_handle != nullptr)
         {
             if (not FreeLibrary(this->_handle))
             {
                 AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
             }
-
-            this->_handle = nullptr;
         }
     }
 
-    void* WindowsSharedLibrary::GetSymbol(const char* name) const
+    std::expected<WindowsSharedLibrary, ErrorCode> WindowsSharedLibrary::Open(
+        std::string_view path)
     {
-        return std::bit_cast<void*>(GetProcAddress(this->_handle, name));
-    }
+        Interop::win32_FilePathW wPath{};
+        Interop::win32_WidenString(wPath, path);
 
-    std::expected<WindowsSharedLibrary, ErrorCode> WindowsSharedLibrary::Open(std::string_view path)
-    {
-        Interop::win32_FilePathW wpath{};
-        Interop::win32_WidenString(wpath, path);
-
-        if (HMODULE h = LoadLibraryW(wpath.data()))
+        if (HMODULE const h = LoadLibraryW(wPath.c_str()))
         {
             return WindowsSharedLibrary{h};
         }
 
-        return std::unexpected(System::Private::ErrorCodeFromWin32Error(GetLastError()));
+        return std::unexpected(ErrorCode::InvalidArgument);
+    }
+
+    std::expected<void, ErrorCode> WindowsSharedLibrary::Close()
+    {
+        AE_ASSERT(this->_handle);
+
+        if (this->_handle)
+        {
+            if (not FreeLibrary(this->_handle))
+            {
+                return std::unexpected(ErrorCode::InvalidHandle);
+            }
+        }
+
+        return {};
+    }
+
+    std::expected<void*, ErrorCode> WindowsSharedLibrary::GetSymbol(const char* name) const
+    {
+        AE_ASSERT(this->_handle);
+
+        if (void* const symbol = GetProcAddress(this->_handle, name))
+        {
+            return symbol;
+        }
+
+        return std::unexpected(ErrorCode::NotFound);
     }
 }

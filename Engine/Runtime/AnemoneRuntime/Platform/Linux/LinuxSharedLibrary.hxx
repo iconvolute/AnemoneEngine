@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Linux/LinuxSharedLibrary.hxx"
+#include "AnemoneRuntime/Platform/Detect.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <expected>
@@ -14,10 +14,15 @@ namespace Anemone
 
     public:
         LinuxSharedLibrary() = default;
+
         LinuxSharedLibrary(LinuxSharedLibrary const&) = delete;
+
         LinuxSharedLibrary(LinuxSharedLibrary&& other) noexcept;
+
         LinuxSharedLibrary& operator=(LinuxSharedLibrary const&) = delete;
+
         LinuxSharedLibrary& operator=(LinuxSharedLibrary&& other) noexcept;
+
         ~LinuxSharedLibrary();
 
         explicit LinuxSharedLibrary(void* handle)
@@ -26,16 +31,28 @@ namespace Anemone
         }
 
     public:
-        void Close();
+        [[nodiscard]] explicit operator bool() const
+        {
+            return this->IsValid();
+        }
 
-        void* GetSymbol(const char* name) const;
-
-        explicit operator bool() const
+        [[nodiscard]] bool IsValid() const
         {
             return this->_handle != nullptr;
         }
 
-        static std::expected<LinuxSharedLibrary, ErrorCode> Open(std::string_view path);
+        [[nodiscard]] void* GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<LinuxSharedLibrary, ErrorCode> Open(
+            std::string_view path);
+
+        std::expected<void, ErrorCode> Close();
+
+        std::expected<void*, ErrorCode> GetSymbol(const char* name) const;
     };
 
     using SharedLibrary = LinuxSharedLibrary;

@@ -12,7 +12,7 @@ namespace Anemone::Storage
 
             while (not buffer.empty())
             {
-                if (auto processed = this->_handle.Write(buffer, this->_file_position))
+                if (auto processed = this->_handle.WriteAt(buffer, this->_file_position))
                 {
                     this->_file_position += static_cast<int64_t>(*processed);
                     buffer = buffer.subspan(*processed);
@@ -27,7 +27,7 @@ namespace Anemone::Storage
         return {};
     }
 
-    FileHandleWriter::FileHandleWriter(Anemone::System::FileHandle handle, size_t buffer_capacity)
+    FileHandleWriter::FileHandleWriter(FileHandle handle, size_t buffer_capacity)
         : _handle(std::move(handle))
         , _buffer_capacity(buffer_capacity)
         , _buffer(std::make_unique<std::byte[]>(buffer_capacity))
@@ -51,7 +51,7 @@ namespace Anemone::Storage
 
                 while (not buffer.empty())
                 {
-                    if (auto written = this->_handle.Write(buffer, this->_file_position))
+                    if (auto written = this->_handle.WriteAt(buffer, this->_file_position))
                     {
                         processed += *written;
                         this->_file_position += static_cast<int64_t>(*written);

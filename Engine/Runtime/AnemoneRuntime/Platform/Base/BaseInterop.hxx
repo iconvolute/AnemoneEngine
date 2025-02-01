@@ -126,7 +126,7 @@ namespace Anemone::Interop
             return this->m_Data;
         }
 
-        [[nodiscard]] constexpr const char* c_str() const noexcept
+        [[nodiscard]] constexpr const CharT* c_str() const noexcept
         {
             return this->m_Data;
         }

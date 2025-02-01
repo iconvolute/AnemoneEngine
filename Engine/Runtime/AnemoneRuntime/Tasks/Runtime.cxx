@@ -1,5 +1,4 @@
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-#include "AnemoneRuntime/System/Environment.hxx"
 
 namespace Anemone::Tasks
 {

@@ -14,10 +14,15 @@ namespace Anemone
 
     public:
         WindowsSharedLibrary() = default;
+
         WindowsSharedLibrary(WindowsSharedLibrary const&) = delete;
+
         WindowsSharedLibrary(WindowsSharedLibrary&& other) noexcept;
+
         WindowsSharedLibrary& operator=(WindowsSharedLibrary const&) = delete;
+
         WindowsSharedLibrary& operator=(WindowsSharedLibrary&& other) noexcept;
+
         ~WindowsSharedLibrary();
 
         explicit WindowsSharedLibrary(HMODULE handle)
@@ -26,16 +31,28 @@ namespace Anemone
         }
 
     public:
-        void Close();
+        [[nodiscard]] explicit operator bool() const
+        {
+            return this->IsValid();
+        }
 
-        void* GetSymbol(const char* name) const;
-
-        explicit operator bool() const
+        [[nodiscard]] bool IsValid() const
         {
             return this->_handle != nullptr;
         }
 
-        static std::expected<WindowsSharedLibrary, ErrorCode> Open(std::string_view path);
+        [[nodiscard]] HMODULE GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<WindowsSharedLibrary, ErrorCode> Open(
+            std::string_view path);
+
+        std::expected<void, ErrorCode> Close();
+
+        std::expected<void*, ErrorCode> GetSymbol(const char* name) const;
     };
 
     using SharedLibrary = WindowsSharedLibrary;

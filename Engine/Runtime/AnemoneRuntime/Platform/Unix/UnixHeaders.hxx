@@ -31,6 +31,7 @@
 #include <utime.h>
 #include <linux/futex.h>
 #include <dirent.h>
+#include <sys/wait.h>
 
 
 #if ANEMONE_COMPILER_CLANG

@@ -172,6 +172,17 @@ namespace Anemone::Interop
         return static_cast<pid_t>(syscall(SYS_getpid));
     }
 
+    inline bool posix_IsProcessAlive(pid_t pid)
+    {
+        return (kill(pid, 0) == 0) or (errno == ESRCH);
+    }
+
+    inline bool posix_WaitForProcess(pid_t pid)
+    {
+        int status;
+        return waitpid(pid, &status, 0) >= 0;
+    }
+
     [[nodiscard]] constexpr int unix_ValidateIoRequestLength(size_t value)
     {
         return static_cast<int>(std::min(value, size_t{INT32_MAX}));
@@ -297,4 +308,10 @@ namespace Anemone::Interop
             }
         }
     }
+}
+
+namespace Anemone::Interop
+{
+    // Note: PATH_MAX is typically defined as 4 KiB.
+    using unix_Path = string_buffer<char, 256>;
 }

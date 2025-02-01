@@ -9,7 +9,7 @@ namespace Anemone::Storage
 
         while (not buffer.empty())
         {
-            if (auto r = this->_handle.Read(buffer, position))
+            if (auto r = this->_handle.ReadAt(buffer, position))
             {
                 if (*r == 0)
                 {
@@ -30,7 +30,7 @@ namespace Anemone::Storage
         return processed;
     }
 
-    FileHandleReader::FileHandleReader(Anemone::System::FileHandle handle, size_t buffer_capacity)
+    FileHandleReader::FileHandleReader(FileHandle handle, size_t buffer_capacity)
         : _handle(std::move(handle))
         , _buffer_capacity(buffer_capacity)
         , _buffer(std::make_unique<std::byte[]>(buffer_capacity))

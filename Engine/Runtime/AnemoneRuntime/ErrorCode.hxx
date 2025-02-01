@@ -8,14 +8,22 @@ namespace Anemone
 {
     enum class ErrorCode : uint32_t
     {
+        Success,
+        
         InvalidArgument,
         InvalidOperation,
         InvalidHandle,
+        InvalidFormat,
+        InvalidPath,
         NotSupported,
         NotImplemented,
+        NotFound,
         OutOfMemory,
         EndOfFile,
         IoError,
+        OperationCanceled,
+        OperationTimeout,
+        OperationInProgress,
         Unknown,
     };
 }

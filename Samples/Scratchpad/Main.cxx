@@ -277,12 +277,36 @@ anemone_noinline void test()
 
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
+#include "AnemoneRuntime/Platform/Process.hxx"
 
 int AnemoneMain(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
     Anemone::Application::SetEvents(&eh);
+
+    if (auto run = Anemone::CommandLine::GetOption("run"))
+    {
+        AE_TRACE(Error, "run: '{}'", *run);
+
+        for (size_t i = 0; i < 10000; ++i)
+        {
+            std::string strout{};
+            std::string strerr{};
+            if (auto rc = Anemone::Process::Execute(*run, {}, {}, strout, strerr))
+            {
+                AE_TRACE(Error, "stdout: '{}'", strout);
+                AE_TRACE(Error, "stderr: '{}'", strerr);
+                AE_TRACE(Error, "exit: {}", *rc);
+            }
+            else
+            {
+                AE_TRACE(Error, "error: '{}'", rc.error());
+            }
+        }
+
+        sleep(60 * 60 * 24);
+    }
 
     Anemone::FNV1A128 original{};
 
@@ -306,7 +330,7 @@ int AnemoneMain(int argc, char** argv)
 
     if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
     {
-        std::vector<std::byte> buffer(16);
+        std::vector<std::byte> buffer(32);
         auto sb = std::as_writable_bytes(std::span{buffer});
 
         while (true)
@@ -332,11 +356,11 @@ int AnemoneMain(int argc, char** argv)
     auto hashOriginal = original.Finalize();
     auto hashCurrent = current.Finalize();
 
-    fmt::println("hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], hashCurrent[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(hashCurrent[0]));
-    fmt::println("hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
+    AE_TRACE(Error, "hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], hashCurrent[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(hashCurrent[0]));
+    AE_TRACE(Error, "hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
 
 #if ANEMONE_PLATFORM_WINDOWS
-    fmt::println("online: {}", Anemone::Environment::IsOnline());
+    AE_TRACE(Error, "online: {}", Anemone::Environment::IsOnline());
 #endif
 
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
@@ -346,17 +370,15 @@ int AnemoneMain(int argc, char** argv)
         for (auto const& arg : args)
         {
             AE_TRACE(Error, "  '{}'", arg);
-            fmt::println("  '{}'", arg);
         }
 
         if (auto const value = Anemone::CommandLine::GetOption("a"); value.has_value())
         {
             AE_TRACE(Error, "Named argument 'a': '{}'", *value);
-            fmt::println("Named argument 'a': '{}'", *value);
         }
         else
         {
-            fmt::println("Named argument 'a' not found");
+            AE_TRACE(Error, "Named argument 'a' not found");
         }
 
         std::vector<std::string_view> values{};
@@ -365,31 +387,27 @@ int AnemoneMain(int argc, char** argv)
         for (auto value : values)
         {
             AE_TRACE(Error, "Named argument 'b-list': '{}'", value);
-            fmt::println("Named argument 'b-list': '{}'", value);
         }
 
         if (auto const value = Anemone::CommandLine::GetOption("b"); value.has_value())
         {
             AE_TRACE(Error, "Named argument 'b': '{}'", *value);
-            fmt::println("Named argument 'b': '{}'", *value);
         }
         else
         {
-            fmt::println("Named argument 'b' not found");
+            AE_TRACE(Error, "Named argument 'b' not found");
         }
 
         if (auto const value = Anemone::CommandLine::GetOption("c"); value.has_value())
         {
             AE_TRACE(Error, "Named argument 'c': '{}'", *value);
-            fmt::println("Named argument 'c': '{}'", *value);
         }
         else
         {
-            fmt::println("Named argument 'c' not found");
+            AE_TRACE(Error, "Named argument 'c' not found");
         }
     }
     test();
-
     AE_TRACE(Error, "Hello, World!");
     AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);

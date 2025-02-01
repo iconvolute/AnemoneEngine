@@ -639,9 +639,9 @@ int main(int argc, char* argv[])
 
         size_t processed = 0;
 #if defined(_M_AMD64)
-        if (ReadProcessMemory(hProcess, std::bit_cast<LPCVOID>(crashDetails->Context.Rip), buffer.data(), buffer.size(), &processed))
+        if (ReadProcessMemory(hProcess, std::bit_cast<LPCVOID>(crashDetails->Context.Rsp), buffer.data(), buffer.size(), &processed))
         {
-            LogBinaryHexDump(buffer, crashDetails->Context.Rip);
+            LogBinaryHexDump(buffer, crashDetails->Context.Rsp);
         }
 #elif defined(_M_ARM64)
         if (ReadProcessMemory(hProcess, std::bit_cast<LPCVOID>(crashDetails->Context.Sp), buffer.data(), buffer.size(), &processed))
@@ -653,7 +653,7 @@ int main(int argc, char* argv[])
         processed = 0;
 
 #if defined(_M_AMD64)
-        if (ReadProcessMemory(hProcess, std::bit_cast<LPCVOID>(crashDetails->Context.Rsp), buffer.data(), buffer.size(), &processed))
+        if (ReadProcessMemory(hProcess, std::bit_cast<LPCVOID>(crashDetails->Context.Rip), buffer.data(), buffer.size(), &processed))
         {
             LogBinaryHexDump(buffer, crashDetails->Context.Rip);
         }
