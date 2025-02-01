@@ -106,7 +106,10 @@ namespace Anemone
 
         // TODO: Determine if we can do this in normal FileHandle::CreatePipe() function.
         FileHandle fhWriteInput{};
+        FileHandle fhReadInput{};
+        FileHandle fhWriteOutput{};
         FileHandle fhReadOutput{};
+        FileHandle fhWriteError{};
         FileHandle fhReadError{};
 
         posix_spawn_file_actions_t files{};
@@ -130,6 +133,7 @@ namespace Anemone
 
                 // Create file handle for parent process.
                 fhWriteInput = FileHandle{fd[1]};
+                fhReadInput = FileHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[0], STDIN_FILENO);
@@ -145,6 +149,7 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
+                fhWriteOutput = FileHandle{fd[1]};
                 fhReadOutput = FileHandle{fd[0]};
 
                 // Prepare file actions for child process.
@@ -161,6 +166,7 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
+                fhWriteError = FileHandle{fd[1]};
                 fhReadError = FileHandle{fd[0]};
 
                 // Prepare file actions for child process.
@@ -329,7 +335,7 @@ namespace Anemone
         if (rc == 0)
         {
             // Child process still running.
-            return {};
+            return std::unexpected(ErrorCode::OperationInProgress);
         }
 
         if (rc != this->_handle)

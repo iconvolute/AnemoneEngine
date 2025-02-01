@@ -13,7 +13,9 @@ namespace Anemone
     class RUNTIME_API LinuxFileHandle final
     {
     private:
-        int _handle{};
+        static constexpr int InvalidHandle = -1;
+
+        int _handle{InvalidHandle};
 
     public:
         explicit LinuxFileHandle(int handle);

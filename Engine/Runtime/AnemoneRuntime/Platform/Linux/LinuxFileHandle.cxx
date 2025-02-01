@@ -95,7 +95,7 @@ namespace Anemone
     }
 
     LinuxFileHandle::LinuxFileHandle(LinuxFileHandle&& other) noexcept
-        : _handle{std::exchange(other._handle, -1)}
+        : _handle{std::exchange(other._handle, InvalidHandle)}
     {
     }
 
@@ -111,7 +111,7 @@ namespace Anemone
                 }
             }
 
-            this->_handle = std::exchange(other._handle, -1);
+            this->_handle = std::exchange(other._handle, InvalidHandle);
         }
 
         return *this;
@@ -188,9 +188,9 @@ namespace Anemone
 
     std::expected<void, ErrorCode> LinuxFileHandle::Close()
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
-        int const handle = std::exchange(this->_handle, -1);
+        int const handle = std::exchange(this->_handle, InvalidHandle);
 
         if (handle >= 0)
         {
@@ -205,7 +205,7 @@ namespace Anemone
 
     std::expected<void, ErrorCode> LinuxFileHandle::Flush()
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         if (fsync(this->_handle))
         {
@@ -217,7 +217,7 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> LinuxFileHandle::GetLength() const
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         struct stat64 st
         {
@@ -234,7 +234,7 @@ namespace Anemone
 
     std::expected<void, ErrorCode> LinuxFileHandle::Truncate(int64_t length)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         if (ftruncate64(this->_handle, length))
         {
@@ -246,7 +246,7 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> LinuxFileHandle::GetPosition() const
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         off64_t const position = lseek64(this->_handle, 0, SEEK_CUR);
 
@@ -260,7 +260,7 @@ namespace Anemone
 
     std::expected<void, ErrorCode> LinuxFileHandle::SetPosition(int64_t position)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         if (lseek64(this->_handle, position, SEEK_SET) < 0)
         {
@@ -272,7 +272,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> LinuxFileHandle::Read(std::span<std::byte> buffer)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         ssize_t processed = 0;
 
@@ -314,7 +314,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> LinuxFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         ssize_t processed = 0;
 
@@ -356,7 +356,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> LinuxFileHandle::Write(std::span<std::byte const> buffer)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         ssize_t processed = 0;
 
@@ -398,7 +398,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> LinuxFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
-        AE_ASSERT(this->_handle >= 0);
+        AE_ASSERT(this->IsValid());
 
         ssize_t processed = 0;
 
