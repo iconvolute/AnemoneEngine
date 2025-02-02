@@ -196,12 +196,9 @@ namespace Anemone
 
         Internal::NativeFileHandle const handle = std::exchange(this->_handle, {});
 
-        if (handle.IsValid())
+        if (not CloseHandle(handle.Value))
         {
-            if (not CloseHandle(handle.Value))
-            {
-                return std::unexpected(ErrorCode::InvalidHandle);
-            }
+            return std::unexpected(ErrorCode::InvalidHandle);
         }
 
         return {};
@@ -244,7 +241,6 @@ namespace Anemone
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
-
 
         // Truncate the file at the current position.
         if (not SetEndOfFile(this->_handle.Value))

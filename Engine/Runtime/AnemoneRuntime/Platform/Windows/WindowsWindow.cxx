@@ -4,6 +4,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <dwmapi.h>
 
@@ -97,7 +98,7 @@ namespace Anemone
 
             if (HRESULT hr = DwmSetWindowAttribute(handle, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(DWORD)); FAILED(hr))
             {
-                // TODO: Log error
+                AE_TRACE(Error, "DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: {}", hr);
             }
         }
 
@@ -106,7 +107,7 @@ namespace Anemone
 
             if (HRESULT hr = DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL)); FAILED(hr))
             {
-                // TODO: Log error
+                AE_TRACE(Error, "DwmSetWindowAttribute(DWMWA_USE_IMMERSIVE_DARK_MODE) failed: {}", hr);
             }
         }
 

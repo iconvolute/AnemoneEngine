@@ -75,6 +75,29 @@ namespace Anemone::Interop
             this->Handle = handle;
         }
     };
+
+    constexpr bool win32_IsPathInvalidError(DWORD error)
+    {
+        switch (error)
+        {
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+        case ERROR_NOT_READY:
+        case ERROR_INVALID_NAME:
+        case ERROR_BAD_PATHNAME:
+        case ERROR_BAD_NETPATH:
+        case ERROR_BAD_NET_NAME:
+        case ERROR_INVALID_PARAMETER:
+        case ERROR_NETWORK_UNREACHABLE:
+        case ERROR_NETWORK_ACCESS_DENIED:
+        case ERROR_INVALID_HANDLE:
+        case ERROR_FILENAME_EXCED_RANGE:
+            return true;
+
+        default:
+            return false;
+        }
+    }
 }
 
 namespace Anemone::Interop

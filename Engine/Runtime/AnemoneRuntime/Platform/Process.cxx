@@ -24,46 +24,67 @@ namespace Anemone
         std::string& output,
         std::string& error)
     {
-        // TODO: This code is common to all supported platforms.
+        return Process::Execute(
+            path,
+            params,
+            workingDirectory,
+            [&output](std::string_view s)
+        {
+            output.append(s);
+        },
+            [&error](std::string_view s)
+        {
+            error.append(s);
+        });
+    }
+
+    std::expected<int32_t, ErrorCode> Process::Execute(
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory,
+        FunctionRef<void(std::string_view)> output,
+        FunctionRef<void(std::string_view)> error)
+    {
         FileHandle pipeOutput{};
         FileHandle pipeError{};
 
         if (auto process = Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
         {
-            std::array<char, 1024> buffer;
+            std::array<char, 512> buffer;
+            std::span view = std::as_writable_bytes(std::span{buffer});
 
-            for (;;)
+            while (true)
             {
-                auto ret = process->TryWait();
+                auto rc = process->TryWait();
 
-                while (auto processed = pipeOutput.Read(std::as_writable_bytes(std::span{buffer})))
+                while (auto processed = pipeOutput.Read(view))
                 {
                     if (*processed == 0)
                     {
                         break;
                     }
 
-                    output.append(reinterpret_cast<char const*>(buffer.data()), *processed);
+                    output(std::string_view{buffer.data(), *processed});
                 }
 
-                while (auto processed = pipeError.Read(std::as_writable_bytes(std::span{buffer})))
+                while (auto processed = pipeError.Read(view))
                 {
                     if (*processed == 0)
                     {
                         break;
                     }
 
-                    error.append(reinterpret_cast<char const*>(buffer.data()), *processed);
+                    error(std::string_view{buffer.data(), *processed});
                 }
 
-                if (ret)
+                if (rc)
                 {
-                    return *ret;
+                    return *rc;
                 }
 
-                if (ret.error() != ErrorCode::OperationInProgress)
+                if (rc.error() != ErrorCode::OperationInProgress)
                 {
-                    return std::unexpected(ret.error());
+                    return std::unexpected(rc.error());
                 }
             }
         }

@@ -263,11 +263,18 @@ namespace Anemone
 
         if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
         {
+            this->_handle = Internal::NativeProcessHandle::Invalid();
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
-        // TODO: Should we close the handle here?
+        // Close handle.
+        if (!CloseHandle(this->_handle.Value))
+        {
+            this->_handle = Internal::NativeProcessHandle::Invalid();
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
 
+        this->_handle = Internal::NativeProcessHandle::Invalid();
         return static_cast<int32_t>(dwExitCode);
     }
 
@@ -287,8 +294,47 @@ namespace Anemone
             return std::unexpected(ErrorCode::OperationInProgress);
         }
 
-        // TODO: Should we close the handle here?
+        // Close the process handle here to avoid leaking it.
+        if (!CloseHandle(this->_handle.Value))
+        {
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
 
+        this->_handle = Internal::NativeProcessHandle::Invalid();
+        return static_cast<int32_t>(dwExitCode);
+    }
+
+    std::expected<int32_t, ErrorCode> Process::TryWait(Duration timeout)
+    {
+        AE_ASSERT(this->_handle.IsValid());
+
+        DWORD dwExitCode;
+
+        DWORD const dwMilliseconds = Interop::win32_ValidateTimeoutDuration(timeout);
+        DWORD const dwWaitResult = WaitForSingleObject(this->_handle.Value, dwMilliseconds);
+
+        if (dwWaitResult == WAIT_TIMEOUT)
+        {
+            return std::unexpected(ErrorCode::OperationInProgress);
+        }
+
+        if (dwWaitResult != WAIT_OBJECT_0)
+        {
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
+
+        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
+        {
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
+
+        // Close the process handle here to avoid leaking it.
+        if (!CloseHandle(this->_handle.Value))
+        {
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
+
+        this->_handle = Internal::NativeProcessHandle::Invalid();
         return static_cast<int32_t>(dwExitCode);
     }
 

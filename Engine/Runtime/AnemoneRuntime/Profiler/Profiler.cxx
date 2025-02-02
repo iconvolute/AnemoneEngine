@@ -7,7 +7,7 @@ namespace Anemone::Profiler
 {
     static constexpr uint32_t ColorFromProfilerMarker(const char* name)
     {
-        return Hash::FNV1A32{}.Update(name).Finalize();
+        return FNV1A32{}.Update(name).Finalize();
     }
 
     ProfilerMarker::ProfilerMarker(const char* name, ProfilerLevel level)

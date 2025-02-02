@@ -193,12 +193,9 @@ namespace Anemone
 
         Internal::NativeFileHandle const handle = std::exchange(this->_handle, Internal::NativeFileHandle::Invalid());
 
-        if (handle.IsValid())
+        if (close(handle.Value))
         {
-            if (close(handle.Value))
-            {
-                return std::unexpected(ErrorCode::InvalidHandle);
-            }
+            return std::unexpected(ErrorCode::InvalidHandle);
         }
 
         return {};

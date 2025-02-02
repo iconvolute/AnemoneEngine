@@ -183,6 +183,18 @@ namespace Anemone::Interop
         return waitpid(pid, &status, 0) >= 0;
     }
 
+    inline pid_t posix_WaitForProcess(pid_t pid, int& status, int flags)
+    {
+        pid_t rc;
+
+        do
+        {
+            rc = waitpid(pid, &status, flags);
+        } while ((rc < 0) and (errno == EINTR));
+
+        return rc;
+    }
+
     [[nodiscard]] constexpr int unix_ValidateIoRequestLength(size_t value)
     {
         return static_cast<int>(std::min(value, size_t{INT32_MAX}));

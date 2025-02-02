@@ -13,6 +13,8 @@
 #pragma once
 
 #include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/FunctionRef.hxx"
+#include "AnemoneRuntime/Duration.hxx"
 
 #include <string_view>
 #include <string>
@@ -79,6 +81,13 @@ namespace Anemone
             std::string& output,
             std::string& error);
 
+        static std::expected<int32_t, ErrorCode> Execute(
+            std::string_view path,
+            std::optional<std::string_view> const& params,
+            std::optional<std::string_view> const& workingDirectory,
+            FunctionRef<void(std::string_view)> output,
+            FunctionRef<void(std::string_view)> error);
+
     public:
         [[nodiscard]] explicit operator bool() const
         {
@@ -99,6 +108,8 @@ namespace Anemone
         std::expected<int32_t, ErrorCode> Wait();
 
         std::expected<int32_t, ErrorCode> TryWait();
+
+        std::expected<int32_t, ErrorCode> TryWait(Duration timeout);
 
         std::expected<void, ErrorCode> Terminate();
     };

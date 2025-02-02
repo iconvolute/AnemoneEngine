@@ -236,6 +236,8 @@ namespace Anemone
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
+        this->_handle = Internal::NativeProcessHandle::Invalid();
+
         if (WIFEXITED(status))
         {
             return WEXITSTATUS(status);
@@ -254,15 +256,8 @@ namespace Anemone
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        auto& error = errno;
-
         int status;
-        int rc;
-
-        do
-        {
-            rc = waitpid(this->_handle.Value, &status, WNOHANG);
-        } while ((rc < 0) and (error == EINTR));
+        int rc = Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
 
         if (rc == 0)
         {
@@ -271,6 +266,55 @@ namespace Anemone
         }
 
         if (rc != this->_handle.Value)
+        {
+            // Failed to wait for child process.
+            return std::unexpected(ErrorCode::InvalidOperation);
+        }
+
+        // Clear handle.
+        this->_handle = Internal::NativeProcessHandle::Invalid();
+
+        // Child process has exited.
+        if (WIFEXITED(status))
+        {
+            return WEXITSTATUS(status);
+        }
+
+        return WTERMSIG(status) + 256;
+#endif
+    }
+
+    std::expected<int32_t, ErrorCode> Process::TryWait(Duration timeout)
+    {
+        AE_ASSERT(this->_handle.IsValid());
+
+#if !ANEMONE_PLATFORM_LINUX
+        AE_TRACE(Critical, "Process::TryWait not implemented");
+        return std::unexpected(ErrorCode::NotImplemented);
+#else
+        pid_t rc;
+        int status;
+
+        // Try to get child process status.
+
+        rc = Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
+
+        if (rc == 0)
+        {
+            // Child process still running. Try wait with timeout.
+            useconds_t const sleepTime = static_cast<useconds_t>(timeout.ToMicroseconds());
+
+            usleep(sleepTime);
+
+            Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
+        }
+
+        if (rc == 0)
+        {
+            // Child process is still running.
+            return std::unexpected(ErrorCode::OperationInProgress);
+        }
+        else if (rc != this->_handle.Value)
         {
             // Failed to wait for child process.
             return std::unexpected(ErrorCode::InvalidOperation);
@@ -295,7 +339,9 @@ namespace Anemone
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        if (kill(this->_handle.Value, SIGKILL) != 0)
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, Internal::NativeProcessHandle::Invalid());
+
+        if (kill(handle.Value, SIGKILL) != 0)
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }
