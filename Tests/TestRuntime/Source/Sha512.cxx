@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Crypto/Sha512.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN

@@ -6,13 +6,10 @@ target_sources(AnemoneRuntime
         "LinuxApplication.hxx"
 
         "LinuxClipboard.cxx"
-        "LinuxClipboard.hxx"
 
         "LinuxDebugger.cxx"
-        "LinuxDebugger.hxx"
 
         "LinuxEnvironment.cxx"
-        "LinuxEnvironment.hxx"
 
         "LinuxFileHandle.cxx"
         "LinuxFileHandle.hxx"
@@ -26,6 +23,8 @@ target_sources(AnemoneRuntime
         "LinuxPlatform.cxx"
         "LinuxPlatform.hxx"
 
+        "LinuxPlatformTraceListeners.cxx"
+
         "LinuxProcess.cxx"
         "LinuxProcess.hxx"
 
@@ -36,10 +35,8 @@ target_sources(AnemoneRuntime
         #"LinuxSplashScreen.hxx"
 
         "LinuxStackTrace.cxx"
-        "LinuxStackTrace.hxx"
 
         "LinuxSystemAllocator.cxx"
-        "LinuxSystemAllocator.hxx"
 
         "LinuxWindow.cxx"
         "LinuxWindow.hxx"

@@ -1,45 +1,45 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsProcess.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
+#include "AnemoneRuntime/Platform/Process.hxx"
+#include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone
 {
-    WindowsProcess::WindowsProcess(HANDLE handle)
+    Process::Process(Internal::NativeProcessHandle handle)
         : _handle{handle}
     {
     }
 
-    WindowsProcess::WindowsProcess(WindowsProcess&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
+    Process::Process(Process&& other) noexcept
+        : _handle{std::exchange(other._handle, Internal::NativeProcessHandle::Invalid())}
     {
     }
 
-    WindowsProcess& WindowsProcess::operator=(WindowsProcess&& other) noexcept
+    Process& Process::operator=(Process&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle)
+            if (this->_handle.IsValid())
             {
-                if (!CloseHandle(this->_handle))
+                if (!CloseHandle(this->_handle.Value))
                 {
-                    AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle), GetLastError());
+                    AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
                 }
             }
 
-            this->_handle = std::exchange(other._handle, {});
+            this->_handle = std::exchange(other._handle, Internal::NativeProcessHandle::Invalid());
         }
 
         return *this;
     }
 
-    WindowsProcess::~WindowsProcess()
+    Process::~Process()
     {
-        if (this->_handle)
+        if (this->_handle.IsValid())
         {
-            if (!CloseHandle(this->_handle))
+            if (!CloseHandle(this->_handle.Value))
             {
-                AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle), GetLastError());
+                AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
             }
         }
     }
@@ -49,8 +49,8 @@ namespace Anemone
         HANDLE& hOutChild,
         bool parentWritesToChild)
     {
-        hOutParent = NULL;
-        hOutChild = NULL;
+        hOutParent = nullptr;
+        hOutChild = nullptr;
 
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -58,8 +58,8 @@ namespace Anemone
             .bInheritHandle = TRUE,
         };
 
-        HANDLE hChild = NULL;
-        HANDLE hTemp = NULL;
+        HANDLE hChild = nullptr;
+        HANDLE hTemp = nullptr;
 
         if (parentWritesToChild)
         {
@@ -77,7 +77,7 @@ namespace Anemone
         }
 
         HANDLE hProcess = GetCurrentProcess();
-        HANDLE hParent = NULL;
+        HANDLE hParent = nullptr;
 
         if (!DuplicateHandle(hProcess, hTemp, hProcess, &hParent, 0, FALSE, DUPLICATE_SAME_ACCESS))
         {
@@ -93,13 +93,13 @@ namespace Anemone
         return {};
     }
 
-    std::expected<WindowsProcess, ErrorCode> WindowsProcess::Start(
+    std::expected<Process, ErrorCode> Process::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
-        WindowsFileHandle* input,
-        WindowsFileHandle* output,
-        WindowsFileHandle* error)
+        FileHandle* input,
+        FileHandle* output,
+        FileHandle* error)
     {
         bool const redirectInput = input != nullptr;
         bool const redirectOutput = output != nullptr;
@@ -229,107 +229,39 @@ namespace Anemone
         {
             if (input)
             {
-                (*input) = WindowsFileHandle{fhWriteInput.Detach()};
+                (*input) = FileHandle{{fhWriteInput.Detach()}};
             }
 
             if (output)
             {
-                (*output) = WindowsFileHandle{fhReadOutput.Detach()};
+                (*output) = FileHandle{{fhReadOutput.Detach()}};
             }
 
             if (error)
             {
-                (*error) = WindowsFileHandle{fhReadError.Detach()};
+                (*error) = FileHandle{{fhReadError.Detach()}};
             }
 
             CloseHandle(process_information.hThread);
 
-            return WindowsProcess{process_information.hProcess};
+            return Process{Internal::NativeProcessHandle{process_information.hProcess}};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<int32_t, ErrorCode> WindowsProcess::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory)
+    std::expected<int32_t, ErrorCode> Process::Wait()
     {
-        auto sc = Start(path, params, workingDirectory, nullptr, nullptr, nullptr).and_then([](WindowsProcess process)
-        {
-            return process.Wait();
-        });
-        return sc;
-    }
+        AE_ASSERT(this->_handle.IsValid());
 
-    std::expected<int32_t, ErrorCode> WindowsProcess::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory,
-        std::string& output,
-        std::string& error)
-    {
-        // TODO: This code is common to all supported platforms.
-        WindowsFileHandle pipeOutput{};
-        WindowsFileHandle pipeError{};
-
-        if (auto process = Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
-        {
-            std::array<char, 1024> buffer;
-
-            for (;;)
-            {
-                auto ret = process->TryWait();
-
-                while (auto processed = pipeOutput.Read(std::as_writable_bytes(std::span{buffer})))
-                {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    output.append(reinterpret_cast<char const*>(buffer.data()), *processed);
-                }
-
-                while (auto processed = pipeError.Read(std::as_writable_bytes(std::span{buffer})))
-                {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    error.append(reinterpret_cast<char const*>(buffer.data()), *processed);
-                }
-
-                if (ret)
-                {
-                    return *ret;
-                }
-
-                if (ret.error() != ErrorCode::OperationInProgress)
-                {
-                    return std::unexpected(ret.error());
-                }
-            }
-        }
-        else
-        {
-            return std::unexpected(process.error());
-        }
-    }
-
-    std::expected<int32_t, ErrorCode> WindowsProcess::Wait()
-    {
-        AE_ASSERT(this->_handle);
-
-        if (WaitForSingleObject(this->_handle, INFINITE) != WAIT_OBJECT_0)
+        if (WaitForSingleObject(this->_handle.Value, INFINITE) != WAIT_OBJECT_0)
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
         DWORD dwExitCode;
 
-        if (!GetExitCodeProcess(this->_handle, &dwExitCode))
+        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }
@@ -339,13 +271,13 @@ namespace Anemone
         return static_cast<int32_t>(dwExitCode);
     }
 
-    std::expected<int32_t, ErrorCode> WindowsProcess::TryWait()
+    std::expected<int32_t, ErrorCode> Process::TryWait()
     {
-        AE_ASSERT(this->_handle);
+        AE_ASSERT(this->_handle.IsValid());
 
         DWORD dwExitCode;
 
-        if (!GetExitCodeProcess(this->_handle, &dwExitCode))
+        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }
@@ -360,25 +292,27 @@ namespace Anemone
         return static_cast<int32_t>(dwExitCode);
     }
 
-    std::expected<void, ErrorCode> WindowsProcess::Terminate()
+    std::expected<void, ErrorCode> Process::Terminate()
     {
-        AE_ASSERT(this->_handle);
+        AE_ASSERT(this->_handle.IsValid());
 
-        if (HANDLE const handle = std::exchange(this->_handle, nullptr))
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, Internal::NativeProcessHandle::Invalid());
+
+        if (handle.IsValid())
         {
-            if (!TerminateProcess(handle, 0))
+            if (!TerminateProcess(handle.Value, 0))
             {
-                CloseHandle(handle);
+                CloseHandle(handle.Value);
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
-            if (WaitForSingleObject(handle, INFINITE) == WAIT_FAILED)
+            if (WaitForSingleObject(handle.Value, INFINITE) == WAIT_FAILED)
             {
-                CloseHandle(handle);
+                CloseHandle(handle.Value);
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
-            CloseHandle(handle);
+            CloseHandle(handle.Value);
         }
 
         return {};

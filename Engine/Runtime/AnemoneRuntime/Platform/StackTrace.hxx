@@ -1,12 +1,14 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/FunctionRef.hxx"
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsStackTrace.hxx"
-#elif ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Platform/Linux/LinuxStackTrace.hxx"
-#elif ANEMONE_PLATFORM_ANDROID
-#include "AnemoneRuntime/Platform/Android/AndroidStackTrace.hxx"
-#else
-#error "Unsupported platform"
-#endif
+#include <string_view>
+
+namespace Anemone
+{
+    struct StackTrace final
+    {
+        static RUNTIME_API void Walk(FunctionRef<void(void* address)> callback);
+        static RUNTIME_API void Walk(FunctionRef<void(void* address, std::string_view symbol)> callback);
+    };
+}

@@ -1,7 +1,7 @@
 #ifndef ANEMONE_PLATFORM_POSIX_H
 #define ANEMONE_PLATFORM_POSIX_H
 
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 
 #if !(ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID)
 #error "This header should only be included on Linux platform"

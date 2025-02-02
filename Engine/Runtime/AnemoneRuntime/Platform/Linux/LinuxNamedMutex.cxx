@@ -1,3 +1,4 @@
+#include "AnemoneRuntime/Platform/NamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxNamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
@@ -8,49 +9,49 @@
 
 namespace Anemone
 {
-    LinuxNamedMutex::LinuxNamedMutex(std::string_view name)
+    NamedMutex::NamedMutex(std::string_view name)
     {
         std::string formatted = fmt::format("/anemone-engine-named-mutex-{}", name);
 
-        this->_handle = sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1);
+        this->_handle = Internal::NativeNamedMutex{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
 
-        if (this->_handle == SEM_FAILED)
+        if (this->_handle.Value == SEM_FAILED)
         {
             AE_PANIC("Failed to create named mutex: {}", errno);
         }
     }
 
-    LinuxNamedMutex::LinuxNamedMutex(LinuxNamedMutex&& other) noexcept
-        : _handle{std::exchange(other._handle, nullptr)}
+    NamedMutex::NamedMutex(NamedMutex&& other) noexcept
+        : _handle{std::exchange(other._handle, Internal::NativeNamedMutex::Invalid())}
     {
     }
 
-    LinuxNamedMutex& LinuxNamedMutex::operator=(LinuxNamedMutex&& other) noexcept
+    NamedMutex& NamedMutex::operator=(NamedMutex&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle != nullptr)
+            if (this->_handle.IsValid())
             {
-                sem_close(this->_handle);
+                sem_close(this->_handle.Value);
             }
 
-            this->_handle = std::exchange(other._handle, {});
+            this->_handle = std::exchange(other._handle, Internal::NativeNamedMutex::Invalid());
         }
 
         return *this;
     }
 
-    LinuxNamedMutex::~LinuxNamedMutex()
+    NamedMutex::~NamedMutex()
     {
-        if (this->_handle != nullptr)
+        if (this->_handle.IsValid())
         {
-            sem_close(this->_handle);
+            sem_close(this->_handle.Value);
         }
     }
 
-    void LinuxNamedMutex::Lock()
+    void NamedMutex::Lock()
     {
-        AE_ASSERT(this->_handle != nullptr);
+        AE_ASSERT(this->_handle.IsValid());
 
         auto& error = errno;
 
@@ -58,7 +59,7 @@ namespace Anemone
 
         do
         {
-            rc = sem_wait(this->_handle);
+            rc = sem_wait(this->_handle.Value);
         } while (rc && (error == EINTR));
 
         if (rc)
@@ -67,18 +68,18 @@ namespace Anemone
         }
     }
 
-    bool LinuxNamedMutex::TryLock()
+    bool NamedMutex::TryLock()
     {
-        AE_ASSERT(this->_handle != nullptr);
+        AE_ASSERT(this->_handle.IsValid());
 
-        return sem_trywait(this->_handle) == 0;
+        return sem_trywait(this->_handle.Value) == 0;
     }
 
-    void LinuxNamedMutex::Unlock()
+    void NamedMutex::Unlock()
     {
-        AE_ASSERT(this->_handle != nullptr);
+        AE_ASSERT(this->_handle.IsValid());
 
-        if (sem_post(this->_handle))
+        if (sem_post(this->_handle.Value))
         {
             AE_PANIC("Failed to unlock named mutex: {}", errno);
         }

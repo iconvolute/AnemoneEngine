@@ -1,7 +1,8 @@
+#include "AnemoneRuntime/Platform/Platform.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxDebugger.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxEnvironment.hxx"
+#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Platform/Environment.hxx"
 
 #include "AnemoneRuntime/System/Path.hxx"
 
@@ -159,7 +160,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void LinuxPlatform::Initialize()
+    void Platform::Initialize()
     {
         Internal::VerifyRequirements();
 
@@ -355,7 +356,7 @@ namespace Anemone
         }
     }
 
-    void LinuxPlatform::Finalize()
+    void Platform::Finalize()
     {
         Internal::GLinuxPlatformStatics.Destroy();
     }

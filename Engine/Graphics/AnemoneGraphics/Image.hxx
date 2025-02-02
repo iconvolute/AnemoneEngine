@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"

@@ -1,6 +1,7 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatformTraceListeners.hxx"
+#include "AnemoneRuntime/Platform/PlatformTraceListeners.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
@@ -96,7 +97,7 @@ namespace Anemone
     static UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener;
 
 
-    void WindowsPlatformTraceListeners::Initialize()
+    void PlatformTraceListeners::Initialize()
     {
         GWindowsEtwTraceListener.Create();
         Trace::AddListener(*GWindowsEtwTraceListener);
@@ -105,7 +106,7 @@ namespace Anemone
         Trace::AddListener(*GWindowsDebugTraceListener);
     }
 
-    void WindowsPlatformTraceListeners::Finalize()
+    void PlatformTraceListeners::Finalize()
     {
         Trace::RemoveListener(*GWindowsDebugTraceListener);
         GWindowsDebugTraceListener.Destroy();

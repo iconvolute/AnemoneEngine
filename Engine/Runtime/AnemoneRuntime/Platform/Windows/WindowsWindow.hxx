@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseWindow.hxx"
+#include "AnemoneRuntime/Platform/Window.hxx"
 
 namespace Anemone
 {

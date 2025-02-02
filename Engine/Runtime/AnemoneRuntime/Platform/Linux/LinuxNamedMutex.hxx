@@ -1,29 +1,20 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
 
-#include <string_view>
-#include <semaphore.h>
-
-namespace Anemone
+namespace Anemone::Internal
 {
-    class LinuxNamedMutex final
+    struct NativeNamedMutex final
     {
-    private:
-        sem_t* _handle{};
+        sem_t* Value{nullptr};
 
-    public:
-        explicit LinuxNamedMutex(std::string_view name);
-        LinuxNamedMutex(LinuxNamedMutex const&) = delete;
-        LinuxNamedMutex(LinuxNamedMutex&& other) noexcept;
-        LinuxNamedMutex& operator=(LinuxNamedMutex const&) = delete;
-        LinuxNamedMutex& operator=(LinuxNamedMutex&& other) noexcept;
-        ~LinuxNamedMutex();
+        constexpr bool IsValid() const
+        {
+            return this->Value != nullptr;
+        }
 
-    public:
-        void Lock();
-        bool TryLock();
-        void Unlock();
+        static NativeNamedMutex Invalid()
+        {
+            return NativeNamedMutex{};
+        }
     };
-
-    using NamedMutex = LinuxNamedMutex;
 }

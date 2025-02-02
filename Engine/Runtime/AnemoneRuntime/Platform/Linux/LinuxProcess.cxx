@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxProcess.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxFileHandle.hxx"
+#include "AnemoneRuntime/Platform/Process.hxx"
+#include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -13,37 +13,37 @@
 
 namespace Anemone
 {
-    LinuxProcess::LinuxProcess(pid_t handle)
+    Process::Process(Internal::NativeProcessHandle handle)
         : _handle{handle}
     {
     }
 
-    LinuxProcess::LinuxProcess(LinuxProcess&& other) noexcept
-        : _handle{std::exchange(other._handle, 0)}
+    Process::Process(Process&& other) noexcept
+        : _handle{std::exchange(other._handle, Internal::NativeProcessHandle::Invalid())}
     {
     }
 
-    LinuxProcess& LinuxProcess::operator=(LinuxProcess&& other) noexcept
+    Process& Process::operator=(Process&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            this->_handle = std::exchange(other._handle, {});
+            this->_handle = std::exchange(other._handle, Internal::NativeProcessHandle::Invalid());
         }
 
         return *this;
     }
 
-    LinuxProcess::~LinuxProcess()
+    Process::~Process()
     {
     }
 
-    std::expected<LinuxProcess, ErrorCode> LinuxProcess::Start(
+    std::expected<Process, ErrorCode> Process::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
-        LinuxFileHandle* input,
-        LinuxFileHandle* output,
-        LinuxFileHandle* error)
+        FileHandle* input,
+        FileHandle* output,
+        FileHandle* error)
     {
 #if !ANEMONE_PLATFORM_LINUX
         (void)path;
@@ -132,8 +132,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteInput = FileHandle{fd[1]};
-                fhReadInput = FileHandle{fd[0]};
+                fhWriteInput = FileHandle{ Internal::NativeFileHandle {fd[1]}};
+                fhReadInput = FileHandle{Internal::NativeFileHandle{fd[0]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[0], STDIN_FILENO);
@@ -149,8 +149,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteOutput = FileHandle{fd[1]};
-                fhReadOutput = FileHandle{fd[0]};
+                fhWriteOutput = FileHandle{Internal::NativeFileHandle{fd[1]}};
+                fhReadOutput = FileHandle{Internal::NativeFileHandle{fd[0]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDOUT_FILENO);
@@ -166,8 +166,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteError = FileHandle{fd[1]};
-                fhReadError = FileHandle{fd[0]};
+                fhWriteError = FileHandle{Internal::NativeFileHandle{fd[1]}};
+                fhReadError = FileHandle{Internal::NativeFileHandle{fd[0]}};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDERR_FILENO);
@@ -203,7 +203,7 @@ namespace Anemone
                 *error = std::move(fhReadError);
             }
 
-            return LinuxProcess{process_id};
+            return Process{Internal::NativeProcessHandle{process_id}};
         }
         else
         {
@@ -212,77 +212,9 @@ namespace Anemone
 #endif
     }
 
-    std::expected<int32_t, ErrorCode> LinuxProcess::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory)
+    std::expected<int32_t, ErrorCode> Process::Wait()
     {
-        auto sc = Start(path, params, workingDirectory, nullptr, nullptr, nullptr).and_then([](LinuxProcess process)
-        {
-            return process.Wait();
-        });
-        return sc;
-    }
-
-    std::expected<int32_t, ErrorCode> LinuxProcess::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory,
-        std::string& output,
-        std::string& error)
-    {
-        // TODO: This code is common to all supported platforms.
-        LinuxFileHandle pipeOutput{};
-        LinuxFileHandle pipeError{};
-
-        if (auto process = Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
-        {
-            std::array<char, 1024> buffer;
-
-            for (;;)
-            {
-                auto ret = process->TryWait();
-
-                while (auto processed = pipeOutput.Read(std::as_writable_bytes(std::span{buffer})))
-                {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    output.append(reinterpret_cast<char const*>(buffer.data()), *processed);
-                }
-
-                while (auto processed = pipeError.Read(std::as_writable_bytes(std::span{buffer})))
-                {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    error.append(reinterpret_cast<char const*>(buffer.data()), *processed);
-                }
-
-                if (ret)
-                {
-                    return *ret;
-                }
-
-                if (ret.error() != ErrorCode::OperationInProgress)
-                {
-                    return std::unexpected(ret.error());
-                }
-            }
-        }
-        else
-        {
-            return std::unexpected(process.error());
-        }
-    }
-
-    std::expected<int32_t, ErrorCode> LinuxProcess::Wait()
-    {
-        AE_ASSERT(this->_handle > 0);
+        AE_ASSERT(this->_handle.IsValid());
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Wait not implemented");
@@ -296,10 +228,10 @@ namespace Anemone
 
         do
         {
-            rc = waitpid(this->_handle, &status, 0);
+            rc = waitpid(this->_handle.Value, &status, 0);
         } while ((rc < 0) and (error == EINTR));
 
-        if (rc != this->_handle)
+        if (rc != this->_handle.Value)
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }
@@ -313,9 +245,9 @@ namespace Anemone
 #endif
     }
 
-    std::expected<int32_t, ErrorCode> LinuxProcess::TryWait()
+    std::expected<int32_t, ErrorCode> Process::TryWait()
     {
-        AE_ASSERT(this->_handle > 0);
+        AE_ASSERT(this->_handle.IsValid());
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::TryWait not implemented");
@@ -329,7 +261,7 @@ namespace Anemone
 
         do
         {
-            rc = waitpid(this->_handle, &status, WNOHANG);
+            rc = waitpid(this->_handle.Value, &status, WNOHANG);
         } while ((rc < 0) and (error == EINTR));
 
         if (rc == 0)
@@ -338,7 +270,7 @@ namespace Anemone
             return std::unexpected(ErrorCode::OperationInProgress);
         }
 
-        if (rc != this->_handle)
+        if (rc != this->_handle.Value)
         {
             // Failed to wait for child process.
             return std::unexpected(ErrorCode::InvalidOperation);
@@ -354,16 +286,16 @@ namespace Anemone
 #endif
     }
 
-    std::expected<void, ErrorCode> LinuxProcess::Terminate()
+    std::expected<void, ErrorCode> Process::Terminate()
     {
-        AE_ASSERT(this->_handle > 0);
+        AE_ASSERT(this->_handle.IsValid());
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Terminate not implemented");
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        if (kill(this->_handle, SIGKILL) != 0)
+        if (kill(this->_handle.Value, SIGKILL) != 0)
         {
             return std::unexpected(ErrorCode::InvalidOperation);
         }

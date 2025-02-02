@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxSystemAllocator.hxx"
+#include "AnemoneRuntime/Platform/SystemAllocator.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
@@ -38,7 +38,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void* LinuxSystemAllocator::ReserveUncommitted(size_t size, bool writable, bool executable)
+    void* SystemAllocator::ReserveUncommitted(size_t size, bool writable, bool executable)
     {
         int const protection = Internal::ToPosixProtection(writable, executable);
 
@@ -53,7 +53,7 @@ namespace Anemone
         return result;
     }
 
-    void LinuxSystemAllocator::ReleaseDecommitted(void* address, size_t size)
+    void SystemAllocator::ReleaseDecommitted(void* address, size_t size)
     {
         if (munmap(address, size) == -1)
         {
@@ -61,7 +61,7 @@ namespace Anemone
         }
     }
 
-    void* LinuxSystemAllocator::Commit(void* address, size_t size, bool writable, bool executable)
+    void* SystemAllocator::Commit(void* address, size_t size, bool writable, bool executable)
     {
         int const protection = Internal::ToPosixProtection(writable, executable);
 
@@ -75,7 +75,7 @@ namespace Anemone
         return address;
     }
 
-    void LinuxSystemAllocator::Decommit(void* address, size_t size)
+    void SystemAllocator::Decommit(void* address, size_t size)
     {
         Internal::DecommitVirtualMemory(address, size);
 
@@ -85,7 +85,7 @@ namespace Anemone
         }
     }
 
-    void* LinuxSystemAllocator::ReserveAndCommit(size_t size, bool writable, bool executable)
+    void* SystemAllocator::ReserveAndCommit(size_t size, bool writable, bool executable)
     {
         int const protection = Internal::ToPosixProtection(writable, executable);
         int const flags = MAP_PRIVATE | MAP_ANON;
@@ -102,14 +102,14 @@ namespace Anemone
         return result;
     }
 
-    void* LinuxSystemAllocator::ReserveAndCommit(size_t reserve, size_t commit, bool writable, bool executable)
+    void* SystemAllocator::ReserveAndCommit(size_t reserve, size_t commit, bool writable, bool executable)
     {
         void* result = ReserveUncommitted(reserve, writable, executable);
         Commit(result, commit, writable, executable);
         return result;
     }
 
-    void LinuxSystemAllocator::DecommitAndRelease(void* address, size_t size)
+    void SystemAllocator::DecommitAndRelease(void* address, size_t size)
     {
         if (munmap(address, size) == -1)
         {
@@ -117,7 +117,7 @@ namespace Anemone
         }
     }
 
-    void LinuxSystemAllocator::Reset(void* address, size_t size)
+    void SystemAllocator::Reset(void* address, size_t size)
     {
         Internal::DecommitVirtualMemory(address, size);
     }

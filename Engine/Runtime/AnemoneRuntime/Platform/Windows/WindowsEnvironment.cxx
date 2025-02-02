@@ -1,3 +1,4 @@
+#include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
@@ -12,7 +13,7 @@
 
 namespace Anemone
 {
-    bool WindowsEnvironment::GetEnvironmentVariable(std::string& result, std::string_view name)
+    bool Environment::GetEnvironmentVariable(std::string& result, std::string_view name)
     {
         result.clear();
         Interop::string_buffer<wchar_t, 128> wname{};
@@ -28,7 +29,7 @@ namespace Anemone
         return false;
     }
 
-    bool WindowsEnvironment::SetEnvironmentVariable(std::string name, std::string_view value)
+    bool Environment::SetEnvironmentVariable(std::string name, std::string_view value)
     {
         Interop::string_buffer<wchar_t, 128> wname{};
         Interop::win32_WidenString(wname, name);
@@ -39,7 +40,7 @@ namespace Anemone
         return SetEnvironmentVariableW(wname, wvalue) != FALSE;
     }
 
-    bool WindowsEnvironment::RemoveEnvironmentVariable(std::string_view name)
+    bool Environment::RemoveEnvironmentVariable(std::string_view name)
     {
         Interop::string_buffer<wchar_t, 128> wname{};
         Interop::win32_WidenString(wname, name);
@@ -47,12 +48,12 @@ namespace Anemone
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
     }
 
-    ProcessorProperties const& WindowsEnvironment::GetProcessorProperties()
+    ProcessorProperties const& Environment::GetProcessorProperties()
     {
         return Internal::GWindowsPlatformStatics->Processor;
     }
 
-    std::vector<ProcessorTopology> WindowsEnvironment::GetProcessorTopology()
+    std::vector<ProcessorTopology> Environment::GetProcessorTopology()
     {
         AE_PANIC("Not implemented");
         return {};
@@ -87,7 +88,7 @@ namespace Anemone
         return TRUE;
     }
 
-    void WindowsEnvironment::GetDisplayMetrics(DisplayMetrics& metrics)
+    void Environment::GetDisplayMetrics(DisplayMetrics& metrics)
     {
         metrics.Displays.clear();
 
@@ -194,7 +195,7 @@ namespace Anemone
         }
     }
 
-    ColorRef WindowsEnvironment::GetScreenPixel(Math::PointF position, float gamma)
+    ColorRef Environment::GetScreenPixel(Math::PointF position, float gamma)
     {
         COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), static_cast<int>(position.X), static_cast<int>(position.Y));
 
@@ -212,33 +213,33 @@ namespace Anemone
         };
     }
 
-    std::string_view WindowsEnvironment::GetSystemVersion()
+    std::string_view Environment::GetSystemVersion()
     {
         return Internal::GWindowsPlatformStatics->SystemVersion;
     }
 
-    std::string_view WindowsEnvironment::GetSystemId()
+    std::string_view Environment::GetSystemId()
     {
         return Internal::GWindowsPlatformStatics->SystemId;
     }
 
-    std::string_view WindowsEnvironment::GetSystemName()
+    std::string_view Environment::GetSystemName()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    Duration WindowsEnvironment::GetSystemUptime()
+    Duration Environment::GetSystemUptime()
     {
         return Duration::FromMilliseconds(static_cast<int64_t>(GetTickCount64()));
     }
 
-    DateTime WindowsEnvironment::GetApplicationStartupTime()
+    DateTime Environment::GetApplicationStartupTime()
     {
         return Internal::GWindowsPlatformStatics->ApplicationStartupTime;
     }
 
-    MemoryProperties WindowsEnvironment::GetMemoryProperties()
+    MemoryProperties Environment::GetMemoryProperties()
     {
         MEMORYSTATUSEX memoryStatus{};
         memoryStatus.dwLength = sizeof(memoryStatus);
@@ -265,7 +266,7 @@ namespace Anemone
         };
     }
 
-    MemoryUsage WindowsEnvironment::GetMemoryUsage()
+    MemoryUsage Environment::GetMemoryUsage()
     {
         MEMORYSTATUSEX memoryStatus{};
         memoryStatus.dwLength = sizeof(memoryStatus);
@@ -293,7 +294,7 @@ namespace Anemone
         };
     }
 
-    PowerUsage WindowsEnvironment::GetPowerUsage()
+    PowerUsage Environment::GetPowerUsage()
     {
         SYSTEM_POWER_STATUS powerStatus{};
         if (!GetSystemPowerStatus(&powerStatus))
@@ -334,7 +335,7 @@ namespace Anemone
         return result;
     }
 
-    ProcessorUsage WindowsEnvironment::GetProcessorUsage()
+    ProcessorUsage Environment::GetProcessorUsage()
     {
         FILETIME ftCreation{};
         FILETIME ftExit{};
@@ -352,7 +353,7 @@ namespace Anemone
         };
     }
 
-    void WindowsEnvironment::Terminate(bool force)
+    void Environment::Terminate(bool force)
     {
         if (force)
         {
@@ -364,87 +365,87 @@ namespace Anemone
         }
     }
 
-    std::string_view WindowsEnvironment::GetDeviceUniqueId()
+    std::string_view Environment::GetDeviceUniqueId()
     {
         return Internal::GWindowsPlatformStatics->DeviceId;
     }
 
-    std::string_view WindowsEnvironment::GetDeviceName()
+    std::string_view Environment::GetDeviceName()
     {
         return Internal::GWindowsPlatformStatics ->DeviceName;
     }
 
-    std::string WindowsEnvironment::GetDeviceModel()
+    std::string Environment::GetDeviceModel()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    DeviceType WindowsEnvironment::GetDeviceType()
+    DeviceType Environment::GetDeviceType()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    DeviceProperties WindowsEnvironment::GetDeviceProperties()
+    DeviceProperties Environment::GetDeviceProperties()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    std::string_view WindowsEnvironment::GetComputerName()
+    std::string_view Environment::GetComputerName()
     {
         return Internal::GWindowsPlatformStatics->ComputerName;
     }
 
-    std::string_view WindowsEnvironment::GetUserName()
+    std::string_view Environment::GetUserName()
     {
         return Internal::GWindowsPlatformStatics->UserName;
     }
 
-    std::string_view WindowsEnvironment::GetExecutablePath()
+    std::string_view Environment::GetExecutablePath()
     {
         return Internal::GWindowsPlatformStatics->ExecutablePath;
     }
 
-    std::string_view WindowsEnvironment::GetStartupPath()
+    std::string_view Environment::GetStartupPath()
     {
         return Internal::GWindowsPlatformStatics->StartupPath;
     }
 
-    std::string_view WindowsEnvironment::GetHomePath()
+    std::string_view Environment::GetHomePath()
     {
         return Internal::GWindowsPlatformStatics->ProfilePath;
     }
 
-    std::string_view WindowsEnvironment::GetDesktopPath()
+    std::string_view Environment::GetDesktopPath()
     {
         return Internal::GWindowsPlatformStatics->DesktopPath;
     }
 
-    std::string_view WindowsEnvironment::GetDocumentsPath()
+    std::string_view Environment::GetDocumentsPath()
     {
         return Internal::GWindowsPlatformStatics->DocumentsPath;
     }
 
-    std::string_view WindowsEnvironment::GetDownloadsPath()
+    std::string_view Environment::GetDownloadsPath()
     {
         return Internal::GWindowsPlatformStatics->DownloadsPath;
     }
 
-    std::string_view WindowsEnvironment::GetTemporaryPath()
+    std::string_view Environment::GetTemporaryPath()
     {
         return Internal::GWindowsPlatformStatics->TemporaryPath;
     }
 
-    DateTime WindowsEnvironment::GetCurrentDateTime()
+    DateTime Environment::GetCurrentDateTime()
     {
         FILETIME ft;
         Interop::win32_GetLocalTimeAsFileTime(ft);
         return Interop::win32_into_DateTime(ft);
     }
 
-    DateTime WindowsEnvironment::GetCurrentDateTimeUtc()
+    DateTime Environment::GetCurrentDateTimeUtc()
     {
         FILETIME ft;
         GetSystemTimePreciseAsFileTime(&ft);
@@ -452,7 +453,7 @@ namespace Anemone
         return Interop::win32_into_DateTime(ft);
     }
 
-    Duration WindowsEnvironment::GetCurrentTimeZoneBias()
+    Duration Environment::GetCurrentTimeZoneBias()
     {
         DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
@@ -485,7 +486,7 @@ namespace Anemone
         };
     }
 
-    void WindowsEnvironment::GetRandom(std::span<std::byte> buffer)
+    void Environment::GetRandom(std::span<std::byte> buffer)
     {
         NTSTATUS status = BCryptGenRandom(
             nullptr,
@@ -495,7 +496,10 @@ namespace Anemone
 
         AE_ENSURE(BCRYPT_SUCCESS(status));
     }
+}
 
+namespace Anemone
+{
     bool WindowsEnvironment::IsConsoleApplication()
     {
         HMODULE hExecutable = GetModuleHandleW(nullptr);

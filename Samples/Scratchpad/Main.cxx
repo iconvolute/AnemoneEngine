@@ -304,8 +304,6 @@ int AnemoneMain(int argc, char** argv)
                 AE_TRACE(Error, "error: '{}'", rc.error());
             }
         }
-
-        sleep(60 * 60 * 24);
     }
 
     Anemone::FNV1A128 original{};
@@ -360,7 +358,7 @@ int AnemoneMain(int argc, char** argv)
     AE_TRACE(Error, "hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
 
 #if ANEMONE_PLATFORM_WINDOWS
-    AE_TRACE(Error, "online: {}", Anemone::Environment::IsOnline());
+    AE_TRACE(Error, "online: {}", Anemone::WindowsEnvironment::IsOnline());
 #endif
 
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
@@ -417,7 +415,7 @@ int AnemoneMain(int argc, char** argv)
     AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::Environment::GetProcessorProperties().LogicalCores);
 
 #if ANEMONE_PLATFORM_WINDOWS
-    if (Anemone::Environment::IsConsoleApplication())
+    if (Anemone::WindowsEnvironment::IsConsoleApplication())
     {
         MessageBoxW(nullptr, L"Console", L"Console", MB_OK | MB_ICONINFORMATION);
     }
@@ -426,7 +424,7 @@ int AnemoneMain(int argc, char** argv)
         MessageBoxW(nullptr, L"No Console", L"No Console", MB_OK | MB_ICONERROR);
     }
 
-    if (Anemone::Environment::IsConsoleRedirecting())
+    if (Anemone::WindowsEnvironment::IsConsoleRedirecting())
     {
         MessageBoxW(nullptr, L"Redirecting", L"Redirecting", MB_OK | MB_ICONINFORMATION);
     }

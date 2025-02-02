@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
 #include <cstdint>

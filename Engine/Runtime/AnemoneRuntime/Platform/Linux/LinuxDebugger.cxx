@@ -1,16 +1,16 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxDebugger.hxx"
+#include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #include <iterator>
 
 namespace Anemone
 {
-    void LinuxDebugger::Break()
+    void Debugger::Break()
     {
         anemone_debugbreak();
     }
 
-    void LinuxDebugger::Crash()
+    void Debugger::Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -19,21 +19,21 @@ namespace Anemone
         abort();
     }
 
-    bool LinuxDebugger::IsAttached()
+    bool Debugger::IsAttached()
     {
         return false;
     }
 
-    void LinuxDebugger::Wait()
+    void Debugger::Wait()
     {
     }
 
-    bool LinuxDebugger::Attach()
+    bool Debugger::Attach()
     {
         return false;
     }
 
-    void LinuxDebugger::ReportApplicationStop(std::string_view reason)
+    void Debugger::ReportApplicationStop(std::string_view reason)
     {
         fwrite(reason.data(), 1, reason.size(), stderr);
         fflush(stderr);

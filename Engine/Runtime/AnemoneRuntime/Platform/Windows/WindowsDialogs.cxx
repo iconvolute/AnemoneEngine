@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsDialogs.hxx"
+#include "AnemoneRuntime/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
@@ -94,7 +94,7 @@ namespace Anemone
         }
     }
 
-    DialogResult WindowsDialogs::ShowMessageDialog(
+    DialogResult Dialogs::ShowMessageDialog(
         Window const* window,
         std::string_view message,
         std::string_view title,
@@ -108,7 +108,7 @@ namespace Anemone
             MessageDialogImage::Information);
     }
 
-    DialogResult WindowsDialogs::ShowMessageDialog(
+    DialogResult Dialogs::ShowMessageDialog(
         Window const* window,
         std::string_view message,
         std::string_view title,
@@ -266,7 +266,7 @@ namespace Anemone
         return DialogResult::Cancel;
     }
 
-    DialogResult WindowsDialogs::OpenFile(
+    DialogResult Dialogs::OpenFile(
         Window const* window,
         std::string& result,
         std::string_view title,
@@ -309,7 +309,7 @@ namespace Anemone
         return DialogResult::Cancel;
     }
 
-    DialogResult WindowsDialogs::OpenFiles(
+    DialogResult Dialogs::OpenFiles(
         Window const* window,
         std::vector<std::string>& result,
         std::string_view title,
@@ -363,7 +363,7 @@ namespace Anemone
         return DialogResult::Cancel;
     }
 
-    DialogResult WindowsDialogs::SaveFile(
+    DialogResult Dialogs::SaveFile(
         Window const* window,
         std::string& result,
         std::string_view title,

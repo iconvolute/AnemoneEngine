@@ -1,28 +1,20 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
-#include <string_view>
-
-namespace Anemone
+namespace Anemone::Internal
 {
-    class WindowsNamedMutex final
+    struct NativeNamedMutex final
     {
-    private:
-        HANDLE _handle{};
+        HANDLE Value{nullptr};
 
-    public:
-        explicit WindowsNamedMutex(std::string_view name);
-        WindowsNamedMutex(WindowsNamedMutex const&) = delete;
-        WindowsNamedMutex(WindowsNamedMutex&& other) noexcept;
-        WindowsNamedMutex& operator=(WindowsNamedMutex const&) = delete;
-        WindowsNamedMutex& operator=(WindowsNamedMutex&& other) noexcept;
-        ~WindowsNamedMutex();
+        constexpr bool IsValid() const
+        {
+            return this->Value != nullptr;
+        }
 
-    public:
-        void Lock();
-        bool TryLock();
-        void Unlock();
+        static NativeNamedMutex Invalid()
+        {
+            return NativeNamedMutex{};
+        }
     };
-
-    using NamedMutex = WindowsNamedMutex;
 }

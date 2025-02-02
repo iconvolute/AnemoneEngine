@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxStackTrace.hxx"
+#include "AnemoneRuntime/Platform/StackTrace.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #include <fmt/format.h>
 
@@ -12,7 +13,7 @@
 
 namespace Anemone
 {
-    void LinuxStackTrace::Walk(FunctionRef<void(void* address)> callback)
+    void StackTrace::Walk(FunctionRef<void(void* address)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE
 
@@ -47,7 +48,7 @@ namespace Anemone
 #endif
     }
 
-    void LinuxStackTrace::Walk(FunctionRef<void(void* address, std::string_view symbol)> callback)
+    void StackTrace::Walk(FunctionRef<void(void* address, std::string_view symbol)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE
 

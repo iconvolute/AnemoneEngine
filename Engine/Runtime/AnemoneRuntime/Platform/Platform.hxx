@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
@@ -10,3 +10,12 @@
 #else
 #error "Unsupported platform"
 #endif
+
+namespace Anemone
+{
+    struct Platform final
+    {
+        static RUNTIME_API void Initialize();
+        static RUNTIME_API void Finalize();
+    };
+}

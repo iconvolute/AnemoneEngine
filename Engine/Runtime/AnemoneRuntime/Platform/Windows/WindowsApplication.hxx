@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseApplication.hxx"
+#include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
@@ -37,19 +37,4 @@ namespace Anemone::Internal
     };
 
     extern UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;
-}
-
-namespace Anemone
-{
-    struct WindowsApplication final
-    {
-        static RUNTIME_API void Initialize();
-        static RUNTIME_API void Finalize();
-        static RUNTIME_API void ProcessMessages();
-        static RUNTIME_API void SetEvents(IApplicationEvents* events);
-
-        static RUNTIME_API std::unique_ptr<Window> MakeWindow(WindowType type);
-    };
-
-    using Application = WindowsApplication;
 }

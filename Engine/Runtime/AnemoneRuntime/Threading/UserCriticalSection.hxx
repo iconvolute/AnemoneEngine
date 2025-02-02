@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #if !ANEMONE_FEATURE_FUTEX

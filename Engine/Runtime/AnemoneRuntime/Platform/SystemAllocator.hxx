@@ -1,12 +1,20 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsSystemAllocator.hxx"
-#elif ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Platform/Linux/LinuxSystemAllocator.hxx"
-#elif ANEMONE_PLATFORM_ANDROID
-#include "AnemoneRuntime/Platform/Android/AndroidSystemAllocator.hxx"
-#else
-#error "Unsupported platform"
-#endif
+namespace Anemone
+{
+    struct SystemAllocator final
+    {
+        static RUNTIME_API void* ReserveUncommitted(size_t size, bool writable, bool executable);
+        static RUNTIME_API void ReleaseDecommitted(void* address, size_t size);
+
+        static RUNTIME_API void* Commit(void* address, size_t size, bool writable, bool executable);
+        static RUNTIME_API void Decommit(void* address, size_t size);
+
+        static RUNTIME_API void* ReserveAndCommit(size_t size, bool writable, bool executable);
+        static RUNTIME_API void* ReserveAndCommit(size_t reserve, size_t commit, bool writable, bool executable);
+        static RUNTIME_API void DecommitAndRelease(void* address, size_t size);
+
+        static RUNTIME_API void Reset(void* address, size_t size);
+    };
+}

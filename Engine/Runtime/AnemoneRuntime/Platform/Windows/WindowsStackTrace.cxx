@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsStackTrace.hxx"
+#include "AnemoneRuntime/Platform/StackTrace.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 #include <fmt/format.h>
 
@@ -187,7 +188,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void WindowsStackTrace::Walk(FunctionRef<void(void* address)> callback)
+    void StackTrace::Walk(FunctionRef<void(void* address)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE
 
@@ -223,7 +224,7 @@ namespace Anemone
 #endif
     }
 
-    void WindowsStackTrace::Walk(FunctionRef<void(void* address, std::string_view symbol)> callback)
+    void StackTrace::Walk(FunctionRef<void(void* address, std::string_view symbol)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE
 

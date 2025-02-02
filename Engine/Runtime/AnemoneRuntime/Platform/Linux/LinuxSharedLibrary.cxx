@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxSharedLibrary.hxx"
+#include "AnemoneRuntime/Platform/SharedLibrary.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -7,62 +7,64 @@
 
 namespace Anemone
 {
-    LinuxSharedLibrary::LinuxSharedLibrary(LinuxSharedLibrary&& other) noexcept
-        : _handle{std::exchange(other._handle, nullptr)}
+    SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
+        : _handle{std::exchange(other._handle, Internal::NativeSharedLibrary::Invalid())}
     {
     }
 
-    LinuxSharedLibrary& LinuxSharedLibrary::operator=(LinuxSharedLibrary&& other) noexcept
+    SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle)
+            if (this->_handle.IsValid())
             {
-                if (dlclose(this->_handle))
+                if (dlclose(this->_handle.Value))
                 {
                     AE_TRACE(Error, "Failed to close shared library: handle={}, error={}",
-                        fmt::ptr(this->_handle),
+                        fmt::ptr(this->_handle.Value),
                         dlerror());
                 }
             }
 
-            this->_handle = std::exchange(other._handle, nullptr);
+            this->_handle = std::exchange(other._handle, Internal::NativeSharedLibrary::Invalid());
         }
 
         return *this;
     }
 
-    LinuxSharedLibrary::~LinuxSharedLibrary()
+    SharedLibrary::~SharedLibrary()
     {
-        if (this->_handle)
+        if (this->_handle.IsValid())
         {
-            if (dlclose(this->_handle))
+            if (dlclose(this->_handle.Value))
             {
                 AE_TRACE(Error, "Failed to close shared library: handle={}, error={}",
-                    fmt::ptr(this->_handle),
+                    fmt::ptr(this->_handle.Value),
                     dlerror());
             }
         }
     }
 
-    std::expected<LinuxSharedLibrary, ErrorCode> LinuxSharedLibrary::Open(
+    std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(
         std::string_view path)
     {
         Interop::unix_Path uPath{path};
 
         if (void* h = dlopen(uPath.c_str(), RTLD_LAZY))
         {
-            return LinuxSharedLibrary{h};
+            return SharedLibrary{Internal::NativeSharedLibrary{h}};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> LinuxSharedLibrary::Close()
+    std::expected<void, ErrorCode> SharedLibrary::Close()
     {
-        if (this->_handle)
+        if (this->_handle.IsValid())
         {
-            if (dlclose(this->_handle))
+            Internal::NativeSharedLibrary handle = std::exchange(this->_handle, Internal::NativeSharedLibrary::Invalid());
+
+            if (dlclose(handle.Value))
             {
                 return std::unexpected(ErrorCode::InvalidHandle);
             }
@@ -71,13 +73,18 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void*, ErrorCode> LinuxSharedLibrary::GetSymbol(const char* name) const
+    std::expected<void*, ErrorCode> SharedLibrary::GetSymbol(const char* name) const
     {
-        if (void* symbol = dlsym(this->_handle, name))
+        if (this->_handle.IsValid())
         {
-            return symbol;
+            if (void* symbol = dlsym(this->_handle.Value, name))
+            {
+                return symbol;
+            }
+
+            return std::unexpected(ErrorCode::NotFound);
         }
 
-        return std::unexpected(ErrorCode::NotFound);
+        return std::unexpected(ErrorCode::InvalidHandle);
     }
 }

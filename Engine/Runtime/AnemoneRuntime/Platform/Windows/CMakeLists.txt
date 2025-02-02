@@ -6,15 +6,13 @@ target_sources(AnemoneRuntime
         "WindowsApplication.hxx"
 
         "WindowsClipboard.cxx"
-        "WindowsClipboard.hxx"
 
         "WindowsCrashHandler.hxx"
 
-        "WindowsDialogs.cxx"
-        "WindowsDialogs.hxx"
-
         "WindowsDebugger.cxx"
         "WindowsDebugger.hxx"
+        
+        "WindowsDialogs.cxx"
 
         "WindowsEnvironment.cxx"
         "WindowsEnvironment.hxx"
@@ -36,7 +34,6 @@ target_sources(AnemoneRuntime
         "WindowsPlatform.hxx"
 
         "WindowsPlatformTraceListeners.cxx"
-        "WindowsPlatformTraceListeners.hxx"
 
         "WindowsProcess.cxx"
         "WindowsProcess.hxx"
@@ -48,10 +45,8 @@ target_sources(AnemoneRuntime
         "WindowsSplashScreen.hxx"
 
         "WindowsStackTrace.cxx"
-        "WindowsStackTrace.hxx"
 
         "WindowsSystemAllocator.cxx"
-        "WindowsSystemAllocator.hxx"
 
         "WindowsWindow.cxx"
         "WindowsWindow.hxx"

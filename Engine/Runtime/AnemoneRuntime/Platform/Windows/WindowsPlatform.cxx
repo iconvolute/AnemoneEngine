@@ -1,3 +1,4 @@
+#include "AnemoneRuntime/Platform/Platform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
@@ -17,7 +18,7 @@ namespace Anemone::Internal
     {
         void VerifyRequirements()
         {
-            if (Debugger::IsProcessEmulated())
+            if (WindowsDebugger::IsProcessEmulated())
             {
                 // VERIFY: AVX is not supported in WoA process emulation.
                 Debugger::ReportApplicationStop("Emulated process not supported.");
@@ -240,7 +241,7 @@ namespace Anemone::Internal
                 return EXCEPTION_CONTINUE_EXECUTION;
             }
 
-            Debugger::HandleCrash(lpExceptionPointers);
+            WindowsDebugger::HandleCrash(lpExceptionPointers);
             return EXCEPTION_CONTINUE_SEARCH;
         }
 
@@ -260,7 +261,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void WindowsPlatform::Initialize()
+    void Platform::Initialize()
     {
         // Initialize COM
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
@@ -434,7 +435,7 @@ namespace Anemone
         }
     }
 
-    void WindowsPlatform::Finalize()
+    void Platform::Finalize()
     {
         Internal::GWindowsPlatformStatics->NetworkListManager = nullptr;
 

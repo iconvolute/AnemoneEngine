@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsSystemAllocator.hxx"
+#include "AnemoneRuntime/Platform/SystemAllocator.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
@@ -33,14 +33,14 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void* WindowsSystemAllocator::ReserveUncommitted(size_t size, bool writable, bool executable)
+    void* SystemAllocator::ReserveUncommitted(size_t size, bool writable, bool executable)
     {
         DWORD const dwProtect = Internal::ToVirtualMemoryProtectFlags(writable, executable);
         void* const result = VirtualAlloc(nullptr, size, MEM_RESERVE, dwProtect);
         return result;
     }
 
-    void WindowsSystemAllocator::ReleaseDecommitted(void* address, size_t size)
+    void SystemAllocator::ReleaseDecommitted(void* address, size_t size)
     {
         if (size != 0)
         {
@@ -51,14 +51,14 @@ namespace Anemone
         }
     }
 
-    void* WindowsSystemAllocator::Commit(void* address, size_t size, bool writable, bool executable)
+    void* SystemAllocator::Commit(void* address, size_t size, bool writable, bool executable)
     {
         DWORD const dwProtect = Internal::ToVirtualMemoryProtectFlags(writable, executable);
         void* const result = VirtualAlloc(address, size, MEM_COMMIT, dwProtect);
         return result;
     }
 
-    void WindowsSystemAllocator::Decommit(void* address, size_t size)
+    void SystemAllocator::Decommit(void* address, size_t size)
     {
         if (size != 0)
         {
@@ -69,14 +69,14 @@ namespace Anemone
         }
     }
 
-    void* WindowsSystemAllocator::ReserveAndCommit(size_t size, bool writable, bool executable)
+    void* SystemAllocator::ReserveAndCommit(size_t size, bool writable, bool executable)
     {
         DWORD const dwProtect = Internal::ToVirtualMemoryProtectFlags(writable, executable);
         void* const result = VirtualAlloc(nullptr, size, MEM_RESERVE | MEM_COMMIT, dwProtect);
         return result;
     }
 
-    void* WindowsSystemAllocator::ReserveAndCommit(size_t reserve, size_t commit, bool writable, bool executable)
+    void* SystemAllocator::ReserveAndCommit(size_t reserve, size_t commit, bool writable, bool executable)
     {
         DWORD const dwProtect = Internal::ToVirtualMemoryProtectFlags(writable, executable);
         void* result = VirtualAlloc(nullptr, reserve, MEM_RESERVE, dwProtect);
@@ -84,7 +84,7 @@ namespace Anemone
         return result;
     }
 
-    void WindowsSystemAllocator::DecommitAndRelease(void* address, size_t size)
+    void SystemAllocator::DecommitAndRelease(void* address, size_t size)
     {
         if (size != 0)
         {
@@ -95,7 +95,7 @@ namespace Anemone
         }
     }
 
-    void WindowsSystemAllocator::Reset(void* address, size_t size)
+    void SystemAllocator::Reset(void* address, size_t size)
     {
         if (size != 0)
         {

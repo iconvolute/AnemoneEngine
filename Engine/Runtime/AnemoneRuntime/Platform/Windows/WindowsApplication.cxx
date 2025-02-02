@@ -14,7 +14,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    void WindowsApplication::Initialize()
+    void Application::Initialize()
     {
         Internal::GWindowsApplicationStatics.Create();
         Internal::GWindowsInputStatics.Create();
@@ -69,7 +69,7 @@ namespace Anemone
         }
     }
 
-    void WindowsApplication::Finalize()
+    void Application::Finalize()
     {
         UnregisterClassW(
             MAKEINTATOM(Internal::GWindowsApplicationStatics->MainWindowClass),
@@ -79,7 +79,7 @@ namespace Anemone
         Internal::GWindowsApplicationStatics.Destroy();
     }
 
-    void WindowsApplication::ProcessMessages()
+    void Application::ProcessMessages()
     {
         // Process messages.
         MSG message{};
@@ -94,12 +94,12 @@ namespace Anemone
         Internal::GWindowsInputStatics->Poll();
     }
 
-    void WindowsApplication::SetEvents(IApplicationEvents* events)
+    void Application::SetEvents(IApplicationEvents* events)
     {
         Internal::GWindowsApplicationStatics->Events = events;
     }
 
-    std::unique_ptr<Window> WindowsApplication::MakeWindow(WindowType type)
+    std::unique_ptr<Window> Application::MakeWindow(WindowType type)
     {
         return std::make_unique<WindowsWindow>(type);
     }

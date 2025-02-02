@@ -6,12 +6,12 @@
 
 namespace Anemone
 {
-    void WindowsDebugger::Break()
+    void Debugger::Break()
     {
         anemone_debugbreak();
     }
 
-    void WindowsDebugger::Crash()
+    void Debugger::Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -20,7 +20,7 @@ namespace Anemone
         __fastfail(FAST_FAIL_FATAL_APP_EXIT);
     }
 
-    bool WindowsDebugger::IsAttached()
+    bool Debugger::IsAttached()
     {
 #if ANEMONE_BUILD_SHIPPING
         return false;
@@ -29,7 +29,7 @@ namespace Anemone
 #endif
     }
 
-    void WindowsDebugger::Wait()
+    void Debugger::Wait()
     {
         while (not IsDebuggerPresent())
         {
@@ -37,7 +37,7 @@ namespace Anemone
         }
     }
 
-    bool WindowsDebugger::Attach()
+    bool Debugger::Attach()
     {
 #if ANEMONE_BUILD_SHIPPING
         return false;
@@ -97,7 +97,7 @@ namespace Anemone
 #endif
     }
 
-    void WindowsDebugger::ReportApplicationStop(std::string_view reason)
+    void Debugger::ReportApplicationStop(std::string_view reason)
     {
         Interop::string_buffer<wchar_t, 128> buffer{};
         Interop::win32_WidenString(buffer, reason);
@@ -110,7 +110,10 @@ namespace Anemone
 
         ExitProcess(static_cast<UINT>(-1));
     }
+}
 
+namespace Anemone
+{
     bool WindowsDebugger::IsProcessEmulated()
     {
         USHORT processMachine = IMAGE_FILE_MACHINE_UNKNOWN;
@@ -142,7 +145,7 @@ namespace Anemone
 
         AcquireSRWLockExclusive(&lock);
 
-        WindowsDebugger::Attach();
+        Debugger::Attach();
 
         HANDLE const hProcess = GetCurrentProcess();
         HANDLE const hThread = GetCurrentThread();
@@ -180,7 +183,7 @@ namespace Anemone
                     static_cast<UINT>(dwThreadId)) < 0)
             {
                 // Terminate process immediately
-                ReportApplicationStop("Could not format command line");
+                Debugger::ReportApplicationStop("Could not format command line");
             }
 
             STARTUPINFOW startupInfo{};
@@ -207,7 +210,7 @@ namespace Anemone
             if (not bCreated)
             {
                 // Terminate process immediately
-                ReportApplicationStop("Could not start AnemoneCrashReporter");
+                Debugger::ReportApplicationStop("Could not start AnemoneCrashReporter");
             }
             else
             {

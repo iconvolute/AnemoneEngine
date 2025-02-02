@@ -1,9 +1,9 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsClipboard.hxx"
+#include "AnemoneRuntime/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 namespace Anemone
 {
-    void WindowsClipboard::Clear()
+    void Clipboard::Clear()
     {
         if (OpenClipboard(nullptr))
         {
@@ -12,7 +12,7 @@ namespace Anemone
         }
     }
 
-    bool WindowsClipboard::GetText(std::string& result)
+    bool Clipboard::GetText(std::string& result)
     {
         result.clear();
 
@@ -45,7 +45,7 @@ namespace Anemone
         return success;
     }
 
-    bool WindowsClipboard::SetText(std::string_view value)
+    bool Clipboard::SetText(std::string_view value)
     {
         bool success = false;
 
@@ -77,6 +77,4 @@ namespace Anemone
 
         return success;
     }
-
-
 }

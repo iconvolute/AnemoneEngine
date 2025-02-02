@@ -1,7 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BasePlatform.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxEnvironment.hxx"
+#include "AnemoneRuntime/Platform/Environment.hxx"
 
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
@@ -34,15 +33,4 @@ namespace Anemone::Internal
     };
 
     extern UninitializedObject<LinuxPlatformStatics> GLinuxPlatformStatics;
-}
-
-namespace Anemone
-{
-    struct LinuxPlatform final
-    {
-        static RUNTIME_API void Initialize();
-        static RUNTIME_API void Finalize();
-    };
-
-    using Platform = LinuxPlatform;
 }

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Linux/LinuxEnvironment.hxx"
+#include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
 
@@ -10,7 +10,7 @@ namespace Anemone
 {
     static pthread_mutex_t GEnvironmentLock = PTHREAD_MUTEX_INITIALIZER;
 
-    bool LinuxEnvironment::GetEnvironmentVariable(std::string& result, std::string_view name)
+    bool Environment::GetEnvironmentVariable(std::string& result, std::string_view name)
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -28,7 +28,7 @@ namespace Anemone
         return success;
     }
 
-    bool LinuxEnvironment::SetEnvironmentVariable(std::string name, std::string_view value)
+    bool Environment::SetEnvironmentVariable(std::string name, std::string_view value)
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -39,7 +39,7 @@ namespace Anemone
         return result;
     }
 
-    bool LinuxEnvironment::RemoveEnvironmentVariable(std::string_view name)
+    bool Environment::RemoveEnvironmentVariable(std::string_view name)
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -50,24 +50,24 @@ namespace Anemone
         return result;
     }
 
-    ProcessorProperties const& LinuxEnvironment::GetProcessorProperties()
+    ProcessorProperties const& Environment::GetProcessorProperties()
     {
         return Internal::GLinuxPlatformStatics->Processor;
     }
 
-    std::vector<ProcessorTopology> LinuxEnvironment::GetProcessorTopology()
+    std::vector<ProcessorTopology> Environment::GetProcessorTopology()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    void LinuxEnvironment::GetDisplayMetrics(DisplayMetrics& metrics)
+    void Environment::GetDisplayMetrics(DisplayMetrics& metrics)
     {
         (void)metrics;
         AE_PANIC("Not implemented");
     }
 
-    ColorRef LinuxEnvironment::GetScreenPixel(Math::PointF position, float gamma)
+    ColorRef Environment::GetScreenPixel(Math::PointF position, float gamma)
     {
         (void)position;
         (void)gamma;
@@ -75,23 +75,23 @@ namespace Anemone
         return {};
     }
 
-    std::string_view LinuxEnvironment::GetSystemVersion()
+    std::string_view Environment::GetSystemVersion()
     {
         return Internal::GLinuxPlatformStatics->SystemVersion;
     }
 
-    std::string_view LinuxEnvironment::GetSystemId()
+    std::string_view Environment::GetSystemId()
     {
         return Internal::GLinuxPlatformStatics->SystemId;
     }
 
-    std::string_view LinuxEnvironment::GetSystemName()
+    std::string_view Environment::GetSystemName()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    Duration LinuxEnvironment::GetSystemUptime()
+    Duration Environment::GetSystemUptime()
     {
         struct sysinfo info = {0};
         sysinfo(&info);
@@ -99,12 +99,12 @@ namespace Anemone
         return Duration::FromSeconds(info.uptime);
     }
 
-    DateTime LinuxEnvironment::GetApplicationStartupTime()
+    DateTime Environment::GetApplicationStartupTime()
     {
         return Internal::GLinuxPlatformStatics->ApplicationStartupTime;
     }
 
-    MemoryProperties LinuxEnvironment::GetMemoryProperties()
+    MemoryProperties Environment::GetMemoryProperties()
     {
         // Get memory properties
         struct sysinfo info = {0};
@@ -130,7 +130,7 @@ namespace Anemone
         };
     }
 
-    MemoryUsage LinuxEnvironment::GetMemoryUsage()
+    MemoryUsage Environment::GetMemoryUsage()
     {
         MemoryUsage result{};
 
@@ -196,13 +196,13 @@ namespace Anemone
         return result;
     }
 
-    PowerUsage LinuxEnvironment::GetPowerUsage()
+    PowerUsage Environment::GetPowerUsage()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    ProcessorUsage LinuxEnvironment::GetProcessorUsage()
+    ProcessorUsage Environment::GetProcessorUsage()
     {
         struct rusage usage = {0};
         getrusage(RUSAGE_SELF, &usage);
@@ -213,7 +213,7 @@ namespace Anemone
         };
     }
 
-    void LinuxEnvironment::Terminate(bool force)
+    void Environment::Terminate(bool force)
     {
         if (force)
         {
@@ -225,82 +225,82 @@ namespace Anemone
         }
     }
 
-    std::string_view LinuxEnvironment::GetDeviceUniqueId()
+    std::string_view Environment::GetDeviceUniqueId()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    std::string_view LinuxEnvironment::GetDeviceName()
+    std::string_view Environment::GetDeviceName()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    std::string LinuxEnvironment::GetDeviceModel()
+    std::string Environment::GetDeviceModel()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    DeviceType LinuxEnvironment::GetDeviceType()
+    DeviceType Environment::GetDeviceType()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    DeviceProperties LinuxEnvironment::GetDeviceProperties()
+    DeviceProperties Environment::GetDeviceProperties()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    std::string_view LinuxEnvironment::GetComputerName()
+    std::string_view Environment::GetComputerName()
     {
         return Internal::GLinuxPlatformStatics->ComputerName;
     }
 
-    std::string_view LinuxEnvironment::GetUserName()
+    std::string_view Environment::GetUserName()
     {
         return Internal::GLinuxPlatformStatics->UserName;
     }
 
-    std::string_view LinuxEnvironment::GetExecutablePath()
+    std::string_view Environment::GetExecutablePath()
     {
         return Internal::GLinuxPlatformStatics->ExecutablePath;
     }
 
-    std::string_view LinuxEnvironment::GetStartupPath()
+    std::string_view Environment::GetStartupPath()
     {
         return Internal::GLinuxPlatformStatics->StartupPath;
     }
 
-    std::string_view LinuxEnvironment::GetHomePath()
+    std::string_view Environment::GetHomePath()
     {
         return Internal::GLinuxPlatformStatics->ProfilePath;
     }
 
-    std::string_view LinuxEnvironment::GetDesktopPath()
+    std::string_view Environment::GetDesktopPath()
     {
         return Internal::GLinuxPlatformStatics->DesktopPath;
     }
 
-    std::string_view LinuxEnvironment::GetDocumentsPath()
+    std::string_view Environment::GetDocumentsPath()
     {
         return Internal::GLinuxPlatformStatics->DocumentsPath;
     }
 
-    std::string_view LinuxEnvironment::GetDownloadsPath()
+    std::string_view Environment::GetDownloadsPath()
     {
         return Internal::GLinuxPlatformStatics->DownloadsPath;
     }
 
-    std::string_view LinuxEnvironment::GetTemporaryPath()
+    std::string_view Environment::GetTemporaryPath()
     {
         return Internal::GLinuxPlatformStatics->TemporaryPath;
     }
 
-    DateTime LinuxEnvironment::GetCurrentDateTime()
+    DateTime Environment::GetCurrentDateTime()
     {
         struct timespec ts;
 
@@ -316,7 +316,7 @@ namespace Anemone
             }};
     }
 
-    DateTime LinuxEnvironment::GetCurrentDateTimeUtc()
+    DateTime Environment::GetCurrentDateTimeUtc()
     {
         struct timespec ts;
 
@@ -332,7 +332,7 @@ namespace Anemone
         };
     }
 
-    Duration LinuxEnvironment::GetCurrentTimeZoneBias()
+    Duration Environment::GetCurrentTimeZoneBias()
     {
         time_t seconds = 0;
         tm tmGMT{};
@@ -346,7 +346,7 @@ namespace Anemone
         };
     }
 
-    void LinuxEnvironment::GetRandom(std::span<std::byte> buffer)
+    void Environment::GetRandom(std::span<std::byte> buffer)
     {
         size_t processed = 0;
 

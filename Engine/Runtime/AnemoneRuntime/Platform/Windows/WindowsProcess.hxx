@@ -7,89 +7,20 @@
 #include <optional>
 #include <expected>
 
-namespace Anemone
+namespace Anemone::Internal
 {
-    class WindowsFileHandle;
-
-    class RUNTIME_API WindowsProcess final
+    struct NativeProcessHandle final
     {
-    private:
-        HANDLE _handle{};
+        HANDLE Value{nullptr};
 
-    public:
-        explicit WindowsProcess(HANDLE handle);
-
-        WindowsProcess() = default;
-
-        WindowsProcess(WindowsProcess const&) = delete;
-
-        WindowsProcess(WindowsProcess&& other) noexcept;
-
-        WindowsProcess& operator=(WindowsProcess const&) = delete;
-
-        WindowsProcess& operator=(WindowsProcess&& other) noexcept;
-
-        ~WindowsProcess();
-
-    public:
-        static std::expected<WindowsProcess, ErrorCode> Start(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory)
+        constexpr bool IsValid() const
         {
-            return Start(
-                path,
-                params,
-                workingDirectory,
-                nullptr,
-                nullptr,
-                nullptr);
+            return this->Value != nullptr;
         }
 
-        static std::expected<WindowsProcess, ErrorCode> Start(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory,
-            WindowsFileHandle* input,
-            WindowsFileHandle* output,
-            WindowsFileHandle* error);
-
-    public:
-        static std::expected<int32_t, ErrorCode> Execute(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory);
-
-        static std::expected<int32_t, ErrorCode> Execute(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory,
-            std::string& output,
-            std::string& error);
-
-    public:
-        [[nodiscard]] explicit operator bool() const
+        static constexpr NativeProcessHandle Invalid()
         {
-            return this->IsValid();
+            return NativeProcessHandle{};
         }
-
-        [[nodiscard]] bool IsValid() const
-        {
-            return this->_handle != nullptr;
-        }
-
-        [[nodiscard]] HANDLE GetNativeHandle() const
-        {
-            return this->_handle;
-        }
-
-    public:
-        std::expected<int32_t, ErrorCode> Wait();
-
-        std::expected<int32_t, ErrorCode> TryWait();
-
-        std::expected<void, ErrorCode> Terminate();
     };
-
-    using Process = WindowsProcess;
 }

@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Math/Aligned.hxx"
 #include "AnemoneRuntime/Math/Packed.hxx"
 #include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
