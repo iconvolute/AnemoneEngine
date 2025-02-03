@@ -1,5 +1,6 @@
 #ifndef ANEMONE_PLATFORM_WINDOWS_WINDOWSHEADERS_HXX
 #define ANEMONE_PLATFORM_WINDOWS_WINDOWSHEADERS_HXX
+#pragma once
 
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 
@@ -115,7 +116,10 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 // won't compile here?
 #include <WinSock2.h>
 #include <WS2tcpip.h>
-#include <Windows.h>
+#include <winnt.h>
+//#include <WinBase.h>
+//#include <Windows.h>
+//#include <fileapi.h>
 #include <afunix.h>
 #include <cerrno>
 #include <cmath>
@@ -135,8 +139,6 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 //--------------------------------------------------------------------------------------------------
 // Undefine macros that are defined by Windows headers.
 //
-
-#pragma once
 
 // begin: fileapi.h
 #undef CreateDirectory

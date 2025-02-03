@@ -1,4 +1,5 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
 #include "AnemoneRuntime/Platform/Base/BaseInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
@@ -8,12 +9,12 @@
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 
-ANEMONE_EXTERNAL_HEADERS_BEGIN
+#ifndef AnemoneRuntime_EXPORTS
+#error "This file should only be included in the runtime library only"
+#endif
 
 #include <shellapi.h>
 #include <ShlObj.h>
-
-ANEMONE_EXTERNAL_HEADERS_END
 
 namespace Anemone::Interop
 {

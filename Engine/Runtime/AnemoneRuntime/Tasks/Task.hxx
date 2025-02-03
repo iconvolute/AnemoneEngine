@@ -93,82 +93,15 @@ namespace Anemone::Tasks
         virtual void OnExecute() { }
 
     public: // TaskOperations?
-        void Execute()
-        {
-            AE_ASSERT(this->m_Awaiter != nullptr);
-            AE_ASSERT(this->m_DependencyAwaiter != nullptr);
+        void Execute();
 
-            AE_ASSERT(this->m_Id != 0);
+        void Abandon();
 
-            switch (this->m_Status)
-            {
-            case TaskStatus::Dispatched:
-            case TaskStatus::Pending:
-                this->m_Status = TaskStatus::Executing;
-                this->OnExecute();
-                this->m_Status = TaskStatus::Completed;
-                break;
+        void Dispatched(uint32_t id, AwaiterHandle const& awaiter, AwaiterHandle const& dependencyAwaiter);
 
-            case TaskStatus::Cancelled:
-            case TaskStatus::Abandoned:
-                break;
+        void DispatchedToPending();
 
-            case TaskStatus::Executing:
-            case TaskStatus::Completed:
-            case TaskStatus::Created:
-                AE_PANIC("Invalid task state");
-            }
-        }
-
-        void Abandon()
-        {
-            switch (this->m_Status)
-            {
-            case TaskStatus::Dispatched:
-            case TaskStatus::Pending:
-            case TaskStatus::Executing:
-                this->m_Status = TaskStatus::Abandoned;
-                break;
-
-            case TaskStatus::Cancelled:
-            case TaskStatus::Abandoned:
-                break;
-
-            case TaskStatus::Completed:
-            case TaskStatus::Created:
-                AE_PANIC("Invalid task state");
-            }
-        }
-
-        void Dispatched(uint32_t id, AwaiterHandle const& awaiter, AwaiterHandle const& dependencyAwaiter)
-        {
-            AE_ASSERT(this->m_Awaiter == nullptr);
-            AE_ASSERT(this->m_DependencyAwaiter == nullptr);
-            AE_ASSERT(awaiter != nullptr);
-            AE_ASSERT(dependencyAwaiter != nullptr);
-            AE_ASSERT(awaiter != dependencyAwaiter);
-
-            this->m_Awaiter = awaiter;
-            this->m_DependencyAwaiter = dependencyAwaiter;
-
-            AE_ASSERT(this->m_Id == 0);
-            AE_ENSURE(this->m_Status == TaskStatus::Created, "Invalid task state");
-
-            this->m_Status = TaskStatus::Dispatched;
-            this->m_Id = id;
-        }
-
-        void DispatchedToPending()
-        {
-            AE_ENSURE(this->m_Status == TaskStatus::Dispatched, "Invalid task state");
-            this->m_Status = TaskStatus::Pending;
-        }
-
-        void PendingToDispatched()
-        {
-            AE_ENSURE(this->m_Status == TaskStatus::Pending, "Invalid task state");
-            this->m_Status = TaskStatus::Dispatched;
-        }
+        void PendingToDispatched();
 
     public:
         AwaiterHandle& GetAwaiter()
@@ -206,26 +139,9 @@ namespace Anemone::Tasks
             return this->m_Id;
         }
 
-        uint32_t AcquireReference()
-        {
-            return this->m_ReferenceCount.fetch_add(1, std::memory_order::relaxed);
-        }
+        uint32_t AcquireReference();
 
-        uint32_t ReleaseReference()
-        {
-            uint32_t const result = this->m_ReferenceCount.fetch_sub(1, std::memory_order::acq_rel) - 1;
-            if (result == 0)
-            {
-                if (this->m_Options.Has(TaskOption::Dispose))
-                {
-                    delete this;
-                }
-
-                return 0;
-            }
-
-            return result;
-        }
+        uint32_t ReleaseReference();
     };
 
     using TaskHandle = Reference<Task>;
