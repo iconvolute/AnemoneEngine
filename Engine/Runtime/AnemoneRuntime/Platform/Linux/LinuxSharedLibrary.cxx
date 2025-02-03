@@ -41,7 +41,7 @@ namespace Anemone
     {
         if (this->_handle)
         {
-            if (void* symbol = dlsym(this->_handle.Value(), name))
+            if (void* symbol = dlsym(this->_handle.Get(), name))
             {
                 return symbol;
             }

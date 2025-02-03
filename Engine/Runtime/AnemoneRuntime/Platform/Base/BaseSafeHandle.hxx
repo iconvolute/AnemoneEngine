@@ -1,19 +1,17 @@
 #pragma once
-#include <type_traits>
-#include <utility>
 
 namespace Anemone::Interop
 {
-    template <typename T, typename TraitsT>
+    template <typename HandleT, typename TraitsT>
     class base_SafeHandle final
     {
     private:
-        T _value = TraitsT::Invalid();
+        HandleT _value = TraitsT::Invalid();
 
     public:
         base_SafeHandle() = default;
 
-        explicit base_SafeHandle(T value)
+        explicit base_SafeHandle(HandleT value)
             : _value{value}
         {
         }
@@ -21,15 +19,16 @@ namespace Anemone::Interop
         base_SafeHandle(base_SafeHandle const&) = delete;
 
         base_SafeHandle(base_SafeHandle&& other) noexcept
-            : _value{std::exchange(other._value, TraitsT::Invalid())}
+            : _value{other._value}
         {
+            other._value = TraitsT::Invalid();
         }
 
         base_SafeHandle& operator=(base_SafeHandle const&) = delete;
 
         base_SafeHandle& operator=(base_SafeHandle&& other) noexcept
         {
-            if (this != std::addressof(other))
+            if (this != &other)
             {
                 this->Attach(other.Detach());
             }
@@ -56,18 +55,30 @@ namespace Anemone::Interop
             return this->IsValid();
         }
 
-        [[nodiscard]] constexpr T Value() const
+        [[nodiscard]] constexpr HandleT Get() const
         {
             return this->_value;
         }
 
-    public:
-        T Detach()
+        [[nodiscard]] HandleT const* GetAddressOf() const
         {
-            return std::exchange(this->_value, TraitsT::Invalid());
+            return &this->_value;
         }
 
-        void Attach(T value)
+        [[nodiscard]] HandleT* GetAddressOf()
+        {
+            return &this->_value;
+        }
+
+    public:
+        HandleT Detach()
+        {
+            HandleT const value = this->_value;
+            this->_value = TraitsT::Invalid();
+            return value;
+        }
+
+        void Attach(HandleT value)
         {
             if (TraitsT::IsValid(this->_value))
             {
@@ -77,7 +88,7 @@ namespace Anemone::Interop
             this->_value = value;
         }
 
-        void Close()
+        void Reset()
         {
             if (TraitsT::IsValid(this->_value))
             {

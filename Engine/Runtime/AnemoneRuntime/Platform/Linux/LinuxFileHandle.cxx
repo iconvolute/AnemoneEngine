@@ -174,7 +174,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (fsync(this->_handle.Value()))
+        if (fsync(this->_handle.Get()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -191,7 +191,7 @@ namespace Anemone
             0
         };
 
-        if (fstat64(this->_handle.Value(), &st))
+        if (fstat64(this->_handle.Get(), &st))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -203,7 +203,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (ftruncate64(this->_handle.Value(), length))
+        if (ftruncate64(this->_handle.Get(), length))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -215,7 +215,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        off64_t const position = lseek64(this->_handle.Value(), 0, SEEK_CUR);
+        off64_t const position = lseek64(this->_handle.Get(), 0, SEEK_CUR);
 
         if (position < 0)
         {
@@ -229,7 +229,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (lseek64(this->_handle.Value(), position, SEEK_SET) < 0)
+        if (lseek64(this->_handle.Get(), position, SEEK_SET) < 0)
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -249,7 +249,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = read(this->_handle.Value(), buffer.data(), requested);
+                processed = read(this->_handle.Get(), buffer.data(), requested);
 
                 if (processed < 0)
                 {
@@ -291,7 +291,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = pread64(this->_handle.Value(), buffer.data(), requested, position);
+                processed = pread64(this->_handle.Get(), buffer.data(), requested, position);
 
                 if (processed < 0)
                 {
@@ -333,7 +333,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = write(this->_handle.Value(), buffer.data(), requested);
+                processed = write(this->_handle.Get(), buffer.data(), requested);
 
                 if (processed < 0)
                 {
@@ -375,7 +375,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = pwrite64(this->_handle.Value(), buffer.data(), requested, position);
+                processed = pwrite64(this->_handle.Get(), buffer.data(), requested, position);
 
                 if (processed < 0)
                 {

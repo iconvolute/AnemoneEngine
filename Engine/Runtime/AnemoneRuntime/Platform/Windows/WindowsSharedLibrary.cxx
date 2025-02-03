@@ -41,7 +41,7 @@ namespace Anemone
 
         if (this->_handle)
         {
-            if (void* const symbol = GetProcAddress(this->_handle.Value(), name))
+            if (void* const symbol = GetProcAddress(this->_handle.Get(), name))
             {
                 return symbol;
             }

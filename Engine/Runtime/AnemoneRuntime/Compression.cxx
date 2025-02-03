@@ -25,7 +25,7 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::OutOfMemory);
+                    return std::unexpected(ErrorCode::InvalidBuffer);
                 }
 
                 return required;
@@ -60,13 +60,13 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::OutOfMemory);
+                    return std::unexpected(ErrorCode::InvalidBuffer);
                 }
 
                 if (output.size() < required)
                 {
                     // Output buffer is too small.
-                    return std::unexpected(ErrorCode::OutOfMemory);
+                    return std::unexpected(ErrorCode::InvalidBuffer);
                 }
 
                 int processed;

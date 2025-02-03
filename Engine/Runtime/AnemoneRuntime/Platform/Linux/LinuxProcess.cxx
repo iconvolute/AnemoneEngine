@@ -224,9 +224,9 @@ namespace Anemone
         if (handle)
         {
             int status;
-            int rc = Interop::posix_WaitForProcess(handle.Value(), status, 0);
+            int rc = Interop::posix_WaitForProcess(handle.Get(), status, 0);
 
-            if (rc != handle.Value())
+            if (rc != handle.Get())
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
@@ -256,7 +256,7 @@ namespace Anemone
         if (this->_handle)
         {
             int status;
-            int rc = Interop::posix_WaitForProcess(this->_handle.Value(), status, WNOHANG);
+            int rc = Interop::posix_WaitForProcess(this->_handle.Get(), status, WNOHANG);
 
             if (rc == 0)
             {
@@ -264,7 +264,7 @@ namespace Anemone
                 return std::unexpected(ErrorCode::OperationInProgress);
             }
 
-            if (rc != this->_handle.Value())
+            if (rc != this->_handle.Get())
             {
                 this->_handle = {};
 
@@ -301,7 +301,7 @@ namespace Anemone
 
         if (handle)
         {
-            if (Interop::posix_TerminateProcess(handle.Value()))
+            if (Interop::posix_TerminateProcess(handle.Get()))
             {
                 return {};
             }

@@ -32,46 +32,36 @@ namespace Anemone
         Internal::NativeFileHandle& hOutChild,
         bool parentWritesToChild)
     {
-        hOutParent = {};
-        hOutChild = {};
-
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
             .lpSecurityDescriptor = nullptr,
             .bInheritHandle = TRUE,
         };
 
-        HANDLE hChild = nullptr;
-        HANDLE hTemp = nullptr;
+        HANDLE hRead = nullptr;
+        HANDLE hWrite = nullptr;
 
-        if (parentWritesToChild)
+        if (!CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            if (!CreatePipe(&hChild, &hTemp, &sa, 0))
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
+            return std::unexpected(ErrorCode::InvalidOperation);
         }
-        else
-        {
-            if (!CreatePipe(&hTemp, &hChild, &sa, 0))
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
-        }
+
+        HANDLE hChild = parentWritesToChild ? hRead : hWrite;
+        HANDLE hParent = parentWritesToChild ? hWrite : hRead;
 
         HANDLE hProcess = GetCurrentProcess();
-        HANDLE hParent = nullptr;
+        HANDLE hParentDuplicate = nullptr;
 
-        if (!DuplicateHandle(hProcess, hTemp, hProcess, &hParent, 0, FALSE, DUPLICATE_SAME_ACCESS))
+        if (!DuplicateHandle(hProcess, hParent, hProcess, &hParentDuplicate, 0, FALSE, DUPLICATE_SAME_ACCESS))
         {
-            CloseHandle(hTemp);
+            CloseHandle(hParent);
             CloseHandle(hChild);
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
-        CloseHandle(hTemp);
+        CloseHandle(hParent);
 
-        hOutParent.Attach(hParent);
+        hOutParent.Attach(hParentDuplicate);
         hOutChild.Attach(hChild);
         return {};
     }
@@ -128,7 +118,7 @@ namespace Anemone
             {
                 if (auto rc = CreatePipeForRedirection(fhWriteInput, fhReadInput, true))
                 {
-                    startup_info.hStdInput = fhReadInput.Value();
+                    startup_info.hStdInput = fhReadInput.Get();
                 }
                 else
                 {
@@ -144,7 +134,7 @@ namespace Anemone
             {
                 if (auto rc = CreatePipeForRedirection(fhReadOutput, fhWriteOutput, false))
                 {
-                    startup_info.hStdOutput = fhWriteOutput.Value();
+                    startup_info.hStdOutput = fhWriteOutput.Get();
                 }
                 else
                 {
@@ -160,7 +150,7 @@ namespace Anemone
             {
                 if (auto rc = CreatePipeForRedirection(fhReadError, fhWriteError, false))
                 {
-                    startup_info.hStdError = fhWriteError.Value();
+                    startup_info.hStdError = fhWriteError.Get();
                 }
                 else
                 {
@@ -241,14 +231,14 @@ namespace Anemone
 
         if (handle)
         {
-            if (WaitForSingleObject(handle.Value(), INFINITE) != WAIT_OBJECT_0)
+            if (WaitForSingleObject(handle.Get(), INFINITE) != WAIT_OBJECT_0)
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
             DWORD dwExitCode;
 
-            if (!GetExitCodeProcess(handle.Value(), &dwExitCode))
+            if (!GetExitCodeProcess(handle.Get(), &dwExitCode))
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
@@ -267,7 +257,7 @@ namespace Anemone
         {
             DWORD dwExitCode;
 
-            if (!GetExitCodeProcess(this->_handle.Value(), &dwExitCode))
+            if (!GetExitCodeProcess(this->_handle.Get(), &dwExitCode))
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
@@ -292,12 +282,12 @@ namespace Anemone
 
         if (handle)
         {
-            if (!TerminateProcess(handle.Value(), 0))
+            if (!TerminateProcess(handle.Get(), 0))
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
-            if (WaitForSingleObject(handle.Value(), INFINITE) == WAIT_FAILED)
+            if (WaitForSingleObject(handle.Get(), INFINITE) == WAIT_FAILED)
             {
                 return std::unexpected(ErrorCode::InvalidOperation);
             }

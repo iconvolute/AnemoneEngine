@@ -43,7 +43,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        DWORD const dwResult = WaitForSingleObject(this->_handle.Value(), INFINITE);
+        DWORD const dwResult = WaitForSingleObject(this->_handle.Get(), INFINITE);
 
         if (dwResult != WAIT_OBJECT_0)
         {
@@ -55,7 +55,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        DWORD const dwResult = WaitForSingleObject(this->_handle.Value(), 0);
+        DWORD const dwResult = WaitForSingleObject(this->_handle.Get(), 0);
 
         if (dwResult == WAIT_OBJECT_0)
         {
@@ -75,7 +75,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (not ReleaseMutex(this->_handle.Value()))
+        if (not ReleaseMutex(this->_handle.Get()))
         {
             AE_PANIC("Failed to unlock named mutex");
         }

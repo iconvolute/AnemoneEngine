@@ -15,7 +15,7 @@ namespace Anemone
 
         this->_handle = Internal::NativeNamedMutex{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
 
-        if (this->_handle.Value() == SEM_FAILED)
+        if (this->_handle.Get() == SEM_FAILED)
         {
             AE_PANIC("Failed to create named mutex: {}", errno);
         }
@@ -48,7 +48,7 @@ namespace Anemone
 
         do
         {
-            rc = sem_wait(this->_handle.Value());
+            rc = sem_wait(this->_handle.Get());
         } while (rc && (error == EINTR));
 
         if (rc)
@@ -61,14 +61,14 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        return sem_trywait(this->_handle.Value()) == 0;
+        return sem_trywait(this->_handle.Get()) == 0;
     }
 
     void NamedMutex::Unlock()
     {
         AE_ASSERT(this->_handle);
 
-        if (sem_post(this->_handle.Value()))
+        if (sem_post(this->_handle.Get()))
         {
             AE_PANIC("Failed to unlock named mutex: {}", errno);
         }

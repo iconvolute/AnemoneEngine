@@ -176,7 +176,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (not FlushFileBuffers(this->_handle.Value()))
+        if (not FlushFileBuffers(this->_handle.Get()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -190,7 +190,7 @@ namespace Anemone
 
         LARGE_INTEGER liLength{};
 
-        if (not GetFileSizeEx(this->_handle.Value(), &liLength))
+        if (not GetFileSizeEx(this->_handle.Get(), &liLength))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -205,13 +205,13 @@ namespace Anemone
         LARGE_INTEGER const liLength = std::bit_cast<LARGE_INTEGER>(length);
 
         // Set the file pointer to the specified position.
-        if (not SetFilePointerEx(this->_handle.Value(), liLength, nullptr, FILE_BEGIN))
+        if (not SetFilePointerEx(this->_handle.Get(), liLength, nullptr, FILE_BEGIN))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
 
         // Truncate the file at the current position.
-        if (not SetEndOfFile(this->_handle.Value()))
+        if (not SetEndOfFile(this->_handle.Get()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -226,7 +226,7 @@ namespace Anemone
         LARGE_INTEGER liPosition{};
         LARGE_INTEGER liDistanceToMove{};
 
-        if (not SetFilePointerEx(this->_handle.Value(), liDistanceToMove, &liPosition, FILE_CURRENT))
+        if (not SetFilePointerEx(this->_handle.Get(), liDistanceToMove, &liPosition, FILE_CURRENT))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -240,7 +240,7 @@ namespace Anemone
 
         LARGE_INTEGER const liPosition = std::bit_cast<LARGE_INTEGER>(position);
 
-        if (not SetFilePointerEx(this->_handle.Value(), liPosition, nullptr, FILE_BEGIN))
+        if (not SetFilePointerEx(this->_handle.Get(), liPosition, nullptr, FILE_BEGIN))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -260,7 +260,7 @@ namespace Anemone
         DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        if (not ReadFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not ReadFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 
@@ -292,7 +292,7 @@ namespace Anemone
 
         OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
-        if (not ReadFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not ReadFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
 
@@ -302,7 +302,7 @@ namespace Anemone
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(this->_handle.Value(), &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->_handle.Get(), &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(ErrorCode::IoError);
                 }
@@ -328,7 +328,7 @@ namespace Anemone
         DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        if (not WriteFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not WriteFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 
@@ -359,7 +359,7 @@ namespace Anemone
 
         OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
-        if (not WriteFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not WriteFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
             if ((dwError == ERROR_HANDLE_EOF) or (dwError == ERROR_BROKEN_PIPE) or (dwError == ERROR_NO_DATA))
@@ -368,7 +368,7 @@ namespace Anemone
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(this->_handle.Value(), &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->_handle.Get(), &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(ErrorCode::IoError);
                 }
