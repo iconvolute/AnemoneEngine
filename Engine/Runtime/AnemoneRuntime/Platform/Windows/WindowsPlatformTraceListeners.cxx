@@ -1,7 +1,9 @@
 #include "AnemoneRuntime/Platform/PlatformTraceListeners.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/ConsoleTraceListener.hxx"
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
@@ -96,6 +98,7 @@ namespace Anemone
 
     static UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener;
 
+    static UninitializedObject<ConsoleTraceListener> GConsoleTraceListener;
 
     void PlatformTraceListeners::Initialize()
     {
@@ -104,10 +107,23 @@ namespace Anemone
 
         GWindowsDebugTraceListener.Create();
         Trace::AddListener(*GWindowsDebugTraceListener);
+
+        // TODO: Move this to application setup. It should be common to all platforms and configurable.
+        if (WindowsEnvironment::IsConsoleApplication())
+        {
+            GConsoleTraceListener.Create();
+            Trace::AddListener(*GConsoleTraceListener);
+        }
     }
 
     void PlatformTraceListeners::Finalize()
     {
+        if (WindowsEnvironment::IsConsoleApplication())
+        {
+            Trace::RemoveListener(*GConsoleTraceListener);
+            GConsoleTraceListener.Destroy();
+        }
+
         Trace::RemoveListener(*GWindowsDebugTraceListener);
         GWindowsDebugTraceListener.Destroy();
 
