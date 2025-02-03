@@ -1,20 +1,32 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
+#include <dlfcn.h>
 
 namespace Anemone::Internal
 {
-    struct NativeSharedLibrary final
+    struct NativeSharedLibraryTraits final
     {
-        void* Value{nullptr};
-
-        constexpr bool IsValid() const
+        static void* Invalid()
         {
-            return this->Value != nullptr;
+            return nullptr;
         }
 
-        static constexpr NativeSharedLibrary Invalid()
+        static bool IsValid(void* value)
         {
-            return NativeSharedLibrary{};
+            return value != nullptr;
+        }
+
+        static void Close(void* value)
+        {
+            if (dlclose(value))
+            {
+                AE_TRACE(Debug, "Failed to close shared library: handle={}, error={}", fmt::ptr(value), dlerror());
+            }
         }
     };
+
+    using NativeSharedLibrary = Interop::base_SafeHandle<void*, NativeSharedLibraryTraits>;
 }

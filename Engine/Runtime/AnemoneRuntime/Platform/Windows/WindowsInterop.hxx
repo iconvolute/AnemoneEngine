@@ -9,8 +9,10 @@
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 
+#if !ANEMONE_BUILD_MONOLITHIC
 #ifndef AnemoneRuntime_EXPORTS
 #error "This file should only be included in the runtime library only"
+#endif
 #endif
 
 #include <shellapi.h>
@@ -18,65 +20,6 @@
 
 namespace Anemone::Interop
 {
-    struct win32_SafeHandle final
-    {
-        HANDLE Handle = nullptr;
-
-        [[nodiscard]] constexpr bool IsValid() const noexcept
-        {
-            return (this->Handle != nullptr) and (this->Handle != INVALID_HANDLE_VALUE);
-        }
-
-        win32_SafeHandle() noexcept = default;
-
-        explicit win32_SafeHandle(HANDLE handle) noexcept
-            : Handle{handle}
-        {
-        }
-
-        win32_SafeHandle(win32_SafeHandle const&) = delete;
-
-        win32_SafeHandle(win32_SafeHandle&& other) noexcept
-            : Handle{std::exchange(other.Handle, nullptr)}
-        {
-        }
-
-        win32_SafeHandle& operator=(win32_SafeHandle const&) = delete;
-
-        win32_SafeHandle& operator=(win32_SafeHandle&& other) noexcept
-        {
-            if (this != std::addressof(other))
-            {
-                this->Attach(other.Detach());
-            }
-
-            return *this;
-        }
-
-        ~win32_SafeHandle() noexcept
-        {
-            if (this->IsValid())
-            {
-                CloseHandle(this->Handle);
-            }
-        }
-
-        HANDLE Detach()
-        {
-            return std::exchange(this->Handle, nullptr);
-        }
-
-        void Attach(HANDLE handle)
-        {
-            if (this->IsValid())
-            {
-                CloseHandle(this->Handle);
-            }
-
-            this->Handle = handle;
-        }
-    };
-
     constexpr bool win32_IsPathInvalidError(DWORD error)
     {
         switch (error)

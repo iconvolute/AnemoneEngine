@@ -36,7 +36,7 @@ namespace Anemone
         ~SharedLibrary();
 
         explicit SharedLibrary(Internal::NativeSharedLibrary handle)
-            : _handle{handle}
+            : _handle{std::move(handle)}
         {
         }
 
@@ -51,7 +51,7 @@ namespace Anemone
             return this->_handle.IsValid();
         }
 
-        [[nodiscard]] Internal::NativeSharedLibrary GetNativeHandle() const
+        [[nodiscard]] Internal::NativeSharedLibrary const& GetNativeHandle() const
         {
             return this->_handle;
         }
@@ -59,8 +59,6 @@ namespace Anemone
     public:
         static std::expected<SharedLibrary, ErrorCode> Open(
             std::string_view path);
-
-        std::expected<void, ErrorCode> Close();
 
         std::expected<void*, ErrorCode> GetSymbol(const char* name) const;
     };

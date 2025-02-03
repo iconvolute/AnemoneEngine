@@ -1,20 +1,30 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone::Internal
 {
-    struct NativeNamedMutex final
+    struct NativeNamedMutexTraits final
     {
-        HANDLE Value{nullptr};
-
-        constexpr bool IsValid() const
+        static HANDLE Invalid()
         {
-            return this->Value != nullptr;
+            return nullptr;
         }
 
-        static NativeNamedMutex Invalid()
+        static bool IsValid(HANDLE value)
         {
-            return NativeNamedMutex{};
+            return value != nullptr;
+        }
+
+        static void Close(HANDLE value)
+        {
+            if (not CloseHandle(value))
+            {
+                AE_TRACE(Debug, "Failed to close named mutex: handle={}, error={}", fmt::ptr(value), GetLastError());
+            }
         }
     };
+
+    using NativeNamedMutex = Interop::base_SafeHandle<HANDLE, NativeNamedMutexTraits>;
 }

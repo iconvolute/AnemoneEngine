@@ -14,12 +14,12 @@
 namespace Anemone
 {
     Process::Process(Internal::NativeProcessHandle handle)
-        : _handle{handle}
+        : _handle{std::move(handle)}
     {
     }
 
     Process::Process(Process&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeProcessHandle::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -27,15 +27,13 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            this->_handle = std::exchange(other._handle, Internal::NativeProcessHandle::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    Process::~Process()
-    {
-    }
+    Process::~Process() = default;
 
     std::expected<Process, ErrorCode> Process::Start(
         std::string_view path,
@@ -214,139 +212,104 @@ namespace Anemone
 
     std::expected<int32_t, ErrorCode> Process::Wait()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Wait not implemented");
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        auto& error = errno;
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
 
-        int status{};
-        int rc{};
-
-        do
+        if (handle)
         {
-            rc = waitpid(this->_handle.Value, &status, 0);
-        } while ((rc < 0) and (error == EINTR));
+            int status;
+            int rc = Interop::posix_WaitForProcess(handle.Value(), status, 0);
 
-        if (rc != this->_handle.Value)
-        {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            if (rc != handle.Value())
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            if (WIFEXITED(status))
+            {
+                return WEXITSTATUS(status);
+            }
+
+            return WTERMSIG(status) + 256;
         }
 
-        this->_handle = Internal::NativeProcessHandle::Invalid();
+        return std::unexpected(ErrorCode::InvalidHandle);
 
-        if (WIFEXITED(status))
-        {
-            return WEXITSTATUS(status);
-        }
-
-        return WTERMSIG(status) + 256;
 #endif
     }
 
     std::expected<int32_t, ErrorCode> Process::TryWait()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::TryWait not implemented");
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        int status;
-        int rc = Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
-
-        if (rc == 0)
+        if (this->_handle)
         {
-            // Child process still running.
-            return std::unexpected(ErrorCode::OperationInProgress);
+            int status;
+            int rc = Interop::posix_WaitForProcess(this->_handle.Value(), status, WNOHANG);
+
+            if (rc == 0)
+            {
+                // Child process still running.
+                return std::unexpected(ErrorCode::OperationInProgress);
+            }
+
+            if (rc != this->_handle.Value())
+            {
+                this->_handle = {};
+
+                // Failed to wait for child process.
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            // Clear handle.
+            this->_handle = {};
+
+            // Child process has exited.
+            if (WIFEXITED(status))
+            {
+                return WEXITSTATUS(status);
+            }
+
+            return WTERMSIG(status) + 256;
         }
 
-        if (rc != this->_handle.Value)
-        {
-            // Failed to wait for child process.
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        // Clear handle.
-        this->_handle = Internal::NativeProcessHandle::Invalid();
-
-        // Child process has exited.
-        if (WIFEXITED(status))
-        {
-            return WEXITSTATUS(status);
-        }
-
-        return WTERMSIG(status) + 256;
-#endif
-    }
-
-    std::expected<int32_t, ErrorCode> Process::TryWait(Duration timeout)
-    {
-        AE_ASSERT(this->_handle.IsValid());
-
-#if !ANEMONE_PLATFORM_LINUX
-        AE_TRACE(Critical, "Process::TryWait not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
-#else
-        pid_t rc;
-        int status;
-
-        // Try to get child process status.
-
-        rc = Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
-
-        if (rc == 0)
-        {
-            // Child process still running. Try wait with timeout.
-            useconds_t const sleepTime = static_cast<useconds_t>(timeout.ToMicroseconds());
-
-            usleep(sleepTime);
-
-            Interop::posix_WaitForProcess(this->_handle.Value, status, WNOHANG);
-        }
-
-        if (rc == 0)
-        {
-            // Child process is still running.
-            return std::unexpected(ErrorCode::OperationInProgress);
-        }
-        else if (rc != this->_handle.Value)
-        {
-            // Failed to wait for child process.
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        // Child process has exited.
-        if (WIFEXITED(status))
-        {
-            return WEXITSTATUS(status);
-        }
-
-        return WTERMSIG(status) + 256;
+        return std::unexpected(ErrorCode::InvalidHandle);
 #endif
     }
 
     std::expected<void, ErrorCode> Process::Terminate()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Terminate not implemented");
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, Internal::NativeProcessHandle::Invalid());
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
 
-        if (kill(handle.Value, SIGKILL) != 0)
+        if (handle)
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
+            if (Interop::posix_TerminateProcess(handle.Value()))
+            {
+                return {};
+            }
 
-        return {};
+            return std::unexpected(ErrorCode::InvalidOperation);
+        } 
+
+        return std::unexpected(ErrorCode::InvalidHandle);
 #endif
     }
 }

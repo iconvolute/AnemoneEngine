@@ -6,12 +6,12 @@
 namespace Anemone
 {
     Process::Process(Internal::NativeProcessHandle handle)
-        : _handle{handle}
+        : _handle{std::move(handle)}
     {
     }
 
     Process::Process(Process&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeProcessHandle::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -19,38 +19,21 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle.IsValid())
-            {
-                if (!CloseHandle(this->_handle.Value))
-                {
-                    AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
-                }
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeProcessHandle::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    Process::~Process()
-    {
-        if (this->_handle.IsValid())
-        {
-            if (!CloseHandle(this->_handle.Value))
-            {
-                AE_TRACE(Error, "Failed to close process: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
-            }
-        }
-    }
+    Process::~Process() = default;
 
-    static std::expected<void, ErrorCode> CreatePipeForRedirection(
-        HANDLE& hOutParent,
-        HANDLE& hOutChild,
+    inline std::expected<void, ErrorCode> CreatePipeForRedirection(
+        Internal::NativeFileHandle& hOutParent,
+        Internal::NativeFileHandle& hOutChild,
         bool parentWritesToChild)
     {
-        hOutParent = nullptr;
-        hOutChild = nullptr;
+        hOutParent = {};
+        hOutChild = {};
 
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -88,8 +71,8 @@ namespace Anemone
 
         CloseHandle(hTemp);
 
-        hOutParent = hParent;
-        hOutChild = hChild;
+        hOutParent.Attach(hParent);
+        hOutChild.Attach(hChild);
         return {};
     }
 
@@ -132,20 +115,20 @@ namespace Anemone
             .hStdError = nullptr,
         };
 
-        Interop::win32_SafeHandle fhReadInput{};
-        Interop::win32_SafeHandle fhWriteInput{};
-        Interop::win32_SafeHandle fhReadOutput{};
-        Interop::win32_SafeHandle fhWriteOutput{};
-        Interop::win32_SafeHandle fhReadError{};
-        Interop::win32_SafeHandle fhWriteError{};
+        Internal::NativeFileHandle fhReadInput{};
+        Internal::NativeFileHandle fhWriteInput{};
+        Internal::NativeFileHandle fhReadOutput{};
+        Internal::NativeFileHandle fhWriteOutput{};
+        Internal::NativeFileHandle fhReadError{};
+        Internal::NativeFileHandle fhWriteError{};
 
         if (redirectInput or redirectOutput or redirectError)
         {
             if (redirectInput)
             {
-                if (auto rc = CreatePipeForRedirection(fhWriteInput.Handle, fhReadInput.Handle, true))
+                if (auto rc = CreatePipeForRedirection(fhWriteInput, fhReadInput, true))
                 {
-                    startup_info.hStdInput = fhReadInput.Handle;
+                    startup_info.hStdInput = fhReadInput.Value();
                 }
                 else
                 {
@@ -159,9 +142,9 @@ namespace Anemone
 
             if (redirectOutput)
             {
-                if (auto rc = CreatePipeForRedirection(fhReadOutput.Handle, fhWriteOutput.Handle, false))
+                if (auto rc = CreatePipeForRedirection(fhReadOutput, fhWriteOutput, false))
                 {
-                    startup_info.hStdOutput = fhWriteOutput.Handle;
+                    startup_info.hStdOutput = fhWriteOutput.Value();
                 }
                 else
                 {
@@ -175,9 +158,9 @@ namespace Anemone
 
             if (redirectError)
             {
-                if (auto rc = CreatePipeForRedirection(fhReadError.Handle, fhWriteError.Handle, false))
+                if (auto rc = CreatePipeForRedirection(fhReadError, fhWriteError, false))
                 {
-                    startup_info.hStdError = fhWriteError.Handle;
+                    startup_info.hStdError = fhWriteError.Value();
                 }
                 else
                 {
@@ -229,17 +212,17 @@ namespace Anemone
         {
             if (input)
             {
-                (*input) = FileHandle{{fhWriteInput.Detach()}};
+                (*input) = FileHandle{std::move(fhWriteInput)};
             }
 
             if (output)
             {
-                (*output) = FileHandle{{fhReadOutput.Detach()}};
+                (*output) = FileHandle{std::move(fhReadOutput)};
             }
 
             if (error)
             {
-                (*error) = FileHandle{{fhReadError.Detach()}};
+                (*error) = FileHandle{std::move(fhReadError)};
             }
 
             CloseHandle(process_information.hThread);
@@ -252,115 +235,76 @@ namespace Anemone
 
     std::expected<int32_t, ErrorCode> Process::Wait()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (WaitForSingleObject(this->_handle.Value, INFINITE) != WAIT_OBJECT_0)
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
+
+        if (handle)
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            if (WaitForSingleObject(handle.Value(), INFINITE) != WAIT_OBJECT_0)
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            DWORD dwExitCode;
+
+            if (!GetExitCodeProcess(handle.Value(), &dwExitCode))
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            return static_cast<int32_t>(dwExitCode);
         }
 
-        DWORD dwExitCode;
-
-        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
-        {
-            this->_handle = Internal::NativeProcessHandle::Invalid();
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        // Close handle.
-        if (!CloseHandle(this->_handle.Value))
-        {
-            this->_handle = Internal::NativeProcessHandle::Invalid();
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        this->_handle = Internal::NativeProcessHandle::Invalid();
-        return static_cast<int32_t>(dwExitCode);
+        return std::unexpected(ErrorCode::InvalidHandle);
     }
 
     std::expected<int32_t, ErrorCode> Process::TryWait()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        DWORD dwExitCode;
-
-        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
+        if (this->_handle)
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            DWORD dwExitCode;
+
+            if (!GetExitCodeProcess(this->_handle.Value(), &dwExitCode))
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            if (dwExitCode == STILL_ACTIVE)
+            {
+                return std::unexpected(ErrorCode::OperationInProgress);
+            }
+
+            this->_handle = {};
+            return static_cast<int32_t>(dwExitCode);
         }
 
-        if (dwExitCode == STILL_ACTIVE)
-        {
-            return std::unexpected(ErrorCode::OperationInProgress);
-        }
-
-        // Close the process handle here to avoid leaking it.
-        if (!CloseHandle(this->_handle.Value))
-        {
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        this->_handle = Internal::NativeProcessHandle::Invalid();
-        return static_cast<int32_t>(dwExitCode);
-    }
-
-    std::expected<int32_t, ErrorCode> Process::TryWait(Duration timeout)
-    {
-        AE_ASSERT(this->_handle.IsValid());
-
-        DWORD dwExitCode;
-
-        DWORD const dwMilliseconds = Interop::win32_ValidateTimeoutDuration(timeout);
-        DWORD const dwWaitResult = WaitForSingleObject(this->_handle.Value, dwMilliseconds);
-
-        if (dwWaitResult == WAIT_TIMEOUT)
-        {
-            return std::unexpected(ErrorCode::OperationInProgress);
-        }
-
-        if (dwWaitResult != WAIT_OBJECT_0)
-        {
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        if (!GetExitCodeProcess(this->_handle.Value, &dwExitCode))
-        {
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        // Close the process handle here to avoid leaking it.
-        if (!CloseHandle(this->_handle.Value))
-        {
-            return std::unexpected(ErrorCode::InvalidOperation);
-        }
-
-        this->_handle = Internal::NativeProcessHandle::Invalid();
-        return static_cast<int32_t>(dwExitCode);
+        return std::unexpected(ErrorCode::InvalidHandle);
     }
 
     std::expected<void, ErrorCode> Process::Terminate()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, Internal::NativeProcessHandle::Invalid());
+        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
 
-        if (handle.IsValid())
+        if (handle)
         {
-            if (!TerminateProcess(handle.Value, 0))
+            if (!TerminateProcess(handle.Value(), 0))
             {
-                CloseHandle(handle.Value);
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
-            if (WaitForSingleObject(handle.Value, INFINITE) == WAIT_FAILED)
+            if (WaitForSingleObject(handle.Value(), INFINITE) == WAIT_FAILED)
             {
-                CloseHandle(handle.Value);
                 return std::unexpected(ErrorCode::InvalidOperation);
             }
 
-            CloseHandle(handle.Value);
+            return {};
         }
 
-        return {};
+        return std::unexpected(ErrorCode::InvalidHandle);
     }
 }

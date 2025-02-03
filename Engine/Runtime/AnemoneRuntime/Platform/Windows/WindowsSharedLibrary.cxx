@@ -5,7 +5,7 @@
 namespace Anemone
 {
     SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeSharedLibrary::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -13,30 +13,13 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle.IsValid())
-            {
-                if (not FreeLibrary(this->_handle.Value))
-                {
-                    AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
-                }
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeSharedLibrary::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    SharedLibrary::~SharedLibrary()
-    {
-        if (this->_handle.IsValid())
-        {
-            if (not FreeLibrary(this->_handle.Value))
-            {
-                AE_TRACE(Error, "Failed to close shared library: {}", GetLastError());
-            }
-        }
-    }
+    SharedLibrary::~SharedLibrary() = default;
 
     std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(
         std::string_view path)
@@ -52,30 +35,20 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> SharedLibrary::Close()
-    {
-        if (this->_handle.IsValid())
-        {
-            Internal::NativeSharedLibrary const handle = std::exchange(this->_handle, Internal::NativeSharedLibrary::Invalid());
-
-            if (not FreeLibrary(handle.Value))
-            {
-                return std::unexpected(ErrorCode::InvalidHandle);
-            }
-        }
-
-        return {};
-    }
-
     std::expected<void*, ErrorCode> SharedLibrary::GetSymbol(const char* name) const
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (void* const symbol = GetProcAddress(this->_handle.Value, name))
+        if (this->_handle)
         {
-            return symbol;
+            if (void* const symbol = GetProcAddress(this->_handle.Value(), name))
+            {
+                return symbol;
+            }
+
+            return std::unexpected(ErrorCode::NotFound);
         }
 
-        return std::unexpected(ErrorCode::NotFound);
+        return std::unexpected(ErrorCode::InvalidHandle);
     }
 }

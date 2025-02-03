@@ -28,7 +28,7 @@ namespace Anemone
     class RUNTIME_API Process final
     {
     private:
-        Internal::NativeProcessHandle _handle = Internal::NativeProcessHandle::Invalid();
+        Internal::NativeProcessHandle _handle{};
 
     public:
         explicit Process(Internal::NativeProcessHandle handle);
@@ -99,7 +99,7 @@ namespace Anemone
             return this->_handle.IsValid();
         }
 
-        [[nodiscard]] Internal::NativeProcessHandle GetNativeHandle() const
+        [[nodiscard]] Internal::NativeProcessHandle const& GetNativeHandle() const
         {
             return this->_handle;
         }
@@ -108,8 +108,6 @@ namespace Anemone
         std::expected<int32_t, ErrorCode> Wait();
 
         std::expected<int32_t, ErrorCode> TryWait();
-
-        std::expected<int32_t, ErrorCode> TryWait(Duration timeout);
 
         std::expected<void, ErrorCode> Terminate();
     };

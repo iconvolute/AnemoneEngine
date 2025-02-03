@@ -15,7 +15,7 @@ namespace Anemone
 
         this->_handle = Internal::NativeNamedMutex{CreateMutexW(nullptr, FALSE, wname.data())};
 
-        if (not this->_handle.IsValid())
+        if (not this->_handle)
         {
             AE_PANIC("Failed to create named mutex");
         }
@@ -31,30 +31,19 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle.IsValid())
-            {
-                CloseHandle(this->_handle.Value);
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeNamedMutex::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    NamedMutex::~NamedMutex()
-    {
-        if (this->_handle.IsValid())
-        {
-            CloseHandle(this->_handle.Value);
-        }
-    }
+    NamedMutex::~NamedMutex() = default;
 
     void NamedMutex::Lock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        DWORD const dwResult = WaitForSingleObject(this->_handle.Value, INFINITE);
+        DWORD const dwResult = WaitForSingleObject(this->_handle.Value(), INFINITE);
 
         if (dwResult != WAIT_OBJECT_0)
         {
@@ -64,9 +53,9 @@ namespace Anemone
 
     bool NamedMutex::TryLock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        DWORD const dwResult = WaitForSingleObject(this->_handle.Value, 0);
+        DWORD const dwResult = WaitForSingleObject(this->_handle.Value(), 0);
 
         if (dwResult == WAIT_OBJECT_0)
         {
@@ -84,9 +73,9 @@ namespace Anemone
 
     void NamedMutex::Unlock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (not ReleaseMutex(this->_handle.Value))
+        if (not ReleaseMutex(this->_handle.Value()))
         {
             AE_PANIC("Failed to unlock named mutex");
         }

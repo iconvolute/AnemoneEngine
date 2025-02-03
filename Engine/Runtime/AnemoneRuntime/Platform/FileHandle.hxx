@@ -67,7 +67,7 @@ namespace Anemone
     class RUNTIME_API FileHandle final
     {
     private:
-        Internal::NativeFileHandle _handle = Internal::NativeFileHandle::Invalid();
+        Internal::NativeFileHandle _handle{};
 
     public:
         explicit FileHandle(Internal::NativeFileHandle handle);
@@ -82,7 +82,7 @@ namespace Anemone
 
         FileHandle& operator=(FileHandle&& other) noexcept;
 
-        ~FileHandle() noexcept;
+        ~FileHandle();
 
     public:
         [[nodiscard]] explicit operator bool() const
@@ -95,7 +95,7 @@ namespace Anemone
             return this->_handle.IsValid();
         }
 
-        [[nodiscard]] Internal::NativeFileHandle GetNativeHandle() const
+        [[nodiscard]] Internal::NativeFileHandle const& GetNativeHandle() const
         {
             return this->_handle;
         }
@@ -125,8 +125,6 @@ namespace Anemone
         static std::expected<void, ErrorCode> CreatePipe(FileHandle& read, FileHandle& write);
 
     public:
-        std::expected<void, ErrorCode> Close();
-
         std::expected<void, ErrorCode> Flush();
 
         std::expected<int64_t, ErrorCode> GetLength() const;

@@ -15,14 +15,14 @@ namespace Anemone
 
         this->_handle = Internal::NativeNamedMutex{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
 
-        if (this->_handle.Value == SEM_FAILED)
+        if (this->_handle.Value() == SEM_FAILED)
         {
             AE_PANIC("Failed to create named mutex: {}", errno);
         }
     }
 
     NamedMutex::NamedMutex(NamedMutex&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeNamedMutex::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -30,28 +30,17 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle.IsValid())
-            {
-                sem_close(this->_handle.Value);
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeNamedMutex::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    NamedMutex::~NamedMutex()
-    {
-        if (this->_handle.IsValid())
-        {
-            sem_close(this->_handle.Value);
-        }
-    }
+    NamedMutex::~NamedMutex() = default;
 
     void NamedMutex::Lock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         auto& error = errno;
 
@@ -59,7 +48,7 @@ namespace Anemone
 
         do
         {
-            rc = sem_wait(this->_handle.Value);
+            rc = sem_wait(this->_handle.Value());
         } while (rc && (error == EINTR));
 
         if (rc)
@@ -70,16 +59,16 @@ namespace Anemone
 
     bool NamedMutex::TryLock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        return sem_trywait(this->_handle.Value) == 0;
+        return sem_trywait(this->_handle.Value()) == 0;
     }
 
     void NamedMutex::Unlock()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (sem_post(this->_handle.Value))
+        if (sem_post(this->_handle.Value()))
         {
             AE_PANIC("Failed to unlock named mutex: {}", errno);
         }

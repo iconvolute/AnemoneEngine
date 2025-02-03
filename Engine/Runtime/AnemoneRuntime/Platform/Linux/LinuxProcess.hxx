@@ -1,20 +1,27 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
 
 namespace Anemone::Internal
 {
-    struct NativeProcessHandle final
+    struct NativeProcessHandleTraits final
     {
-        pid_t Value{-1};
-
-        constexpr bool IsValid() const
+        static pid_t Invalid()
         {
-            return this->Value > 0;
+            return -1;
         }
 
-        static constexpr NativeProcessHandle Invalid()
+        static bool IsValid(pid_t value)
         {
-            return NativeProcessHandle{};
+            return value > 0;
+        }
+
+        static void Close(pid_t value)
+        {
+            (void)value;
+            // No-op?
         }
     };
+
+    using NativeProcessHandle = Interop::base_SafeHandle<pid_t, NativeProcessHandleTraits>;
 }

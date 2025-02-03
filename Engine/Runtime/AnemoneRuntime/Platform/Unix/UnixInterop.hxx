@@ -195,6 +195,21 @@ namespace Anemone::Interop
         return rc;
     }
 
+    inline bool posix_TerminateProcess(pid_t pid)
+    {
+        bool result = true;
+        if (kill(pid, SIGKILL))
+        {
+            result = false;
+        }
+
+        // Wait without WNOHANG to avoid zombie processes.
+        int status;
+        waitpid(pid, &status, 0);
+
+        return result;
+    }
+
     [[nodiscard]] constexpr int unix_ValidateIoRequestLength(size_t value)
     {
         return static_cast<int>(std::min(value, size_t{INT32_MAX}));

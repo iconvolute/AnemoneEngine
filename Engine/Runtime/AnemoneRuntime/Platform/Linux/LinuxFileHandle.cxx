@@ -91,12 +91,12 @@ namespace Anemone
 namespace Anemone
 {
     FileHandle::FileHandle(Internal::NativeFileHandle handle)
-        : _handle{handle}
+        : _handle{std::move(handle)}
     {
     }
 
     FileHandle::FileHandle(FileHandle&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeFileHandle::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -104,30 +104,13 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->IsValid())
-            {
-                if (close(this->_handle.Value))
-                {
-                    AE_TRACE(Error, "Failed to close file: fd={}, errno={}", this->_handle.Value, errno);
-                }
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeFileHandle::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    FileHandle::~FileHandle() noexcept
-    {
-        if (this->IsValid())
-        {
-            if (close(this->_handle.Value))
-            {
-                AE_TRACE(Error, "Failed to close file: fd={}, errno={}", this->_handle.Value, errno);
-            }
-        }
-    }
+    FileHandle::~FileHandle() = default;
 
     std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
     {
@@ -187,25 +170,11 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, ErrorCode> FileHandle::Close()
-    {
-        AE_ASSERT(this->IsValid());
-
-        Internal::NativeFileHandle const handle = std::exchange(this->_handle, Internal::NativeFileHandle::Invalid());
-
-        if (close(handle.Value))
-        {
-            return std::unexpected(ErrorCode::InvalidHandle);
-        }
-
-        return {};
-    }
-
     std::expected<void, ErrorCode> FileHandle::Flush()
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (fsync(this->_handle.Value))
+        if (fsync(this->_handle.Value()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -215,14 +184,14 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
         struct stat64 st
         {
             0
         };
 
-        if (fstat64(this->_handle.Value, &st))
+        if (fstat64(this->_handle.Value(), &st))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -232,9 +201,9 @@ namespace Anemone
 
     std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (ftruncate64(this->_handle.Value, length))
+        if (ftruncate64(this->_handle.Value(), length))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -244,9 +213,9 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
-        off64_t const position = lseek64(this->_handle.Value, 0, SEEK_CUR);
+        off64_t const position = lseek64(this->_handle.Value(), 0, SEEK_CUR);
 
         if (position < 0)
         {
@@ -258,9 +227,9 @@ namespace Anemone
 
     std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (lseek64(this->_handle.Value, position, SEEK_SET) < 0)
+        if (lseek64(this->_handle.Value(), position, SEEK_SET) < 0)
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -270,7 +239,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
         ssize_t processed = 0;
 
@@ -280,7 +249,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = read(this->_handle.Value, buffer.data(), requested);
+                processed = read(this->_handle.Value(), buffer.data(), requested);
 
                 if (processed < 0)
                 {
@@ -312,7 +281,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
         ssize_t processed = 0;
 
@@ -322,7 +291,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = pread64(this->_handle.Value, buffer.data(), requested, position);
+                processed = pread64(this->_handle.Value(), buffer.data(), requested, position);
 
                 if (processed < 0)
                 {
@@ -354,7 +323,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
         ssize_t processed = 0;
 
@@ -364,7 +333,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = write(this->_handle.Value, buffer.data(), requested);
+                processed = write(this->_handle.Value(), buffer.data(), requested);
 
                 if (processed < 0)
                 {
@@ -396,7 +365,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
-        AE_ASSERT(this->IsValid());
+        AE_ASSERT(this->_handle);
 
         ssize_t processed = 0;
 
@@ -406,7 +375,7 @@ namespace Anemone
 
             while (true)
             {
-                processed = pwrite64(this->_handle.Value, buffer.data(), requested, position);
+                processed = pwrite64(this->_handle.Value(), buffer.data(), requested, position);
 
                 if (processed < 0)
                 {

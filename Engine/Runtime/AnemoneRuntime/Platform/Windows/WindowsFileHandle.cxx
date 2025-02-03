@@ -1,17 +1,16 @@
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone
 {
     FileHandle::FileHandle(Internal::NativeFileHandle handle)
-        : _handle{handle}
+        : _handle{std::move(handle)}
     {
     }
 
     FileHandle::FileHandle(FileHandle&& other) noexcept
-        : _handle{std::exchange(other._handle, Internal::NativeFileHandle::Invalid())}
+        : _handle{std::exchange(other._handle, {})}
     {
     }
 
@@ -19,30 +18,13 @@ namespace Anemone
     {
         if (this != std::addressof(other))
         {
-            if (this->_handle.IsValid())
-            {
-                if (not CloseHandle(this->_handle.Value))
-                {
-                    AE_TRACE(Error, "Failed to close file: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
-                }
-            }
-
-            this->_handle = std::exchange(other._handle, Internal::NativeFileHandle::Invalid());
+            this->_handle = std::exchange(other._handle, {});
         }
 
         return *this;
     }
 
-    FileHandle::~FileHandle() noexcept
-    {
-        if (this->_handle.IsValid())
-        {
-            if (not CloseHandle(this->_handle.Value))
-            {
-                AE_TRACE(Error, "Failed to close file: handle={}, error={}", fmt::ptr(this->_handle.Value), GetLastError());
-            }
-        }
-    }
+    FileHandle::~FileHandle() = default;
 
     std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
     {
@@ -160,7 +142,7 @@ namespace Anemone
 
             if (result != INVALID_HANDLE_VALUE)
             {
-                return FileHandle{{result}};
+                return FileHandle{Internal::NativeFileHandle{result}};
             }
 
             return std::unexpected(ErrorCode{});
@@ -182,33 +164,19 @@ namespace Anemone
 
         if (::CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            read = FileHandle{{hRead}};
-            write = FileHandle{{hWrite}};
+            read = FileHandle{Internal::NativeFileHandle{hRead}};
+            write = FileHandle{Internal::NativeFileHandle{hWrite}};
             return {};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<void, ErrorCode> FileHandle::Close()
-    {
-        AE_ASSERT(this->_handle.IsValid());
-
-        Internal::NativeFileHandle const handle = std::exchange(this->_handle, {});
-
-        if (not CloseHandle(handle.Value))
-        {
-            return std::unexpected(ErrorCode::InvalidHandle);
-        }
-
-        return {};
-    }
-
     std::expected<void, ErrorCode> FileHandle::Flush()
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
-        if (not FlushFileBuffers(this->_handle.Value))
+        if (not FlushFileBuffers(this->_handle.Value()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -218,11 +186,11 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         LARGE_INTEGER liLength{};
 
-        if (not GetFileSizeEx(this->_handle.Value, &liLength))
+        if (not GetFileSizeEx(this->_handle.Value(), &liLength))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -232,18 +200,18 @@ namespace Anemone
 
     std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         LARGE_INTEGER const liLength = std::bit_cast<LARGE_INTEGER>(length);
 
         // Set the file pointer to the specified position.
-        if (not SetFilePointerEx(this->_handle.Value, liLength, nullptr, FILE_BEGIN))
+        if (not SetFilePointerEx(this->_handle.Value(), liLength, nullptr, FILE_BEGIN))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
 
         // Truncate the file at the current position.
-        if (not SetEndOfFile(this->_handle.Value))
+        if (not SetEndOfFile(this->_handle.Value()))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -253,12 +221,12 @@ namespace Anemone
 
     std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         LARGE_INTEGER liPosition{};
         LARGE_INTEGER liDistanceToMove{};
 
-        if (not SetFilePointerEx(this->_handle.Value, liDistanceToMove, &liPosition, FILE_CURRENT))
+        if (not SetFilePointerEx(this->_handle.Value(), liDistanceToMove, &liPosition, FILE_CURRENT))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -268,11 +236,11 @@ namespace Anemone
 
     std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         LARGE_INTEGER const liPosition = std::bit_cast<LARGE_INTEGER>(position);
 
-        if (not SetFilePointerEx(this->_handle.Value, liPosition, nullptr, FILE_BEGIN))
+        if (not SetFilePointerEx(this->_handle.Value(), liPosition, nullptr, FILE_BEGIN))
         {
             return std::unexpected(ErrorCode::InvalidHandle);
         }
@@ -282,7 +250,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         if (buffer.empty())
         {
@@ -292,7 +260,7 @@ namespace Anemone
         DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        if (not ReadFile(this->_handle.Value, buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not ReadFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 
@@ -312,7 +280,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         if (buffer.empty())
         {
@@ -324,7 +292,7 @@ namespace Anemone
 
         OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
-        if (not ReadFile(this->_handle.Value, buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not ReadFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
 
@@ -334,7 +302,7 @@ namespace Anemone
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(this->_handle.Value, &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->_handle.Value(), &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(ErrorCode::IoError);
                 }
@@ -350,7 +318,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         if (buffer.empty())
         {
@@ -360,7 +328,7 @@ namespace Anemone
         DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        if (not WriteFile(this->_handle.Value, buffer.data(), dwRequested, &dwProcessed, nullptr))
+        if (not WriteFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, nullptr))
         {
             DWORD const dwError = GetLastError();
 
@@ -379,7 +347,7 @@ namespace Anemone
 
     std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
-        AE_ASSERT(this->_handle.IsValid());
+        AE_ASSERT(this->_handle);
 
         if (buffer.empty())
         {
@@ -391,7 +359,7 @@ namespace Anemone
 
         OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
 
-        if (not WriteFile(this->_handle.Value, buffer.data(), dwRequested, &dwProcessed, &overlapped))
+        if (not WriteFile(this->_handle.Value(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
             DWORD const dwError = GetLastError();
             if ((dwError == ERROR_HANDLE_EOF) or (dwError == ERROR_BROKEN_PIPE) or (dwError == ERROR_NO_DATA))
@@ -400,7 +368,7 @@ namespace Anemone
             }
             else if (dwError == ERROR_IO_PENDING)
             {
-                if (not GetOverlappedResult(this->_handle.Value, &overlapped, &dwProcessed, TRUE))
+                if (not GetOverlappedResult(this->_handle.Value(), &overlapped, &dwProcessed, TRUE))
                 {
                     return std::unexpected(ErrorCode::IoError);
                 }

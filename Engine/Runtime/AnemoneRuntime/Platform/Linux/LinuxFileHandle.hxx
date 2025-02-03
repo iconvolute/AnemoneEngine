@@ -1,20 +1,32 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
+#include <unistd.h>
 
 namespace Anemone::Internal
 {
-    struct NativeFileHandle
+    struct NativeFileHandleTraits final
     {
-        int Value{-1};
-
-        constexpr bool IsValid() const
+        static int Invalid()
         {
-            return this->Value >= 0;
+            return -1;
         }
 
-        static NativeFileHandle Invalid()
+        static bool IsValid(int value)
         {
-            return NativeFileHandle{};
+            return value >= 0;
+        }
+
+        static void Close(int value)
+        {
+            if (close(value) != 0)
+            {
+                AE_TRACE(Debug, "Failed to close file handle: handle={}, error={}", value, errno);
+            }
         }
     };
+
+    using NativeFileHandle = Interop::base_SafeHandle<int, NativeFileHandleTraits>;
 }

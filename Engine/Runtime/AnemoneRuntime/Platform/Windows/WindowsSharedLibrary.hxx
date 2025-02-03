@@ -1,20 +1,30 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone::Internal
 {
-    struct NativeSharedLibrary final
+    struct NativeSharedLibraryTraits final
     {
-        HMODULE Value{nullptr};
-
-        constexpr bool IsValid() const
+        static HMODULE Invalid()
         {
-            return this->Value != nullptr;
+            return nullptr;
         }
 
-        static constexpr NativeSharedLibrary Invalid()
+        static bool IsValid(HMODULE value)
         {
-            return NativeSharedLibrary{};
+            return value != nullptr;
+        }
+
+        static void Close(HMODULE value)
+        {
+            if (not FreeLibrary(value))
+            {
+                AE_TRACE(Debug, "Failed to close shared library: handle={}, error={}", fmt::ptr(value), GetLastError());
+            }
         }
     };
+
+    using NativeSharedLibrary = Interop::base_SafeHandle<HMODULE, NativeSharedLibraryTraits>;
 }

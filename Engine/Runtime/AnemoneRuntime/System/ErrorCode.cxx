@@ -1,5 +1,4 @@
 #include "AnemoneRuntime/ErrorCode.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
 #include <cerrno>
 
