@@ -7,7 +7,6 @@ namespace Anemone
 {
     UserSemaphore::~UserSemaphore()
     {
-        AE_ASSERT(this->m_Count.load() == 0);
         AE_ASSERT(this->m_Waiting.load() == 0);
     }
 

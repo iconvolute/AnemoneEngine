@@ -19,7 +19,7 @@ namespace Anemone
             , _waiting{0}
         {
             AE_ASSERT(initial >= 0);
-            
+
             pthread_mutex_init(&this->_mutex, nullptr);
 
             pthread_condattr_t attr;
@@ -33,7 +33,7 @@ namespace Anemone
         PthreadSemaphore(PthreadSemaphore&&) = delete;
         PthreadSemaphore& operator=(PthreadSemaphore const&) = delete;
         PthreadSemaphore& operator=(PthreadSemaphore&&) = delete;
-        
+
         ~PthreadSemaphore()
         {
             pthread_cond_destroy(&this->_cond);
@@ -212,8 +212,6 @@ namespace Anemone
 
         bool TryAcquire()
         {
-            AE_ASSERT(this->_handle);
-
             return sem_trywait(&this->_inner) == 0;
         }
 
