@@ -160,14 +160,14 @@ namespace Anemone
     class UnixSemaphore final
     {
     private:
-        Interop::UnixSafeSemaphoreHandle _handle;
+        sem_t _inner;
 
     public:
         UnixSemaphore(int32_t initial)
         {
             AE_ASSERT(initial >= 0);
 
-            sem_init(this->_handle.Get(), 0, static_cast<unsigned int>(initial));
+            sem_init(&this->_inner, 0, static_cast<unsigned int>(initial));
         }
 
         UnixSemaphore(UnixSemaphore const&) = delete;
@@ -175,7 +175,10 @@ namespace Anemone
         UnixSemaphore& operator=(UnixSemaphore const&) = delete;
         UnixSemaphore& operator=(UnixSemaphore&&) = delete;
 
-        ~UnixSemaphore() = default;
+        ~UnixSemaphore()
+        {
+            sem_destroy(&this->_inner);
+        }
 
     public:
         void Acquire()
@@ -185,7 +188,7 @@ namespace Anemone
             // TODO: Do some helper macro / function to handle this pattern
             do
             {
-                rc = sem_wait(this->_handle.Get());
+                rc = sem_wait(&this->_inner);
             } while (rc && (errno == EINTR));
         }
 
@@ -200,7 +203,7 @@ namespace Anemone
             // Try to acquire the semaphore.
             do
             {
-                rc = sem_timedwait(this->_handle.Get(), &ts);
+                rc = sem_timedwait(&this->_inner, &ts);
             } while (rc && (errno == EINTR));
 
             // Fail when ETIMEDOUT.
@@ -211,14 +214,14 @@ namespace Anemone
         {
             AE_ASSERT(this->_handle);
 
-            return sem_trywait(this->_handle.Get()) == 0;
+            return sem_trywait(&this->_inner) == 0;
         }
 
         void Release(int32_t count = 1)
         {
             for (; count != 0; --count)
             {
-                sem_post(this->_handle.Get());
+                sem_post(&this->_inner);
             }
         }
     };

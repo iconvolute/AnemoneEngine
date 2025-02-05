@@ -45,25 +45,6 @@ namespace Anemone::Interop
     };
     using UnixSafeNamedSemaphoreHandle = Interop::base_SafeHandle<sem_t*, UnixSafeNamedSemaphoreHandleTraits>;
 
-    struct UnixSafeSemaphoreHandleTraits final
-    {
-        static sem_t* Invalid()
-        {
-            return nullptr;
-        }
-
-        static bool IsValid(sem_t* value)
-        {
-            return value != nullptr;
-        }
-
-        static bool Reset(sem_t* value)
-        {
-            return sem_destroy(value) == 0;
-        }
-    };
-    using UnixSafeSemaphoreHandle = Interop::base_SafeHandle<sem_t*, UnixSafeSemaphoreHandleTraits>;
-
     struct UnixSafePidHandleTraits final
     {
         static pid_t Invalid()
