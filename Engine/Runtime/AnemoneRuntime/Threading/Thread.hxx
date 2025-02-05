@@ -45,9 +45,9 @@ namespace Anemone
 
     struct ThreadId final
     {
-        uintptr_t Value;
+        Internal::NativeThreadId Value;
 
-        auto operator<=>(ThreadId const&) const = default;
+        constexpr auto operator<=>(ThreadId const& other) const = default;
 
         static constexpr ThreadId Invalid()
         {
@@ -59,7 +59,8 @@ namespace Anemone
     class RUNTIME_API Thread final
     {
     private:
-        Detail::NativeThread m_native;
+        Internal::NativeThreadHandle _handle{};
+        Internal::NativeThreadId _id{};
 
     public:
         //! Creates a new thread object. Does not start the thread.
@@ -79,9 +80,29 @@ namespace Anemone
         ~Thread();
 
     public:
+        [[nodiscard]] explicit operator bool() const
+        {
+            return this->_handle.IsValid();
+        }
+
+        [[nodiscard]] bool IsValid() const
+        {
+            return this->_handle.IsValid();
+        }
+
+        [[nodiscard]] Internal::NativeThreadHandle const& GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+        [[nodiscard]] ThreadId GetId() const
+        {
+            return ThreadId{this->_id};
+        }
+
+    public:
         void Join();
         [[nodiscard]] bool IsJoinable() const;
-        [[nodiscard]] ThreadId GetId() const;
         void Detach();
     };
 

@@ -1,32 +1,35 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
 
-#include <semaphore.h>
+#include <string_view>
+#include <expected>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    struct NativeNamedMutexTraits final
+    class LinuxNamedMutex final
     {
-        static sem_t* Invalid()
+    private:
+        Interop::UnixSafeNamedSemaphoreHandle _handle;
+
+    private:
+        explicit LinuxNamedMutex(Interop::UnixSafeNamedSemaphoreHandle handle)
+            : _handle{std::move(handle)}
         {
-            return nullptr;
         }
 
-        static bool IsValid(sem_t* value)
-        {
-            return value != nullptr;
-        }
+    public:
+        LinuxNamedMutex() = default;
 
-        static void Close(sem_t* value)
-        {
-            if (sem_close(value))
-            {
-                AE_TRACE(Debug, "Failed to close named mutex: handle={}, error={}", fmt::ptr(value), errno);
-            }
-        }
+    public:
+        static std::expected<LinuxNamedMutex, ErrorCode> Create(std::string_view name);
+
+    public:
+        void Lock();
+        bool TryLock();
+        void Unlock();
     };
 
-    using NativeNamedMutex = Interop::base_SafeHandle<sem_t*, NativeNamedMutexTraits>;
+    using NamedMutex = LinuxNamedMutex;
 }

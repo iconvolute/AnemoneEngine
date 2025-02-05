@@ -13,29 +13,7 @@
 
 namespace Anemone
 {
-    Process::Process(Internal::NativeProcessHandle handle)
-        : _handle{std::move(handle)}
-    {
-    }
-
-    Process::Process(Process&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    Process& Process::operator=(Process&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    Process::~Process() = default;
-
-    std::expected<Process, ErrorCode> Process::Start(
+    std::expected<LinuxProcess, ErrorCode> LinuxProcess::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
@@ -103,12 +81,12 @@ namespace Anemone
         spawn_flags |= POSIX_SPAWN_SETSIGDEF;
 
         // TODO: Determine if we can do this in normal FileHandle::CreatePipe() function.
-        FileHandle fhWriteInput{};
-        FileHandle fhReadInput{};
-        FileHandle fhWriteOutput{};
-        FileHandle fhReadOutput{};
-        FileHandle fhWriteError{};
-        FileHandle fhReadError{};
+        Interop::UnixSafeFdHandle fhWriteInput{};
+        Interop::UnixSafeFdHandle fhReadInput{};
+        Interop::UnixSafeFdHandle fhWriteOutput{};
+        Interop::UnixSafeFdHandle fhReadOutput{};
+        Interop::UnixSafeFdHandle fhWriteError{};
+        Interop::UnixSafeFdHandle fhReadError{};
 
         posix_spawn_file_actions_t files{};
         posix_spawn_file_actions_init(&files);
@@ -130,8 +108,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteInput = FileHandle{ Internal::NativeFileHandle {fd[1]}};
-                fhReadInput = FileHandle{Internal::NativeFileHandle{fd[0]}};
+                fhWriteInput = Interop::UnixSafeFdHandle{fd[1]};
+                fhReadInput = Interop::UnixSafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[0], STDIN_FILENO);
@@ -147,8 +125,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteOutput = FileHandle{Internal::NativeFileHandle{fd[1]}};
-                fhReadOutput = FileHandle{Internal::NativeFileHandle{fd[0]}};
+                fhWriteOutput = Interop::UnixSafeFdHandle{fd[1]};
+                fhReadOutput = Interop::UnixSafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDOUT_FILENO);
@@ -164,8 +142,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteError = FileHandle{Internal::NativeFileHandle{fd[1]}};
-                fhReadError = FileHandle{Internal::NativeFileHandle{fd[0]}};
+                fhWriteError = Interop::UnixSafeFdHandle{fd[1]};
+                fhReadError = Interop::UnixSafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDERR_FILENO);
@@ -188,20 +166,20 @@ namespace Anemone
         {
             if (input != nullptr)
             {
-                *input = std::move(fhWriteInput);
+                *input = LinuxFileHandle{std::move(fhWriteInput)};
             }
 
             if (output != nullptr)
             {
-                *output = std::move(fhReadOutput);
+                *output = LinuxFileHandle{std::move(fhReadOutput)};
             }
 
             if (error != nullptr)
             {
-                *error = std::move(fhReadError);
+                *error = LinuxFileHandle{std::move(fhReadError)};
             }
 
-            return Process{Internal::NativeProcessHandle{process_id}};
+            return Process{Interop::UnixSafePidHandle{process_id}};
         }
         else
         {
@@ -210,7 +188,7 @@ namespace Anemone
 #endif
     }
 
-    std::expected<int32_t, ErrorCode> Process::Wait()
+    std::expected<int32_t, ErrorCode> LinuxProcess::Wait()
     {
         AE_ASSERT(this->_handle);
 
@@ -219,7 +197,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
+        Interop::UnixSafePidHandle const handle = std::exchange(this->_handle, {});
 
         if (handle)
         {
@@ -244,7 +222,7 @@ namespace Anemone
 #endif
     }
 
-    std::expected<int32_t, ErrorCode> Process::TryWait()
+    std::expected<int32_t, ErrorCode> LinuxProcess::TryWait()
     {
         AE_ASSERT(this->_handle);
 
@@ -288,7 +266,7 @@ namespace Anemone
 #endif
     }
 
-    std::expected<void, ErrorCode> Process::Terminate()
+    std::expected<void, ErrorCode> LinuxProcess::Terminate()
     {
         AE_ASSERT(this->_handle);
 
@@ -297,7 +275,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::NotImplemented);
 #else
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
+        Interop::UnixSafePidHandle const handle = std::exchange(this->_handle, {});
 
         if (handle)
         {

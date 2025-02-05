@@ -4,29 +4,7 @@
 
 namespace Anemone
 {
-    FileHandle::FileHandle(Internal::NativeFileHandle handle)
-        : _handle{std::move(handle)}
-    {
-    }
-
-    FileHandle::FileHandle(FileHandle&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    FileHandle& FileHandle::operator=(FileHandle&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    FileHandle::~FileHandle() = default;
-
-    std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
+    std::expected<WindowsFileHandle, ErrorCode> WindowsFileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
     {
         DWORD dwCreationDisposition;
 
@@ -80,37 +58,37 @@ namespace Anemone
         DWORD dwShare = 0;
         DWORD dwFlags = 0;
 
-        if (options.Has(FileOptions::ShareRead))
+        if (options.Has(FileOption::ShareRead))
         {
             dwShare |= FILE_SHARE_READ;
         }
 
-        if (options.Has(FileOptions::ShareWrite))
+        if (options.Has(FileOption::ShareWrite))
         {
             dwShare |= FILE_SHARE_WRITE;
         }
 
-        if (options.Has(FileOptions::DeleteOnClose))
+        if (options.Has(FileOption::DeleteOnClose))
         {
             dwFlags |= FILE_FLAG_DELETE_ON_CLOSE;
         }
 
-        if (options.Has(FileOptions::RandomAccess))
+        if (options.Has(FileOption::RandomAccess))
         {
             dwFlags |= FILE_FLAG_RANDOM_ACCESS;
         }
 
-        if (options.Has(FileOptions::SequentialScan))
+        if (options.Has(FileOption::SequentialScan))
         {
             dwFlags |= FILE_FLAG_SEQUENTIAL_SCAN;
         }
 
-        if (options.Has(FileOptions::WriteThrough))
+        if (options.Has(FileOption::WriteThrough))
         {
             dwFlags |= FILE_FLAG_WRITE_THROUGH;
         }
 
-        if (options.Has(FileOptions::NoBuffering))
+        if (options.Has(FileOption::NoBuffering))
         {
             dwFlags |= FILE_FLAG_NO_BUFFERING;
         }
@@ -121,7 +99,7 @@ namespace Anemone
             SECURITY_ATTRIBUTES sa{
                 .nLength = sizeof(SECURITY_ATTRIBUTES),
                 .lpSecurityDescriptor = nullptr,
-                .bInheritHandle = options.Has(FileOptions::Inheritable),
+                .bInheritHandle = options.Has(FileOption::Inheritable),
             };
 
             CREATEFILE2_EXTENDED_PARAMETERS cf{
@@ -129,7 +107,7 @@ namespace Anemone
                 .dwFileAttributes = FILE_ATTRIBUTE_NORMAL,
                 .dwFileFlags = dwFlags,
                 .dwSecurityQosFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS,
-                .lpSecurityAttributes = options.Has(FileOptions::Inheritable) ? &sa : nullptr,
+                .lpSecurityAttributes = options.Has(FileOption::Inheritable) ? &sa : nullptr,
                 .hTemplateFile = nullptr,
             };
 
@@ -142,7 +120,7 @@ namespace Anemone
 
             if (result != INVALID_HANDLE_VALUE)
             {
-                return FileHandle{Internal::NativeFileHandle{result}};
+                return FileHandle{Interop::Win32SafeHandle{result}};
             }
 
             return std::unexpected(ErrorCode{});
@@ -151,7 +129,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
+    std::expected<void, ErrorCode> WindowsFileHandle::CreatePipe(FileHandle& read, FileHandle& write)
     {
         HANDLE hRead = nullptr;
         HANDLE hWrite = nullptr;
@@ -164,15 +142,15 @@ namespace Anemone
 
         if (::CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            read = FileHandle{Internal::NativeFileHandle{hRead}};
-            write = FileHandle{Internal::NativeFileHandle{hWrite}};
+            read = FileHandle{Interop::Win32SafeHandle{hRead}};
+            write = FileHandle{Interop::Win32SafeHandle{hWrite}};
             return {};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<void, ErrorCode> FileHandle::Flush()
+    std::expected<void, ErrorCode> WindowsFileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
 
@@ -184,7 +162,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
+    std::expected<int64_t, ErrorCode> WindowsFileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
@@ -198,7 +176,7 @@ namespace Anemone
         return liLength.QuadPart;
     }
 
-    std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
+    std::expected<void, ErrorCode> WindowsFileHandle::Truncate(int64_t length)
     {
         AE_ASSERT(this->_handle);
 
@@ -219,7 +197,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
+    std::expected<int64_t, ErrorCode> WindowsFileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
 
@@ -234,7 +212,7 @@ namespace Anemone
         return std::bit_cast<int64_t>(liPosition);
     }
 
-    std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
+    std::expected<void, ErrorCode> WindowsFileHandle::SetPosition(int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -248,7 +226,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
+    std::expected<size_t, ErrorCode> WindowsFileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -278,7 +256,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> WindowsFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -316,7 +294,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, ErrorCode> WindowsFileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -345,7 +323,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> WindowsFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 

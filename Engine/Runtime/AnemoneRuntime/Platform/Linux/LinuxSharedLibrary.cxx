@@ -7,37 +7,22 @@
 
 namespace Anemone
 {
-    SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    SharedLibrary::~SharedLibrary() = default;
-
-    std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(
+    std::expected<LinuxSharedLibrary, ErrorCode> LinuxSharedLibrary::Open(
         std::string_view path)
     {
         Interop::unix_Path uPath{path};
 
-        if (void* h = dlopen(uPath.c_str(), RTLD_LAZY))
+        Interop::UnixSafeSharedLibraryHandle h{dlopen(uPath.c_str(), RTLD_LAZY)};
+
+        if (h)
         {
-            return SharedLibrary{Internal::NativeSharedLibrary{h}};
+            return LinuxSharedLibrary{std::move(h)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void*, ErrorCode> SharedLibrary::GetSymbol(const char* name) const
+    std::expected<void*, ErrorCode> LinuxSharedLibrary::GetSymbol(const char* name) const
     {
         if (this->_handle)
         {

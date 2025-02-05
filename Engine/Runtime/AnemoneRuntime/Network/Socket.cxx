@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <optional>
+#include <utility>
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/Types.hxx"

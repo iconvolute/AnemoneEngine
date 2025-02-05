@@ -1,30 +1,88 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-namespace Anemone::Internal
+#include <utility>
+#include <string_view>
+#include <expected>
+#include <span>
+
+namespace Anemone
 {
-    struct NativeFileHandleTraits final
+    class RUNTIME_API WindowsFileHandle final
     {
-        static HANDLE Invalid()
+    private:
+        Interop::Win32SafeHandle _handle{};
+
+    public:
+        explicit WindowsFileHandle(Interop::Win32SafeHandle handle)
+            : _handle{std::move(handle)}
         {
-            return INVALID_HANDLE_VALUE;
         }
 
-        static bool IsValid(HANDLE value)
+        WindowsFileHandle() = default;
+
+    public:
+        [[nodiscard]] explicit operator bool() const
         {
-            return value != INVALID_HANDLE_VALUE;
+            return this->_handle.IsValid();
         }
 
-        static void Close(HANDLE value)
+        [[nodiscard]] bool IsValid() const
         {
-            if (not CloseHandle(value))
-            {
-                AE_TRACE(Debug, "Failed to close file handle: handle={}, error={}", fmt::ptr(value), GetLastError());
-            }
+            return this->_handle.IsValid();
         }
+
+        [[nodiscard]] Interop::Win32SafeHandle const& GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<WindowsFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access,
+            Flags<FileOption> options);
+
+        static std::expected<WindowsFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access)
+        {
+            return Create(path, mode, access, FileOption::None);
+        }
+
+        static std::expected<WindowsFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode)
+        {
+            return Create(path, mode, FileAccess::ReadWrite, FileOption::None);
+        }
+
+        static std::expected<void, ErrorCode> CreatePipe(WindowsFileHandle& read, WindowsFileHandle& write);
+
+    public:
+        std::expected<void, ErrorCode> Flush();
+
+        std::expected<int64_t, ErrorCode> GetLength() const;
+
+        std::expected<void, ErrorCode> Truncate(int64_t length);
+
+        std::expected<int64_t, ErrorCode> GetPosition() const;
+
+        std::expected<void, ErrorCode> SetPosition(int64_t position);
+
+        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer);
+
+        std::expected<size_t, ErrorCode> ReadAt(std::span<std::byte> buffer, int64_t position);
+
+        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> buffer);
+
+        std::expected<size_t, ErrorCode> WriteAt(std::span<std::byte const> buffer, int64_t position);
     };
 
-    using NativeFileHandle = Interop::base_SafeHandle<HANDLE, NativeFileHandleTraits>;
+    using FileHandle = WindowsFileHandle;
 }

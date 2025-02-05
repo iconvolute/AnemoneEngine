@@ -1,54 +1,36 @@
 #include "AnemoneRuntime/Platform/Process.hxx"
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 
+#include <span>
 #include <array>
 
 namespace Anemone
 {
-    std::expected<int32_t, ErrorCode> Process::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory)
+    auto BaseProcess::Execute(
+            std::string_view path,
+            std::optional<std::string_view> const& params,
+            std::optional<std::string_view> const& workingDirectory)
+        -> std::expected<int32_t, ErrorCode>
     {
-        auto sc = Start(path, params, workingDirectory, nullptr, nullptr, nullptr).and_then([](Process process)
+        auto sc = Process::Start(path, params, workingDirectory, nullptr, nullptr, nullptr).and_then([](Process process)
         {
             return process.Wait();
         });
         return sc;
     }
 
-    std::expected<int32_t, ErrorCode> Process::Execute(
-        std::string_view path,
-        std::optional<std::string_view> const& params,
-        std::optional<std::string_view> const& workingDirectory,
-        std::string& output,
-        std::string& error)
-    {
-        return Process::Execute(
-            path,
-            params,
-            workingDirectory,
-            [&output](std::string_view s)
-        {
-            output.append(s);
-        },
-            [&error](std::string_view s)
-        {
-            error.append(s);
-        });
-    }
-
-    std::expected<int32_t, ErrorCode> Process::Execute(
+    auto BaseProcess::Execute(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
         FunctionRef<void(std::string_view)> output,
         FunctionRef<void(std::string_view)> error)
+        -> std::expected<int32_t, ErrorCode>
     {
         FileHandle pipeOutput{};
         FileHandle pipeError{};
 
-        if (auto process = Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
+        if (auto process = Process::Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
         {
             std::array<char, 512> buffer;
             std::span view = std::as_writable_bytes(std::span{buffer});
@@ -92,5 +74,27 @@ namespace Anemone
         {
             return std::unexpected(process.error());
         }
+    }
+
+    auto BaseProcess::Execute(
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory,
+        std::string& output,
+        std::string& error)
+        -> std::expected<int32_t, ErrorCode>
+    {
+        return Process::Execute(
+            path,
+            params,
+            workingDirectory,
+            [&output](std::string_view s)
+        {
+            output.append(s);
+        },
+            [&error](std::string_view s)
+        {
+            error.append(s);
+        });
     }
 }

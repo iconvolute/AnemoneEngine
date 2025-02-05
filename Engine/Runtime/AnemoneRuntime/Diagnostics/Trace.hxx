@@ -1,50 +1,14 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
+#include "AnemoneRuntime/Diagnostics/TraceLevel.hxx"
 
 #include <string_view>
 #include <fmt/format.h>
 
 namespace Anemone
 {
-    enum class TraceLevel : uint8_t
-    {
-        Verbose,
-        Debug,
-        Information,
-        Warning,
-        Error,
-        Fatal,
-        None,
-    };
-}
+    class TraceListener;
 
-namespace Anemone
-{
-    class Trace;
-
-    class TraceListener
-        : private IntrusiveListNode<TraceListener, Trace>
-    {
-        friend struct IntrusiveList<TraceListener, Trace>;
-
-    public:
-        TraceListener() = default;
-        TraceListener(TraceListener const&) = delete;
-        TraceListener(TraceListener&&) = delete;
-        TraceListener& operator=(TraceListener const&) = delete;
-        TraceListener& operator=(TraceListener&&) = delete;
-        virtual ~TraceListener() = default;
-
-    public:
-        virtual void TraceEvent(TraceLevel level, const char* message, size_t size) = 0;
-        virtual void Flush() { }
-    };
-}
-
-namespace Anemone
-{
     class Trace final
     {
     public:

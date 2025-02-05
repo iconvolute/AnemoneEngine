@@ -1,12 +1,10 @@
 #include "AnemoneRuntime/Threading/UserSemaphore.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Threading/Windows/WindowsFutex.hxx"
 
 namespace Anemone
 {
-    UserSemaphore::~UserSemaphore()
-    {
-        AE_ASSERT(this->m_Count.load() == 0);
-    }
+    UserSemaphore::~UserSemaphore() = default;
 
     void UserSemaphore::Release(int32_t count)
     {
@@ -26,18 +24,15 @@ namespace Anemone
         {
             // No waiting threads.
         }
-        else if (waiting < count)
+        else if (waiting <= count)
         {
             // Releasing more threads than waiters.
-            WakeByAddressAll(&this->m_Count);
+            Internal::FutexApi::WakeAll(this->m_Count);
         }
         else
         {
             // Releasing fewer threads than waiters.
-            for (int32_t i = 0; i < count; ++i)
-            {
-                WakeByAddressSingle(&this->m_Count);
-            }
+            Internal::FutexApi::WakeMany(this->m_Count, count);
         }
     }
 
@@ -78,15 +73,19 @@ namespace Anemone
 
     void UserSemaphore::Wait()
     {
+        // Notify other threads that we are waiting.
         this->m_Waiting.fetch_add(1);
 
-        int32_t current = this->m_Count.load(std::memory_order::relaxed);
+        // Try to acquire the semaphore again.
+        int32_t current = this->m_Count.load();
 
         if (current == 0)
         {
-            Interop::win32_FutexWait(this->m_Count, 0);
+            // Wait for the semaphore to be released.
+            Internal::FutexApi::Wait(this->m_Count, 0);
         }
 
-        this->m_Waiting.fetch_sub(1, std ::memory_order::relaxed);
+        // Release waiting counter.
+        this->m_Waiting.fetch_sub(1);
     }
 }

@@ -9,12 +9,6 @@
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 
-#if !ANEMONE_BUILD_MONOLITHIC
-#ifndef AnemoneRuntime_EXPORTS
-#error "This file should only be included in the runtime library only"
-#endif
-#endif
-
 #include <shellapi.h>
 #include <ShlObj.h>
 

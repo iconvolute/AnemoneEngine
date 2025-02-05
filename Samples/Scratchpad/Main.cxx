@@ -48,53 +48,7 @@ namespace Anemone
 // - memory manager may "leak" when tried to "restart" it in a process itself
 
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-
-struct stdout_loglistener : public Anemone::Diagnostics::TraceListener
-{
-    Anemone::CriticalSection m_lock{};
-
-    void WriteLine(Anemone::Diagnostics::TraceLevel level, const char* message, size_t size) override
-    {
-        (void)level;
-        Anemone::UniqueLock lock{this->m_lock};
-        fwrite(message, size, 1, stdout);
-        fputc('\n', stdout);
-    }
-
-    void Flush() override
-    {
-        Anemone::UniqueLock lock{this->m_lock};
-        fflush(stdout);
-    }
-};
-
-struct debug_loglistener : public Anemone::Diagnostics::TraceListener
-{
-    void WriteLine(Anemone::Diagnostics::TraceLevel level, const char* message, size_t size) override
-    {
-        (void)level;
-        (void)size;
-        OutputDebugStringA(message);
-        OutputDebugStringA("\n");
-    }
-};
-
-stdout_loglistener sl{};
-debug_loglistener dl{};
-
 #include "AnemoneRuntime/Threading/Event.hxx"
-
-template <typename F>
-void Execute(F&& f)
-{
-    __try
-    {
-        std::forward<F>(f)();
-    }
-    __except (Anemone::Platform::HandleCrash(GetExceptionInformation()), /*EXCEPTION_CONTINUE_SEARCH*/ EXCEPTION_EXECUTE_HANDLER)
-    {
-    }
-}
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
@@ -321,7 +275,6 @@ int AnemoneMain(int argc, char** argv)
         }
 
         h->Flush();
-        h->Close();
     }
 
     Anemone::FNV1A128 current{};
@@ -347,8 +300,6 @@ int AnemoneMain(int argc, char** argv)
                 break;
             }
         }
-
-        h->Close();
     }
 
     auto hashOriginal = original.Finalize();

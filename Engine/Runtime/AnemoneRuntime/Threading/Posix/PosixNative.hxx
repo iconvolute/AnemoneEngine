@@ -1,33 +1,50 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Unix/Types.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
 
-namespace Anemone::Detail
+namespace Anemone::Internal
 {
-    struct NativeConditionVariable final
+    struct NativeThreadTraits final
     {
-        pthread_cond_t Inner;
+        static pthread_t Invalid()
+        {
+            return {};
+        }
+
+        static bool IsValid(pthread_t value)
+        {
+            return value != Invalid();
+        }
+
+        static bool Reset(pthread_t value)
+        {
+            (void)value;
+            // No-op?
+            return true;
+        }
     };
 
-    struct NativeCriticalSection final
+    using NativeThreadHandle = Interop::base_SafeHandle<pthread_t, NativeThreadTraits>;
+
+    struct NativeThreadIdTraits final
     {
-        pthread_mutex_t Inner;
+        static pid_t Invalid()
+        {
+            return -1;
+        }
+
+        static bool IsValid(pid_t value)
+        {
+            return value > 0;
+        }
+
+        static bool Reset(pid_t value)
+        {
+            (void)value;
+            // No-op?
+            return true;
+        }
     };
 
-    struct NativeReaderWriterLock final
-    {
-        pthread_rwlock_t Inner;
-    };
-
-    struct NativeSemaphore final
-    {
-        std::atomic<int> Current;
-        int Limit;
-        pthread_mutex_t Mutex;
-        pthread_cond_t Cond;
-    };
-
-    struct NativeThread final
-    {
-        pthread_t Handle;
-    };
+    using NativeThreadId = pid_t;
 }

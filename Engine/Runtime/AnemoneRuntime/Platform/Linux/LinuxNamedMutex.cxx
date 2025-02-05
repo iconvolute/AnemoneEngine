@@ -9,36 +9,21 @@
 
 namespace Anemone
 {
-    NamedMutex::NamedMutex(std::string_view name)
+    std::expected<LinuxNamedMutex, ErrorCode> LinuxNamedMutex::Create(std::string_view name)
     {
         std::string formatted = fmt::format("/anemone-engine-named-mutex-{}", name);
 
-        this->_handle = Internal::NativeNamedMutex{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
+        Interop::UnixSafeNamedSemaphoreHandle handle{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
 
-        if (this->_handle.Get() == SEM_FAILED)
+        if (handle)
         {
-            AE_PANIC("Failed to create named mutex: {}", errno);
-        }
-    }
-
-    NamedMutex::NamedMutex(NamedMutex&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    NamedMutex& NamedMutex::operator=(NamedMutex&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
+            return LinuxNamedMutex{std::move(handle)};
         }
 
-        return *this;
+        return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    NamedMutex::~NamedMutex() = default;
-
-    void NamedMutex::Lock()
+    void LinuxNamedMutex::Lock()
     {
         AE_ASSERT(this->_handle);
 
@@ -46,6 +31,7 @@ namespace Anemone
 
         int rc;
 
+        // TODO: Do some helper macro / function to handle this pattern
         do
         {
             rc = sem_wait(this->_handle.Get());
@@ -57,14 +43,14 @@ namespace Anemone
         }
     }
 
-    bool NamedMutex::TryLock()
+    bool LinuxNamedMutex::TryLock()
     {
         AE_ASSERT(this->_handle);
 
         return sem_trywait(this->_handle.Get()) == 0;
     }
 
-    void NamedMutex::Unlock()
+    void LinuxNamedMutex::Unlock()
     {
         AE_ASSERT(this->_handle);
 

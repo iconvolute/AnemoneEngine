@@ -3,4 +3,9 @@ target_sources(AnemoneRuntime
         "BaseHeaders.hxx"
         "BaseInterop.hxx"
         "BaseSafeHandle.hxx"
+
+        "BaseFileHandle.hxx"
+
+        "BaseProcess.cxx"
+        "BaseProcess.hxx"
 )

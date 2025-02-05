@@ -1,35 +1,13 @@
-#include "AnemoneRuntime/Platform/Process.hxx"
-#include "AnemoneRuntime/Platform/FileHandle.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsProcess.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone
 {
-    Process::Process(Internal::NativeProcessHandle handle)
-        : _handle{std::move(handle)}
-    {
-    }
-
-    Process::Process(Process&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    Process& Process::operator=(Process&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    Process::~Process() = default;
-
     inline std::expected<void, ErrorCode> CreatePipeForRedirection(
-        Internal::NativeFileHandle& hOutParent,
-        Internal::NativeFileHandle& hOutChild,
+        Interop::Win32SafeHandle& hOutParent,
+        Interop::Win32SafeHandle& hOutChild,
         bool parentWritesToChild)
     {
         SECURITY_ATTRIBUTES sa{
@@ -66,13 +44,13 @@ namespace Anemone
         return {};
     }
 
-    std::expected<Process, ErrorCode> Process::Start(
+    std::expected<WindowsProcess, ErrorCode> WindowsProcess::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
-        FileHandle* input,
-        FileHandle* output,
-        FileHandle* error)
+        WindowsFileHandle* input,
+        WindowsFileHandle* output,
+        WindowsFileHandle* error)
     {
         bool const redirectInput = input != nullptr;
         bool const redirectOutput = output != nullptr;
@@ -105,12 +83,12 @@ namespace Anemone
             .hStdError = nullptr,
         };
 
-        Internal::NativeFileHandle fhReadInput{};
-        Internal::NativeFileHandle fhWriteInput{};
-        Internal::NativeFileHandle fhReadOutput{};
-        Internal::NativeFileHandle fhWriteOutput{};
-        Internal::NativeFileHandle fhReadError{};
-        Internal::NativeFileHandle fhWriteError{};
+        Interop::Win32SafeHandle fhReadInput{};
+        Interop::Win32SafeHandle fhWriteInput{};
+        Interop::Win32SafeHandle fhReadOutput{};
+        Interop::Win32SafeHandle fhWriteOutput{};
+        Interop::Win32SafeHandle fhReadError{};
+        Interop::Win32SafeHandle fhWriteError{};
 
         if (redirectInput or redirectOutput or redirectError)
         {
@@ -202,32 +180,32 @@ namespace Anemone
         {
             if (input)
             {
-                (*input) = FileHandle{std::move(fhWriteInput)};
+                (*input) = WindowsFileHandle{std::move(fhWriteInput)};
             }
 
             if (output)
             {
-                (*output) = FileHandle{std::move(fhReadOutput)};
+                (*output) = WindowsFileHandle{std::move(fhReadOutput)};
             }
 
             if (error)
             {
-                (*error) = FileHandle{std::move(fhReadError)};
+                (*error) = WindowsFileHandle{std::move(fhReadError)};
             }
 
             CloseHandle(process_information.hThread);
 
-            return Process{Internal::NativeProcessHandle{process_information.hProcess}};
+            return WindowsProcess{Interop::Win32SafeHandle{process_information.hProcess}};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<int32_t, ErrorCode> Process::Wait()
+    std::expected<int32_t, ErrorCode> WindowsProcess::Wait()
     {
         AE_ASSERT(this->_handle);
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
+        Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {});
 
         if (handle)
         {
@@ -249,7 +227,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidHandle);
     }
 
-    std::expected<int32_t, ErrorCode> Process::TryWait()
+    std::expected<int32_t, ErrorCode> WindowsProcess::TryWait()
     {
         AE_ASSERT(this->_handle);
 
@@ -274,11 +252,11 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidHandle);
     }
 
-    std::expected<void, ErrorCode> Process::Terminate()
+    std::expected<void, ErrorCode> WindowsProcess::Terminate()
     {
         AE_ASSERT(this->_handle);
 
-        Internal::NativeProcessHandle const handle = std::exchange(this->_handle, {});
+        Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {});
 
         if (handle)
         {

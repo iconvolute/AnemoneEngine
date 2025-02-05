@@ -10,21 +10,21 @@ namespace Anemone
 {
     namespace
     {
-        constexpr mode_t TranslateToOpenMode(Flags<FileOptions> options)
+        constexpr mode_t TranslateToOpenMode(Flags<FileOption> options)
         {
             mode_t result = S_IRUSR | S_IWUSR;
 
-            if (options.Any(FileOptions::ShareDelete))
+            if (options.Any(FileOption::ShareDelete))
             {
                 result |= 0;
             }
 
-            if (options.Any(FileOptions::ShareRead))
+            if (options.Any(FileOption::ShareRead))
             {
                 result |= S_IRGRP | S_IROTH;
             }
 
-            if (options.Any(FileOptions::ShareWrite))
+            if (options.Any(FileOption::ShareWrite))
             {
                 result |= S_IWGRP | S_IWOTH;
             }
@@ -32,7 +32,7 @@ namespace Anemone
             return result;
         }
 
-        constexpr int TranslateToOpenFlags(FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options, bool failForSymlinks)
+        constexpr int TranslateToOpenFlags(FileMode mode, Flags<FileAccess> access, Flags<FileOption> options, bool failForSymlinks)
         {
             int result = O_CLOEXEC;
 
@@ -78,7 +78,7 @@ namespace Anemone
                 break;
             }
 
-            if (options.Any(FileOptions::WriteThrough))
+            if (options.Any(FileOption::WriteThrough))
             {
                 result |= O_SYNC;
             }
@@ -90,39 +90,17 @@ namespace Anemone
 
 namespace Anemone
 {
-    FileHandle::FileHandle(Internal::NativeFileHandle handle)
-        : _handle{std::move(handle)}
-    {
-    }
-
-    FileHandle::FileHandle(FileHandle&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    FileHandle& FileHandle::operator=(FileHandle&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    FileHandle::~FileHandle() = default;
-
-    std::expected<FileHandle, ErrorCode> FileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOptions> options)
+    std::expected<LinuxFileHandle, ErrorCode> LinuxFileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
     {
         int const flags = TranslateToOpenFlags(mode, access, options, false);
         mode_t const fmode = TranslateToOpenMode(options);
 
         Interop::string_buffer<char, 256> spath{path};
-        int const fd = open(spath.c_str(), flags, fmode);
+        Interop::UnixSafeFdHandle fd{open(spath.c_str(), flags, fmode)};
 
-        if (fd >= 0)
+        if (fd)
         {
-            if (flock(fd, LOCK_EX | LOCK_NB))
+            if (flock(fd.Get(), LOCK_EX | LOCK_NB))
             {
                 int const error = errno;
                 bool failed = false;
@@ -134,28 +112,25 @@ namespace Anemone
 
                 if (failed)
                 {
-                    close(fd);
-
                     return std::unexpected(ErrorCode::InvalidOperation);
                 }
             }
 
             if ((mode == FileMode::TruncateExisting) or (mode == FileMode::CreateAlways))
             {
-                if (ftruncate64(fd, 0))
+                if (ftruncate64(fd.Get(), 0))
                 {
-                    close(fd);
                     return std::unexpected(ErrorCode::InvalidOperation);
                 }
             }
 
-            return FileHandle{Internal::NativeFileHandle{fd}};
+            return LinuxFileHandle{std::move(fd)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
+    std::expected<void, ErrorCode> LinuxFileHandle::CreatePipe(LinuxFileHandle& read, LinuxFileHandle& write)
     {
         int fd[2];
 
@@ -164,13 +139,13 @@ namespace Anemone
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
-        read = FileHandle{Internal::NativeFileHandle{fd[0]}};
-        write = FileHandle{Internal::NativeFileHandle{fd[1]}};
+        read = LinuxFileHandle{Interop::UnixSafeFdHandle{fd[0]}};
+        write = LinuxFileHandle{Interop::UnixSafeFdHandle{fd[1]}};
 
         return {};
     }
 
-    std::expected<void, ErrorCode> FileHandle::Flush()
+    std::expected<void, ErrorCode> LinuxFileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
 
@@ -182,7 +157,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
+    std::expected<int64_t, ErrorCode> LinuxFileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
@@ -199,7 +174,7 @@ namespace Anemone
         return st.st_size;
     }
 
-    std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
+    std::expected<void, ErrorCode> LinuxFileHandle::Truncate(int64_t length)
     {
         AE_ASSERT(this->_handle);
 
@@ -211,7 +186,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
+    std::expected<int64_t, ErrorCode> LinuxFileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
 
@@ -225,7 +200,7 @@ namespace Anemone
         return position;
     }
 
-    std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
+    std::expected<void, ErrorCode> LinuxFileHandle::SetPosition(int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -237,7 +212,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
+    std::expected<size_t, ErrorCode> LinuxFileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -279,7 +254,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> LinuxFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -321,7 +296,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, ErrorCode> LinuxFileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -363,7 +338,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> LinuxFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 

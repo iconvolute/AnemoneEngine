@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
 #include "AnemoneRuntime/Threading/UserSemaphore.hxx"
+#include "AnemoneRuntime/Threading/Semaphore.hxx"
 #include "AnemoneRuntime/Tasks/TaskQueue.hxx"
 #include "AnemoneRuntime/Tasks/TaskWorker.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
@@ -10,6 +11,8 @@
 #include <atomic>
 #include <vector>
 
+// BUG: Semaphore is used in wrong way.
+//      Release/Acquire are unbalanced when reentrant Dispatch calls are made.
 namespace Anemone::Tasks
 {
     class TaskWorker;

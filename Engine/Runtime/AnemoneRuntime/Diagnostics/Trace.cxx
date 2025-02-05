@@ -1,4 +1,5 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 
 #include <iterator>
 #include <utility>

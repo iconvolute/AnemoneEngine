@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 
 namespace Anemone

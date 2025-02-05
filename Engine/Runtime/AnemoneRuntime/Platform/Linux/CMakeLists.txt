@@ -9,10 +9,14 @@ target_sources(AnemoneRuntime
 
         "LinuxDebugger.cxx"
 
+        "LinuxDialogs.cxx"
+
         "LinuxEnvironment.cxx"
 
         "LinuxFileHandle.cxx"
         "LinuxFileHandle.hxx"
+
+        "LinuxFileSystem.cxx"
 
         #"LinuxInput.cxx"
         #"LinuxInput.hxx"

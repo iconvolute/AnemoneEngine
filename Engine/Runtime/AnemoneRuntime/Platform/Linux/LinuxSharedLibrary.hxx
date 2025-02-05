@@ -1,32 +1,46 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
 
-#include <dlfcn.h>
+#include <expected>
+#include <string_view>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    struct NativeSharedLibraryTraits final
+    class LinuxSharedLibrary final
     {
-        static void* Invalid()
+    private:
+        Interop::UnixSafeSharedLibraryHandle _handle;
+
+    public:
+        LinuxSharedLibrary() = default;
+
+        explicit LinuxSharedLibrary(Interop::UnixSafeSharedLibraryHandle handle)
+            : _handle{std::move(handle)}
         {
-            return nullptr;
         }
 
-        static bool IsValid(void* value)
+    public:
+        [[nodiscard]] explicit operator bool() const
         {
-            return value != nullptr;
+            return this->_handle.IsValid();
         }
 
-        static void Close(void* value)
+        [[nodiscard]] bool IsValid() const
         {
-            if (dlclose(value))
-            {
-                AE_TRACE(Debug, "Failed to close shared library: handle={}, error={}", fmt::ptr(value), dlerror());
-            }
+            return this->_handle.IsValid();
         }
+
+        [[nodiscard]] Interop::UnixSafeSharedLibraryHandle const& GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<LinuxSharedLibrary, ErrorCode> Open(
+            std::string_view path);
+
+        std::expected<void*, ErrorCode> GetSymbol(const char* name) const;
     };
 
-    using NativeSharedLibrary = Interop::base_SafeHandle<void*, NativeSharedLibraryTraits>;
+    using SharedLibrary = LinuxSharedLibrary;
 }

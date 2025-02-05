@@ -5,41 +5,24 @@
 
 namespace Anemone
 {
-    NamedMutex::NamedMutex(std::string_view name)
+    std::expected<WindowsNamedMutex, ErrorCode> WindowsNamedMutex::Create(std::string_view name)
     {
-        // TODO: Refactor this into something more convenient to use
         std::string sname = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
-
         Interop::win32_FilePathW wname{};
         Interop::win32_WidenString(wname, sname);
 
-        this->_handle = Internal::NativeNamedMutex{CreateMutexW(nullptr, FALSE, wname.data())};
+        Interop::Win32SafeHandle handle{CreateMutexW(nullptr, FALSE, wname.data())};
 
-        if (not this->_handle)
+        if (handle)
         {
-            AE_PANIC("Failed to create named mutex");
-        }
-    }
-
-    NamedMutex::NamedMutex(NamedMutex&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-        
-    }
-
-    NamedMutex& NamedMutex::operator=(NamedMutex&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
+            return WindowsNamedMutex{std::move(handle)};
         }
 
-        return *this;
+
+        return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    NamedMutex::~NamedMutex() = default;
-
-    void NamedMutex::Lock()
+    void WindowsNamedMutex::Lock()
     {
         AE_ASSERT(this->_handle);
 
@@ -51,7 +34,7 @@ namespace Anemone
         }
     }
 
-    bool NamedMutex::TryLock()
+    bool WindowsNamedMutex::TryLock()
     {
         AE_ASSERT(this->_handle);
 
@@ -71,7 +54,7 @@ namespace Anemone
         return false;
     }
 
-    void NamedMutex::Unlock()
+    void WindowsNamedMutex::Unlock()
     {
         AE_ASSERT(this->_handle);
 

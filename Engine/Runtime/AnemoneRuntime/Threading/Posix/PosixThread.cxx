@@ -47,13 +47,9 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    Thread::Thread()
-        : m_native{}
-    {
-    }
+    Thread::Thread() = default;
 
     Thread::Thread(ThreadStart const& start)
-        : m_native{}
     {
         if (start.Callback == nullptr)
         {
@@ -80,7 +76,7 @@ namespace Anemone
             AE_PANIC("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (int const rc = pthread_create(&this->m_native.Handle, &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
+        if (int const rc = pthread_create(this->_handle.GetAddressOf(), &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
         {
             AE_PANIC("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -90,10 +86,12 @@ namespace Anemone
             AE_PANIC("pthread_attr_destroy (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (this->m_native.Handle == 0)
+        if (not this->_handle)
         {
             AE_PANIC("Failed to start thread");
         }
+
+        this->_id = Internal::NativeThreadId{Interop::posix_GetThreadId()};
 
 
         //
@@ -113,46 +111,26 @@ namespace Anemone
         if (start.Name)
         {
             std::string const name{*start.Name};
-#if true
-            pthread_setname_np(this->m_native.Handle, name.c_str());
-#else
-            if (int const rc = pthread_setname_np(this->m_native.Handle, name.c_str()); rc != 0)
-            {
-                AE_PANIC("pthread_setname_np (rc: {}, `{}`)", rc, strerror(rc));
-            }
-#endif
+            pthread_setname_np(this->_handle.Get(), name.c_str());
         }
 
         if (start.Priority)
         {
             sched_param sched{};
             int32_t policy = SCHED_RR;
-#if true
-            if (pthread_getschedparam(this->m_native.Handle, &policy, &sched) == 0)
+
+            if (pthread_getschedparam(this->_handle.Get(), &policy, &sched) == 0)
             {
                 sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
 
-                pthread_setschedparam(this->m_native.Handle, policy, &sched);
+                pthread_setschedparam(this->_handle.Get(), policy, &sched);
             }
-
-#else
-            if (int const rc = pthread_getschedparam(this->m_native.Handle, &policy, &sched); rc != 0)
-            {
-                AE_PANIC("pthread_getschedparam (rc: {}, `{}`)", rc, strerror(rc));
-            }
-
-            sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
-
-            if (int const rc = pthread_setschedparam(this->m_native.Handle, policy, &sched); rc != 0)
-            {
-                AE_PANIC("pthread_setschedparam (rc: {}, `{}`)", rc, strerror(rc));
-            }
-#endif
         }
     }
 
     Thread::Thread(Thread&& other) noexcept
-        : m_native{std::exchange(other.m_native, {})}
+        : _handle{std::exchange(other._handle, {})}
+        , _id{std::exchange(other._id, {})}
     {
     }
 
@@ -165,7 +143,8 @@ namespace Anemone
                 this->Join();
             }
 
-            this->m_native = std::exchange(other.m_native, {});
+            this->_handle = std::exchange(other._handle, {});
+            this->_id = std::exchange(other._id, {});
         }
 
         return *this;
@@ -181,51 +160,48 @@ namespace Anemone
 
     void Thread::Join()
     {
-        if (this->m_native.Handle == 0)
+        if (not this->_handle)
         {
             AE_PANIC("Cannot join non-started thread.");
         }
 
-        if (this->m_native.Handle == pthread_self())
+        if (this->_handle.Get() == pthread_self())
         {
             AE_PANIC("Joining thread from itself");
         }
 
-        if (int const rc = pthread_join(this->m_native.Handle, nullptr); rc != 0)
+        if (int const rc = pthread_join(this->_handle.Get(), nullptr); rc != 0)
         {
             AE_PANIC("pthread_join (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        this->m_native = {};
+        this->_handle = {};
+        this->_id = {};
     }
 
     [[nodiscard]] bool Thread::IsJoinable() const
     {
-        return this->m_native.Handle != 0;
-    }
-
-    [[nodiscard]] ThreadId Thread::GetId() const
-    {
-        return std::bit_cast<ThreadId>(this->m_native.Handle);
+        return this->_handle.IsValid();
     }
 
     void Thread::Detach()
     {
-        if (this->m_native.Handle == 0)
+        if (not this->_handle)
         {
             AE_PANIC("Failed to detach from thread");
         }
 
-        if (int const rc = pthread_detach(this->m_native.Handle); rc != 0)
+        if (int const rc = pthread_detach(this->_handle.Get()); rc != 0)
         {
             AE_PANIC("pthread_detach (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        this->m_native = {};
+        this->_handle = {};
+        this->_id = {};
     }
 
     ThreadId GetThisThreadId()
     {
-        return std::bit_cast<ThreadId>(pthread_self());
+        return ThreadId{Interop::posix_GetThreadId()};
     }
 }

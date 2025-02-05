@@ -1,41 +1,26 @@
-#include "AnemoneRuntime/Platform/SharedLibrary.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSharedLibrary.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone
 {
-    SharedLibrary::SharedLibrary(SharedLibrary&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-    {
-    }
-
-    SharedLibrary& SharedLibrary::operator=(SharedLibrary&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            this->_handle = std::exchange(other._handle, {});
-        }
-
-        return *this;
-    }
-
-    SharedLibrary::~SharedLibrary() = default;
-
-    std::expected<SharedLibrary, ErrorCode> SharedLibrary::Open(
+    std::expected<WindowsSharedLibrary, ErrorCode> WindowsSharedLibrary::Open(
         std::string_view path)
     {
         Interop::win32_FilePathW wPath{};
         Interop::win32_WidenString(wPath, path);
 
-        if (HMODULE const h = LoadLibraryW(wPath.c_str()))
+        Interop::Win32SafeSharedLibraryHandle h{LoadLibraryW(wPath.c_str())};
+
+        if (h)
         {
-            return SharedLibrary{Internal::NativeSharedLibrary{h}};
+            return WindowsSharedLibrary{std::move(h)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void*, ErrorCode> SharedLibrary::GetSymbol(const char* name) const
+    std::expected<void*, ErrorCode> WindowsSharedLibrary::GetSymbol(const char* name) const
     {
         AE_ASSERT(this->_handle);
 

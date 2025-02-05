@@ -1,32 +1,88 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseFileHandle.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-#include <unistd.h>
+#include <utility>
+#include <string_view>
+#include <expected>
+#include <span>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    struct NativeFileHandleTraits final
+    class RUNTIME_API LinuxFileHandle final
     {
-        static int Invalid()
+    private:
+        Interop::UnixSafeFdHandle _handle{};
+
+    public:
+        explicit LinuxFileHandle(Interop::UnixSafeFdHandle handle)
+            : _handle{std::move(handle)}
         {
-            return -1;
         }
 
-        static bool IsValid(int value)
+        LinuxFileHandle() = default;
+
+    public:
+        [[nodiscard]] explicit operator bool() const
         {
-            return value >= 0;
+            return this->_handle.IsValid();
         }
 
-        static void Close(int value)
+        [[nodiscard]] bool IsValid() const
         {
-            if (close(value) != 0)
-            {
-                AE_TRACE(Debug, "Failed to close file handle: handle={}, error={}", value, errno);
-            }
+            return this->_handle.IsValid();
         }
+
+        [[nodiscard]] Interop::UnixSafeFdHandle const& GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<LinuxFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access,
+            Flags<FileOption> options);
+
+        static std::expected<LinuxFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access)
+        {
+            return Create(path, mode, access, FileOption::None);
+        }
+
+        static std::expected<LinuxFileHandle, ErrorCode> Create(
+            std::string_view path,
+            FileMode mode)
+        {
+            return Create(path, mode, FileAccess::ReadWrite, FileOption::None);
+        }
+
+        static std::expected<void, ErrorCode> CreatePipe(LinuxFileHandle& read, LinuxFileHandle& write);
+
+    public:
+        std::expected<void, ErrorCode> Flush();
+
+        std::expected<int64_t, ErrorCode> GetLength() const;
+
+        std::expected<void, ErrorCode> Truncate(int64_t length);
+
+        std::expected<int64_t, ErrorCode> GetPosition() const;
+
+        std::expected<void, ErrorCode> SetPosition(int64_t position);
+
+        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer);
+
+        std::expected<size_t, ErrorCode> ReadAt(std::span<std::byte> buffer, int64_t position);
+
+        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> buffer);
+
+        std::expected<size_t, ErrorCode> WriteAt(std::span<std::byte const> buffer, int64_t position);
     };
 
-    using NativeFileHandle = Interop::base_SafeHandle<int, NativeFileHandleTraits>;
+    using FileHandle = LinuxFileHandle;
 }

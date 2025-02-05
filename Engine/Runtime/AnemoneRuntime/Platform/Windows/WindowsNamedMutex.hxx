@@ -1,30 +1,35 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
 
-namespace Anemone::Internal
+#include <string_view>
+#include <expected>
+
+namespace Anemone
 {
-    struct NativeNamedMutexTraits final
+    class WindowsNamedMutex final
     {
-        static HANDLE Invalid()
+    private:
+        Interop::Win32SafeHandle _handle;
+
+    private:
+        explicit WindowsNamedMutex(Interop::Win32SafeHandle handle)
+            : _handle{std::move(handle)}
         {
-            return nullptr;
         }
 
-        static bool IsValid(HANDLE value)
-        {
-            return value != nullptr;
-        }
+    public:
+        WindowsNamedMutex() = default;
 
-        static void Close(HANDLE value)
-        {
-            if (not CloseHandle(value))
-            {
-                AE_TRACE(Debug, "Failed to close named mutex: handle={}, error={}", fmt::ptr(value), GetLastError());
-            }
-        }
+    public:
+        static std::expected<WindowsNamedMutex, ErrorCode> Create(std::string_view name);
+
+    public:
+        void Lock();
+        bool TryLock();
+        void Unlock();
     };
 
-    using NativeNamedMutex = Interop::base_SafeHandle<HANDLE, NativeNamedMutexTraits>;
+    using NamedMutex = WindowsNamedMutex;
 }

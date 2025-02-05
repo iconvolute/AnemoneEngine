@@ -1,30 +1,48 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
 
-namespace Anemone::Internal
+#include <expected>
+#include <string_view>
+
+namespace Anemone
 {
-    struct NativeSharedLibraryTraits final
+    class WindowsSharedLibrary final
     {
-        static HMODULE Invalid()
+    private:
+        Interop::Win32SafeSharedLibraryHandle _handle;
+
+    public:
+        WindowsSharedLibrary() = default;
+
+        explicit WindowsSharedLibrary(Interop::Win32SafeSharedLibraryHandle handle)
+            : _handle{std::move(handle)}
         {
-            return nullptr;
         }
 
-        static bool IsValid(HMODULE value)
+    public:
+        [[nodiscard]] explicit operator bool() const
         {
-            return value != nullptr;
+            return this->_handle.IsValid();
         }
 
-        static void Close(HMODULE value)
+        [[nodiscard]] bool IsValid() const
         {
-            if (not FreeLibrary(value))
-            {
-                AE_TRACE(Debug, "Failed to close shared library: handle={}, error={}", fmt::ptr(value), GetLastError());
-            }
+            return this->_handle.IsValid();
         }
+
+        [[nodiscard]] Interop::Win32SafeSharedLibraryHandle const& GetNativeHandle() const
+        {
+            return this->_handle;
+        }
+
+    public:
+        static std::expected<WindowsSharedLibrary, ErrorCode> Open(
+            std::string_view path);
+
+        std::expected<void*, ErrorCode> GetSymbol(const char* name) const;
     };
 
-    using NativeSharedLibrary = Interop::base_SafeHandle<HMODULE, NativeSharedLibraryTraits>;
+    using SharedLibrary = WindowsSharedLibrary;
 }

@@ -54,13 +54,9 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    Thread::Thread()
-        : m_native{}
-    {
-    }
+    Thread::Thread() = default;
 
     Thread::Thread(ThreadStart const& start)
-        : m_native{}
     {
         if (start.Callback == nullptr)
         {
@@ -77,15 +73,15 @@ namespace Anemone
             dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
         }
 
-        this->m_native.Handle = CreateThread(
+        this->_handle.Attach(CreateThread(
             nullptr,
             stackSize,
             Private::ThreadEntryPoint,
             start.Callback,
             dwCreationFlags,
-            &this->m_native.Id);
+            &this->_id));
 
-        if (this->m_native.Handle == nullptr)
+        if (not this->_handle)
         {
             AE_PANIC("Cannot create thread");
         }
@@ -95,22 +91,23 @@ namespace Anemone
             Interop::string_buffer<wchar_t, 128> wname{};
             Interop::win32_WidenString(wname, *start.Name);
 
-            SetThreadDescription(this->m_native.Handle, wname);
+            SetThreadDescription(this->_handle.Get(), wname);
         }
 
         if (start.Priority)
         {
-            SetThreadPriority(this->m_native.Handle, Private::ConvertThreadPriority(*start.Priority));
+            SetThreadPriority(this->_handle.Get(), Private::ConvertThreadPriority(*start.Priority));
         }
 
-        if (ResumeThread(this->m_native.Handle) == static_cast<DWORD>(-1))
+        if (ResumeThread(this->_handle.Get()) == static_cast<DWORD>(-1))
         {
             AE_PANIC("Cannot resume thread");
         }
     }
 
     Thread::Thread(Thread&& other) noexcept
-        : m_native{std::exchange(other.m_native, {})}
+        : _handle{std::exchange(other._handle, {})}
+        , _id{std::exchange(other._id, {})}
     {
     }
 
@@ -123,7 +120,8 @@ namespace Anemone
                 this->Join();
             }
 
-            this->m_native = std::exchange(other.m_native, {});
+            this->_handle = std::exchange(other._handle, {});
+            this->_id = std::exchange(other._id, {});
         }
 
         return *this;
@@ -139,43 +137,35 @@ namespace Anemone
 
     void Thread::Join()
     {
-        if (this->m_native.Handle == nullptr)
+        if (not this->_handle)
         {
             AE_PANIC("Failed to join thread");
         }
 
-        if (this->m_native.Id == GetCurrentThreadId())
+        if (this->_id == GetCurrentThreadId())
         {
             AE_PANIC("Joining thread from itself");
         }
 
-        WaitForSingleObject(this->m_native.Handle, INFINITE);
+        WaitForSingleObject(this->_handle.Get(), INFINITE);
 
-        CloseHandle(this->m_native.Handle);
-
-        this->m_native = {};
+        this->_handle = {};
     }
 
     [[nodiscard]] bool Thread::IsJoinable() const
     {
-        return this->m_native.Handle != nullptr;
-    }
-
-    [[nodiscard]] ThreadId Thread::GetId() const
-    {
-        return ThreadId{this->m_native.Id};
+        return this->_handle.IsValid();
     }
 
     void Thread::Detach()
     {
-        if (this->m_native.Handle == nullptr)
+        if (not this->_handle)
         {
-            AE_PANIC("Failed to detach from thread");
+            AE_PANIC("Thread already detached");
         }
 
-        CloseHandle(this->m_native.Handle);
-
-        this->m_native = {};
+        this->_handle = {};
+        this->_id = {};
     }
 
     ThreadId GetThisThreadId()

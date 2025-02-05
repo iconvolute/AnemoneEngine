@@ -1,4 +1,5 @@
 #pragma once
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone::Interop
 {
@@ -40,7 +41,7 @@ namespace Anemone::Interop
         {
             if (TraitsT::IsValid(this->_value))
             {
-                TraitsT::Close(this->_value);
+                TraitsT::Reset(this->_value);
             }
         }
 
@@ -82,7 +83,7 @@ namespace Anemone::Interop
         {
             if (TraitsT::IsValid(this->_value))
             {
-                TraitsT::Close(this->_value);
+                TraitsT::Reset(this->_value);
             }
 
             this->_value = value;
@@ -92,7 +93,7 @@ namespace Anemone::Interop
         {
             if (TraitsT::IsValid(this->_value))
             {
-                TraitsT::Close(this->_value);
+                TraitsT::Reset(this->_value);
                 this->_value = TraitsT::Invalid();
             }
         }

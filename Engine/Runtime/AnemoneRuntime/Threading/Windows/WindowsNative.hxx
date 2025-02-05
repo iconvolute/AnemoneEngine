@@ -1,5 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
 
 namespace Anemone::Detail
 {
@@ -28,4 +31,11 @@ namespace Anemone::Detail
         HANDLE Handle;
         DWORD Id;
     };
+}
+
+namespace Anemone::Internal
+{
+    using NativeThreadHandle = Interop::Win32SafeHandle;
+
+    using NativeThreadId = DWORD;
 }

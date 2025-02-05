@@ -10,27 +10,3 @@
 #else
 #error "Unsupported platform"
 #endif
-
-#include <string_view>
-
-namespace Anemone
-{
-    class NamedMutex final
-    {
-    private:
-        Internal::NativeNamedMutex _handle;
-
-    public:
-        explicit NamedMutex(std::string_view name);
-        NamedMutex(NamedMutex const&) = delete;
-        NamedMutex(NamedMutex&& other) noexcept;
-        NamedMutex& operator=(NamedMutex const&) = delete;
-        NamedMutex& operator=(NamedMutex&& other) noexcept;
-        ~NamedMutex();
-
-    public:
-        void Lock();
-        bool TryLock();
-        void Unlock();
-    };
-}
