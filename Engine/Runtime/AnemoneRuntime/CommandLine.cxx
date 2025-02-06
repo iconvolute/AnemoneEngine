@@ -195,7 +195,6 @@ namespace Anemone
                     // Found opening quote.
                     quoted = true;
                 }
-
             }
 
             ++it;

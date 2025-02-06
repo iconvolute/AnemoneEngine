@@ -372,7 +372,7 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceName()
     {
-        return Internal::GWindowsPlatformStatics ->DeviceName;
+        return Internal::GWindowsPlatformStatics->DeviceName;
     }
 
     std::string Environment::GetDeviceModel()

@@ -1,9 +1,11 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
+#include <atomic>
+
 namespace Anemone::Internal
 {
-    struct WindowsFutexApi final
+    struct WindowsFutexTraits final
     {
         static void Wait(std::atomic<int32_t>& futex, int32_t expected)
         {
@@ -41,6 +43,4 @@ namespace Anemone::Internal
             WakeByAddressAll(&futex);
         }
     };
-
-    using FutexApi = WindowsFutexApi;
 }

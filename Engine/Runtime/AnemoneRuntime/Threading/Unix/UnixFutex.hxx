@@ -2,9 +2,11 @@
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
+#include <atomic>
+
 namespace Anemone::Internal
 {
-    struct LinuxFutexApi final
+    struct LinuxFutexTraits final
     {
         static void Wait(std::atomic<int32_t>& futex, int32_t expected)
         {
@@ -88,6 +90,4 @@ namespace Anemone::Internal
                 /* val */ INT32_MAX);
         }
     };
-
-    using FutexApi = LinuxFutexApi;
 }

@@ -1,8 +1,6 @@
 target_sources(AnemoneRuntime
     PRIVATE
+        "PosixNative.hxx"
         "PosixThread.cxx"
-        "PosixUserAutoResetEvent.cxx"
-        "PosixUserManualResetEvent.cxx"
-        "PosixUserSemaphore.cxx"
         "PosixYielding.cxx"
 )

@@ -4,45 +4,7 @@
 
 namespace Anemone
 {
-    class RUNTIME_API AutoResetEvent final
-    {
-    private:
-        CriticalSection _cs{};
-        ConditionVariable _cv{};
-        bool _set{false};
-
-    public:
-        AutoResetEvent() = default;
-        ~AutoResetEvent() = default;
-        AutoResetEvent(AutoResetEvent const&) = delete;
-        AutoResetEvent(AutoResetEvent&&) = delete;
-        AutoResetEvent& operator=(AutoResetEvent const&) = delete;
-        AutoResetEvent& operator=(AutoResetEvent&&) = delete;
-
-        void Wait()
-        {
-            UniqueLock _{this->_cs};
-
-            while (!this->_set)
-            {
-                this->_cv.Wait(this->_cs);
-            }
-
-            this->_set = false;
-        }
-
-        void Set()
-        {
-            {
-                UniqueLock _{this->_cs};
-                this->_set = true;
-            }
-
-            this->_cv.Notify();
-        }
-    };
-
-    class RUNTIME_API ManualResetEvent final
+    class ManualResetEvent final
     {
     private:
         CriticalSection _cs{};
@@ -51,12 +13,23 @@ namespace Anemone
 
     public:
         ManualResetEvent() = default;
-        ~ManualResetEvent() = default;
+
+        explicit ManualResetEvent(bool signaled)
+            : _set{signaled}
+        {
+        }
+
         ManualResetEvent(ManualResetEvent const&) = delete;
+
         ManualResetEvent(ManualResetEvent&&) = delete;
+
         ManualResetEvent& operator=(ManualResetEvent const&) = delete;
+
         ManualResetEvent& operator=(ManualResetEvent&&) = delete;
 
+        ~ManualResetEvent() = default;
+
+    public:
         void Wait()
         {
             UniqueLock _{this->_cs};

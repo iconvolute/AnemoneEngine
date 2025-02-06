@@ -285,7 +285,7 @@ namespace Anemone
             }
 
             return std::unexpected(ErrorCode::InvalidOperation);
-        } 
+        }
 
         return std::unexpected(ErrorCode::InvalidHandle);
 #endif

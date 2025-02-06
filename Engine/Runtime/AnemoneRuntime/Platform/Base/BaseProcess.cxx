@@ -7,9 +7,9 @@
 namespace Anemone
 {
     auto BaseProcess::Execute(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory)
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory)
         -> std::expected<int32_t, ErrorCode>
     {
         auto sc = Process::Start(path, params, workingDirectory, nullptr, nullptr, nullptr).and_then([](Process process)

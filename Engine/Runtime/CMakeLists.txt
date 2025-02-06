@@ -12,7 +12,6 @@ target_link_libraries(AnemoneRuntime
 if(WIN32)
 target_link_libraries(AnemoneRuntime
     PRIVATE
-        "Synchronization.lib"
         "Winmm.lib"
         "Comctl32.lib"
         "Ws2_32.lib"
@@ -27,7 +26,10 @@ target_link_libraries(AnemoneRuntime
         "Appnotify.lib"
         #"DbgHelp.lib"
         "xaudio2.lib"
+    PUBLIC
+        "Synchronization.lib"
 )
+
 elseif(LINUX)
 target_link_libraries(AnemoneRuntime
     PRIVATE

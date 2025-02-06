@@ -35,16 +35,12 @@ TEST_CASE("Threading / Semaphore")
 
             void OnRun() override
             {
-                //this->_start.Release();
-
                 for (int i = 0; i < 1000; ++i)
                 {
                     this->_semaphore.Acquire();
                     this->_counter += this->_value;
                     this->_semaphore.Release();
                 }
-
-                //this->_stop.Release();
             }
         };
 
@@ -102,16 +98,12 @@ TEST_CASE("Threading / Semaphore")
 
             void OnRun() override
             {
-                // this->_start.Release();
-
                 for (int i = 0; i < 1000; ++i)
                 {
                     this->_semaphore.Acquire();
                     this->_counter += this->_value;
                     this->_semaphore.Release();
                 }
-
-                // this->_stop.Release();
             }
         };
 

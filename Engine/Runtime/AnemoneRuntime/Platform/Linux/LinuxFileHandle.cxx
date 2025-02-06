@@ -161,10 +161,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        struct stat64 st
-        {
-            0
-        };
+        struct stat64 st{0};
 
         if (fstat64(this->_handle.Get(), &st))
         {

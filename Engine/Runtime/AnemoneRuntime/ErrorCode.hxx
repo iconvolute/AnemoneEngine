@@ -9,7 +9,7 @@ namespace Anemone
     enum class ErrorCode : uint32_t
     {
         Success,
-        
+
         InvalidArgument,
         InvalidAddress,
         InvalidOperation,

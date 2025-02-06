@@ -152,7 +152,7 @@ namespace Anemone
         }
     };
 
-    //using Semaphore = PthreadSemaphore;
+    // using Semaphore = PthreadSemaphore;
 }
 
 namespace Anemone

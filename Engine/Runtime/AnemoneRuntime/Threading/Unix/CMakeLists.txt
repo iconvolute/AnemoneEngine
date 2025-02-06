@@ -1,0 +1,13 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "UnixConditionVariable.hxx"
+        "UnixCriticalSection.hxx"
+        "UnixFutex.hxx"
+        "UnixReaderWriterLock.hxx"
+        "UnixSemaphore.hxx"
+        "UnixUserAutoResetEvent.hxx"
+        "UnixUserCriticalSection.hxx"
+        "UnixUserManualResetEvent.hxx"
+        "UnixUserReaderWriterLock.hxx"
+        "UnixUserSemaphore.hxx"
+)
