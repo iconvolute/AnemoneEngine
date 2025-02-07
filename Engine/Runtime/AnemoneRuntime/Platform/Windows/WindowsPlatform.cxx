@@ -3,8 +3,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
-
-#include "AnemoneRuntime/System/Path.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
 
 #include <clocale>
 
@@ -364,12 +363,12 @@ namespace Anemone
         // Executable path
         Interop::win32_QueryFullProcessImageName(buffer);
         Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->ExecutablePath, buffer.as_view());
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->ExecutablePath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->ExecutablePath);
 
         // Startup path
         Interop::win32_GetCurrentDirectory(buffer);
         Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->StartupPath, buffer.as_view());
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->StartupPath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->StartupPath);
 
         // Computer name
         Interop::win32_GetComputerName(buffer);
@@ -384,33 +383,33 @@ namespace Anemone
         {
             Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->ProfilePath, value);
         });
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->ProfilePath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->ProfilePath);
 
         // Desktop path
         Interop::win32_GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
         {
             Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DesktopPath, value);
         });
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DesktopPath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DesktopPath);
 
         // Documents path
         Interop::win32_GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
         {
             Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DocumentsPath, value);
         });
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DocumentsPath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DocumentsPath);
 
         // Downloads path
         Interop::win32_GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
         {
             Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DownloadsPath, value);
         });
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DownloadsPath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->DownloadsPath);
 
         // Temp path
         Interop::win32_GetTempPath(buffer);
         Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->TemporaryPath, buffer.as_view());
-        System::Path::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->TemporaryPath);
+        FilePath::NormalizeDirectorySeparators(Internal::GWindowsPlatformStatics->TemporaryPath);
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
         Interop::win32_NarrowString(Internal::GWindowsPlatformStatics->DeviceId, buffer.as_view());

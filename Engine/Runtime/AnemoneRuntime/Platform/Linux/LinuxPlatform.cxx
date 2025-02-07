@@ -3,8 +3,7 @@
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
-
-#include "AnemoneRuntime/System/Path.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
 
 #include <sys/resource.h>
 #include <sys/utsname.h>
@@ -306,19 +305,19 @@ namespace Anemone
         // UserDesktopPath
         {
             Internal::GLinuxPlatformStatics->DesktopPath = Internal::GLinuxPlatformStatics->ProfilePath;
-            System::Path::Push(Internal::GLinuxPlatformStatics->DesktopPath, "Desktop");
+            FilePath::PushFragment(Internal::GLinuxPlatformStatics->DesktopPath, "Desktop");
         }
 
         // UserDocumentsPath
         {
             Internal::GLinuxPlatformStatics->DocumentsPath = Internal::GLinuxPlatformStatics->ProfilePath;
-            System::Path::Push(Internal::GLinuxPlatformStatics->DocumentsPath, "Documents");
+            FilePath::PushFragment(Internal::GLinuxPlatformStatics->DocumentsPath, "Documents");
         }
 
         // UserDownloadsPath
         {
             Internal::GLinuxPlatformStatics->DownloadsPath = Internal::GLinuxPlatformStatics->ProfilePath;
-            System::Path::Push(Internal::GLinuxPlatformStatics->DownloadsPath, "Downloads");
+            FilePath::PushFragment(Internal::GLinuxPlatformStatics->DownloadsPath, "Downloads");
         }
 
         // Temp path

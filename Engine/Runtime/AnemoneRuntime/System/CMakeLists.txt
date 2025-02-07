@@ -2,8 +2,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         #"DirectoryEnumerator.cxx"
         "ErrorCode.cxx"
-        "Path.cxx"
-        "Path.hxx"
 )
 
 if(WIN32)

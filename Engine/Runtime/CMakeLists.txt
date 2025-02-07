@@ -12,7 +12,6 @@ target_link_libraries(AnemoneRuntime
 if(WIN32)
 target_link_libraries(AnemoneRuntime
     PRIVATE
-        "Winmm.lib"
         "Comctl32.lib"
         "Ws2_32.lib"
         "Version.lib"
@@ -28,6 +27,7 @@ target_link_libraries(AnemoneRuntime
         "xaudio2.lib"
     PUBLIC
         "Synchronization.lib"
+        "Winmm.lib"
 )
 
 elseif(LINUX)

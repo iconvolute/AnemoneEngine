@@ -1,8 +1,8 @@
-#include "AnemoneRuntime/System/Path.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
 
-namespace Anemone::System::Private
+namespace Anemone
 {
+    // TODO: move this to platform-specific constants
 #if ANEMONE_PLATFORM_WINDOWS
     inline constexpr char DirectorySeparatorChar = '/';
     inline constexpr char AlternativeDirectorySeparatorChar = '\\';
@@ -64,27 +64,24 @@ namespace Anemone::System::Private
 
         return std::string_view::npos;
     }
-}
 
-namespace Anemone::System
-{
-    void Path::AddDirectorySeparator(std::string& path)
+    void FilePath::AddDirectorySeparator(std::string& path)
     {
-        if (path.empty() or not Private::IsDirectorySeparator(path.back()))
+        if (path.empty() or not IsDirectorySeparator(path.back()))
         {
-            path.push_back(Private::DirectorySeparatorChar);
+            path.push_back(DirectorySeparatorChar);
         }
     }
 
-    void Path::RemoveDirectorySeparator(std::string& path)
+    void FilePath::RemoveDirectorySeparator(std::string& path)
     {
-        if (not path.empty() and Private::IsDirectorySeparator(path.back()))
+        if (not path.empty() and IsDirectorySeparator(path.back()))
         {
             path.pop_back();
         }
     }
 
-    void Path::NormalizeDirectorySeparators(std::string& path)
+    void FilePath::NormalizeDirectorySeparators(std::string& path)
     {
         auto it = path.begin();
         auto const end = path.end();
@@ -93,12 +90,12 @@ namespace Anemone::System
 
         while (it != end)
         {
-            if (Private::IsDirectorySeparator(*it))
+            if (IsDirectorySeparator(*it))
             {
                 // Skip all consecutive directory separators
-                *out++ = Private::DirectorySeparatorChar;
+                *out++ = DirectorySeparatorChar;
 
-                while ((it != end) and Private::IsDirectorySeparator(*it))
+                while ((it != end) and IsDirectorySeparator(*it))
                 {
                     ++it;
                 }
@@ -114,9 +111,9 @@ namespace Anemone::System
         path.resize(out - path.begin());
     }
 
-    void Path::Normalize(std::string& path)
+    void FilePath::Normalize(std::string& path)
     {
-        NormalizeDirectorySeparators(path);
+        FilePath::NormalizeDirectorySeparators(path);
 
         static constexpr std::string_view parent{"/.."};
 
@@ -143,20 +140,20 @@ namespace Anemone::System
 
             while (true)
             {
-                previous = path.rfind(Private::DirectorySeparatorChar, previous - 1);
+                previous = path.rfind(DirectorySeparatorChar, previous - 1);
 
                 if ((previous == 0) or (previous == std::string::npos))
                 {
                     break;
                 }
 
-                if (((index - previous) > 1) and ((path[previous + 1] != '.') or (path[previous + 2] != Private::DirectorySeparatorChar)))
+                if (((index - previous) > 1) and ((path[previous + 1] != '.') or (path[previous + 2] != DirectorySeparatorChar)))
                 {
                     break;
                 }
             }
 
-            std::string::size_type const colon = path.find(Private::VolumeSeparatorChar, previous);
+            std::string::size_type const colon = path.find(VolumeSeparatorChar, previous);
 
             if ((colon != 0) and (colon < index))
             {
@@ -180,7 +177,7 @@ namespace Anemone::System
         }
     }
 
-    void Path::Push(std::string& path, std::string_view part)
+    void FilePath::PushFragment(std::string& path, std::string_view part)
     {
         if (path.empty())
         {
@@ -188,17 +185,17 @@ namespace Anemone::System
         }
         else
         {
-            AddDirectorySeparator(path);
+            FilePath::AddDirectorySeparator(path);
             path.append(part);
         }
     }
 
-    bool Path::Pop(std::string& path)
+    bool FilePath::PopFragment(std::string& path)
     {
         if (not path.empty())
         {
             // Find directory separator and remove everything after it
-            auto const separator = Private::FindLastDirectorySeparator(path);
+            auto const separator = FindLastDirectorySeparator(path);
 
             if (separator != std::string_view::npos)
             {
@@ -215,12 +212,12 @@ namespace Anemone::System
         return false;
     }
 
-    bool Path::Pop(std::string& path, std::string& tail)
+    bool FilePath::PopFragment(std::string& path, std::string& tail)
     {
         if (not path.empty())
         {
             // Find directory separator and remove everything after it
-            auto const separator = Private::FindLastDirectorySeparator(path);
+            auto const separator = FindLastDirectorySeparator(path);
 
             if (separator != std::string_view::npos)
             {
@@ -242,7 +239,81 @@ namespace Anemone::System
         return false;
     }
 
-    void Path::SetExtension(std::string& path, std::string_view extension)
+    std::string_view FilePath::GetFileName(std::string_view path)
+    {
+        std::string_view::size_type const separator = FindLastDirectorySeparator(path);
+
+        if (separator != std::string_view::npos)
+        {
+            return path.substr(separator + 1);
+        }
+
+        return {};
+    }
+
+    void FilePath::SetFileName(std::string& path, std::string_view filename)
+    {
+        FilePath::PopFragment(path);
+        FilePath::PushFragment(path, filename);
+    }
+
+    std::string_view FilePath::GetBaseName(std::string_view path)
+    {
+        std::string_view filename = FilePath::GetFileName(path);
+
+        std::string_view::size_type const separator = FindExtensionSeparator(filename);
+
+        if (separator != std::string_view::npos)
+        {
+            filename = filename.substr(0, separator);
+        }
+
+        // ReSharper disable once CppDFALocalValueEscapesFunction
+        return filename;
+    }
+
+    void FilePath::SetBaseName(std::string& path, std::string_view baseName)
+    {
+        (void)path;
+        (void)baseName;
+        std::string_view::size_type name_start = FindLastDirectorySeparator(path);
+
+        if (name_start == std::string_view::npos)
+        {
+            // No directory separator found, so start at the beginning
+            name_start = 0;
+        }
+        else
+        {
+            // Skip the directory separator
+            ++name_start;
+        }
+
+        std::string_view::size_type name_end = FindExtensionSeparator(path);
+
+        if (name_end == std::string_view::npos)
+        {
+            // No extension separator found, so end at the end
+            name_end = path.length();
+        }
+
+        // Remove the old base name
+        path.replace(name_start, name_end - name_start, baseName);
+    }
+
+    std::string_view FilePath::GetExtension(std::string_view path)
+    {
+        std::string_view::size_type const separator = FindExtensionSeparator(path);
+
+        if (separator != std::string_view::npos)
+        {
+            return path.substr(separator);
+        }
+
+        return {};
+    }
+
+    void FilePath::SetExtension(std::string& path, std::string_view extension)
     {
         // Strip any leading dots
         while (extension.starts_with('.'))
@@ -250,7 +321,7 @@ namespace Anemone::System
             extension.remove_prefix(1);
         }
 
-        std::string_view::size_type const separator = Private::FindExtensionSeparator(path);
+        std::string_view::size_type const separator = FindExtensionSeparator(path);
 
         if (extension.empty())
         {
@@ -266,7 +337,7 @@ namespace Anemone::System
             if (separator == std::string_view::npos)
             {
                 // Extension separator not found, so append it
-                path.push_back(Private::ExtensionSeparatorChar);
+                path.push_back(ExtensionSeparatorChar);
             }
             else
             {
@@ -278,48 +349,30 @@ namespace Anemone::System
         }
     }
 
-    void Path::SetFilename(std::string& path, std::string_view filename)
+    void FilePath::MakeFileNameSafe(std::string& path)
     {
-        Pop(path);
-        Push(path, filename);
-    }
-
-    std::string_view Path::GetExtension(std::string_view path)
-    {
-        std::string_view::size_type const separator = Private::FindExtensionSeparator(path);
-
-        if (separator != std::string_view::npos)
+        for (char& c : path)
         {
-            return path.substr(separator);
+            switch (c)
+            {
+            case '/':
+            case '\\':
+            case '<':
+            case '>':
+            case ':':
+            case ';':
+            case '"':
+            case '|':
+            case '?':
+            case '*':
+            case ',':
+            case '.':
+                c = '_';
+                break;
+
+            default:
+                break;
+            }
         }
-
-        return {};
-    }
-
-    std::string_view Path::GetFilename(std::string_view path)
-    {
-        std::string_view::size_type const separator = Private::FindLastDirectorySeparator(path);
-
-        if (separator != std::string_view::npos)
-        {
-            return path.substr(separator + 1);
-        }
-
-        return {};
-    }
-
-    std::string_view Path::GetFilenameWithoutExtension(std::string_view path)
-    {
-        std::string_view filename = GetFilename(path);
-
-        std::string_view::size_type const separator = Private::FindExtensionSeparator(filename);
-
-        if (separator != std::string_view::npos)
-        {
-            filename = filename.substr(0, separator);
-        }
-
-        // ReSharper disable once CppDFALocalValueEscapesFunction
-        return filename;
     }
 }

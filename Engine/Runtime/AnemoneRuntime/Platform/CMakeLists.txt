@@ -11,6 +11,8 @@ target_sources(AnemoneRuntime
         "EntryPoint.hxx"
         "Environment.hxx"
         "FileHandle.hxx"
+        "FilePath.cxx"
+        "FilePath.hxx"
         "FileSystem.hxx"
         "NamedMutex.hxx"
         "Platform.hxx"

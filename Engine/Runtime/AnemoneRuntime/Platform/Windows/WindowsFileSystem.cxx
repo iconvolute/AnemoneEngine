@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
-#include "AnemoneRuntime/System/Path.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
 
 namespace Anemone
 {
@@ -668,8 +668,8 @@ namespace Anemone
                 Interop::string_buffer<char, 128> sFileName{};
                 Interop::win32_NarrowString(sFileName, wfd.cFileName);
 
-                System::Path::Push(fullPath, sFileName.as_view());
-                System::Path::NormalizeDirectorySeparators(fullPath);
+                FilePath::PushFragment(fullPath, sFileName.as_view());
+                FilePath::NormalizeDirectorySeparators(fullPath);
 
                 visitor.Visit(fullPath, info);
             } while (FindNextFileW(hFind.Get(), &wfd));
