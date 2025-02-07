@@ -155,6 +155,18 @@ namespace Anemone::Interop
         {
             return std::span<CharT const>{this->m_Data, this->m_Capacity};
         }
+
+        [[nodiscard]] constexpr CharT& operator[](size_t index) noexcept
+        {
+            assert(index < this->m_Size);
+            return this->m_Data[index];
+        }
+
+        [[nodiscard]] constexpr CharT const& operator[](size_t index) const noexcept
+        {
+            assert(index < this->m_Size);
+            return this->m_Data[index];
+        }
     };
 
     template <typename StringBufferT, typename CallbackT>

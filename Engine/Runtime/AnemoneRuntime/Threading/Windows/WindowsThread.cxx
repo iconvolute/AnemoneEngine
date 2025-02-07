@@ -1,4 +1,5 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
+#include "AnemoneRuntime/Threading/Windows/WindowsThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
@@ -54,9 +55,7 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    Thread::Thread() = default;
-
-    Thread::Thread(ThreadStart const& start)
+    WindowsThread::WindowsThread(ThreadStart const& start)
     {
         if (start.Callback == nullptr)
         {
@@ -105,13 +104,13 @@ namespace Anemone
         }
     }
 
-    Thread::Thread(Thread&& other) noexcept
+    WindowsThread::WindowsThread(WindowsThread&& other) noexcept
         : _handle{std::exchange(other._handle, {})}
         , _id{std::exchange(other._id, {})}
     {
     }
 
-    Thread& Thread::operator=(Thread&& other) noexcept
+    WindowsThread& WindowsThread::operator=(WindowsThread&& other) noexcept
     {
         if (this != std::addressof(other))
         {
@@ -127,7 +126,7 @@ namespace Anemone
         return *this;
     }
 
-    Thread::~Thread()
+    WindowsThread::~WindowsThread()
     {
         if (this->IsJoinable())
         {
@@ -135,7 +134,7 @@ namespace Anemone
         }
     }
 
-    void Thread::Join()
+    void WindowsThread::Join()
     {
         if (not this->_handle)
         {
@@ -152,12 +151,12 @@ namespace Anemone
         this->_handle = {};
     }
 
-    [[nodiscard]] bool Thread::IsJoinable() const
+    [[nodiscard]] bool WindowsThread::IsJoinable() const
     {
         return this->_handle.IsValid();
     }
 
-    void Thread::Detach()
+    void WindowsThread::Detach()
     {
         if (not this->_handle)
         {
@@ -166,10 +165,5 @@ namespace Anemone
 
         this->_handle = {};
         this->_id = {};
-    }
-
-    ThreadId GetThisThreadId()
-    {
-        return ThreadId{GetCurrentThreadId()};
     }
 }

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Threading/MpmcQueue.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/Yielding.hxx"
+#include "AnemoneRuntime/Threading/CurrentThread.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

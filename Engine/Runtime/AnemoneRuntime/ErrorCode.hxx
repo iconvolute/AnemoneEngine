@@ -51,6 +51,7 @@ namespace Anemone
         DirectoryExists,
         AlreadyExists,
         CircularReference,
+        DirectoryNotEmpty,
         Unknown,
     };
 }

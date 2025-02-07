@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Threading/Yielding.hxx"
+#include "AnemoneRuntime/Threading/SpinWait.hxx"
+#include "AnemoneRuntime/Threading/CurrentThread.hxx"
 
 namespace Anemone
 {
@@ -10,15 +11,15 @@ namespace Anemone
 
             if ((count % 20) == 19)
             {
-                YieldThread(ThreadYieldTarget::AnyThreadOnAnyProcessor);
+                CurrentThread::YieldAnyThreadOnAnyProcessor();
             }
             else if ((count % 5) == 4)
             {
-                YieldThread(ThreadYieldTarget::SameOrHigherPriorityOnAnyProcessor);
+                CurrentThread::YieldSameOrHigherPriorityThreadOnAnyProcessor();
             }
             else
             {
-                YieldThread(ThreadYieldTarget::AnyThreadOnSameProcessor);
+                CurrentThread::YieldAnyThreadOnSameProcessor();
             }
         }
         else
@@ -27,7 +28,7 @@ namespace Anemone
 
             for (size_t i = 0; i < count; ++i)
             {
-                PauseThread();
+                CurrentThread::Pause();
             }
         }
 

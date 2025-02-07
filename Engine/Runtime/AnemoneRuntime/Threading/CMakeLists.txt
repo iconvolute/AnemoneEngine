@@ -18,6 +18,9 @@ target_sources(AnemoneRuntime
         "CriticalSectionPool.cxx"
         "CriticalSectionPool.hxx"
 
+        "CurrentThread.cxx"
+        "CurrentThread.hxx"
+
         "Lock.cxx"
         "Lock.hxx"
 
@@ -48,6 +51,9 @@ target_sources(AnemoneRuntime
         "Spinlock.cxx"
         "Spinlock.hxx"
 
+        "SpinWait.cxx"
+        "SpinWait.hxx"
+
         "SpscQueue.cxx"
         "SpscQueue.hxx"
 
@@ -68,15 +74,11 @@ target_sources(AnemoneRuntime
 
         "UserSemaphore.cxx"
         "UserSemaphore.hxx"
-
-        "Yielding.cxx"
-        "Yielding.hxx"
 )
 
 add_subdirectory("Base")
 if (WIN32)
 add_subdirectory("Windows")
 elseif(ANDROID OR LINUX)
-add_subdirectory("Posix")
 add_subdirectory("Unix")
 endif()

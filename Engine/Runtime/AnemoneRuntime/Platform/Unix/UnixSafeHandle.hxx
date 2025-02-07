@@ -24,7 +24,7 @@ namespace Anemone::Interop
             return close(value) == 0;
         }
     };
-    using UnixSafeFdHandle = Interop::base_SafeHandle<int, UnixSafeFdHandleTraits>;
+    using UnixSafeFdHandle = base_SafeHandle<int, UnixSafeFdHandleTraits>;
 
     struct UnixSafeNamedSemaphoreHandleTraits final
     {
@@ -43,7 +43,7 @@ namespace Anemone::Interop
             return sem_close(value) == 0;
         };
     };
-    using UnixSafeNamedSemaphoreHandle = Interop::base_SafeHandle<sem_t*, UnixSafeNamedSemaphoreHandleTraits>;
+    using UnixSafeNamedSemaphoreHandle = base_SafeHandle<sem_t*, UnixSafeNamedSemaphoreHandleTraits>;
 
     struct UnixSafePidHandleTraits final
     {
@@ -63,7 +63,7 @@ namespace Anemone::Interop
             // return kill(value, SIGKILL) == 0;
         }
     };
-    using UnixSafePidHandle = Interop::base_SafeHandle<pid_t, UnixSafePidHandleTraits>;
+    using UnixSafePidHandle = base_SafeHandle<pid_t, UnixSafePidHandleTraits>;
 
     struct UnixSafeSharedLibraryHandleTraits
     {
@@ -82,5 +82,26 @@ namespace Anemone::Interop
             return dlclose(value) == 0;
         }
     };
-    using UnixSafeSharedLibraryHandle = Interop::base_SafeHandle<void*, UnixSafeSharedLibraryHandleTraits>;
+    using UnixSafeSharedLibraryHandle = base_SafeHandle<void*, UnixSafeSharedLibraryHandleTraits>;
+    
+    struct UnixPthreadThreadHandleTraits final
+    {
+        static pthread_t Invalid()
+        {
+            return pthread_t{};
+        }
+
+        static bool IsValid(pthread_t value)
+        {
+            return value != Invalid();
+        }
+
+        static bool Reset(pthread_t value)
+        {
+            (void)value;
+            return true;
+        }
+    };
+
+    using UnixPthreadThreadHandle = base_SafeHandle<pthread_t, UnixPthreadThreadHandleTraits>;
 }

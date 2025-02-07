@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Tasks/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-#include "AnemoneRuntime/Threading/Yielding.hxx"
+#include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 

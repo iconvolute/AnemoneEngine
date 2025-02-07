@@ -78,4 +78,5 @@ namespace Anemone::Interop
             return FindClose(value);
         }
     };
+    using Win32SafeFindFileHandle = base_SafeHandle<HANDLE, Win32SafeFindFileHandleTraits>;
 }

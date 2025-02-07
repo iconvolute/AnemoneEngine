@@ -1,15 +1,14 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-#include "AnemoneRuntime/Duration.hxx"
 
 namespace Anemone
 {
     class SpinWait final
     {
     private:
-        std::uint32_t m_Counter{};
+        uint32_t m_Counter{};
 
-        static constexpr std::uint32_t SpinYieldThreshold = 10;
+        static constexpr uint32_t SpinYieldThreshold = 10;
 
     public:
         SpinWait() = default;
@@ -36,25 +35,7 @@ namespace Anemone
 
 namespace Anemone
 {
-    enum class ThreadYieldTarget
-    {
-        None,
-        AnyThreadOnAnyProcessor,
-        AnyThreadOnSameProcessor,
-        SameOrHigherPriorityOnAnyProcessor,
-    };
-
-    RUNTIME_API void YieldThread(ThreadYieldTarget target);
-
-    RUNTIME_API void YieldThread();
-
-    RUNTIME_API void SleepThread(int32_t milliseconds);
-
-    RUNTIME_API void SleepThread(Duration const& timeout);
-
-    RUNTIME_API void PauseThread();
-
-    inline void SpinThread(size_t spins)
+    anemone_forceinline void SpinThread(size_t spins)
     {
         SpinWait spinner{};
 

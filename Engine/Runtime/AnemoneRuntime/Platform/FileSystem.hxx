@@ -25,6 +25,24 @@ namespace Anemone
         bool ReadOnly;
     };
 
+    struct DirectoryVisitor
+    {
+        DirectoryVisitor() = default;
+        DirectoryVisitor(DirectoryVisitor const&) = default;
+        DirectoryVisitor(DirectoryVisitor&&) = default;
+        DirectoryVisitor& operator=(DirectoryVisitor const&) = default;
+        DirectoryVisitor& operator=(DirectoryVisitor&&) = default;
+        virtual ~DirectoryVisitor() = default;
+        virtual void Visit(std::string_view path, FileInfo const& info) = 0;
+    };
+
+    enum class NameCollisionResolve
+    {
+        Overwrite,
+        Fail,
+        GenerateUnique,
+    };
+
     struct FileSystem
     {
         RUNTIME_API static auto FileExists(std::string_view path) -> std::expected<bool, ErrorCode>;
@@ -33,13 +51,25 @@ namespace Anemone
 
         RUNTIME_API static auto FileCreate(std::string_view path) -> std::expected<FileHandle, ErrorCode>;
 
-        RUNTIME_API static auto FileCopy(std::string_view source, std::string_view destination, bool overwrite) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>;
 
-        RUNTIME_API static auto FileMove(std::string_view source, std::string_view destination, bool overwrite) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>;
 
         RUNTIME_API static auto GetFileInfo(std::string_view path) -> std::expected<FileInfo, ErrorCode>;
 
         RUNTIME_API static auto GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryExists(std::string_view path) -> std::expected<bool, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
+
+        
     };
 
     //

@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/UserAutoResetEvent.hxx"
 #include "AnemoneRuntime/Threading/AutoResetEvent.hxx"
-#include "AnemoneRuntime/Threading/Yielding.hxx"
+#include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
 #include <catch_amalgamated.hpp>
@@ -75,7 +75,7 @@ TEST_CASE("Threading / UserAutoResetEvent")
         ++state.PushSet;
         state.Push.Set();
 
-        SleepThread(50);
+        CurrentThread::Sleep(50);
 
         ++state.PopWait;
         state.Pop.Wait();
@@ -164,7 +164,7 @@ TEST_CASE("Threading / AutoResetEvent")
         ++state.PushSet;
         state.Push.Set();
 
-        SleepThread(50);
+        CurrentThread::Sleep(50);
 
         ++state.PopWait;
         state.Pop.Wait();

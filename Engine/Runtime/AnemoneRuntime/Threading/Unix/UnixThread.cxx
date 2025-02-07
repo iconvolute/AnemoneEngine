@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Threading/Thread.hxx"
+#include "AnemoneRuntime/Threading/Unix/UnixThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
@@ -47,9 +47,7 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    Thread::Thread() = default;
-
-    Thread::Thread(ThreadStart const& start)
+    UnixThread::UnixThread(ThreadStart const& start)
     {
         if (start.Callback == nullptr)
         {
@@ -91,7 +89,7 @@ namespace Anemone
             AE_PANIC("Failed to start thread");
         }
 
-        this->_id = Internal::NativeThreadId{Interop::posix_GetThreadId()};
+        this->_id = ThreadId{Interop::posix_GetThreadId()};
 
 
         //
@@ -128,13 +126,13 @@ namespace Anemone
         }
     }
 
-    Thread::Thread(Thread&& other) noexcept
+    UnixThread::UnixThread(UnixThread&& other) noexcept
         : _handle{std::exchange(other._handle, {})}
         , _id{std::exchange(other._id, {})}
     {
     }
 
-    Thread& Thread::operator=(Thread&& other) noexcept
+    UnixThread& UnixThread::operator=(UnixThread&& other) noexcept
     {
         if (this != std::addressof(other))
         {
@@ -150,7 +148,7 @@ namespace Anemone
         return *this;
     }
 
-    Thread::~Thread()
+    UnixThread::~UnixThread()
     {
         if (this->IsJoinable())
         {
@@ -158,7 +156,7 @@ namespace Anemone
         }
     }
 
-    void Thread::Join()
+    void UnixThread::Join()
     {
         if (not this->_handle)
         {
@@ -179,12 +177,12 @@ namespace Anemone
         this->_id = {};
     }
 
-    [[nodiscard]] bool Thread::IsJoinable() const
+    [[nodiscard]] bool UnixThread::IsJoinable() const
     {
         return this->_handle.IsValid();
     }
 
-    void Thread::Detach()
+    void UnixThread::Detach()
     {
         if (not this->_handle)
         {
@@ -198,10 +196,5 @@ namespace Anemone
 
         this->_handle = {};
         this->_id = {};
-    }
-
-    ThreadId GetThisThreadId()
-    {
-        return ThreadId{Interop::posix_GetThreadId()};
     }
 }

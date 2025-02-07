@@ -1,6 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Threading/Yielding.hxx"
+#include "AnemoneRuntime/Threading/SpinWait.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
+#include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
@@ -66,7 +67,7 @@ namespace Anemone
     {
     private:
         std::atomic_size_t m_Count = 0;
-        std::atomic<ThreadId> m_Owner{ThreadId::Invalid()};
+        std::atomic<ThreadId> m_Owner{};
 
     public:
         RecursiveSpinlock() = default;
@@ -79,7 +80,7 @@ namespace Anemone
     public:
         void Enter()
         {
-            ThreadId const id = GetThisThreadId();
+            ThreadId const id = CurrentThread::Id();
 
             if (this->m_Owner.load(std::memory_order::acquire) != id)
             {
@@ -88,11 +89,11 @@ namespace Anemone
                 {
                     // When 'compare_exchange_weak' fails, 'expected' will be updated with the current value of 'm_Owner'.
                     // Reset 'expected' to 'ThreadId::Invalid()' to ensure that the loop will continue until the lock is acquired.
-                    owner = ThreadId::Invalid();
+                    owner = ThreadId{};
 
                     WaitForCompletion([&]
                     {
-                        return this->m_Owner.load(std::memory_order::acquire) == ThreadId::Invalid();
+                        return this->m_Owner.load(std::memory_order::acquire) == ThreadId{};
                     });
                 } while (!this->m_Owner.compare_exchange_weak(owner, id, std::memory_order::acquire));
             }
@@ -102,7 +103,7 @@ namespace Anemone
 
         bool TryEnter()
         {
-            ThreadId const id = GetThisThreadId();
+            ThreadId const id = CurrentThread::Id();
 
             if (ThreadId owner = this->m_Owner.load(std::memory_order::acquire); owner == id)
             {
@@ -111,7 +112,7 @@ namespace Anemone
                 return true;
             }
 
-            ThreadId owner = ThreadId::Invalid();
+            ThreadId owner = {};
 
             if (this->m_Owner.compare_exchange_weak(owner, id, std::memory_order::acquire))
             {
@@ -126,11 +127,11 @@ namespace Anemone
 
         void Leave()
         {
-            AE_ASSERT(this->m_Owner.load(std::memory_order::relaxed) == GetThisThreadId(), "Different thread owns this lock.");
+            AE_ASSERT(this->m_Owner.load(std::memory_order::relaxed) == CurrentThread::Id(), "Different thread owns this lock.");
 
             if (--this->m_Count == 0)
             {
-                this->m_Owner.store(ThreadId::Invalid(), std::memory_order::release);
+                this->m_Owner.store(ThreadId{}, std::memory_order::release);
             }
         }
 
