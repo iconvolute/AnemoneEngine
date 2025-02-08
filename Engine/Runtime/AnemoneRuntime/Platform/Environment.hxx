@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
+#include "AnemoneRuntime/Instant.hxx"
 
 #include <span>
 #include <cstdint>
@@ -210,6 +211,7 @@ namespace Anemone
         static RUNTIME_API DateTime GetCurrentDateTime();
         static RUNTIME_API DateTime GetCurrentDateTimeUtc();
         static RUNTIME_API Duration GetCurrentTimeZoneBias();
+        static RUNTIME_API Instant GetCurrentInstant();
 
         static void GetRandom(std::span<std::byte> buffer);
     };

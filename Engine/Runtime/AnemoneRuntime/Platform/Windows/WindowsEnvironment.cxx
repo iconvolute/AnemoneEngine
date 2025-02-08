@@ -11,6 +11,41 @@
 #include <Psapi.h>
 #include <bcrypt.h>
 
+namespace Anemone::Internal
+{
+    static int64_t QueryInstantFrequency()
+    {
+        static std::atomic<int64_t> cache{};
+
+        int64_t result = cache.load(std::memory_order::relaxed);
+
+        if (result != 0)
+        {
+            return result;
+        }
+
+        // Implementation detail:
+        //  QPC Frequency is stored in KUSER_SHARED_DATA.
+        //  This function just performs read from that struct on all known platforms.
+        LARGE_INTEGER value;
+        [[maybe_unused]] BOOL const success = QueryPerformanceFrequency(&value);
+        AE_ASSERT(success != FALSE);
+
+        result = std::bit_cast<int64_t>(value);
+        cache.store(result, std::memory_order::relaxed);
+        return result;
+    }
+
+    static int64_t QueryInstantValue()
+    {
+        LARGE_INTEGER counter;
+        [[maybe_unused]] BOOL const success = QueryPerformanceCounter(&counter);
+        AE_ASSERT(success != FALSE);
+
+        return std::bit_cast<int64_t>(counter);
+    }
+}
+
 namespace Anemone
 {
     bool Environment::GetEnvironmentVariable(std::string& result, std::string_view name)
@@ -484,6 +519,33 @@ namespace Anemone
             .Seconds = seconds,
             .Nanoseconds = 0,
         };
+    }
+
+    Instant Environment::GetCurrentInstant()
+    {
+        static constexpr int64_t QpcFrequency = 10'000'000;
+
+        int64_t const value = Internal::QueryInstantValue();
+
+        if (int64_t const frequency = Internal::QueryInstantFrequency(); frequency == QpcFrequency)
+        {
+            return Instant{
+                .Inner = {
+                    .Seconds = value / QpcFrequency,
+                    .Nanoseconds = (value % QpcFrequency) * 100,
+                },
+            };
+        }
+        else
+        {
+            int64_t const nanosecond_conversion = Private::NanosecondsInSecond / frequency;
+            return Instant{
+                .Inner = {
+                    .Seconds = value / frequency,
+                    .Nanoseconds = (value % frequency) * nanosecond_conversion,
+                },
+            };
+        }
     }
 
     void Environment::GetRandom(std::span<std::byte> buffer)

@@ -1,10 +1,13 @@
 #include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <sys/sysinfo.h>
 #include <sys/resource.h>
 #include <sys/random.h>
+#include <sys/mman.h>
+#include <time.h>
 
 namespace Anemone
 {
@@ -344,6 +347,29 @@ namespace Anemone
             .Seconds = mktime(&tmGMT) - mktime(&tmLocal),
             .Nanoseconds = 0,
         };
+    }
+
+    Instant Environment::GetCurrentInstant()
+    {
+#if defined(HAVE_CLOCK_GETTIME_NSEC_NP)
+
+        return {.Inner = Duration::FromNanoseconds(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW))};
+
+#else
+
+        struct timespec ts;
+
+        [[maybe_unused]] int const result = clock_gettime(CLOCK_MONOTONIC, &ts);
+        AE_ASSERT(result == 0);
+
+        return Instant{
+            .Inner = {
+                .Seconds = ts.tv_sec,
+                .Nanoseconds = ts.tv_nsec,
+            },
+        };
+
+#endif
     }
 
     void Environment::GetRandom(std::span<std::byte> buffer)
