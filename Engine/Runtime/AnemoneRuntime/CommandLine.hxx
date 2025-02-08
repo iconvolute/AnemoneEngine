@@ -16,7 +16,7 @@ namespace Anemone
 
     private:
         static std::string_view UnquoteToken(std::string_view s);
-        static std::string_view ParseToken(std::string_view& s);
+        static std::string_view ParseToken(std::string_view s);
 
     public:
         RUNTIME_API static void Initialize(

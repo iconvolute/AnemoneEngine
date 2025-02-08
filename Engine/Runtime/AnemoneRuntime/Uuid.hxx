@@ -92,7 +92,7 @@ namespace Anemone
             return Create(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max());
         }
 
-        constexpr UuidVariant GetVariant() const
+        [[nodiscard]] constexpr UuidVariant GetVariant() const
         {
             uint8_t const variant = this->Elements[8];
 
@@ -114,7 +114,7 @@ namespace Anemone
             return UuidVariant::Future;
         }
 
-        constexpr UuidVersion GetVersion() const
+        [[nodiscard]] constexpr UuidVersion GetVersion() const
         {
             return static_cast<UuidVersion>(this->Elements[6] >> 4);
         }

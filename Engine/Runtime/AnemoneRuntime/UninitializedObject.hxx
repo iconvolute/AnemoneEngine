@@ -12,7 +12,7 @@ namespace Anemone
     {
     private:
         alignas(T) std::byte _buffer[sizeof(T)]{};
-        bool m_initialized;
+        bool m_initialized{false};
 
     public:
         UninitializedObject() = default;
@@ -59,7 +59,7 @@ namespace Anemone
         }
 
     public:
-        bool IsInitialized() const
+        [[nodiscard]] bool IsInitialized() const
         {
             return this->m_initialized;
         }

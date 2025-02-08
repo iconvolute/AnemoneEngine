@@ -56,8 +56,6 @@ namespace Anemone::Private
 
         return std::nullopt;
     }
-
-
 }
 
 namespace Anemone

@@ -4,6 +4,17 @@
 #include "AnemoneRuntime/Crypto/Sha256.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
 
+namespace Anemone::Internal
+{
+    std::array<uint64_t, 2> GenerateUuidBits(Math::Random& generator)
+    {
+        uint64_t const lo = generator.NextUInt64();
+        uint64_t const hi = generator.NextUInt64();
+
+        return {lo, hi};
+    }
+}
+
 namespace Anemone
 {
     Uuid Uuid::CreateRandom()
@@ -16,11 +27,7 @@ namespace Anemone
 
     Uuid Uuid::CreateRandom(Math::Random& generator)
     {
-        std::array<uint64_t, 2> bits;
-        bits[0] = generator.NextUInt64();
-        bits[1] = generator.NextUInt64();
-
-        Uuid result = std::bit_cast<Uuid>(bits);
+        Uuid result = std::bit_cast<Uuid>(Internal::GenerateUuidBits(generator));
         result.SetVersion(UuidVersion::Random);
         return result;
     }
@@ -37,11 +44,7 @@ namespace Anemone
         // Big-endian representation of the milliseconds since Unix epoch
         uint64_t const bytes_bigendian = Bitwise::ToBigEndian(milliseconds << 16u);
 
-        std::array<uint64_t, 2> bits;
-        bits[0] = generator.NextUInt64();
-        bits[1] = generator.NextUInt64();
-
-        Uuid result = std::bit_cast<Uuid>(bits);
+        Uuid result = std::bit_cast<Uuid>(Internal::GenerateUuidBits(generator));
 
         // Copy 48 bits of the big-endian representation of the milliseconds since Unix epoch. It should work for year 10889 with ease
         std::memcpy(result.Elements, &bytes_bigendian, 6);
@@ -166,7 +169,7 @@ namespace Anemone
 
     bool TryFormat(std::string& result, Uuid const& value, UuidStringFormat format)
     {
-        std::array<char, 48> buffer;
+        std::array<char, 48> buffer{};
 
         size_t const written = TryFormat(buffer, value, format);
         result.assign(buffer.data(), written);

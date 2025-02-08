@@ -1,4 +1,11 @@
 #pragma once
+#include "AnemoneRuntime/Hash/FNV.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
+
+#include <cstdint>
+#include <string_view>
+#include <vector>
+#include <memory>
 
 template <typename T>
 struct AnemoneReflection_ToTypeId;
@@ -16,7 +23,7 @@ namespace Anemone::Reflection
         [[nodiscard]] static constexpr TypeId Create(std::string_view name)
         {
             return {
-                .Inner = Anemone::Hash::FNV1A64::FromString(name),
+                .Inner = Anemone::FNV1A64::FromString(name),
                 .Name = name,
             };
         }
@@ -63,7 +70,7 @@ namespace Anemone::Reflection
         static constexpr MemberId Create(std::string_view name)
         {
             return {
-                .Inner = Anemone::Hash::FNV1A64::FromString(name),
+                .Inner = Anemone::FNV1A64::FromString(name),
                 .Name = name,
             };
         }
@@ -120,7 +127,7 @@ namespace Anemone::Reflection
                     return this->Getter(instance, &result);
                 }
 
-                return ErrorCode::OperationNotPermitted;
+                return ErrorCode::InvalidOperation;
             }
 
             return ErrorCode::NotSupported;
@@ -136,7 +143,7 @@ namespace Anemone::Reflection
                     return this->Setter(instance, &value);
                 }
 
-                return ErrorCode::OperationNotPermitted;
+                return ErrorCode::InvalidOperation;
             }
 
             return ErrorCode::NotSupported;
@@ -188,7 +195,7 @@ namespace Anemone::Reflection
                     return this->Method(instance, value);
                 }
 
-                return ErrorCode::OperationNotPermitted;
+                return ErrorCode::InvalidOperation;
             }
 
             return ErrorCode::NotSupported;
@@ -384,7 +391,7 @@ namespace Anemone::Reflection
     struct AnemoneReflection_FromTypeId<Anemone::Reflection::TypeId::Create(#T).Inner> final \
     { \
         using Type = T; \
-    };
+    }
 
 ANEMONE_REFLECTION_TYPE(bool);
 ANEMONE_REFLECTION_TYPE(int8_t);

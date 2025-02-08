@@ -261,7 +261,7 @@ namespace Anemone
                 ++patternFirst;
                 ++valueFirst;
             }
-            else if (restartable == false)
+            else if (not restartable)
             {
                 // Only `*` matching may restart operation.
                 return false;

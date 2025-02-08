@@ -1,9 +1,9 @@
 #pragma once
 #include <limits>
+#include <cstdint>
 
 namespace Anemone::Branchless
 {
-
     constexpr uint32_t uint32_inc(uint32_t value)
     {
         return value + 1;
@@ -71,12 +71,12 @@ namespace Anemone::Branchless
 
     constexpr uint32_t uint32_ror(uint32_t value, int shift)
     {
-        return shrl(value, shift) | shll(value, 32 - shift);
+        return uint32_shrl(value, shift) | uint32_shll(value, 32 - shift);
     }
 
     constexpr uint32_t uint32_rol(uint32_t value, int shift)
     {
-        return shll(value, shift) | shrl(value, 32 - shift);
+        return uint32_shll(value, shift) | uint32_shrl(value, 32 - shift);
     }
 
     constexpr bool uint32_all(uint32_t value)
@@ -238,7 +238,7 @@ namespace Anemone::Branchless
 
     constexpr uint32_t UInt32_CompareGreaterThan(uint32_t x, uint32_t y)
     {
-        return SignExtend(y - x);
+        return UInt32_SignExtend(y - x);
     }
 
     constexpr uint32_t UInt32_CompareGreaterEqual(uint32_t x, uint32_t y)
@@ -356,6 +356,12 @@ namespace Anemone::Branchless
         return count;
     }
 
+    constexpr size_t int64_write_7bit_encoded(uint8_t* buffer, int64_t value)
+    {
+        // ZigZag encoding
+        return uint64_write_7bit_encoded(buffer, (value << 1) ^ (value >> 63));
+    }
+
     constexpr size_t uint64_read_7bit_encoded(uint64_t& result, const uint8_t* buffer)
     {
         result = 0;
@@ -378,6 +384,17 @@ namespace Anemone::Branchless
         } while ((value & 0x80) != 0);
 
         return shift / 7;
+    }
+
+    constexpr size_t int64_read_7bit_encoded(int64_t& result, const uint8_t* buffer)
+    {
+        uint64_t temp;
+        size_t count = uint64_read_7bit_encoded(temp, buffer);
+
+        // ZigZag decoding
+        result = (temp >> 1) ^ (-(temp & 1));
+
+        return count;
     }
 
     constexpr size_t uint64_count_7bit_encoded(uint64_t value)
