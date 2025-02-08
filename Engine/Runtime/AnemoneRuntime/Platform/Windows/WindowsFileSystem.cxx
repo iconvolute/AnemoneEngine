@@ -3,6 +3,32 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 
+namespace Anemone::Internal
+{
+    template <typename SourceT>
+    static void FileInfoFromSystem(
+        SourceT const& source,
+        FileInfo& destination)
+    {
+        destination.Created = Interop::win32_into_DateTime(source.ftCreationTime);
+        destination.Accessed = Interop::win32_into_DateTime(source.ftLastAccessTime);
+        destination.Modified = Interop::win32_into_DateTime(source.ftLastWriteTime);
+
+        if (source.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+        {
+            destination.Type = FileType::Directory;
+            destination.Size = 0;
+        }
+        else
+        {
+            destination.Type = FileType::File;
+            destination.Size = static_cast<int64_t>((static_cast<DWORD64>(source.nFileSizeHigh) << 32) | source.nFileSizeLow);
+        }
+
+        destination.ReadOnly = (source.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+    }
+}
+
 namespace Anemone
 {
     auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, ErrorCode>
@@ -284,22 +310,7 @@ namespace Anemone
 
         FileInfo result;
 
-        result.Created = Interop::win32_into_DateTime(wfad.ftCreationTime);
-        result.Accessed = Interop::win32_into_DateTime(wfad.ftLastAccessTime);
-        result.Modified = Interop::win32_into_DateTime(wfad.ftLastWriteTime);
-
-        if (wfad.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
-            result.Type = FileType::Directory;
-            result.Size = 0;
-        }
-        else
-        {
-            result.Type = FileType::File;
-            result.Size = static_cast<int64_t>((static_cast<DWORD64>(wfad.nFileSizeHigh) << 32) | wfad.nFileSizeLow);
-        }
-
-        result.ReadOnly = (wfad.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+        Internal::FileInfoFromSystem(wfad, result);
 
         return result;
     }
@@ -315,22 +326,7 @@ namespace Anemone
 
         FileInfo result;
 
-        result.Created = Interop::win32_into_DateTime(bhfi.ftCreationTime);
-        result.Accessed = Interop::win32_into_DateTime(bhfi.ftLastAccessTime);
-        result.Modified = Interop::win32_into_DateTime(bhfi.ftLastWriteTime);
-
-        if (bhfi.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-        {
-            result.Type = FileType::Directory;
-            result.Size = 0;
-        }
-        else
-        {
-            result.Type = FileType::File;
-            result.Size = (static_cast<int64_t>(bhfi.nFileSizeHigh) << 32) | bhfi.nFileSizeLow;
-        }
-
-        result.ReadOnly = (bhfi.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+        Internal::FileInfoFromSystem(bhfi, result);
 
         return result;
     }
@@ -649,18 +645,18 @@ namespace Anemone
                 info.Created = Interop::win32_into_DateTime(wfd.ftCreationTime);
                 info.Accessed = Interop::win32_into_DateTime(wfd.ftLastAccessTime);
                 info.Modified = Interop::win32_into_DateTime(wfd.ftLastWriteTime);
-                info.Type = isDirectory ? FileType::Directory : FileType::File;
-                info.Size = (static_cast<int64_t>(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
-                // if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                //{
-                //     info.Type = FileType::Directory;
-                //     info.Size = 0;
-                // }
-                // else
-                //{
-                //     info.Type = FileType::File;
-                //     info.Size = (static_cast<int64_t>(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
-                // }
+
+                if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+                {
+                    info.Type = FileType::Directory;
+                    info.Size = 0;
+                }
+                else
+                {
+                    info.Type = FileType::File;
+                    info.Size = (static_cast<int64_t>(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
+                }
+
                 info.ReadOnly = (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
 
                 std::string fullPath{path};
