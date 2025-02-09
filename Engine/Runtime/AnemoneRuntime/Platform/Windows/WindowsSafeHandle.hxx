@@ -98,4 +98,43 @@ namespace Anemone::Interop
         }
     };
     using Win32SafeFindFileHandle = base_SafeHandle<HANDLE, Win32SafeFindFileHandleTraits>;
+
+    struct Win32SafeMemoryMappedFileHandleTraits final
+    {
+        static HANDLE Invalid()
+        {
+            return nullptr;
+        }
+
+        static bool IsValid(HANDLE value)
+        {
+            return value != nullptr;
+        }
+
+        static bool Reset(HANDLE value)
+        {
+            return CloseHandle(value);
+        }
+    };
+    using Win32SafeMemoryMappedFileHandle = base_SafeHandle<HANDLE, Win32SafeMemoryMappedFileHandleTraits>;
+
+    struct Win32SafeMemoryMappedViewHandleTraits final
+    {
+        static void* Invalid()
+        {
+            return nullptr;
+        }
+
+        static bool IsValid(void* value)
+        {
+            return value != nullptr;
+        }
+
+        static bool Reset(void* value, size_t size)
+        {
+            (void)size;
+            return UnmapViewOfFile(value);
+        }
+    };
+    using Win32SafeMemoryMappedViewHandle = base_SafeBuffer<void, Win32SafeMemoryMappedViewHandleTraits>;
 }
