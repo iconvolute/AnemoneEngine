@@ -42,6 +42,25 @@ namespace Anemone::Interop
     };
     using Win32SafeHandle = base_SafeHandle<HANDLE, Win32SafeHandleTraits>;
 
+    struct Win32SafeFileHandleTraits final
+    {
+        static HANDLE Invalid()
+        {
+            return nullptr;
+        }
+
+        static bool IsValid(HANDLE value)
+        {
+            return (value != nullptr) and (value != INVALID_HANDLE_VALUE);
+        }
+
+        static bool Reset(HANDLE value)
+        {
+            return CloseHandle(value);
+        }
+    };
+    using Win32SafeFileHandle = base_SafeHandle<HANDLE, Win32SafeFileHandleTraits>;
+
     struct Win32SafeSharedLibraryHandleTraits final
     {
         static HMODULE Invalid()

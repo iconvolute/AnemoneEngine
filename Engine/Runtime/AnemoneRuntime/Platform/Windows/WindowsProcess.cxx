@@ -6,8 +6,8 @@
 namespace Anemone
 {
     inline std::expected<void, ErrorCode> CreatePipeForRedirection(
-        Interop::Win32SafeHandle& hOutParent,
-        Interop::Win32SafeHandle& hOutChild,
+        Interop::Win32SafeFileHandle& hOutParent,
+        Interop::Win32SafeFileHandle& hOutChild,
         bool parentWritesToChild)
     {
         SECURITY_ATTRIBUTES sa{
@@ -83,12 +83,12 @@ namespace Anemone
             .hStdError = nullptr,
         };
 
-        Interop::Win32SafeHandle fhReadInput{};
-        Interop::Win32SafeHandle fhWriteInput{};
-        Interop::Win32SafeHandle fhReadOutput{};
-        Interop::Win32SafeHandle fhWriteOutput{};
-        Interop::Win32SafeHandle fhReadError{};
-        Interop::Win32SafeHandle fhWriteError{};
+        Interop::Win32SafeFileHandle fhReadInput{};
+        Interop::Win32SafeFileHandle fhWriteInput{};
+        Interop::Win32SafeFileHandle fhReadOutput{};
+        Interop::Win32SafeFileHandle fhWriteOutput{};
+        Interop::Win32SafeFileHandle fhReadError{};
+        Interop::Win32SafeFileHandle fhWriteError{};
 
         if (redirectInput or redirectOutput or redirectError)
         {

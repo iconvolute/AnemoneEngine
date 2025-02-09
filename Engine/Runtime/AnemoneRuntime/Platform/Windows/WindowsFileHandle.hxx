@@ -14,10 +14,10 @@ namespace Anemone
     class RUNTIME_API WindowsFileHandle final
     {
     private:
-        Interop::Win32SafeHandle _handle{};
+        Interop::Win32SafeFileHandle _handle{};
 
     public:
-        explicit WindowsFileHandle(Interop::Win32SafeHandle handle)
+        explicit WindowsFileHandle(Interop::Win32SafeFileHandle handle)
             : _handle{std::move(handle)}
         {
         }
@@ -35,7 +35,7 @@ namespace Anemone
             return this->_handle.IsValid();
         }
 
-        [[nodiscard]] Interop::Win32SafeHandle const& GetNativeHandle() const
+        [[nodiscard]] Interop::Win32SafeFileHandle const& GetNativeHandle() const
         {
             return this->_handle;
         }

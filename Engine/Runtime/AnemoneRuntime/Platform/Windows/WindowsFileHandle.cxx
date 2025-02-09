@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
 
 namespace Anemone
 {
@@ -120,10 +121,12 @@ namespace Anemone
 
             if (result != INVALID_HANDLE_VALUE)
             {
-                return FileHandle{Interop::Win32SafeHandle{result}};
+                return FileHandle{Interop::Win32SafeFileHandle{result}};
             }
 
-            return std::unexpected(ErrorCode{});
+            AE_VERIFY_WIN32(GetLastError());
+
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
@@ -142,8 +145,8 @@ namespace Anemone
 
         if (::CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            read = FileHandle{Interop::Win32SafeHandle{hRead}};
-            write = FileHandle{Interop::Win32SafeHandle{hWrite}};
+            read = FileHandle{Interop::Win32SafeFileHandle{hRead}};
+            write = FileHandle{Interop::Win32SafeFileHandle{hWrite}};
             return {};
         }
 
