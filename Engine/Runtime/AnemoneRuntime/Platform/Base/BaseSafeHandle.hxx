@@ -98,4 +98,116 @@ namespace Anemone::Interop
             }
         }
     };
+
+    template <typename T, typename TraitsT>
+    class base_SafeBuffer final
+    {
+    private:
+        T* _data = TraitsT::Invalid();
+        size_t _size = 0;
+
+    public:
+        base_SafeBuffer() = default;
+
+        base_SafeBuffer(T* data, size_t size)
+            : _data{data}
+            , _size{size}
+        {
+        }
+
+        base_SafeBuffer(base_SafeBuffer const&) = delete;
+
+        base_SafeBuffer(base_SafeBuffer&& other) noexcept
+            : _data{other._data}
+            , _size{other._size}
+        {
+            other._data = TraitsT::Invalid();
+            other._size = 0;
+        }
+
+        base_SafeBuffer& operator=(base_SafeBuffer const&) = delete;
+
+        base_SafeBuffer& operator=(base_SafeBuffer&& other) noexcept
+        {
+            if (this != &other)
+            {
+                if (TraitsT::IsValid(this->_data))
+                {
+                    TraitsT::Reset(this->_data, this->_size);
+                }
+
+                this->_data = other._data;
+                this->_size = other._size;
+
+                other._data = TraitsT::Invalid();
+                other._size = 0;
+            }
+            return *this;
+        }
+
+        ~base_SafeBuffer()
+        {
+            if (TraitsT::IsValid(this->_data))
+            {
+                TraitsT::Reset(this->_data, this->_size);
+            }
+        }
+
+    public:
+        [[nodiscard]] explicit operator bool() const
+        {
+            return this->IsValid();
+        }
+
+        [[nodiscard]] constexpr bool IsValid() const
+        {
+            return TraitsT::IsValid(this->_data);
+        }
+
+        [[nodiscard]] T* GetData()
+        {
+            return this->_data;
+        }
+
+        [[nodiscard]] T const* GetData() const
+        {
+            return this->_data;
+        }
+
+        [[nodiscard]] size_t GetSize() const
+        {
+            return this->_size;
+        }
+
+        void Attach(void* data, size_t size)
+        {
+            if (TraitsT::IsValid(this->_data))
+            {
+                TraitsT::Reset(this->_data, this->_size);
+            }
+
+            this->_data = static_cast<T*>(data);
+            this->_size = size;
+        }
+
+        void Detach(void*& data, size_t& size)
+        {
+            data = this->_data;
+            size = this->_size;
+
+            this->_data = TraitsT::Invalid();
+            this->_size = 0;
+        }
+
+        void Reset()
+        {
+            if (TraitsT::IsValid(this->_data))
+            {
+                TraitsT::Reset(this->_data, this->_size);
+
+                this->_data = TraitsT::Invalid();
+                this->_size = 0;
+            }
+        }
+    };
 }
