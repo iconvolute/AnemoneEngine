@@ -112,6 +112,8 @@ namespace Anemone
             MemoryMappedFileAccess access)
             -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
     };
+
+    using MemoryMappedFile = WindowsMemoryMappedFile;
 }
 
 namespace Anemone
@@ -197,4 +199,6 @@ namespace Anemone
             return std::span{static_cast<std::byte const*>(this->GetData()), this->GetSize()};
         }
     };
+
+    using MemoryMappedView = WindowsMemoryMappedView;
 }

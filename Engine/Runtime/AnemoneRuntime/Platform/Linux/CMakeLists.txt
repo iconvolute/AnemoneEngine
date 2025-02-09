@@ -21,6 +21,9 @@ target_sources(AnemoneRuntime
         #"LinuxInput.cxx"
         #"LinuxInput.hxx"
 
+        "LinuxMemoryMappedFile.cxx"
+        "LinuxMemoryMappedFile.hxx"
+
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
 
