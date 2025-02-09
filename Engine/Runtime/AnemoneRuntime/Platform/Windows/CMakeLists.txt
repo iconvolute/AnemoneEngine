@@ -17,6 +17,9 @@ target_sources(AnemoneRuntime
         "WindowsEnvironment.cxx"
         "WindowsEnvironment.hxx"
 
+        "WindowsError.cxx"
+        "WindowsError.hxx"
+
         "WindowsFileHandle.cxx"
         "WindowsFileHandle.hxx"
 

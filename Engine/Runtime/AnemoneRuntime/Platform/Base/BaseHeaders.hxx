@@ -562,6 +562,11 @@
 #define ANEMONE_FEATURE_CONSOLELOG false
 #endif
 
+// Convert errors to readable messages.
+#ifndef ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
+#define ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES false
+#endif
+
 //
 //--------------------------------------------------------------------------------------------------
 
