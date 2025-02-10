@@ -10,8 +10,6 @@ target_sources(TestRuntime
         "Main.cxx"
         "MpmcQueue.cxx"
         "Path.cxx"
-        "Sha256.cxx"
-        "Sha512.cxx"
         "SpscQueue.cxx"
         "Unicode.cxx"
         "Uuid.cxx"
@@ -19,4 +17,5 @@ target_sources(TestRuntime
 )
 
 add_subdirectory("Numerics")
+add_subdirectory("Security")
 add_subdirectory("Threading")

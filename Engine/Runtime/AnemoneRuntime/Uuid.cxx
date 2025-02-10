@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Uuid.hxx"
 #include "AnemoneRuntime/Math/Random.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Crypto/Sha256.hxx"
+#include "AnemoneRuntime/Security/SHA256.hxx"
 #include "AnemoneRuntime/Bitwise.hxx"
 
 namespace Anemone::Internal
@@ -54,11 +54,13 @@ namespace Anemone
 
     Uuid Uuid::Create(std::string_view name, uint64_t seed)
     {
-        Crypto::Sha256Context context;
-        Crypto::sha256_initialize(context);
-        Crypto::sha256_update(context, std::as_bytes(std::span{name}));
-        Crypto::sha256_update(context, std::as_bytes(std::span{&seed, sizeof(seed)}));
-        auto hash = Crypto::sha256_finalize(context);
+        std::array<std::byte, 32> hash;
+
+        SHA256 context{};
+        (void)context.Initialize();
+        (void)context.Update(std::as_bytes(std::span{name}));
+        (void)context.Update(std::as_bytes(std::span{&seed, 1}));
+        (void)context.Finalize(hash);
 
         Uuid result;
         std::memcpy(result.Elements, hash.data(), std::size(result.Elements));
@@ -68,12 +70,15 @@ namespace Anemone
 
     Uuid Uuid::CreateDerived(Uuid const& base, std::string_view name, uint64_t seed)
     {
-        Crypto::Sha256Context context;
-        Crypto::sha256_initialize(context);
-        Crypto::sha256_update(context, std::as_bytes(std::span{base.Elements}));
-        Crypto::sha256_update(context, std::as_bytes(std::span{name}));
-        Crypto::sha256_update(context, std::as_bytes(std::span{&seed, 1}));
-        auto hash = Crypto::sha256_finalize(context);
+        std::array<std::byte, 32> hash;
+
+        SHA256 context{};
+
+        (void)context.Initialize();
+        (void)context.Update(std::as_bytes(std::span{base.Elements}));
+        (void)context.Update(std::as_bytes(std::span{name}));
+        (void)context.Update(std::as_bytes(std::span{&seed, 1}));
+        (void)context.Finalize(hash);
 
         Uuid result;
         std::memcpy(result.Elements, hash.data(), std::size(result.Elements));

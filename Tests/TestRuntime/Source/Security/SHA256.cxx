@@ -1,22 +1,17 @@
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-#include "AnemoneRuntime/Crypto/Sha256.hxx"
-
-ANEMONE_EXTERNAL_HEADERS_BEGIN
+#include "AnemoneRuntime/Security/SHA256.hxx"
 
 #include <catch_amalgamated.hpp>
 
-ANEMONE_EXTERNAL_HEADERS_END
-
 TEST_CASE("Cryptography Sha256")
 {
-    using namespace Anemone::Crypto;
-
-    Sha256Context context{};
+    using namespace Anemone;
 
     SECTION("Emtpy")
     {
-        sha256_initialize(context);
-        auto const hash = sha256_finalize(context);
+        std::span<std::byte const> source{};
+
+        std::array<std::byte, 32> hash{};
+        REQUIRE(HashAlgorithm::Compute<SHA256>(source, hash));
 
         constexpr uint8_t expected[]{
             0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14, 0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
@@ -24,15 +19,16 @@ TEST_CASE("Cryptography Sha256")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            REQUIRE(hash[i] == std::byte{expected[i]});
         }
     }
 
     SECTION("foobar")
     {
-        sha256_initialize(context);
-        sha256_update(context, std::as_bytes(std::span{std::string_view{"foobar"}}));
-        auto const hash = sha256_finalize(context);
+        auto source = std::as_bytes(std::span{std::string_view{"foobar"}});
+
+        std::array<std::byte, 32> hash{};
+        REQUIRE(HashAlgorithm::Compute<SHA256>(source, hash));
 
         constexpr uint8_t expected[]{
             0xc3, 0xab, 0x8f, 0xf1, 0x37, 0x20, 0xe8, 0xad, 0x90, 0x47, 0xdd, 0x39, 0x46, 0x6b, 0x3c, 0x89,
@@ -40,7 +36,7 @@ TEST_CASE("Cryptography Sha256")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            REQUIRE(hash[i] == std::byte{expected[i]});
         }
     }
 
@@ -50,9 +46,8 @@ TEST_CASE("Cryptography Sha256")
             0xc3, 0xab, 0x8f, 0xf1, 0x37, 0x20, 0xe8, 0xad, 0x90, 0x47, 0xdd, 0x39, 0x46, 0x6b, 0x3c, 0x89,
             0x74, 0xe5, 0x92, 0xc2, 0xfa, 0x38, 0x3d, 0x4a, 0x39, 0x60, 0x71, 0x4c, 0xae, 0xf0, 0xc4, 0xf2};
 
-        sha256_initialize(context);
-        sha256_update(context, std::as_bytes(std::span{source}));
-        auto const hash = sha256_finalize(context);
+        std::array<std::byte, 32> hash{};
+        REQUIRE(HashAlgorithm::Compute<SHA256>(std::as_bytes(std::span{source}), hash));
 
         constexpr uint8_t expected[]{
             0x3f, 0x2c, 0x7c, 0xca, 0xe9, 0x8a, 0xf8, 0x1e, 0x44, 0xc0, 0xec, 0x41, 0x96, 0x59, 0xf5, 0x0d,
@@ -60,7 +55,7 @@ TEST_CASE("Cryptography Sha256")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            REQUIRE(hash[i] == std::byte{expected[i]});
         }
     }
 
@@ -69,15 +64,18 @@ TEST_CASE("Cryptography Sha256")
         constexpr std::string_view source1{"The quick brown fox "};
         constexpr std::string_view source2{"jumps over the lazy dog.\n"};
 
-        sha256_initialize(context);
+        SHA256 context{};
+        REQUIRE(context.Initialize());
 
         for (size_t i = 0; i < 16; ++i)
         {
-            sha256_update(context, std::as_bytes(std::span{source1}));
-            sha256_update(context, std::as_bytes(std::span{source2}));
+            REQUIRE(context.Update(std::as_bytes(std::span{source1})));
+            REQUIRE(context.Update(std::as_bytes(std::span{source2})));
         }
 
-        auto const hash = sha256_finalize(context);
+        std::array<std::byte, 32> hash{};
+
+        REQUIRE(context.Finalize(hash));
 
         constexpr uint8_t expected[]{
             0x1c, 0xec, 0x0d, 0x61, 0x3b, 0x13, 0x53, 0x73, 0xd0, 0x84, 0xc6, 0x86, 0x85, 0xb7, 0x47, 0x6f,
@@ -85,7 +83,7 @@ TEST_CASE("Cryptography Sha256")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            REQUIRE(hash[i] == std::byte{expected[i]});
         }
     }
 }

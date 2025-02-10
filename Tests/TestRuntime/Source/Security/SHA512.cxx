@@ -1,22 +1,17 @@
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-#include "AnemoneRuntime/Crypto/Sha512.hxx"
-
-ANEMONE_EXTERNAL_HEADERS_BEGIN
+#include "AnemoneRuntime/Security/SHA512.hxx"
 
 #include <catch_amalgamated.hpp>
 
-ANEMONE_EXTERNAL_HEADERS_END
-
 TEST_CASE("Cryptography Sha512")
 {
-    using namespace Anemone::Crypto;
-
-    Sha512Context context{};
+    using namespace Anemone;
 
     SECTION("Emtpy")
     {
-        sha512_initialize(context);
-        auto const hash = sha512_finalize(context);
+        std::span<std::byte const> source{};
+
+        std::array<std::byte, 64> hash{};
+        CHECK(HashAlgorithm::Compute<SHA512>(source, hash));
 
         constexpr uint8_t expected[]{
             0xcf, 0x83, 0xe1, 0x35, 0x7e, 0xef, 0xb8, 0xbd, 0xf1, 0x54, 0x28, 0x50, 0xd6, 0x6d, 0x80, 0x07,
@@ -26,15 +21,16 @@ TEST_CASE("Cryptography Sha512")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            CHECK(hash[i] == std::byte{expected[i]});
         }
     }
 
     SECTION("foobar")
     {
-        sha512_initialize(context);
-        sha512_update(context, std::as_bytes(std::span{std::string_view{"foobar"}}));
-        auto const hash = sha512_finalize(context);
+        auto source = std::as_bytes(std::span{std::string_view{"foobar"}});
+
+        std::array<std::byte, 64> hash{};
+        CHECK(HashAlgorithm::Compute<SHA512>(source, hash));
 
         constexpr uint8_t expected[]{
             0x0a, 0x50, 0x26, 0x1e, 0xbd, 0x1a, 0x39, 0x0f, 0xed, 0x2b, 0xf3, 0x26, 0xf2, 0x67, 0x3c, 0x14,
@@ -44,7 +40,7 @@ TEST_CASE("Cryptography Sha512")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            CHECK(hash[i] == std::byte{expected[i]});
         }
     }
 
@@ -56,9 +52,8 @@ TEST_CASE("Cryptography Sha512")
             0x6a, 0x80, 0x69, 0xb0, 0x12, 0x58, 0x7c, 0xf5, 0x63, 0x5f, 0x69, 0x25, 0xf1, 0xb5, 0x6c, 0x36,
             0x02, 0x30, 0xc1, 0x9b, 0x27, 0x35, 0x00, 0xee, 0x01, 0x3e, 0x03, 0x06, 0x01, 0xbf, 0x24, 0x25};
 
-        sha512_initialize(context);
-        sha512_update(context, std::as_bytes(std::span{source}));
-        auto const hash = sha512_finalize(context);
+        std::array<std::byte, 64> hash{};
+        CHECK(HashAlgorithm::Compute<SHA512>(std::as_bytes(std::span{source}), hash));
 
         constexpr uint8_t expected[]{
             0x0f, 0xd7, 0x54, 0x87, 0x58, 0x07, 0x87, 0x9f, 0xfc, 0x5b, 0xfd, 0xd5, 0x22, 0x45, 0x31, 0x10,
@@ -68,7 +63,7 @@ TEST_CASE("Cryptography Sha512")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            CHECK(hash[i] == std::byte{expected[i]});
         }
     }
 
@@ -77,15 +72,18 @@ TEST_CASE("Cryptography Sha512")
         constexpr std::string_view source1{"The quick brown fox "};
         constexpr std::string_view source2{"jumps over the lazy dog.\n"};
 
-        sha512_initialize(context);
+        SHA512 context{};
+        CHECK(context.Initialize());
 
         for (size_t i = 0; i < 16; ++i)
         {
-            sha512_update(context, std::as_bytes(std::span{source1}));
-            sha512_update(context, std::as_bytes(std::span{source2}));
+            CHECK(context.Update(std::as_bytes(std::span{source1})));
+            CHECK(context.Update(std::as_bytes(std::span{source2})));
         }
 
-        auto const hash = sha512_finalize(context);
+        std::array<std::byte, 64> hash{};
+
+        CHECK(context.Finalize(hash));
 
         constexpr uint8_t expected[]{
             0xae, 0x50, 0x31, 0x66, 0xd9, 0xdc, 0x0c, 0x79, 0x63, 0x42, 0x0f, 0x90, 0xc0, 0x27, 0xff, 0x71,
@@ -95,7 +93,7 @@ TEST_CASE("Cryptography Sha512")
 
         for (size_t i = 0; i < hash.size(); ++i)
         {
-            REQUIRE(hash[i] == expected[i]);
+            CHECK(hash[i] == std::byte{expected[i]});
         }
     }
 }

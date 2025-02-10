@@ -133,7 +133,7 @@ namespace Anemone
         return s;
     }
 
-    std::string_view CommandLine::ParseToken(std::string_view s)
+    std::string_view CommandLine::ParseToken(std::string_view& s)
     {
         // Skip past whitespaces
         if (auto const start = s.find_first_not_of(" \t"); start != std::string_view::npos)
