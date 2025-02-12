@@ -40,19 +40,24 @@ namespace Anemone::Internal
             }
         }
 
-        if (dwChars)
+        if (dwChars > 3)
         {
-            // Remove white space at end of message.
-            while (dwChars && isspace(szMessageBuffer[dwChars - 1]))
+            if (szMessageBuffer[dwChars - 1] == '\n')
             {
-                szMessageBuffer[--dwChars] = 0;
+                --dwChars;
             }
 
-            // Remove the trailing dot if exists.
-            if (dwChars && (szMessageBuffer[dwChars - 1] == '.'))
+            if (szMessageBuffer[dwChars - 1] == '\r')
             {
-                szMessageBuffer[--dwChars] = 0;
+                --dwChars;
             }
+
+            if (szMessageBuffer[dwChars - 1] == '.')
+            {
+                --dwChars;
+            }
+
+            szMessageBuffer[dwChars] = '\0';
         }
 
         Trace::TraceMessage(TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
