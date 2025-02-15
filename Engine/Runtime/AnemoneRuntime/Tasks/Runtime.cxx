@@ -2,9 +2,9 @@
 
 namespace Anemone::Tasks
 {
-#if false
     UninitializedObject<TaskScheduler> GTaskScheduler{};
 
+#if false
     void InitializeRuntime(RuntimeInitializeContext& context)
     {
         (void)context;

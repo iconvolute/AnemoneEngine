@@ -23,25 +23,22 @@ namespace Anemone::Tasks
             return;
         }
 
-        class ParallelForBarrier final : public Task
+        class Partitioner final
         {
         public:
             size_t m_Count;
             size_t m_Batch;
             std::atomic<size_t> m_Index{};
             TCallback m_Callback;
-            TFinalize m_Finalize;
 
         public:
-            ParallelForBarrier(
+            Partitioner(
                 size_t count,
                 size_t batch,
-                TCallback&& callback,
-                TFinalize&& finalize)
+                TCallback&& callback)
                 : m_Count{count}
                 , m_Batch{batch}
                 , m_Callback{std::forward<TCallback>(callback)}
-                , m_Finalize{std::forward<TFinalize>(finalize)}
             {
             }
 
@@ -59,34 +56,33 @@ namespace Anemone::Tasks
                 return false;
             }
 
-        protected:
-            void OnExecute() override
+            void ExecuteCallbacks()
             {
-                this->m_Finalize(this->m_Count);
+                size_t first;
+                size_t last;
+
+                while (this->Partition(first, last))
+                {
+                    this->m_Callback(first, last);
+                }
             }
         };
 
         class ParallelForTask final : public Task
         {
         private:
-            ParallelForBarrier* m_Parent;
+            Partitioner& m_Partitioner;
 
         public:
-            explicit ParallelForTask(ParallelForBarrier* parent)
-                : m_Parent{parent}
+            explicit ParallelForTask(Partitioner& parent)
+                : m_Partitioner{parent}
             {
             }
 
         protected:
             void OnExecute() override
             {
-                size_t first;
-                size_t last;
-
-                while (this->m_Parent->Partition(first, last))
-                {
-                    this->m_Parent->m_Callback(first, last);
-                }
+                this->m_Partitioner.ExecuteCallbacks();
             }
         };
 
@@ -109,35 +105,42 @@ namespace Anemone::Tasks
         // Estimated number of slices.
         size_t const slices = (count / batch) + 1;
 
-        // Adjust the number of threads to the number of slices.
-        threads = std::min<size_t>(threads, slices);
+        // TODO: Promote this to some configurable constant.
+        constexpr auto maximumThreads = 32uz;
 
+        // Adjust the number of threads to the number of slices.
+        threads = std::min<size_t>(std::min<size_t>(threads, slices), maximumThreads);
+
+        // Spawn tasks to (hopefully) saturate thread pool.
+        TaskHandle children[32];
+
+        // Create partitioner for given range.
+        Partitioner partitioner{
+            count,
+            batch,
+            std::forward<TCallback>(callback),
+        };
+
+        // Fork/Join awaiter.
         AwaiterHandle joinCounter = new Awaiter{};
         AwaiterHandle forkCounter = new Awaiter{};
 
-        TaskHandle barrier{
-            new ParallelForBarrier{
-                count,
-                batch,
-                std::forward<TCallback>(callback),
-                std::forward<TFinalize>(finalize),
-            },
-        };
-
-        for (size_t i = 0; i < threads; ++i)
+        // Spawn tasks.
+        for (auto i = 0uz; i < threads; ++i)
         {
-            TaskHandle task{
-                new ParallelForTask{
-                    static_cast<ParallelForBarrier*>(barrier.Get()),
-                },
-            };
+            children[i] = new ParallelForTask(partitioner);
 
-            GTaskScheduler->Dispatch(*task, joinCounter, forkCounter, priority);
+            GTaskScheduler->Dispatch(*children[i], joinCounter, forkCounter, priority);
         }
 
-        AwaiterHandle waitCounter = new Awaiter{};
-        GTaskScheduler->Dispatch(*barrier, waitCounter, joinCounter, priority);
+        // Contribute with executing tasks.
+        partitioner.ExecuteCallbacks();
 
-        GTaskScheduler->Wait(waitCounter);
+        // Wait for counter.
+        // TODO: for diagnostic purposes, could we return number of processed tasks during awaiting?
+        GTaskScheduler->Wait(joinCounter);
+
+        // Finalize range.
+        std::forward<TFinalize>(finalize)(count);
     }
 }

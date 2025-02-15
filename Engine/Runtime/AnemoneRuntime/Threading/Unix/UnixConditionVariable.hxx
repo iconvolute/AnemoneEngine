@@ -35,6 +35,15 @@ namespace Anemone
             pthread_cond_wait(&this->_inner, &cs._inner);
         }
 
+        template <typename Predicate>
+        void Wait(UnixCriticalSection& cs, Predicate&& predicate)
+        {
+            while (!std::forward<Predicate>(predicate)())
+            {
+                pthread_cond_wait(&this->_inner, &cs._inner);
+            }
+        }
+
         bool TryWait(UnixCriticalSection& cs, Duration const& timeout)
         {
             timespec ts{};

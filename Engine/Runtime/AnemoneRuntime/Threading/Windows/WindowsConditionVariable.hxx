@@ -32,6 +32,15 @@ namespace Anemone
             SleepConditionVariableCS(&this->_inner, &cs._inner, INFINITE);
         }
 
+        template <typename Predicate>
+        void Wait(WindowsCriticalSection& cs, Predicate&& predicate)
+        {
+            while (!std::forward<Predicate>(predicate)())
+            {
+                SleepConditionVariableCS(&this->_inner, &cs._inner, INFINITE);
+            }
+        }
+
         bool TryWait(WindowsCriticalSection& cs, Duration const& timeout)
         {
             return SleepConditionVariableCS(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout));

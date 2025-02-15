@@ -26,8 +26,8 @@ inline int AnemoneMain(int argc, char** argv);
 
 inline void EntryPoint_Initialize(int argc, char** argv)
 {
-    Anemone::Platform::Initialize();
     Anemone::CommandLine::Initialize(argc, argv);
+    Anemone::Platform::Initialize();
     Anemone::PlatformTraceListeners::Initialize();
     Anemone::Application::Initialize();
 }

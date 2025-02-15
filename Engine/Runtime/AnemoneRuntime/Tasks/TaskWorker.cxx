@@ -17,13 +17,13 @@ namespace Anemone::Tasks
             {
                 AE_PROFILE_SCOPE(TaskWorkerWait);
 
-                this->m_Scheduler->m_Semaphore.Acquire();
+                this->m_Scheduler->m_TasksLock.Enter();
+                this->m_Scheduler->m_TasksCondition.Wait(this->m_Scheduler->m_TasksLock, [&]
+                {
+                    return this->m_Scheduler->m_CancellationToken.IsCancelled() or not this->m_Scheduler->m_Queue.IsEmpty();
+                });
+                this->m_Scheduler->m_TasksLock.Leave();
             });
-
-            if (this->m_Scheduler->m_CancellationToken.IsCancelled())
-            {
-                break;
-            }
 
             this->m_ProcessingTime += Instant::Now().Measure([&]
             {
@@ -35,6 +35,12 @@ namespace Anemone::Tasks
                     ++this->m_ProcessedTasks;
                 }
             });
+
+            // Worker thread could be notified to stop during the processing of a task.
+            if (this->m_Scheduler->m_CancellationToken.IsCancelled())
+            {
+                break;
+            }
         }
 
         AE_TRACE(Verbose, "Worker completed");

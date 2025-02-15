@@ -34,7 +34,7 @@ namespace Anemone::Tasks
     {
         AE_TRACE(Verbose, "Requesting cancellation");
         this->m_CancellationToken.Cancel();
-        this->m_Semaphore.Release(static_cast<int32_t>(this->m_WorkerThreadsCount));
+        this->m_TasksCondition.NotifyAll();
 
         AE_TRACE(Verbose, "Joining threads");
         for (auto& thread : this->m_Threads)
@@ -107,7 +107,7 @@ namespace Anemone::Tasks
         if (dependency->IsCompleted())
         {
             this->m_Queue.Push(&task);
-            this->m_Semaphore.Release();
+            this->m_TasksCondition.Notify();
         }
         else
         {
@@ -140,7 +140,7 @@ namespace Anemone::Tasks
                 AE_ENSURE(child->GetDependencyAwaiter()->IsCompleted());
                 child->PendingToDispatched();
                 this->m_Queue.Push(child);
-                this->m_Semaphore.Release();
+                this->m_TasksCondition.Notify();
             }
         }
 
