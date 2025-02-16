@@ -6,6 +6,14 @@
 #include "TaskScheduler.hxx"
 #include "TaskWorker.hxx"
 
+// Caveat:  Some documentation mentions that holding a mutex while calling ConditionVariable::NotifyOne()
+//          is a recognized pattern.
+//
+//          We don't do that, but it seems that it works with it anyway.
+//
+//          If we run into performance issues, we can revisit this.
+//          https://en.cppreference.com/w/cpp/thread/condition_variable/notify_one
+
 namespace Anemone::Tasks
 {
     TaskScheduler::TaskScheduler(TaskSchedulerOptions const& options)
