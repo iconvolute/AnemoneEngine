@@ -107,7 +107,7 @@ namespace Anemone::Tasks
         if (dependency->IsCompleted())
         {
             this->m_Queue.Push(&task);
-            this->m_TasksCondition.Notify();
+            this->m_TasksCondition.NotifyOne();
         }
         else
         {
@@ -140,7 +140,7 @@ namespace Anemone::Tasks
                 AE_ENSURE(child->GetDependencyAwaiter()->IsCompleted());
                 child->PendingToDispatched();
                 this->m_Queue.Push(child);
-                this->m_TasksCondition.Notify();
+                this->m_TasksCondition.NotifyOne();
             }
         }
 

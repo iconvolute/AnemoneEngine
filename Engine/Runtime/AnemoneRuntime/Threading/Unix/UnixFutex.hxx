@@ -1,12 +1,18 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+
+#if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
+
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
+
+#include <sys/syscall.h>
+#include <linux/futex.h>
 
 #include <atomic>
 
 namespace Anemone::Internal
 {
-    struct LinuxFutexTraits final
+    struct Futex final
     {
         static void Wait(std::atomic<int32_t>& futex, int32_t expected)
         {
@@ -91,3 +97,5 @@ namespace Anemone::Internal
         }
     };
 }
+
+#endif

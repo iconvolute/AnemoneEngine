@@ -1,11 +1,14 @@
-#include "AnemoneRuntime/Threading/Unix/UnixThread.hxx"
+#include "AnemoneRuntime/Threading/Thread.hxx"
+
+#if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
+
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 
 #include <cmath>
 #include <utility>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     constexpr int ConvertThreadPriority(ThreadPriority priority) noexcept
     {
@@ -47,7 +50,7 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    UnixThread::UnixThread(ThreadStart const& start)
+    Thread::Thread(ThreadStart const& start)
     {
         if (start.Callback == nullptr)
         {
@@ -74,7 +77,7 @@ namespace Anemone
             AE_PANIC("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
         }
 
-        if (int const rc = pthread_create(this->_handle.GetAddressOf(), &attr, Private::ThreadEntryPoint, start.Callback); rc != 0)
+        if (int const rc = pthread_create(this->_handle.GetAddressOf(), &attr, Internal::ThreadEntryPoint, start.Callback); rc != 0)
         {
             AE_PANIC("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
         }
@@ -119,20 +122,20 @@ namespace Anemone
 
             if (pthread_getschedparam(this->_handle.Get(), &policy, &sched) == 0)
             {
-                sched.sched_priority = Private::ConvertThreadPriority(*start.Priority);
+                sched.sched_priority = Internal::ConvertThreadPriority(*start.Priority);
 
                 pthread_setschedparam(this->_handle.Get(), policy, &sched);
             }
         }
     }
 
-    UnixThread::UnixThread(UnixThread&& other) noexcept
+    Thread::Thread(Thread&& other) noexcept
         : _handle{std::exchange(other._handle, {})}
         , _id{std::exchange(other._id, {})}
     {
     }
 
-    UnixThread& UnixThread::operator=(UnixThread&& other) noexcept
+    Thread& Thread::operator=(Thread&& other) noexcept
     {
         if (this != std::addressof(other))
         {
@@ -148,7 +151,7 @@ namespace Anemone
         return *this;
     }
 
-    UnixThread::~UnixThread()
+    Thread::~Thread()
     {
         if (this->IsJoinable())
         {
@@ -156,7 +159,7 @@ namespace Anemone
         }
     }
 
-    void UnixThread::Join()
+    void Thread::Join()
     {
         if (not this->_handle)
         {
@@ -177,12 +180,12 @@ namespace Anemone
         this->_id = {};
     }
 
-    [[nodiscard]] bool UnixThread::IsJoinable() const
+    bool Thread::IsJoinable() const
     {
         return this->_handle.IsValid();
     }
 
-    void UnixThread::Detach()
+    void Thread::Detach()
     {
         if (not this->_handle)
         {
@@ -198,3 +201,5 @@ namespace Anemone
         this->_id = {};
     }
 }
+
+#endif

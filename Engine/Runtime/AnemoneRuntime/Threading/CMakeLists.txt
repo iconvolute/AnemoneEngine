@@ -76,7 +76,6 @@ target_sources(AnemoneRuntime
         "UserSemaphore.hxx"
 )
 
-add_subdirectory("Base")
 if (WIN32)
 add_subdirectory("Windows")
 elseif(ANDROID OR LINUX)

@@ -1,11 +1,17 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+
+#if !ANEMONE_PLATFORM_WINDOWS
+#error "This header should only be included on Windows platform"
+#endif
+
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
 #include <atomic>
 
 namespace Anemone::Internal
 {
-    struct WindowsFutexTraits final
+    struct Futex final
     {
         static void Wait(std::atomic<int32_t>& futex, int32_t expected)
         {

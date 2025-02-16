@@ -49,7 +49,7 @@ namespace Anemone
                 this->_set = true;
             }
 
-            this->_cv.Notify();
+            this->_cv.NotifyOne();
         }
     };
 }

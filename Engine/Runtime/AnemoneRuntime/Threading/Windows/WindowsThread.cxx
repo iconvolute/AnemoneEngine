@@ -1,11 +1,13 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/Windows/WindowsThread.hxx"
+
+#if ANEMONE_PLATFORM_WINDOWS
+
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 
 #include <cmath>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     namespace
     {
@@ -55,7 +57,7 @@ namespace Anemone::Private
 
 namespace Anemone
 {
-    WindowsThread::WindowsThread(ThreadStart const& start)
+    Thread::Thread(ThreadStart const& start)
     {
         if (start.Callback == nullptr)
         {
@@ -75,7 +77,7 @@ namespace Anemone
         this->_handle.Attach(CreateThread(
             nullptr,
             stackSize,
-            Private::ThreadEntryPoint,
+            Internal::ThreadEntryPoint,
             start.Callback,
             dwCreationFlags,
             &this->_id));
@@ -95,7 +97,7 @@ namespace Anemone
 
         if (start.Priority)
         {
-            SetThreadPriority(this->_handle.Get(), Private::ConvertThreadPriority(*start.Priority));
+            SetThreadPriority(this->_handle.Get(), Internal::ConvertThreadPriority(*start.Priority));
         }
 
         if (ResumeThread(this->_handle.Get()) == static_cast<DWORD>(-1))
@@ -104,13 +106,13 @@ namespace Anemone
         }
     }
 
-    WindowsThread::WindowsThread(WindowsThread&& other) noexcept
+    Thread::Thread(Thread&& other) noexcept
         : _handle{std::exchange(other._handle, {})}
         , _id{std::exchange(other._id, {})}
     {
     }
 
-    WindowsThread& WindowsThread::operator=(WindowsThread&& other) noexcept
+    Thread& Thread::operator=(Thread&& other) noexcept
     {
         if (this != std::addressof(other))
         {
@@ -126,7 +128,7 @@ namespace Anemone
         return *this;
     }
 
-    WindowsThread::~WindowsThread()
+    Thread::~Thread()
     {
         if (this->IsJoinable())
         {
@@ -134,7 +136,7 @@ namespace Anemone
         }
     }
 
-    void WindowsThread::Join()
+    void Thread::Join()
     {
         if (not this->_handle)
         {
@@ -151,12 +153,12 @@ namespace Anemone
         this->_handle = {};
     }
 
-    [[nodiscard]] bool WindowsThread::IsJoinable() const
+    bool Thread::IsJoinable() const
     {
         return this->_handle.IsValid();
     }
 
-    void WindowsThread::Detach()
+    void Thread::Detach()
     {
         if (not this->_handle)
         {
@@ -167,3 +169,5 @@ namespace Anemone
         this->_id = {};
     }
 }
+
+#endif
