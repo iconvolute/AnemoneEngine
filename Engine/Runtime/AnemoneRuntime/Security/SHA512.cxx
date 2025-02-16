@@ -234,4 +234,14 @@ namespace Anemone
 
         return {};
     }
+
+    size_t SHA512::GetHashSize() const
+    {
+        return HashSize;
+    }
+
+    size_t SHA512::GetBlockSize() const
+    {
+        return BlockSize;
+    }
 }

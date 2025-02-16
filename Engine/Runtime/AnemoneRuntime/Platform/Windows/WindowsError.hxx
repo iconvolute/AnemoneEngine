@@ -18,9 +18,6 @@ namespace Anemone::Internal
 
 #if ANEMONE_FEATURE_ASSERTIONS
 
-#define AE_REPORT_WIN32_ERROR(error) \
-
-
 #define AE_VERIFY_WIN32(error) \
     do \
     { \

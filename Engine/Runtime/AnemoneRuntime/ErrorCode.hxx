@@ -26,6 +26,7 @@ namespace Anemone
         InvalidTransition,
         InvalidState,
         InvalidBuffer,
+        InvalidRequest,
         ArithmeticOverflow,
         BufferOverflow,
         NotSupported,

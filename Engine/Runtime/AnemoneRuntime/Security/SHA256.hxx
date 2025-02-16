@@ -22,11 +22,19 @@ namespace Anemone
         ~SHA256() override = default;
 
     public:
+        static constexpr size_t HashSize = 32;
+        static constexpr size_t BlockSize = 64;
+
+    public:
         std::expected<void, ErrorCode> Initialize() override;
 
         std::expected<void, ErrorCode> Update(std::span<std::byte const> buffer) override;
 
         std::expected<void, ErrorCode> Finalize(std::span<std::byte> hash) override;
+
+        size_t GetHashSize() const override;
+
+        size_t GetBlockSize() const override;
     };
 }
 

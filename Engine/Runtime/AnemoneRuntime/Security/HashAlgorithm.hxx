@@ -26,6 +26,10 @@ namespace Anemone
 
         virtual std::expected<void, ErrorCode> Finalize(std::span<std::byte> hash) = 0;
 
+        virtual size_t GetHashSize() const = 0;
+
+        virtual size_t GetBlockSize() const = 0;
+
     private:
         anemone_noinline static std::expected<void, ErrorCode> ComputeCore(
             HashAlgorithm& algorithm,
