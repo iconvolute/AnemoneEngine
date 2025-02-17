@@ -9,7 +9,17 @@ namespace Anemone::Internal
     void ReportErrorErrno(int error, std::source_location const& location)
     {
 #if ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
+
+#if ANEMONE_PLATFORM_WINDOWS
+        char message[512];
+        if (strerror_s(message, error) != 0)
+        {
+            message[0] = '\0';
+        }
+#else
         char const* message = strerror(error);
+#endif
+
         AE_TRACE(Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
             location.file_name(),
             location.line(),
@@ -32,7 +42,6 @@ namespace Anemone::Internal
         switch (error)
         {
         case E2BIG:
-        case ECHRNG:
         case EDOM:
         case EFBIG:
         case EMSGSIZE:
@@ -44,14 +53,10 @@ namespace Anemone::Internal
 
         case EADDRINUSE:
         case EADDRNOTAVAIL:
-        case EDQUOT:
         case EMFILE:
         case EMLINK:
         case ENFILE:
             return ErrorCode::NotEnoughResources;
-
-        case EADV:
-            return ErrorCode::Unknown;
 
         case EAFNOSUPPORT:
             return ErrorCode::NotSupported;
@@ -70,34 +75,18 @@ namespace Anemone::Internal
         case EISCONN:
             return ErrorCode::AlreadyExists;
 
-        case EBADE:
-        case ECOMM:
-        case EDOTDOT:
         case EFAULT:
-        case EHOSTDOWN:
         case EHOSTUNREACH:
-        case EKEYEXPIRED:
-        case EKEYREJECTED:
-        case EKEYREVOKED:
         case ELOOP:
             return ErrorCode::InvalidOperation;
 
         case EBADF:
-        case EBADFD:
             return ErrorCode::InvalidHandle;
 
         case EBADMSG:
-        case EBADSLT:
-        case EHWPOISON:
         case EILSEQ:
             return ErrorCode::InvalidData;
 
-        case EBFONT:
-        case EMEDIUMTYPE:
-            return ErrorCode::InvalidFormat;
-
-        case EBADR:
-        case EBADRQC:
         case EIDRM:
         case ENETDOWN:
             return ErrorCode::InvalidRequest;
@@ -117,7 +106,6 @@ namespace Anemone::Internal
 
         case EDESTADDRREQ:
         case EINVAL:
-        case EISNAM:
             return ErrorCode::InvalidArgument;
 
         case EEXIST:
@@ -131,7 +119,11 @@ namespace Anemone::Internal
 
         case ENETUNREACH:
             return ErrorCode::NotConnected;
+
+        default:
+            break;
         }
-        return {};
+
+        return ErrorCode::Unknown;
     }
 }
