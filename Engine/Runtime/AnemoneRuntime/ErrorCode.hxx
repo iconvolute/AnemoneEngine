@@ -14,6 +14,7 @@ namespace Anemone
         InvalidAddress,
         InvalidOperation,
         InvalidChecksum,
+        InvalidDirectory,
         InvalidHandle,
         InvalidFormat,
         InvalidPath,

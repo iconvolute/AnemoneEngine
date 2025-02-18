@@ -41,13 +41,32 @@ namespace Anemone::Internal
     {
         switch (error)
         {
-        case E2BIG:
+        case 0:
+            return ErrorCode::Success;
+
+        case ENOENT:
+        case ESRCH:
+        case ENXIO:
+        case ECHILD:
+        case ENODEV:
+            return ErrorCode::NotFound;
+
+        case EBADF:
+        case EINVAL:
         case EDOM:
+        case ERANGE:
+        case EILSEQ:
+        case EOVERFLOW:
+        case EDESTADDRREQ:
+            return ErrorCode::InvalidArgument;
+
+        case E2BIG:
         case EFBIG:
         case EMSGSIZE:
         case ENAMETOOLONG:
             return ErrorCode::InvalidRange;
 
+        case EPERM:
         case EACCES:
             return ErrorCode::AccessDenied;
 
@@ -58,7 +77,28 @@ namespace Anemone::Internal
         case ENFILE:
             return ErrorCode::NotEnoughResources;
 
+        case ENOMEM:
+            return ErrorCode::NotEnoughMemory;
+
+        case EEXIST:
+        case EISCONN:
+            return ErrorCode::AlreadyExists;
+
+        case ETXTBSY:
+        case ETIME:
+        case ETIMEDOUT:
+            return ErrorCode::OperationTimeout;
+
+        case EINTR:
+        case EAGAIN:
+        case EDEADLOCK:
+            return ErrorCode::OperationInterrupted;
+
         case EAFNOSUPPORT:
+        case ENOEXEC:
+#if defined(ENOTBLK)
+        case ENOTBLK:
+#endif
             return ErrorCode::NotSupported;
 
         case EALREADY:
@@ -72,19 +112,12 @@ namespace Anemone::Internal
         case ECONNREFUSED:
             return ErrorCode::OperationRefused;
 
-        case EISCONN:
-            return ErrorCode::AlreadyExists;
-
         case EFAULT:
         case EHOSTUNREACH:
         case ELOOP:
             return ErrorCode::InvalidOperation;
 
-        case EBADF:
-            return ErrorCode::InvalidHandle;
-
         case EBADMSG:
-        case EILSEQ:
             return ErrorCode::InvalidData;
 
         case EIDRM:
@@ -95,21 +128,6 @@ namespace Anemone::Internal
         case ECONNRESET:
         case ENETRESET:
             return ErrorCode::OperationCanceled;
-
-        case ECHILD:
-            return ErrorCode::NotFound;
-
-        case EAGAIN:
-        case EDEADLOCK:
-        case EINTR:
-            return ErrorCode::OperationInterrupted;
-
-        case EDESTADDRREQ:
-        case EINVAL:
-            return ErrorCode::InvalidArgument;
-
-        case EEXIST:
-            return ErrorCode::FileExists;
 
         case EISDIR:
             return ErrorCode::DirectoryExists;
