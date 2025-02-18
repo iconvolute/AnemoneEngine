@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <locale>
@@ -557,6 +558,17 @@ namespace Anemone
             BCRYPT_USE_SYSTEM_PREFERRED_RNG);
 
         AE_ENSURE(BCRYPT_SUCCESS(status));
+    }
+
+    void Environment::LaunchUrl(std::string_view url)
+    {
+        Interop::string_buffer<wchar_t, 512> wUrl{};
+        Interop::win32_WidenString(wUrl, url);
+
+        if (reinterpret_cast<INT_PTR>(ShellExecuteW(nullptr, L"open", wUrl.data(), nullptr, nullptr, SW_SHOWNORMAL)) <= 32)
+        {
+            AE_VERIFY_WIN32(GetLastError());
+        }
     }
 }
 

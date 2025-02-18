@@ -170,49 +170,51 @@ namespace Anemone
 {
     struct Environment final
     {
-        static RUNTIME_API bool GetEnvironmentVariable(std::string& result, std::string_view name);
-        static RUNTIME_API bool SetEnvironmentVariable(std::string name, std::string_view value);
-        static RUNTIME_API bool RemoveEnvironmentVariable(std::string_view name);
+        RUNTIME_API static bool GetEnvironmentVariable(std::string& result, std::string_view name);
+        RUNTIME_API static bool SetEnvironmentVariable(std::string name, std::string_view value);
+        RUNTIME_API static bool RemoveEnvironmentVariable(std::string_view name);
 
-        static RUNTIME_API ProcessorProperties const& GetProcessorProperties();
-        static RUNTIME_API std::vector<ProcessorTopology> GetProcessorTopology();
+        RUNTIME_API static ProcessorProperties const& GetProcessorProperties();
+        RUNTIME_API static std::vector<ProcessorTopology> GetProcessorTopology();
 
-        static RUNTIME_API void GetDisplayMetrics(DisplayMetrics& metrics);
-        static RUNTIME_API ColorRef GetScreenPixel(Math::PointF position, float gamma);
+        RUNTIME_API static void GetDisplayMetrics(DisplayMetrics& metrics);
+        RUNTIME_API static ColorRef GetScreenPixel(Math::PointF position, float gamma);
 
-        static RUNTIME_API std::string_view GetSystemVersion();
-        static RUNTIME_API std::string_view GetSystemId();
-        static RUNTIME_API std::string_view GetSystemName();
+        RUNTIME_API static std::string_view GetSystemVersion();
+        RUNTIME_API static std::string_view GetSystemId();
+        RUNTIME_API static std::string_view GetSystemName();
 
-        static RUNTIME_API Duration GetSystemUptime();
-        static RUNTIME_API DateTime GetApplicationStartupTime();
-        static RUNTIME_API MemoryProperties GetMemoryProperties();
-        static RUNTIME_API MemoryUsage GetMemoryUsage();
-        static RUNTIME_API PowerUsage GetPowerUsage();
-        static RUNTIME_API ProcessorUsage GetProcessorUsage();
-        static RUNTIME_API void Terminate(bool force);
-        static RUNTIME_API std::string_view GetDeviceUniqueId();
-        static RUNTIME_API std::string_view GetDeviceName();
-        static RUNTIME_API std::string GetDeviceModel();
-        static RUNTIME_API DeviceType GetDeviceType();
-        static RUNTIME_API DeviceProperties GetDeviceProperties();
+        RUNTIME_API static Duration GetSystemUptime();
+        RUNTIME_API static DateTime GetApplicationStartupTime();
+        RUNTIME_API static MemoryProperties GetMemoryProperties();
+        RUNTIME_API static MemoryUsage GetMemoryUsage();
+        RUNTIME_API static PowerUsage GetPowerUsage();
+        RUNTIME_API static ProcessorUsage GetProcessorUsage();
+        RUNTIME_API static void Terminate(bool force);
+        RUNTIME_API static std::string_view GetDeviceUniqueId();
+        RUNTIME_API static std::string_view GetDeviceName();
+        RUNTIME_API static std::string GetDeviceModel();
+        RUNTIME_API static DeviceType GetDeviceType();
+        RUNTIME_API static DeviceProperties GetDeviceProperties();
 
-        static RUNTIME_API std::string_view GetComputerName();
-        static RUNTIME_API std::string_view GetUserName();
+        RUNTIME_API static std::string_view GetComputerName();
+        RUNTIME_API static std::string_view GetUserName();
 
-        static RUNTIME_API std::string_view GetExecutablePath();
-        static RUNTIME_API std::string_view GetStartupPath();
-        static RUNTIME_API std::string_view GetHomePath();
-        static RUNTIME_API std::string_view GetDesktopPath();
-        static RUNTIME_API std::string_view GetDocumentsPath();
-        static RUNTIME_API std::string_view GetDownloadsPath();
-        static RUNTIME_API std::string_view GetTemporaryPath();
+        RUNTIME_API static std::string_view GetExecutablePath();
+        RUNTIME_API static std::string_view GetStartupPath();
+        RUNTIME_API static std::string_view GetHomePath();
+        RUNTIME_API static std::string_view GetDesktopPath();
+        RUNTIME_API static std::string_view GetDocumentsPath();
+        RUNTIME_API static std::string_view GetDownloadsPath();
+        RUNTIME_API static std::string_view GetTemporaryPath();
 
-        static RUNTIME_API DateTime GetCurrentDateTime();
-        static RUNTIME_API DateTime GetCurrentDateTimeUtc();
-        static RUNTIME_API Duration GetCurrentTimeZoneBias();
-        static RUNTIME_API Instant GetCurrentInstant();
+        RUNTIME_API static DateTime GetCurrentDateTime();
+        RUNTIME_API static DateTime GetCurrentDateTimeUtc();
+        RUNTIME_API static Duration GetCurrentTimeZoneBias();
+        RUNTIME_API static Instant GetCurrentInstant();
 
-        static void GetRandom(std::span<std::byte> buffer);
+        RUNTIME_API static void GetRandom(std::span<std::byte> buffer);
+
+        RUNTIME_API static void LaunchUrl(std::string_view url);
     };
 }

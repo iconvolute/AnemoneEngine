@@ -396,4 +396,38 @@ namespace Anemone
             processed += static_cast<size_t>(result);
         }
     }
+
+    void Environment::LaunchUrl(std::string_view url)
+    {
+        Interop::string_buffer<char_t, 512> sUrl{url};
+
+        int status = 0;
+
+        if (pid_t pid1 = fork())
+        {
+            // Wait for child process to exit
+            waitpid(pid1, &status, 0);
+        }
+        else if (pid1 == 0)
+        {
+            if (pid_t pid2 = fork())
+            {
+                // Child process exits itself.
+                exit(0);
+            }
+            else if (pid2 == 0)
+            {
+                // Grandchild executes the command. It exits immediately and gets orphaned.
+                exit(execl("/usr/bin/xdg-open", "xdg-open", "file-to-open.html", static_cast<char*>(nullptr)));
+            }
+            else
+            {
+                AE_TRACE(Error, "Failed to spawn second child!");
+            }
+        }
+        else
+        {
+            AE_TRACE(Error, "Failed to spawn first child!");
+        }
+    }
 }

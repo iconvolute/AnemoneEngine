@@ -44,7 +44,7 @@ namespace Anemone
 #elif ANEMONE_FEATURE_JITDEBUGGER
         if (::IsDebuggerPresent())
         {
-            return false;
+            return true;
         }
 
         wchar_t commandLine[MAX_PATH + 1];
@@ -84,11 +84,14 @@ namespace Anemone
                 &si,
                 &pi))
         {
+            DWORD dwExit{};
             WaitForSingleObject(pi.hProcess, INFINITE);
+            GetExitCodeProcess(pi.hProcess, &dwExit);
+
             CloseHandle(pi.hThread);
             CloseHandle(pi.hProcess);
 
-            return true;
+            return dwExit == 0;
         }
 
         return false;
@@ -145,7 +148,12 @@ namespace Anemone
 
         AcquireSRWLockExclusive(&lock);
 
-        Debugger::Attach();
+        if (Debugger::Attach())
+        {
+            // Debugger attached, let it handle the crash.
+            ReleaseSRWLockExclusive(&lock);
+            return;
+        }
 
         HANDLE const hProcess = GetCurrentProcess();
         HANDLE const hThread = GetCurrentThread();

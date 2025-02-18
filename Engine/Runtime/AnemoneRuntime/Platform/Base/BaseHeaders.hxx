@@ -170,6 +170,37 @@
 //--------------------------------------------------------------------------------------------------
 
 //--------------------------------------------------------------------------------------------------
+//
+// Platform Name
+//
+
+#if ANEMONE_PLATFORM_ANDROID
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY Android
+#elif ANEMONE_PLATFORM_LINUX
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY Linux
+#elif ANEMONE_PLATFORM_WINDOWS
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY Windows
+#elif ANEMONE_PLATFORM_MACOS
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY MacOS
+#elif ANEMONE_PLATFORM_IOS
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY IOS
+#elif ANEMONE_PLATFORM_EMSCRIPTEN
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY Emscripten
+#elif ANEMONE_PLATFORM_GAMING_DESKTOP
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY GDK
+#elif ANEMONE_PLATFORM_GAMING_XBOX_SCARLETT
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY XDK
+#elif ANEMONE_PLATFORM_PS5
+#define ANEMONE_PLATFORM_INCLUDE_SUBDIRECTORY PS5
+#else
+#error "Unknown platform"
+#endif
+
+
+//
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
 // Platform Kind
 //
 
@@ -563,10 +594,27 @@
 #endif
 
 // Convert errors to readable messages.
+#if !ANEMONE_BUILD_SHIPPING
+#define ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES true
+#endif
+
 #ifndef ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
 #define ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES false
 #endif
 
+//
+//--------------------------------------------------------------------------------------------------
+
+//--------------------------------------------------------------------------------------------------
+//
+// Preprocessor Features
+//
+
+#define AE_IMPLEMENTATION_STRINGIZE(x) #x
+#define AE_STRINGIZE(x) AE_IMPLEMENTATION_STRINGIZE(x)
+
+#define AE_IMPLEMENTATION_JOIN(a, b) a##b
+#define AE_JOIN(a, b) AE_IMPLEMENTATION_JOIN(a, b)
 //
 //--------------------------------------------------------------------------------------------------
 

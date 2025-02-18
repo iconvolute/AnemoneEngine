@@ -1,4 +1,5 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -9,13 +10,13 @@ namespace Anemone::Internal
 #if ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
         // https://learn.microsoft.com/en-us/windows/win32/seccrypto/retrieving-error-messages
 
-        CHAR szMessageBuffer[512];
+        WCHAR szMessageBuffer[512];
 
-        DWORD dwChars = FormatMessageA(
+        DWORD dwChars = FormatMessageW(
             FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
             nullptr,
             error,
-            0,
+            MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
             szMessageBuffer,
             512,
             nullptr);
@@ -26,7 +27,7 @@ namespace Anemone::Internal
 
             if (hInst)
             {
-                dwChars = FormatMessageA(
+                dwChars = FormatMessageW(
                     FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
                     hInst,
                     error,
@@ -42,23 +43,26 @@ namespace Anemone::Internal
 
         if (dwChars > 3)
         {
-            if (szMessageBuffer[dwChars - 1] == '\n')
+            if (szMessageBuffer[dwChars - 1] == L'\n')
             {
                 --dwChars;
             }
 
-            if (szMessageBuffer[dwChars - 1] == '\r')
+            if (szMessageBuffer[dwChars - 1] == L'\r')
             {
                 --dwChars;
             }
 
-            if (szMessageBuffer[dwChars - 1] == '.')
+            if (szMessageBuffer[dwChars - 1] == L'.')
             {
                 --dwChars;
             }
 
-            szMessageBuffer[dwChars] = '\0';
+            szMessageBuffer[dwChars] = L'\0';
         }
+
+        Interop::string_buffer<char, 128> szMessage;
+        Interop::win32_NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
 
         Trace::TraceMessage(TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
             location.file_name(),
@@ -66,7 +70,7 @@ namespace Anemone::Internal
             location.function_name(),
             GetCurrentThreadId(),
             error,
-            dwChars ? szMessageBuffer : "Error Message not found");
+            szMessage.c_str());
 #else
 
         Trace::TraceMessage(TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}",
