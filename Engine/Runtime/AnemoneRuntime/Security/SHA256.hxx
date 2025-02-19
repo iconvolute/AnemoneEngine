@@ -37,4 +37,3 @@ namespace Anemone
         size_t GetBlockSize() const override;
     };
 }
-

@@ -54,25 +54,26 @@ namespace Anemone
             int64_t capacity,
             MemoryMappedFileAccess access)
             -> std::expected<LinuxMemoryMappedFile, ErrorCode>
-            {
-                (void)name;
-                (void)capacity;
-                (void)access;
-                return std::unexpected(ErrorCode::NotImplemented);
-            }
+        {
+            (void)name;
+            (void)capacity;
+            (void)access;
+            return std::unexpected(ErrorCode::NotImplemented);
+        }
 
         static auto Create(
             LinuxFileHandle const& fileHandle,
             std::string_view name,
             int64_t capacity,
             MemoryMappedFileAccess access)
-            -> std::expected<LinuxMemoryMappedFile, ErrorCode>{
-                (void)fileHandle;
-                (void)name;
-                (void)capacity;
-                (void)access;
-                return std::unexpected(ErrorCode::NotImplemented);
-            }
+            -> std::expected<LinuxMemoryMappedFile, ErrorCode>
+        {
+            (void)fileHandle;
+            (void)name;
+            (void)capacity;
+            (void)access;
+            return std::unexpected(ErrorCode::NotImplemented);
+        }
 
         static auto Open(
             std::string_view name,

@@ -17,6 +17,7 @@ namespace Anemone
     class RUNTIME_API CriticalSection final
     {
         friend class ConditionVariable;
+
     private:
         Internal::PlatformCriticalSection _inner;
 

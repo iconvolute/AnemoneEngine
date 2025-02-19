@@ -58,17 +58,23 @@ namespace Anemone::Network
     public:
         static constexpr IpAddressV4 Localhost()
         {
-            return IpAddressV4{{127, 0, 0, 1}};
+            return IpAddressV4{
+                {127, 0, 0, 1},
+            };
         }
 
         static constexpr IpAddressV4 Any()
         {
-            return IpAddressV4{{0, 0, 0, 0}};
+            return IpAddressV4{
+                {0, 0, 0, 0},
+            };
         }
 
         static constexpr IpAddressV4 Broadcast()
         {
-            return IpAddressV4{{255, 255, 255, 255}};
+            return IpAddressV4{
+                {255, 255, 255, 255},
+            };
         }
 
     public:
@@ -139,17 +145,23 @@ namespace Anemone::Network
     public:
         static constexpr IpAddressV6 Localhost()
         {
-            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}};
+            return IpAddressV6{
+                std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+            };
         }
 
         static constexpr IpAddressV6 Any()
         {
-            return IpAddressV6{std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}};
+            return IpAddressV6{
+                std::array<uint8_t, 16>{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
+            };
         }
 
         static constexpr IpAddressV6 Mapped(IpAddressV4 const& address)
         {
-            return IpAddressV6{{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, address.GetOctets()[0], address.GetOctets()[1], address.GetOctets()[2], address.GetOctets()[3]}};
+            return IpAddressV6{
+                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0xFF, 0xFF, address.GetOctets()[0], address.GetOctets()[1], address.GetOctets()[2], address.GetOctets()[3]},
+            };
         }
 
     public:

@@ -83,7 +83,7 @@ namespace Anemone::Interop
         }
     };
     using UnixSafeSharedLibraryHandle = base_SafeHandle<void*, UnixSafeSharedLibraryHandleTraits>;
-    
+
     struct UnixPthreadThreadHandleTraits final
     {
         static pthread_t Invalid()

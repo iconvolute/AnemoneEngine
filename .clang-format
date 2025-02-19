@@ -31,3 +31,26 @@ AttributeMacros: [
     anemone_noinline,
     anemone_forceinline
 ]
+#AlignArrayOfStructures: Left
+#AllowShortBlocksOnASingleLine: Never
+#AllowShortEnumsOnASingleLine: false
+#AllowShortFunctionsOnASingleLine: None
+#AllowShortIfStatementsOnASingleLine: Never
+#AllowShortLambdasOnASingleLine: None
+#AlwaysBreakAfterDefinitionReturnType: All, #None, TopLevel
+#BinPackArguments: false
+#BinPackLongBracedList: false
+#BreakAfterAttributes: Always
+#BreakAfterReturnType: All
+#BreakFunctionDefinitionParameters: true
+#BreakTemplateDeclarations: Yes
+#FixNamespaceComments: true
+#IncludeBlocks: Regroup
+#IndentExportBlock: true ?
+#InsertTrailingCommas: true
+#IntegerLiteralSeparator:
+#RequiresClausePosition
+
+LineEnding: LF
+#PointerAlignment: Left
+#ReferenceAlignment: Pointer

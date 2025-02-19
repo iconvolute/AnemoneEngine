@@ -161,8 +161,18 @@ TEST_CASE("MPMC Queue - Multiple Threads")
         Producer producer1{queue, context};
         Consumer consumer1{queue, context};
 
-        Thread consumerThread1{ThreadStart{.Name = "Consumer 1", .Callback = &consumer1}};
-        Thread producerThread1{ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
+        Thread consumerThread1{
+            ThreadStart{
+                .Name = "Consumer 1",
+                .Callback = &consumer1,
+            },
+        };
+        Thread producerThread1{
+            ThreadStart{
+                .Name = "Producer 1",
+                .Callback = &producer1,
+            },
+        };
 
         producerThread1.Join();
         context.Finished.store(1, std::memory_order::release);
@@ -188,11 +198,16 @@ TEST_CASE("MPMC Queue - Multiple Threads")
 
         Consumer consumer1{queue, context};
 
-        Thread consumerThread1{ThreadStart{.Name = "Consumer", .Callback = &consumer1}};
-        Thread producerThread1{ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
-        Thread producerThread2{ThreadStart{.Name = "Producer 2", .Callback = &producer2}};
-        Thread producerThread3{ThreadStart{.Name = "Producer 3", .Callback = &producer3}};
-        Thread producerThread4{ThreadStart{.Name = "Producer 4", .Callback = &producer4}};
+        Thread consumerThread1{
+            ThreadStart{.Name = "Consumer", .Callback = &consumer1}};
+        Thread producerThread1{
+            ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
+        Thread producerThread2{
+            ThreadStart{.Name = "Producer 2", .Callback = &producer2}};
+        Thread producerThread3{
+            ThreadStart{.Name = "Producer 3", .Callback = &producer3}};
+        Thread producerThread4{
+            ThreadStart{.Name = "Producer 4", .Callback = &producer4}};
 
         producerThread1.Join();
         producerThread2.Join();
@@ -226,15 +241,23 @@ TEST_CASE("MPMC Queue - Multiple Threads")
         Consumer consumer2{queue, context};
         Consumer consumer3{queue, context};
 
-        Thread consumerThread1{ThreadStart{.Name = "Consumer 1", .Callback = &consumer1}};
-        Thread consumerThread2{ThreadStart{.Name = "Consumer 2", .Callback = &consumer2}};
-        Thread consumerThread3{ThreadStart{.Name = "Consumer 3", .Callback = &consumer3}};
+        Thread consumerThread1{
+            ThreadStart{.Name = "Consumer 1", .Callback = &consumer1}};
+        Thread consumerThread2{
+            ThreadStart{.Name = "Consumer 2", .Callback = &consumer2}};
+        Thread consumerThread3{
+            ThreadStart{.Name = "Consumer 3", .Callback = &consumer3}};
 
-        Thread producerThread1{ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
-        Thread producerThread2{ThreadStart{.Name = "Producer 2", .Callback = &producer2}};
-        Thread producerThread3{ThreadStart{.Name = "Producer 3", .Callback = &producer3}};
-        Thread producerThread4{ThreadStart{.Name = "Producer 4", .Callback = &producer4}};
-        Thread producerThread5{ThreadStart{.Name = "Producer 5", .Callback = &producer5}};
+        Thread producerThread1{
+            ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
+        Thread producerThread2{
+            ThreadStart{.Name = "Producer 2", .Callback = &producer2}};
+        Thread producerThread3{
+            ThreadStart{.Name = "Producer 3", .Callback = &producer3}};
+        Thread producerThread4{
+            ThreadStart{.Name = "Producer 4", .Callback = &producer4}};
+        Thread producerThread5{
+            ThreadStart{.Name = "Producer 5", .Callback = &producer5}};
 
         producerThread1.Join();
         producerThread2.Join();
@@ -267,11 +290,15 @@ TEST_CASE("MPMC Queue - Multiple Threads")
         Consumer consumer2{queue, context};
         Consumer consumer3{queue, context};
 
-        Thread consumerThread1{ThreadStart{.Name = "Consumer 1", .Callback = &consumer1}};
-        Thread consumerThread2{ThreadStart{.Name = "Consumer 2", .Callback = &consumer2}};
-        Thread consumerThread3{ThreadStart{.Name = "Consumer 3", .Callback = &consumer3}};
+        Thread consumerThread1{
+            ThreadStart{.Name = "Consumer 1", .Callback = &consumer1}};
+        Thread consumerThread2{
+            ThreadStart{.Name = "Consumer 2", .Callback = &consumer2}};
+        Thread consumerThread3{
+            ThreadStart{.Name = "Consumer 3", .Callback = &consumer3}};
 
-        Thread producerThread1{ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
+        Thread producerThread1{
+            ThreadStart{.Name = "Producer 1", .Callback = &producer1}};
 
         producerThread1.Join();
         context.Finished.store(1, std::memory_order::release);
