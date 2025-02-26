@@ -695,7 +695,7 @@ namespace Anemone
 
                 if (info.Type == FileType::Directory)
                 {
-                    FileSystem::DirectoryEnumerateRecursive(path, m_Visitor);
+                    (void)FileSystem::DirectoryEnumerateRecursive(path, m_Visitor);
                 }
             }
         };

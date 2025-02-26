@@ -271,10 +271,10 @@ int AnemoneMain(int argc, char** argv)
         for (size_t i = 0; i < 64; ++i)
         {
             original.Update(sb);
-            h->Write(sb);
+            (void)h->Write(sb);
         }
 
-        h->Flush();
+        (void)h->Flush();
     }
 
     Anemone::FNV1A128 current{};

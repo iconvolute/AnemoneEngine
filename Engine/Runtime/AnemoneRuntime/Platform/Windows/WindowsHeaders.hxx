@@ -21,16 +21,25 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 #define NOCOMM 1
 // #define NOCTLMGR 1
 #define NODEFERWINDOWPOS 1
+#define NODBCS 1
 #define NODRAWTEXT 1
 // #define NOGDI 1
+// #define NOLFILEIO 1
+// #define NOLOGERROR 1
+#define NOLSTRING 1
+#define NOGDIOBJ 1
+#define NODRIVERS 1
+#define NOMDI 1
 #define NOGDICAPMASKS 1
 #define NOBITMAP 1
 #define NOHELP 1
 // #define NOICONS 1
 #define NOIMAGE 1
+#define NOIME 1
 #define NOKANJI 1
 #define NOKERNEL 1
 // #define NOKEYSTATES 1
+#define NOKEYBOARDINFO 1
 // #define NOMB 1
 #define NOMCX 1
 #define NOMEMMGR 1
@@ -58,11 +67,17 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 // #define NOWINMESSAGES 1
 // #define NOWINOFFSETS 1
 // #define NOWINSTYLES 1
+#define NOWINRES
 #define OEMRESOURCE 1
-
+// #define NOLANGUAGE 1
+// #define NORESOURCE 1
+// #define NOSCALABLEFONT 1
+// #define NOSYSTEMPARAMSINFO 1
 
 #define WIN32_LEAN_AND_MEAN 1
-#define NOMINMAX 1
+#define VC_EXTRALEAN 1
+
+#define ISOLATION_AWARE_ENABLED 1
 
 #ifndef STRICT
 #define STRICT 1
