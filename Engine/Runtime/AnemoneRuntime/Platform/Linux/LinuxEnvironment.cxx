@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <sys/sysinfo.h>
 #include <sys/resource.h>
@@ -399,7 +400,7 @@ namespace Anemone
 
     void Environment::LaunchUrl(std::string_view url)
     {
-        Interop::string_buffer<char_t, 512> sUrl{url};
+        Interop::string_buffer<char, 512> sUrl{url};
 
         int status = 0;
 
