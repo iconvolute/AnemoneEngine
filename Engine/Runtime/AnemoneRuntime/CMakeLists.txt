@@ -23,6 +23,8 @@ target_sources(AnemoneRuntime
         "Float.cxx"
         "Float.hxx"
         "FunctionRef.hxx"
+        "HandleTable.cxx"
+        "HandleTable.hxx"
         "Instant.cxx"
         "Instant.hxx"
         "Intrusive.hxx"
