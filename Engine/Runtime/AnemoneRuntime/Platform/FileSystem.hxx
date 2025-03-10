@@ -11,8 +11,14 @@ namespace Anemone
 {
     enum class FileType
     {
-        File,
+        Unknown,
         Directory,
+        File,
+        SymbolicLink,
+        BlockDevice,
+        CharacterDevice,
+        Socket,
+        NamedPipe,
     };
 
     struct FileInfo

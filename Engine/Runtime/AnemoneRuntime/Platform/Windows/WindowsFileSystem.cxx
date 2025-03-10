@@ -19,7 +19,12 @@ namespace Anemone::Internal
             destination.Type = FileType::Directory;
             destination.Size = 0;
         }
-        else
+        else if (source.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        {
+            destination.Type = FileType::SymbolicLink;
+            destination.Size = 0;
+        }
+        else 
         {
             destination.Type = FileType::File;
             destination.Size = static_cast<int64_t>((static_cast<DWORD64>(source.nFileSizeHigh) << 32) | source.nFileSizeLow);
@@ -642,22 +647,7 @@ namespace Anemone
                 }
 
                 FileInfo info;
-                info.Created = Interop::win32_into_DateTime(wfd.ftCreationTime);
-                info.Accessed = Interop::win32_into_DateTime(wfd.ftLastAccessTime);
-                info.Modified = Interop::win32_into_DateTime(wfd.ftLastWriteTime);
-
-                if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                {
-                    info.Type = FileType::Directory;
-                    info.Size = 0;
-                }
-                else
-                {
-                    info.Type = FileType::File;
-                    info.Size = (static_cast<int64_t>(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
-                }
-
-                info.ReadOnly = (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+                Internal::FileInfoFromSystem(wfd, info);
 
                 std::string fullPath{path};
 
