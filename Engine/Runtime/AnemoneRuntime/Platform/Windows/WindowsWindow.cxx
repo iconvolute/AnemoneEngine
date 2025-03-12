@@ -474,7 +474,7 @@ namespace Anemone
 
         AE_ASSERT(window != nullptr);
 
-        IApplicationEvents* events = Internal::GWindowsApplicationStatics->Events;
+        IApplicationEvents* events = IApplicationEvents::GetCurrent();
 
         bool handled = false;
 

@@ -206,7 +206,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::LeftTrigger;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftTrigger = value;
                 }
@@ -217,7 +217,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::RightTrigger;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightTrigger = value;
                 }
@@ -228,7 +228,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::LeftStickX;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftStick.X = value;
                 }
@@ -239,7 +239,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::LeftStickY;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.LeftStick.Y = value;
                 }
@@ -250,7 +250,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::RightStickX;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightStick.X = value;
                 }
@@ -261,7 +261,7 @@ namespace Anemone::Internal
                     e.Axis = GamepadAxis::RightStickY;
                     e.Value = value;
 
-                    GWindowsApplicationStatics->Events->OnGamepadAnalog(gamepad.DeviceId, e);
+                    IApplicationEvents::GetCurrent()->OnGamepadAnalog(gamepad.DeviceId, e);
 
                     gamepad.RightStick.Y = value;
                 }
@@ -285,11 +285,11 @@ namespace Anemone::Internal
 
             if (pressed)
             {
-                GWindowsApplicationStatics->Events->OnGamepadButtonDown(state.DeviceId, e);
+                IApplicationEvents::GetCurrent()->OnGamepadButtonDown(state.DeviceId, e);
             }
             else
             {
-                GWindowsApplicationStatics->Events->OnGamepadButtonUp(state.DeviceId, e);
+                IApplicationEvents::GetCurrent()->OnGamepadButtonUp(state.DeviceId, e);
             }
         }
     }
@@ -341,7 +341,7 @@ namespace Anemone::Internal
         int32_t vk = LOWORD(wparam);
         uint32_t const keyFlags = HIWORD(lparam);
 
-        IApplicationEvents* events = GWindowsApplicationStatics->Events;
+        IApplicationEvents* events = IApplicationEvents::GetCurrent();
 
         switch (vk)
         {
@@ -620,7 +620,7 @@ namespace Anemone::Internal
                         };
                         e.Absolute = true;
 
-                        GWindowsApplicationStatics->Events->OnMouseMove(window, e);
+                        IApplicationEvents::GetCurrent()->OnMouseMove(window, e);
                     }
                 }
                 else if ((mouse.lLastX != 0) || (mouse.lLastY != 0))
@@ -640,7 +640,7 @@ namespace Anemone::Internal
                     };
                     e.Absolute = true;
 
-                    GWindowsApplicationStatics->Events->OnMouseMove(window, e);
+                    IApplicationEvents::GetCurrent()->OnMouseMove(window, e);
                 }
             }
         }
@@ -656,7 +656,7 @@ namespace Anemone::Internal
         e.Key = key;
         e.Modifiers = this->m_modifiers;
 
-        GWindowsApplicationStatics->Events->OnMouseButtonUp(window, e);
+        IApplicationEvents::GetCurrent()->OnMouseButtonUp(window, e);
     }
 
     void WindowsInput::HandleMouseButtonDown(WindowsWindow& window, VirtualKey key, LPARAM lparam) const
@@ -669,7 +669,7 @@ namespace Anemone::Internal
         e.Key = key;
         e.Modifiers = this->m_modifiers;
 
-        GWindowsApplicationStatics->Events->OnMouseButtonDown(window, e);
+        IApplicationEvents::GetCurrent()->OnMouseButtonDown(window, e);
     }
 
     void WindowsInput::HandleMouseButtonClick(WindowsWindow& window, VirtualKey key, LPARAM lparam) const
@@ -682,7 +682,7 @@ namespace Anemone::Internal
         e.Key = key;
         e.Modifiers = this->m_modifiers;
 
-        GWindowsApplicationStatics->Events->OnMouseButtonDoubleClick(window, e);
+        IApplicationEvents::GetCurrent()->OnMouseButtonDoubleClick(window, e);
     }
 
     void WindowsInput::HandleMouseMove(WindowsWindow& window, LPARAM lparam) const
@@ -696,7 +696,7 @@ namespace Anemone::Internal
         e.Delta = Math::PointF{};
         e.Absolute = true;
 
-        GWindowsApplicationStatics->Events->OnMouseMove(window, e);
+        IApplicationEvents::GetCurrent()->OnMouseMove(window, e);
     }
 
     void WindowsInput::HandleMouseWheel(WindowsWindow& window, float horizontal, float vertical, LPARAM lParam) const
@@ -717,6 +717,6 @@ namespace Anemone::Internal
         e.Vertical = vertical;
         e.Modifiers = this->m_modifiers;
 
-        GWindowsApplicationStatics->Events->OnMouseWheel(window, e);
+        IApplicationEvents::GetCurrent()->OnMouseWheel(window, e);
     }
 }

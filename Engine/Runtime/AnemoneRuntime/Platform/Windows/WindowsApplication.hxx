@@ -11,8 +11,6 @@ namespace Anemone::Internal
 {
     struct WindowsApplicationStatics final
     {
-        IApplicationEvents* Events = nullptr;
-
         HICON ApplicationIconHandle{};
 
         HCURSOR ArrowCursor{};

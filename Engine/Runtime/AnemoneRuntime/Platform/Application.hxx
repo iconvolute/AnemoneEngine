@@ -338,7 +338,17 @@ namespace Anemone
 
     struct IApplicationEvents
     {
-        virtual ~IApplicationEvents() = default;
+    private:
+        static IApplicationEvents* GCurrent;
+
+    public:
+        RUNTIME_API IApplicationEvents();
+        RUNTIME_API virtual ~IApplicationEvents();
+
+        static IApplicationEvents* GetCurrent()
+        {
+            return GCurrent;
+        }
 
         // Mouse Events
         virtual void OnMouseEnter(Window& window, MouseEventArgs& args) = 0;
@@ -386,7 +396,6 @@ namespace Anemone
         RUNTIME_API static void Initialize();
         RUNTIME_API static void Finalize();
         RUNTIME_API static void ProcessMessages();
-        RUNTIME_API static void SetEvents(IApplicationEvents* events);
 
         RUNTIME_API static std::unique_ptr<Window> MakeWindow(WindowType type);
     };

@@ -94,11 +94,6 @@ namespace Anemone
         Internal::GWindowsInputStatics->Poll();
     }
 
-    void Application::SetEvents(IApplicationEvents* events)
-    {
-        Internal::GWindowsApplicationStatics->Events = events;
-    }
-
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)
     {
         return std::make_unique<WindowsWindow>(type);
