@@ -5,6 +5,15 @@
 #include <string_view>
 #include <fmt/format.h>
 
+#if ANEMONE_BUILD_SHIPPING
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Error
+#elif ANEMONE_CONFIG_DEBUG
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Debug
+#else
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Warning
+#endif
+
+
 namespace Anemone
 {
     class TraceListener;
@@ -12,17 +21,6 @@ namespace Anemone
     class Trace final
     {
     public:
-        static constexpr bool CanDispatch(TraceLevel level)
-        {
-#if ANEMONE_BUILD_SHIPPING
-            return level >= TraceLevel::Error;
-#elif ANEMONE_CONFIG_DEBUG
-            return level >= TraceLevel::Debug;
-#else
-            return level >= TraceLevel::Warning;
-#endif
-        }
-
         RUNTIME_API static void AddListener(TraceListener& listener);
         RUNTIME_API static void RemoveListener(TraceListener& listener);
 
@@ -35,13 +33,16 @@ namespace Anemone
         }
 
         RUNTIME_API static void Flush();
+
+    public:
+        static constexpr TraceLevel DefaultLevel = ANEMONE_DEFAULT_TRACE_LEVEL;
     };
 }
 
 #define AE_TRACE(level, format, ...) \
     do \
     { \
-        if constexpr (Anemone::Trace::CanDispatch(Anemone::TraceLevel::level)) \
+        if constexpr (Anemone::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
         { \
             Anemone::Trace::TraceMessage(Anemone::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
         } \
