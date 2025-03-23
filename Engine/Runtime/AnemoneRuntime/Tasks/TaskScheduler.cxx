@@ -6,14 +6,6 @@
 #include "TaskScheduler.hxx"
 #include "TaskWorker.hxx"
 
-// Caveat:  Some documentation mentions that holding a mutex while calling ConditionVariable::NotifyOne()
-//          is a recognized pattern.
-//
-//          We don't do that, but it seems that it works with it anyway.
-//
-//          If we run into performance issues, we can revisit this.
-//          https://en.cppreference.com/w/cpp/thread/condition_variable/notify_one
-
 namespace Anemone::Tasks
 {
     TaskScheduler::TaskScheduler(TaskSchedulerOptions const& options)
@@ -42,7 +34,14 @@ namespace Anemone::Tasks
     {
         AE_TRACE(Verbose, "Requesting cancellation");
         this->m_CancellationToken.Cancel();
-        this->m_TasksCondition.NotifyAll();
+        {
+            //
+            // Hold the lock so no other thread will miss notification.
+            //
+
+            UniqueLock _{this->m_TasksLock};
+            this->m_TasksCondition.NotifyAll();
+        }
 
         AE_TRACE(Verbose, "Joining threads");
         for (auto& thread : this->m_Threads)
