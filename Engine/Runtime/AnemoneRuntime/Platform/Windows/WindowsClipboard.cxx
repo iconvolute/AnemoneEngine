@@ -1,8 +1,31 @@
 #include "AnemoneRuntime/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone
 {
+    struct WindowsClipboardStatics final
+    {
+        UINT BinaryFormat = 0;
+
+        WindowsClipboardStatics()
+        {
+            this->BinaryFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
+        }
+    };
+
+    UninitializedObject<WindowsClipboardStatics> GClipboard{};
+
+    void Clipboard::Initialize()
+    {
+        GClipboard.Create();
+    }
+
+    void Clipboard::Finalize()
+    {
+        GClipboard.Destroy();
+    }
+
     void Clipboard::Clear()
     {
         if (OpenClipboard(nullptr))

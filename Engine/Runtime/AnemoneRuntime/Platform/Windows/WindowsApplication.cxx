@@ -1,49 +1,41 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Internal
-{
-    UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;
-
-    static constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
-}
-
 namespace Anemone
 {
-    void Application::Initialize()
+    static UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;
+
+    WindowsApplicationStatics::WindowsApplicationStatics()
     {
-        Internal::GWindowsApplicationStatics.Create();
-        Internal::GWindowsInputStatics.Create();
+        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
 
-
-        Internal::GWindowsApplicationStatics->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
-            Internal::GWindowsPlatformStatics->InstanceHandle,
-            MAKEINTRESOURCE(Internal::IDI_MAIN_ICON),
+        this->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
+            hInstance,
+            MAKEINTRESOURCE(WindowsApplicationStatics::IDI_MAIN_ICON),
             IMAGE_ICON,
             0,
             0,
             LR_SHARED));
 
-        Internal::GWindowsApplicationStatics->ArrowCursor = Interop::win32_LoadSystemCursor(IDC_ARROW);
-        Internal::GWindowsApplicationStatics->ArrowWaitCursor = Interop::win32_LoadSystemCursor(IDC_APPSTARTING);
-        Internal::GWindowsApplicationStatics->TextCursor = Interop::win32_LoadSystemCursor(IDC_IBEAM);
+        this->ArrowCursor = Interop::win32_LoadSystemCursor(IDC_ARROW);
+        this->ArrowWaitCursor = Interop::win32_LoadSystemCursor(IDC_APPSTARTING);
+        this->TextCursor = Interop::win32_LoadSystemCursor(IDC_IBEAM);
 
-        Internal::GWindowsApplicationStatics->SizeHorizontalCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        Internal::GWindowsApplicationStatics->SizeVerticalCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        Internal::GWindowsApplicationStatics->SizeLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        Internal::GWindowsApplicationStatics->SizeTopCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        Internal::GWindowsApplicationStatics->SizeRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        Internal::GWindowsApplicationStatics->SizeBottomCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        Internal::GWindowsApplicationStatics->SizeTopLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
-        Internal::GWindowsApplicationStatics->SizeTopRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
-        Internal::GWindowsApplicationStatics->SizeBottomLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
-        Internal::GWindowsApplicationStatics->SizeBottomRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
-        Internal::GWindowsApplicationStatics->SizeAllCursor = Interop::win32_LoadSystemCursor(IDC_SIZEALL);
-        Internal::GWindowsApplicationStatics->CrossCursor = Interop::win32_LoadSystemCursor(IDC_CROSS);
+        this->SizeHorizontalCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
+        this->SizeVerticalCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
+        this->SizeLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
+        this->SizeTopCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
+        this->SizeRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
+        this->SizeBottomCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
+        this->SizeTopLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
+        this->SizeTopRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
+        this->SizeBottomLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
+        this->SizeBottomRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
+        this->SizeAllCursor = Interop::win32_LoadSystemCursor(IDC_SIZEALL);
+        this->CrossCursor = Interop::win32_LoadSystemCursor(IDC_CROSS);
 
         // Register window class
         WNDCLASSEXW wc{
@@ -52,31 +44,48 @@ namespace Anemone
             .lpfnWndProc = WindowsWindow::WndProc,
             .cbClsExtra = 0,
             .cbWndExtra = 0,
-            .hInstance = Internal::GWindowsPlatformStatics->InstanceHandle,
-            .hIcon = Internal::GWindowsApplicationStatics->ApplicationIconHandle,
-            .hCursor = Internal::GWindowsApplicationStatics->ArrowCursor,
+            .hInstance = hInstance,
+            .hIcon = this->ApplicationIconHandle,
+            .hCursor = this->ArrowCursor,
             .hbrBackground = GetSysColorBrush(COLOR_WINDOW),
             .lpszMenuName = nullptr,
             .lpszClassName = L"AnemoneWindow",
-            .hIconSm = Internal::GWindowsApplicationStatics->ApplicationIconHandle,
+            .hIconSm = this->ApplicationIconHandle,
         };
 
-        Internal::GWindowsApplicationStatics->MainWindowClass = RegisterClassExW(&wc);
+        this->MainWindowClass = RegisterClassExW(&wc);
 
-        if (Internal::GWindowsApplicationStatics->MainWindowClass == 0)
+        if (this->MainWindowClass == 0)
         {
             Debugger::ReportApplicationStop("Failed to register window class.");
         }
     }
 
+    WindowsApplicationStatics::~WindowsApplicationStatics()
+    {
+        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
+
+        UnregisterClassW(
+            MAKEINTATOM(this->MainWindowClass),
+            hInstance);
+    }
+
+    WindowsApplicationStatics& WindowsApplicationStatics::Get()
+    {
+        return GWindowsApplicationStatics.Get();
+    }
+}
+
+namespace Anemone
+{
+    void Application::Initialize()
+    {
+        GWindowsApplicationStatics.Create();
+    }
+
     void Application::Finalize()
     {
-        UnregisterClassW(
-            MAKEINTATOM(Internal::GWindowsApplicationStatics->MainWindowClass),
-            Internal::GWindowsPlatformStatics->InstanceHandle);
-
-        Internal::GWindowsInputStatics.Destroy();
-        Internal::GWindowsApplicationStatics.Destroy();
+        GWindowsApplicationStatics.Destroy();
     }
 
     void Application::ProcessMessages()
@@ -91,7 +100,7 @@ namespace Anemone
         }
 
         // Pool input devices.
-        Internal::GWindowsInputStatics->Poll();
+        GWindowsApplicationStatics->Input.Poll();
     }
 
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)

@@ -2,12 +2,13 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 
 #include <memory>
 
-namespace Anemone::Internal
+namespace Anemone
 {
     struct WindowsApplicationStatics final
     {
@@ -32,7 +33,15 @@ namespace Anemone::Internal
         ATOM MainWindowClass{};
 
         IntrusiveList<Window> WindowsCollection{};
-    };
 
-    extern UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;
+        WindowsInput Input{};
+
+        static constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
+
+        WindowsApplicationStatics();
+
+        ~WindowsApplicationStatics();
+
+        static WindowsApplicationStatics& Get();
+    };
 }

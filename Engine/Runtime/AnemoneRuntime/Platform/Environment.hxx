@@ -13,52 +13,6 @@
 
 namespace Anemone
 {
-    // Simple CPU properties.
-    struct ProcessorProperties
-    {
-        // Number of physical cores.
-        uint32_t PhysicalCores;
-
-        // Number of logical cores.
-        uint32_t LogicalCores;
-
-        // Number of performance cores.
-        uint32_t PerformanceCores;
-
-        // Number of efficiency cores.
-        uint32_t EfficiencyCores;
-
-        bool HyperThreadingEnabled;
-
-        // Smallest cache-line size found.
-        uint32_t CacheLineSize;
-
-        uint32_t CacheSizeLevel1;
-        uint32_t CacheSizeLevel2;
-        uint32_t CacheSizeLevel3;
-        std::string Name;
-        std::string Vendor;
-    };
-
-    enum class ProcessorCharacteristics : uint8_t
-    {
-        Performance,
-        Efficiency,
-    };
-
-    struct ProcessorTopology
-    {
-        ProcessorCharacteristics Characteristics;
-        uint32_t PackageId;
-        uint32_t CoreId;
-        uint32_t ThreadId;
-        uint32_t CacheLineSize;
-
-        uint32_t CacheL1;
-        uint32_t CacheL2;
-        uint32_t CacheL3;
-    };
-
     struct MemoryProperties
     {
         uint64_t TotalPhysicalMemory;
@@ -170,12 +124,17 @@ namespace Anemone
 {
     struct Environment final
     {
+        friend struct Runtime;
+    private:
+        static void Initialize();
+        static void Finalize();
+
+    public:
+        Environment() = delete;
+
         RUNTIME_API static bool GetEnvironmentVariable(std::string& result, std::string_view name);
         RUNTIME_API static bool SetEnvironmentVariable(std::string name, std::string_view value);
         RUNTIME_API static bool RemoveEnvironmentVariable(std::string_view name);
-
-        RUNTIME_API static ProcessorProperties const& GetProcessorProperties();
-        RUNTIME_API static std::vector<ProcessorTopology> GetProcessorTopology();
 
         RUNTIME_API static void GetDisplayMetrics(DisplayMetrics& metrics);
         RUNTIME_API static ColorRef GetScreenPixel(Math::PointF position, float gamma);
@@ -216,5 +175,7 @@ namespace Anemone
         RUNTIME_API static void GetRandom(std::span<std::byte> buffer);
 
         RUNTIME_API static void LaunchUrl(std::string_view url);
+
+        RUNTIME_API static bool IsOnline();
     };
 }

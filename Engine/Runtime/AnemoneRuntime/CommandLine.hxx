@@ -10,19 +10,17 @@ namespace Anemone
 {
     class CommandLine final
     {
+        friend struct Runtime;
+
     private:
-        static int _argc;
-        static char** _argv;
+        static void Initialize(int argc, char* argv[]);
+        static void Finalize();
 
     private:
         static std::string_view UnquoteToken(std::string_view s);
         static std::string_view ParseToken(std::string_view& s);
 
     public:
-        RUNTIME_API static void Initialize(
-            int argc,
-            char* argv[]);
-
         RUNTIME_API static std::optional<std::string_view> GetOption(
             std::string_view name);
 

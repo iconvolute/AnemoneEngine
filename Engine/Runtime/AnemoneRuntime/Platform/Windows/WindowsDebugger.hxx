@@ -9,7 +9,6 @@ namespace Anemone
 {
     struct WindowsDebugger final
     {
-        static bool IsProcessEmulated();
         static void HandleCrash(PEXCEPTION_POINTERS pExceptionPointers);
 
         static void PrintRaw(const char* message);

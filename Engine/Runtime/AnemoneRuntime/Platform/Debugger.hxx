@@ -7,12 +7,14 @@ namespace Anemone
 {
     struct Debugger final
     {
-        static RUNTIME_API void Break();
-        static RUNTIME_API void Crash();
-        static RUNTIME_API bool IsAttached();
-        static RUNTIME_API void Wait();
-        static RUNTIME_API bool Attach();
+        static void Initialize();
+        static void Finalize();
 
-        static RUNTIME_API void ReportApplicationStop(std::string_view reason);
+        RUNTIME_API static void Break();
+        RUNTIME_API static void Crash();
+        RUNTIME_API static bool IsAttached();
+        RUNTIME_API static void Wait();
+        RUNTIME_API static bool Attach();
+        RUNTIME_API static void ReportApplicationStop(std::string_view reason);
     };
 }

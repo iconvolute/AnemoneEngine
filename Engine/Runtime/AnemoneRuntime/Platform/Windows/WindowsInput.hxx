@@ -1,9 +1,12 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Flags.hxx"
+#include "AnemoneRuntime/Platform/Application.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+
+//#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+//#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+//#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+//#include "AnemoneRuntime/UninitializedObject.hxx"
+//#include "AnemoneRuntime/Flags.hxx"
 
 #include <array>
 #include <Xinput.h>
@@ -14,11 +17,30 @@ namespace Anemone
     class WindowsWindow;
 }
 
-namespace Anemone::Internal
+namespace Anemone
 {
     class WindowsInput final
     {
     private:
+        constexpr float ApplyLinearDeadzone(float value, float max, float deadzone)
+        {
+            if (value < -deadzone)
+            {
+                value += deadzone;
+            }
+            else if (value > deadzone)
+            {
+                value -= deadzone;
+            }
+            else
+            {
+                return 0.0f;
+            }
+
+            float const scaled = value / (max - deadzone);
+            return Anemone::Math::Clamp(scaled, -1.0f, 1.0f);
+        }
+
         struct GamepadButtonState final
         {
             uint64_t Value{};
@@ -93,6 +115,4 @@ namespace Anemone::Internal
         void HandleMouseMove(WindowsWindow& window, LPARAM lparam) const;
         void HandleMouseWheel(WindowsWindow& window, float horizontal, float vertical, LPARAM lParam) const;
     };
-
-    extern UninitializedObject<WindowsInput> GWindowsInputStatics;
 }

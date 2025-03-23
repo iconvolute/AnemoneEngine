@@ -12,6 +12,8 @@ namespace Anemone
         {
             AE_PANIC("Application Events already initialized");
         }
+
+        IApplicationEvents::GCurrent = this;
     }
 
     IApplicationEvents::~IApplicationEvents()

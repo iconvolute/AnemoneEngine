@@ -20,6 +20,11 @@ namespace Anemone
 
     class Trace final
     {
+        friend struct Runtime;
+    private:
+        static void Initialize();
+        static void Finalize();
+
     public:
         RUNTIME_API static void AddListener(TraceListener& listener);
         RUNTIME_API static void RemoveListener(TraceListener& listener);

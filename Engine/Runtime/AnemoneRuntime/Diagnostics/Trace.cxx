@@ -1,76 +1,80 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <iterator>
 #include <utility>
+#include <array>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    constexpr char GetCharacter(TraceLevel level)
-    {
-        switch (level)
-        {
-        case TraceLevel::Verbose:
-            return 'V';
-
-        case TraceLevel::Debug:
-            return 'D';
-
-        case TraceLevel::Information:
-            return 'I';
-
-        case TraceLevel::Warning:
-            return 'W';
-
-        case TraceLevel::Error:
-            return 'E';
-
-        case TraceLevel::Fatal:
-            return 'F';
-
-        default:
-        case TraceLevel::None:
-            return 'N';
-        }
-    }
-
     struct TraceStatics final
     {
         ReaderWriterLock Lock{};
         IntrusiveList<TraceListener, Trace> Listeners{};
+
+        static constexpr std::array TraceLevelMarks = []()
+        {
+            return std::array{
+                'V',
+                'D',
+                'I',
+                'W',
+                'E',
+                'F',
+                'N',
+            };
+        }();
+
+        static constexpr char GetCharacter(TraceLevel level)
+        {
+            auto const index = std::to_underlying(level);
+            if (index < TraceLevelMarks.size())
+            {
+                return TraceLevelMarks[index];
+            }
+
+            return 'N';
+        }
     };
 
-    static TraceStatics GTraceStatics{};
-}
+    static UninitializedObject<TraceStatics> GTraceStatics{};
 
-namespace Anemone
-{
+    void Trace::Initialize()
+    {
+        GTraceStatics.Create();
+    }
+
+    void Trace::Finalize()
+    {
+        GTraceStatics.Destroy();
+    }
 
     void Trace::AddListener(TraceListener& listener)
     {
-        UniqueLock _{Internal::GTraceStatics.Lock};
+        UniqueLock _{GTraceStatics->Lock};
 
-        Internal::GTraceStatics.Listeners.PushBack(&listener);
+        GTraceStatics->Listeners.PushBack(&listener);
     }
 
     void Trace::RemoveListener(TraceListener& listener)
     {
-        UniqueLock _{Internal::GTraceStatics.Lock};
+        UniqueLock _{GTraceStatics->Lock};
 
-        Internal::GTraceStatics.Listeners.Remove(&listener);
+        GTraceStatics->Listeners.Remove(&listener);
     }
 
     void Trace::TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
     {
-        SharedLock _{Internal::GTraceStatics.Lock};
+        SharedLock _{GTraceStatics->Lock};
 
-        if (not Internal::GTraceStatics.Listeners.IsEmpty())
+        if (not GTraceStatics->Listeners.IsEmpty())
         {
             fmt::memory_buffer buffer{};
 
             auto out = std::back_inserter(buffer);
             (*out++) = '[';
-            (*out++) = Internal::GetCharacter(level);
+            (*out++) = TraceStatics::GetCharacter(level);
             (*out++) = ']';
             (*out++) = ' ';
             out = fmt::vformat_to(out, format, args);
@@ -81,7 +85,7 @@ namespace Anemone
             (*out) = '\0';
 
 
-            Internal::GTraceStatics.Listeners.ForEach([&](TraceListener& listener)
+            GTraceStatics->Listeners.ForEach([&](TraceListener& listener)
             {
                 listener.TraceEvent(level, message, size);
             });
@@ -90,9 +94,9 @@ namespace Anemone
 
     void Trace::Flush()
     {
-        SharedLock _{Internal::GTraceStatics.Lock};
+        SharedLock _{GTraceStatics->Lock};
 
-        Internal::GTraceStatics.Listeners.ForEach([](TraceListener& listener)
+        GTraceStatics->Listeners.ForEach([](TraceListener& listener)
         {
             listener.Flush();
         });

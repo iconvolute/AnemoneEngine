@@ -3,9 +3,11 @@
 
 namespace Anemone
 {
-    struct PlatformTraceListeners final
+    struct Runtime
     {
-        RUNTIME_API static void Initialize();
+        Runtime() = delete;
+
+        RUNTIME_API static void Initialize(int argc, char** argv);
         RUNTIME_API static void Finalize();
     };
 }

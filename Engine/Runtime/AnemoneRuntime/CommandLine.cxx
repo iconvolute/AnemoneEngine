@@ -1,23 +1,29 @@
 #include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <algorithm>
 #include <atomic>
 
+
 namespace Anemone
 {
-    int CommandLine::_argc = 0;
-    char** CommandLine::_argv = nullptr;
+    struct CommandLineStatics final
+    {
+        int ArgC = 0;
+        char** ArgV = nullptr;
+    };
 
-    static std::atomic_bool GCommandLineInitialized{false};
+    static UninitializedObject<CommandLineStatics> GCommandLineStatics{};
 
     void CommandLine::Initialize(int argc, char* argv[])
     {
-        CommandLine::_argc = argc;
-        CommandLine::_argv = argv;
+        GCommandLineStatics.Create(argc, argv);
+    }
 
-        AE_ASSERT(not GCommandLineInitialized.load(), "CommandLine already initialized");
-        GCommandLineInitialized.store(true);
+    void CommandLine::Finalize()
+    {
+        GCommandLineStatics.Destroy();
     }
 
     constexpr std::optional<std::string_view> ExtractTokenValue(std::string_view token, std::string_view name)
@@ -59,13 +65,12 @@ namespace Anemone
 
     auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
     {
-        AE_ASSERT(GCommandLineInitialized.load(), "CommandLine not initialized");
-
         std::optional<std::string_view> result{};
 
-        for (int i = 1; i < CommandLine::_argc; ++i)
+        
+        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view token{CommandLine::_argv[i]};
+            std::string_view token{GCommandLineStatics->ArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
@@ -80,11 +85,9 @@ namespace Anemone
 
     void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
     {
-        AE_ASSERT(GCommandLineInitialized.load(), "CommandLine not initialized");
-
-        for (int i = 1; i < CommandLine::_argc; ++i)
+        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view token{CommandLine::_argv[i]};
+            std::string_view token{GCommandLineStatics->ArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name))
             {
@@ -95,19 +98,17 @@ namespace Anemone
 
     void CommandLine::GetPositional(std::vector<std::string_view>& positional)
     {
-        AE_ASSERT(GCommandLineInitialized.load(), "CommandLine not initialized");
-
-        for (int i = 1; i < CommandLine::_argc; ++i)
+        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view option{CommandLine::_argv[i]};
+            std::string_view token{GCommandLineStatics->ArgV[i]};
 
-            if (option.starts_with('-'))
+            if (token.starts_with('-'))
             {
                 // Not a positional argument.
                 continue;
             }
 
-            positional.emplace_back(option);
+            positional.emplace_back(token);
         }
     }
 

@@ -1,34 +1,13 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
 
 #include <hidusage.h>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    UninitializedObject<WindowsInput> GWindowsInputStatics{};
-
-    constexpr float ApplyLinearDeadzone(float value, float max, float deadzone)
-    {
-        if (value < -deadzone)
-        {
-            value += deadzone;
-        }
-        else if (value > deadzone)
-        {
-            value -= deadzone;
-        }
-        else
-        {
-            return 0.0f;
-        }
-
-        float const scaled = value / (max - deadzone);
-        return Anemone::Math::Clamp(scaled, -1.0f, 1.0f);
-    }
-
     void WindowsInput::StartTracking(HWND handle)
     {
         RAWINPUTDEVICE const rid{

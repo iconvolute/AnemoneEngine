@@ -1,9 +1,11 @@
 #include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <locale>
 #include <iterator>
@@ -11,6 +13,10 @@
 #include <Windows.h>
 #include <Psapi.h>
 #include <bcrypt.h>
+#include <wrl/client.h>
+#include <netlistmgr.h>
+
+#define ENABLE_HEAP_CORRUPTION_CRASHES false
 
 namespace Anemone::Internal
 {
@@ -44,6 +50,344 @@ namespace Anemone::Internal
         AE_ASSERT(success != FALSE);
 
         return std::bit_cast<int64_t>(counter);
+    }
+}
+
+namespace Anemone
+{
+    struct WindowsEnvironmentStatics final
+    {
+        WindowsEnvironmentStatics();
+        ~WindowsEnvironmentStatics();
+
+        static void VerifyRequirements();
+
+        static void SetupConsoleMode(HANDLE hStream)
+        {
+            if (hStream)
+            {
+                DWORD dwMode = 0;
+
+                if (GetConsoleMode(hStream, &dwMode))
+                {
+                    dwMode |= ENABLE_PROCESSED_OUTPUT;
+                    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                    SetConsoleMode(hStream, dwMode);
+                }
+            }
+        }
+
+        static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+        {
+            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
+            {
+                return EXCEPTION_CONTINUE_EXECUTION;
+            }
+
+            WindowsDebugger::HandleCrash(lpExceptionPointers);
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
+
+        static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
+        {
+            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+            {
+                WindowsDebugger::HandleCrash(lpExceptionPointers);
+            }
+
+            return EXCEPTION_EXECUTE_HANDLER;
+        }
+
+    public:
+        DateTime StartupTime;
+
+
+        std::string SystemVersion;
+        std::string SystemId;
+        std::string SystemName;
+        std::string DeviceId;
+        std::string DeviceName;
+        std::string DeviceModel;
+        std::string DeviceManufacturer;
+        std::string DeviceVersion;
+        DeviceType DeviceType;
+        DeviceProperties DeviceProperties;
+        std::string ComputerName;
+        std::string UserName;
+        std::string ExecutablePath;
+        std::string StartupPath;
+        std::string ProfilePath;
+        std::string DesktopPath;
+        std::string DocumentsPath;
+        std::string DownloadsPath;
+        std::string TemporaryPath;
+    };
+
+    WindowsEnvironmentStatics::WindowsEnvironmentStatics()
+    {
+        // Initialize COM
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+
+        // Initialize DPI awareness.
+        SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+
+        // Enable UTF8 console.
+        SetConsoleCP(CP_UTF8);
+        SetConsoleOutputCP(CP_UTF8);
+
+        // When process hangs, DWM will ghost the window. This is not desirable for us.
+        DisableProcessWindowsGhosting();
+
+        SetupConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE));
+        SetupConsoleMode(GetStdHandle(STD_ERROR_HANDLE));
+
+        SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
+        _set_error_mode(_OUT_TO_STDERR);
+
+        // Set locale.
+        (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
+
+        VerifyRequirements();
+
+        // Setup crash handling callbacks.
+        SetUnhandledExceptionFilter(OnUnhandledExceptionFilter);
+
+#if ENABLE_HEAP_CORRUPTION_CRASHES
+        AddVectoredExceptionHandler(0, OnUnhandledExceptionVEH);
+#endif
+
+        WSADATA wsaData{};
+        if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
+        {
+            Debugger::ReportApplicationStop("Failed to initialize networking.");
+        }
+
+
+        //
+        // Determine if we are on build machine
+        //
+
+#if !ANEMONE_BUILD_SHIPPING
+        std::string buildMachine{};
+
+        if (Environment::GetEnvironmentVariable(buildMachine, "ANEMONE_BUILD_MACHINE"))
+        {
+            _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+            _CrtSetReportFile(_CRT_ASSERT, _CRTDBG_FILE_STDOUT);
+            _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_FILE | _CRTDBG_MODE_DEBUG);
+            _CrtSetReportFile(_CRT_ERROR, _CRTDBG_FILE_STDOUT);
+        }
+#endif
+
+        //
+        // Capture application startup time.
+        //
+
+        this->StartupTime = Environment::GetCurrentDateTime();
+
+
+        //
+        // Determine environment properties.
+        //
+
+        Interop::string_buffer<wchar_t, 512> buffer{};
+
+        if (Interop::win32_GetSystemDirectory(buffer))
+        {
+            std::wstring kernelPath{buffer.as_view()};
+            Interop::win32_PathPushFragment(kernelPath, L"kernel32.dll");
+
+            DWORD const dwSize = GetFileVersionInfoSizeW(kernelPath.c_str(), nullptr);
+
+            if (dwSize != 0)
+            {
+                std::unique_ptr<std::byte[]> versionInfo = std::make_unique_for_overwrite<std::byte[]>(dwSize);
+
+                if (GetFileVersionInfoW(kernelPath.c_str(), 0, dwSize, versionInfo.get()) != FALSE)
+                {
+                    VS_FIXEDFILEINFO* pFileInfo = nullptr;
+                    UINT uLen = 0;
+
+                    if (VerQueryValueW(versionInfo.get(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
+                    {
+                        this->SystemVersion = fmt::format(
+                            "{}.{}.{}.{}",
+                            HIWORD(pFileInfo->dwFileVersionMS),
+                            LOWORD(pFileInfo->dwFileVersionMS),
+                            HIWORD(pFileInfo->dwFileVersionLS),
+                            LOWORD(pFileInfo->dwFileVersionLS));
+                    }
+                }
+            }
+        }
+
+        if (this->SystemVersion.empty())
+        {
+            this->SystemVersion = "Unknown";
+        }
+
+        // Determine system ID
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(Software\Microsoft\Cryptography)", LR"(MachineGuid)");
+        Interop::win32_NarrowString(this->SystemId, buffer.as_view());
+
+        // Executable path
+        Interop::win32_QueryFullProcessImageName(buffer);
+        Interop::win32_NarrowString(this->ExecutablePath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->ExecutablePath);
+
+        // Startup path
+        Interop::win32_GetCurrentDirectory(buffer);
+        Interop::win32_NarrowString(this->StartupPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->StartupPath);
+
+        // Computer name
+        Interop::win32_GetComputerName(buffer);
+        Interop::win32_NarrowString(this->ComputerName, buffer.as_view());
+
+        // User name
+        Interop::win32_GetUserName(buffer);
+        Interop::win32_NarrowString(this->UserName, buffer.as_view());
+
+        // Profile path
+        Interop::win32_GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
+        {
+            Interop::win32_NarrowString(this->ProfilePath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(this->ProfilePath);
+
+        // Desktop path
+        Interop::win32_GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
+        {
+            Interop::win32_NarrowString(this->DesktopPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(this->DesktopPath);
+
+        // Documents path
+        Interop::win32_GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
+        {
+            Interop::win32_NarrowString(this->DocumentsPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(this->DocumentsPath);
+
+        // Downloads path
+        Interop::win32_GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
+        {
+            Interop::win32_NarrowString(this->DownloadsPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(this->DownloadsPath);
+
+        // Temp path
+        Interop::win32_GetTempPath(buffer);
+        Interop::win32_NarrowString(this->TemporaryPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->TemporaryPath);
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
+        Interop::win32_NarrowString(this->DeviceId, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemManufacturer)");
+        Interop::win32_NarrowString(this->DeviceManufacturer, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemProductName)");
+        Interop::win32_NarrowString(this->DeviceName, buffer.as_view());
+
+        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemVersion)");
+        Interop::win32_NarrowString(this->DeviceVersion, buffer.as_view());
+
+    }
+
+    WindowsEnvironmentStatics::~WindowsEnvironmentStatics()
+    {
+        if (WSACleanup() != 0)
+        {
+            Debugger::ReportApplicationStop("Failed to finalize networking.");
+        }
+
+        // Finalize COM
+        CoUninitialize();
+    }
+
+    void WindowsEnvironmentStatics::VerifyRequirements()
+    {
+        if (Interop::win32_IsProcessEmulated())
+        {
+            // VERIFY: AVX is not supported in WoA process emulation.
+            Debugger::ReportApplicationStop("Emulated process not supported.");
+        }
+
+        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
+        {
+            Debugger::ReportApplicationStop("64-bit compare-exchange not supported.");
+        }
+
+#if ANEMONE_ARCHITECTURE_X64
+        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128))
+        {
+            Debugger::ReportApplicationStop("128-bit compare-exchange not supported");
+        }
+#endif
+
+#if ANEMONE_FEATURE_AVX
+
+        if (not IsProcessorFeaturePresent(PF_XSAVE_ENABLED))
+        {
+            Debugger::ReportApplicationStop("XSAVE not enabled.");
+        }
+
+        if (not IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE))
+        {
+            Debugger::ReportApplicationStop("AVX not supported.");
+        }
+#endif
+
+#if ANEMONE_FEATURE_AVX2
+        if (not IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE))
+        {
+            Debugger::ReportApplicationStop("AVX2 not supported.");
+        }
+#endif
+
+#if ANEMONE_FEATURE_NEON
+        if (not IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE))
+        {
+            Debugger::ReportApplicationStop("NEON not supported.");
+        }
+#endif
+
+        // Verify Windows version
+        OSVERSIONINFOEXW osie{
+            .dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW),
+            .dwMajorVersion = static_cast<DWORD>(10),
+        };
+
+        ULONGLONG conditionMask{};
+        conditionMask = VerSetConditionMask(
+            conditionMask,
+            VER_MAJORVERSION,
+            VER_GREATER_EQUAL);
+        conditionMask = VerSetConditionMask(
+            conditionMask,
+            VER_MINORVERSION,
+            VER_GREATER_EQUAL);
+
+        if (not VerifyVersionInfoW(
+                &osie,
+                VER_MAJORVERSION | VER_MINORVERSION,
+                conditionMask))
+        {
+            Debugger::ReportApplicationStop("Windows 10 or newer required");
+        }
+    }
+
+    UninitializedObject<WindowsEnvironmentStatics> GWindowsEnvironmentStatics{};
+
+    void Environment::Initialize()
+    {
+        GWindowsEnvironmentStatics.Create();
+    }
+
+    void Environment::Finalize()
+    {
+        GWindowsEnvironmentStatics.Destroy();
     }
 }
 
@@ -84,46 +428,6 @@ namespace Anemone
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
     }
 
-    ProcessorProperties const& Environment::GetProcessorProperties()
-    {
-        return Internal::GWindowsPlatformStatics->Processor;
-    }
-
-    std::vector<ProcessorTopology> Environment::GetProcessorTopology()
-    {
-        AE_PANIC("Not implemented");
-        return {};
-    }
-
-    static BOOL CALLBACK FillDisplayDevicesInformation(
-        HMONITOR handle,
-        HDC,
-        LPRECT,
-        LPARAM context) noexcept
-    {
-        DisplayMetrics& displayMetrics = *reinterpret_cast<DisplayMetrics*>(context); // NOLINT(performance-no-int-to-ptr)
-
-        MONITORINFOEXW miex{};
-        miex.cbSize = sizeof(miex);
-
-        GetMonitorInfoW(handle, &miex);
-
-        Interop::string_buffer<char, 128> name{};
-        Interop::win32_NarrowString(name, miex.szDevice);
-
-        AE_ASSERT(!displayMetrics.Displays.empty());
-
-        DisplayInfo& last = displayMetrics.Displays.back();
-
-        if (last.Name == name.as_view())
-        {
-            last.DisplayRect = Interop::win32_into_Rectangle(miex.rcMonitor);
-            last.WorkAreaRect = Interop::win32_into_Rectangle(miex.rcWork);
-        }
-
-        return TRUE;
-    }
-
     void Environment::GetDisplayMetrics(DisplayMetrics& metrics)
     {
         metrics.Displays.clear();
@@ -132,6 +436,31 @@ namespace Anemone
         metrics.PrimaryDisplaySize = Math::SizeF{
             .Width = static_cast<float>(GetSystemMetrics(SM_CXSCREEN)),
             .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
+        };
+
+        MONITORENUMPROC const fillDisplayDevicesInformation = [](HMONITOR handle, HDC, LPRECT, LPARAM context) -> BOOL
+        {
+            DisplayMetrics& displayMetrics = *reinterpret_cast<DisplayMetrics*>(context); // NOLINT(performance-no-int-to-ptr)
+
+            MONITORINFOEXW miex{};
+            miex.cbSize = sizeof(miex);
+
+            GetMonitorInfoW(handle, &miex);
+
+            Interop::string_buffer<char, 128> name{};
+            Interop::win32_NarrowString(name, miex.szDevice);
+
+            AE_ASSERT(!displayMetrics.Displays.empty());
+
+            DisplayInfo& last = displayMetrics.Displays.back();
+
+            if (last.Name == name.as_view())
+            {
+                last.DisplayRect = Interop::win32_into_Rectangle(miex.rcMonitor);
+                last.WorkAreaRect = Interop::win32_into_Rectangle(miex.rcWork);
+            }
+
+            return TRUE;
         };
 
         RECT workArea = {-1, -1, -1, -1};
@@ -226,7 +555,7 @@ namespace Anemone
             EnumDisplayMonitors(
                 nullptr,
                 nullptr,
-                FillDisplayDevicesInformation,
+                fillDisplayDevicesInformation,
                 reinterpret_cast<LPARAM>(&metrics));
         }
     }
@@ -251,18 +580,17 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return Internal::GWindowsPlatformStatics->SystemVersion;
+        return GWindowsEnvironmentStatics->SystemVersion;
     }
 
     std::string_view Environment::GetSystemId()
     {
-        return Internal::GWindowsPlatformStatics->SystemId;
+        return GWindowsEnvironmentStatics->SystemId;
     }
 
     std::string_view Environment::GetSystemName()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return GWindowsEnvironmentStatics->SystemName;
     }
 
     Duration Environment::GetSystemUptime()
@@ -272,7 +600,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return Internal::GWindowsPlatformStatics->ApplicationStartupTime;
+        return GWindowsEnvironmentStatics->StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -403,75 +731,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return Internal::GWindowsPlatformStatics->DeviceId;
+        return GWindowsEnvironmentStatics->DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return Internal::GWindowsPlatformStatics->DeviceName;
+        return GWindowsEnvironmentStatics->DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return GWindowsEnvironmentStatics->DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return GWindowsEnvironmentStatics->DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return GWindowsEnvironmentStatics->DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return Internal::GWindowsPlatformStatics->ComputerName;
+        return GWindowsEnvironmentStatics->ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return Internal::GWindowsPlatformStatics->UserName;
+        return GWindowsEnvironmentStatics->UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return Internal::GWindowsPlatformStatics->ExecutablePath;
+        return GWindowsEnvironmentStatics->ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return Internal::GWindowsPlatformStatics->StartupPath;
+        return GWindowsEnvironmentStatics->StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return Internal::GWindowsPlatformStatics->ProfilePath;
+        return GWindowsEnvironmentStatics->ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return Internal::GWindowsPlatformStatics->DesktopPath;
+        return GWindowsEnvironmentStatics->DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return Internal::GWindowsPlatformStatics->DocumentsPath;
+        return GWindowsEnvironmentStatics->DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return Internal::GWindowsPlatformStatics->DownloadsPath;
+        return GWindowsEnvironmentStatics->DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return Internal::GWindowsPlatformStatics->TemporaryPath;
+        return GWindowsEnvironmentStatics->TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()
@@ -570,26 +895,24 @@ namespace Anemone
             AE_VERIFY_WIN32(GetLastError());
         }
     }
-}
 
-namespace Anemone
-{
-    bool WindowsEnvironment::IsConsoleApplication()
+    bool Environment::IsOnline()
     {
-        HMODULE hExecutable = GetModuleHandleW(nullptr);
+        Microsoft::WRL::ComPtr<INetworkListManager> networkListManager{};
 
-        return Interop::win32_IsConsoleApplication(hExecutable);
-    }
+        HRESULT hr = CoCreateInstance(
+            CLSID_NetworkListManager,
+            nullptr,
+            CLSCTX_ALL,
+            IID_PPV_ARGS(networkListManager.GetAddressOf()));
 
-    bool WindowsEnvironment::IsConsoleRedirecting()
-    {
-        return GetStdHandle(STD_OUTPUT_HANDLE) != nullptr;
-    }
+        if (FAILED(hr))
+        {
+            return false;
+        }
 
-    bool WindowsEnvironment::IsOnline()
-    {
         VARIANT_BOOL connected = VARIANT_FALSE;
-        HRESULT const hr = Internal::GWindowsPlatformStatics->NetworkListManager->get_IsConnectedToInternet(&connected);
+        hr = networkListManager->get_IsConnectedToInternet(&connected);
 
         if (SUCCEEDED(hr))
         {
