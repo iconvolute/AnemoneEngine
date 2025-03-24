@@ -1555,7 +1555,19 @@ namespace Anemone::Math
 namespace Anemone::Math
 {
     template <typename T, typename Fn>
-    constexpr T RungeKutta4(Fn dydx, T x0, T y0, T dt, size_t steps)
+    constexpr void RungeKutta4Step(Fn& dydx, T& x, T& y, T dt)
+    {
+        T const k1 = dt * dydx(x, y);
+        T const k2 = dt * dydx(x + (T(0.5) * dt), y + (T(0.5) * k1));
+        T const k3 = dt * dydx(x + (T(0.5) * dt), y + (T(0.5) * k2));
+        T const k4 = dt * dydx(x + dt, y + k3);
+
+        y += (k1 + (T(2) * k2) + (T(2) * k3) + k4) / T(6);
+        x += dt;
+    }
+
+    template <typename T, typename Fn>
+    constexpr T RungeKutta4(Fn& dydx, T x0, T y0, T dt, size_t steps)
         requires(std::is_floating_point_v<T>)
     {
         T x = x0;
@@ -1563,13 +1575,7 @@ namespace Anemone::Math
 
         for (size_t i = 0; i < steps; ++i)
         {
-            T const k1 = dydx(x, y);
-            T const k2 = dydx(x + (T(0.5) * dt), y + (T(0.5) * k1));
-            T const k3 = dydx(x + (T(0.5) * dt), y + (T(0.5) * k2));
-            T const k4 = dydx(x + dt, y + k3);
-
-            y += dt * (k1 + (T(2) * k2) + (T(2) * k3) + k4) / T(6);
-            x += dt;
+            RungeKutta4Step(dydx, x, y, dt);
         }
 
         return y;
