@@ -1,16 +1,30 @@
-#include "AnemoneRuntime/Profiler/ProfilerNvidia.hxx"
+#include "AnemoneRuntime/Profiler/NvidiaProfilerBackend.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 
-ANEMONE_EXTERNAL_HEADERS_BEGIN
-
 #include <nvtx3/nvToolsExt.h>
 
-ANEMONE_EXTERNAL_HEADERS_END
-
-namespace Anemone::Profiler
+namespace Anemone
 {
-    void ProfilerNvidia::BeginMarker(ProfilerMarker& marker)
+    void NvidiaProfilerBackend::BeginFrame()
+    {
+        nvtxEventAttributes_t attributes{};
+        attributes.version = NVTX_VERSION;
+        attributes.size = NVTX_EVENT_ATTRIB_STRUCT_SIZE;
+        attributes.category = 0;
+        attributes.colorType = NVTX_COLOR_UNKNOWN;
+        attributes.color = 0;
+        attributes.messageType = NVTX_MESSAGE_TYPE_ASCII;
+        attributes.message.ascii = "Frame";
+        nvtxRangePushEx(&attributes);
+    }
+
+    void NvidiaProfilerBackend::EndFrame()
+    {
+        nvtxRangePop();
+    }
+
+    void NvidiaProfilerBackend::BeginMarker(ProfilerMarker& marker)
     {
         nvtxEventAttributes_t attributes{};
         attributes.version = NVTX_VERSION;
@@ -23,13 +37,13 @@ namespace Anemone::Profiler
         nvtxRangePushEx(&attributes);
     }
 
-    void ProfilerNvidia::EndMarker(ProfilerMarker& marker)
+    void NvidiaProfilerBackend::EndMarker(ProfilerMarker& marker)
     {
         (void)marker;
         nvtxRangePop();
     }
 
-    void ProfilerNvidia::Event(ProfilerMarker& marker)
+    void NvidiaProfilerBackend::EventMarker(ProfilerMarker& marker)
     {
         nvtxEventAttributes_t attributes{};
         attributes.version = NVTX_VERSION;

@@ -8,6 +8,7 @@
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 
 namespace Anemone
@@ -23,10 +24,18 @@ namespace Anemone
         FileSystem::Initialize();
         Application::Initialize();
         Dialogs::Initialize();
+
+#if ANEMONE_BUILD_PROFILING
+        Profiler::Initialize();
+#endif
     }
 
     void Runtime::Finalize()
     {
+#if ANEMONE_BUILD_PROFILING
+        Profiler::Finalize();
+#endif
+
         Dialogs::Finalize();
         Application::Finalize();
         FileSystem::Finalize();

@@ -1,58 +1,116 @@
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 
-namespace Anemone::Profiler
+namespace Anemone
 {
-    static constexpr uint32_t ColorFromProfilerMarker(const char* name)
+    struct ProfilerStatics final
     {
-        return FNV1A32{}.Update(name).Finalize();
+        IProfilerBackend* Backend = nullptr;
+
+        static constexpr uint32_t ColorFromProfilerMarker(const char* name)
+        {
+            return FNV1A32{}.Update(name).Finalize();
+        }
+    };
+
+    static UninitializedObject<ProfilerStatics> GProfilerStatics{};
+
+    struct ProfilerMarkerRegistry final
+    {
+        CriticalSection Lock{};
+        IntrusiveList<ProfilerMarker> Markers{};
+
+        static ProfilerMarkerRegistry& Get()
+        {
+            static ProfilerMarkerRegistry registry{};
+            return registry;
+        }
+    };
+
+    void Profiler::Initialize()
+    {
+        GProfilerStatics.Create();
     }
 
+    void Profiler::Finalize()
+    {
+        GProfilerStatics.Destroy();
+    }
+
+    void Profiler::RegisterMarker(ProfilerMarker& marker)
+    {
+        ProfilerMarkerRegistry& registry = ProfilerMarkerRegistry::Get();
+
+        UniqueLock lock{registry.Lock};
+        registry.Markers.PushBack(&marker);
+    }
+
+    void Profiler::UnregisterMarker(ProfilerMarker& marker)
+    {
+        ProfilerMarkerRegistry& registry = ProfilerMarkerRegistry::Get();
+
+        UniqueLock lock{registry.Lock};
+        registry.Markers.Remove(&marker);
+    }
+
+    void Profiler::EnumerateMarkers(FunctionRef<void(ProfilerMarker& marker)> callback)
+    {
+        ProfilerMarkerRegistry& registry = ProfilerMarkerRegistry::Get();
+
+        UniqueLock lock{registry.Lock};
+        registry.Markers.ForEach(callback);
+    }
+
+    void Profiler::BeginMarker(ProfilerMarker& marker)
+    {
+        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        {
+            backend->BeginMarker(marker);
+        }
+    }
+
+    void Profiler::EndMarker(ProfilerMarker& marker)
+    {
+        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        {
+            backend->EndMarker(marker);
+        }
+    }
+
+    void Profiler::EventMarker(ProfilerMarker& marker)
+    {
+        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        {
+            backend->EventMarker(marker);
+        }
+    }
+}
+
+namespace Anemone
+{
     ProfilerMarker::ProfilerMarker(const char* name, ProfilerLevel level)
         : m_name{name}
         , m_level{level}
-        , m_color{ColorFromProfilerMarker(name)}
+        , m_color{ProfilerStatics::ColorFromProfilerMarker(name)}
     {
-        ProfilerMarkerRegistry::Get().Register(this);
+        Profiler::RegisterMarker(*this);
     }
 
     ProfilerMarker::ProfilerMarker(const char* name)
         : m_name{name}
         , m_level{ProfilerLevel::Default}
-        , m_color{ColorFromProfilerMarker(name)}
+        , m_color{ProfilerStatics::ColorFromProfilerMarker(name)}
     {
-        ProfilerMarkerRegistry::Get().Register(this);
+        Profiler::RegisterMarker(*this);
     }
 
     ProfilerMarker::~ProfilerMarker()
     {
-        ProfilerMarkerRegistry::Get().Unregister(this);
-    }
-}
-
-namespace Anemone::Profiler
-{
-    void ProfilerMarkerRegistry::Register(ProfilerMarker* marker)
-    {
-        this->m_markers.PushBack(marker);
-    }
-
-    void ProfilerMarkerRegistry::Unregister(ProfilerMarker* marker)
-    {
-        this->m_markers.Remove(marker);
-    }
-
-    void ProfilerMarkerRegistry::Enumerate(FunctionRef<void(ProfilerMarker&)> callback)
-    {
-        this->m_markers.ForEach(callback);
-    }
-
-    ProfilerMarkerRegistry& ProfilerMarkerRegistry::Get()
-    {
-        static ProfilerMarkerRegistry instance;
-        return instance;
+        Profiler::UnregisterMarker(*this);
     }
 }
 
