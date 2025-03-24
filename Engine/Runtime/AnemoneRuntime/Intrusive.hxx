@@ -368,8 +368,8 @@ namespace Anemone
             flink->BLink = node->BLink;
             blink->FLink = node->FLink;
 
-            item->FLink = nullptr;
-            item->BLink = nullptr;
+            node->FLink = nullptr;
+            node->BLink = nullptr;
         }
 
         constexpr void RemoveAll()
