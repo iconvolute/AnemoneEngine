@@ -17,7 +17,7 @@ namespace Anemone
         }
     };
 
-    static UninitializedObject<ProfilerStatics> GProfilerStatics{};
+    static ProfilerStatics GProfilerStatics{};
 
     struct ProfilerMarkerRegistry final
     {
@@ -33,12 +33,10 @@ namespace Anemone
 
     void Profiler::Initialize()
     {
-        GProfilerStatics.Create();
     }
 
     void Profiler::Finalize()
     {
-        GProfilerStatics.Destroy();
     }
 
     void Profiler::RegisterMarker(ProfilerMarker& marker)
@@ -67,7 +65,7 @@ namespace Anemone
 
     void Profiler::BeginMarker(ProfilerMarker& marker)
     {
-        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        if (IProfilerBackend* backend = GProfilerStatics.Backend)
         {
             backend->BeginMarker(marker);
         }
@@ -75,7 +73,7 @@ namespace Anemone
 
     void Profiler::EndMarker(ProfilerMarker& marker)
     {
-        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        if (IProfilerBackend* backend = GProfilerStatics.Backend)
         {
             backend->EndMarker(marker);
         }
@@ -83,7 +81,7 @@ namespace Anemone
 
     void Profiler::EventMarker(ProfilerMarker& marker)
     {
-        if (IProfilerBackend* backend = GProfilerStatics->Backend)
+        if (IProfilerBackend* backend = GProfilerStatics.Backend)
         {
             backend->EventMarker(marker);
         }
