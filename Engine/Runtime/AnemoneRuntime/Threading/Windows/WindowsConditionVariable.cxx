@@ -16,10 +16,20 @@ namespace Anemone
 
     void ConditionVariable::Wait(CriticalSection& cs)
     {
+        SleepConditionVariableSRW(&this->_inner, &cs._inner, INFINITE, 0);
+    }
+
+    void ConditionVariable::Wait(RecursiveCriticalSection& cs)
+    {
         SleepConditionVariableCS(&this->_inner, &cs._inner, INFINITE);
     }
 
     bool ConditionVariable::TryWait(CriticalSection& cs, Duration const& timeout)
+    {
+        return SleepConditionVariableSRW(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout), 0);
+    }
+
+    bool ConditionVariable::TryWait(RecursiveCriticalSection& cs, Duration const& timeout)
     {
         return SleepConditionVariableCS(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout));
     }

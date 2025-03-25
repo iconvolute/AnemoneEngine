@@ -1,10 +1,27 @@
 #include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Diagnostics/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <iterator>
 
 namespace Anemone
 {
+    static UninitializedObject<ConsoleTraceListener> GConsoleTraceListener;
+
+    void Debugger::Initialize()
+    {
+        GConsoleTraceListener.Create();
+        Trace::AddListener(*GConsoleTraceListener);
+    }
+
+    void Debugger::Finalize()
+    {
+        Trace::RemoveListener(*GConsoleTraceListener);
+        GConsoleTraceListener.Destroy();
+    }
+
     void Debugger::Break()
     {
         anemone_debugbreak();

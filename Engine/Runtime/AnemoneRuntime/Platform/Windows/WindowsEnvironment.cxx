@@ -1,5 +1,4 @@
 #include "AnemoneRuntime/Platform/Environment.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
@@ -99,28 +98,27 @@ namespace Anemone
         }
 
     public:
-        DateTime StartupTime;
+        DateTime m_StartupTime;
 
-
-        std::string SystemVersion;
-        std::string SystemId;
-        std::string SystemName;
-        std::string DeviceId;
-        std::string DeviceName;
-        std::string DeviceModel;
-        std::string DeviceManufacturer;
-        std::string DeviceVersion;
-        DeviceType DeviceType;
-        DeviceProperties DeviceProperties;
-        std::string ComputerName;
-        std::string UserName;
-        std::string ExecutablePath;
-        std::string StartupPath;
-        std::string ProfilePath;
-        std::string DesktopPath;
-        std::string DocumentsPath;
-        std::string DownloadsPath;
-        std::string TemporaryPath;
+        std::string m_SystemVersion;
+        std::string m_SystemId;
+        std::string m_SystemName;
+        std::string m_DeviceId;
+        std::string m_DeviceName;
+        std::string m_DeviceModel;
+        std::string m_DeviceManufacturer;
+        std::string m_DeviceVersion;
+        DeviceType m_DeviceType;
+        DeviceProperties m_DeviceProperties;
+        std::string m_ComputerName;
+        std::string m_UserName;
+        std::string m_ExecutablePath;
+        std::string m_StartupPath;
+        std::string m_ProfilePath;
+        std::string m_DesktopPath;
+        std::string m_DocumentsPath;
+        std::string m_DownloadsPath;
+        std::string m_TemporaryPath;
     };
 
     WindowsEnvironmentStatics::WindowsEnvironmentStatics()
@@ -183,7 +181,7 @@ namespace Anemone
         // Capture application startup time.
         //
 
-        this->StartupTime = Environment::GetCurrentDateTime();
+        this->m_StartupTime = Environment::GetCurrentDateTime();
 
 
         //
@@ -210,7 +208,7 @@ namespace Anemone
 
                     if (VerQueryValueW(versionInfo.get(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
                     {
-                        this->SystemVersion = fmt::format(
+                        this->m_SystemVersion = fmt::format(
                             "{}.{}.{}.{}",
                             HIWORD(pFileInfo->dwFileVersionMS),
                             LOWORD(pFileInfo->dwFileVersionMS),
@@ -221,77 +219,77 @@ namespace Anemone
             }
         }
 
-        if (this->SystemVersion.empty())
+        if (this->m_SystemVersion.empty())
         {
-            this->SystemVersion = "Unknown";
+            this->m_SystemVersion = "Unknown";
         }
 
         // Determine system ID
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(Software\Microsoft\Cryptography)", LR"(MachineGuid)");
-        Interop::win32_NarrowString(this->SystemId, buffer.as_view());
+        Interop::win32_NarrowString(this->m_SystemId, buffer.as_view());
 
         // Executable path
         Interop::win32_QueryFullProcessImageName(buffer);
-        Interop::win32_NarrowString(this->ExecutablePath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->ExecutablePath);
+        Interop::win32_NarrowString(this->m_ExecutablePath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->m_ExecutablePath);
 
         // Startup path
         Interop::win32_GetCurrentDirectory(buffer);
-        Interop::win32_NarrowString(this->StartupPath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->StartupPath);
+        Interop::win32_NarrowString(this->m_StartupPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->m_StartupPath);
 
         // Computer name
         Interop::win32_GetComputerName(buffer);
-        Interop::win32_NarrowString(this->ComputerName, buffer.as_view());
+        Interop::win32_NarrowString(this->m_ComputerName, buffer.as_view());
 
         // User name
         Interop::win32_GetUserName(buffer);
-        Interop::win32_NarrowString(this->UserName, buffer.as_view());
+        Interop::win32_NarrowString(this->m_UserName, buffer.as_view());
 
         // Profile path
         Interop::win32_GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->ProfilePath, value);
+            Interop::win32_NarrowString(this->m_ProfilePath, value);
         });
-        FilePath::NormalizeDirectorySeparators(this->ProfilePath);
+        FilePath::NormalizeDirectorySeparators(this->m_ProfilePath);
 
         // Desktop path
         Interop::win32_GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->DesktopPath, value);
+            Interop::win32_NarrowString(this->m_DesktopPath, value);
         });
-        FilePath::NormalizeDirectorySeparators(this->DesktopPath);
+        FilePath::NormalizeDirectorySeparators(this->m_DesktopPath);
 
         // Documents path
         Interop::win32_GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->DocumentsPath, value);
+            Interop::win32_NarrowString(this->m_DocumentsPath, value);
         });
-        FilePath::NormalizeDirectorySeparators(this->DocumentsPath);
+        FilePath::NormalizeDirectorySeparators(this->m_DocumentsPath);
 
         // Downloads path
         Interop::win32_GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->DownloadsPath, value);
+            Interop::win32_NarrowString(this->m_DownloadsPath, value);
         });
-        FilePath::NormalizeDirectorySeparators(this->DownloadsPath);
+        FilePath::NormalizeDirectorySeparators(this->m_DownloadsPath);
 
         // Temp path
         Interop::win32_GetTempPath(buffer);
-        Interop::win32_NarrowString(this->TemporaryPath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->TemporaryPath);
+        Interop::win32_NarrowString(this->m_TemporaryPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
-        Interop::win32_NarrowString(this->DeviceId, buffer.as_view());
+        Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemManufacturer)");
-        Interop::win32_NarrowString(this->DeviceManufacturer, buffer.as_view());
+        Interop::win32_NarrowString(this->m_DeviceManufacturer, buffer.as_view());
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemProductName)");
-        Interop::win32_NarrowString(this->DeviceName, buffer.as_view());
+        Interop::win32_NarrowString(this->m_DeviceName, buffer.as_view());
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemVersion)");
-        Interop::win32_NarrowString(this->DeviceVersion, buffer.as_view());
+        Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
 
     }
 
@@ -580,17 +578,17 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return GWindowsEnvironmentStatics->SystemVersion;
+        return GWindowsEnvironmentStatics->m_SystemVersion;
     }
 
     std::string_view Environment::GetSystemId()
     {
-        return GWindowsEnvironmentStatics->SystemId;
+        return GWindowsEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
     {
-        return GWindowsEnvironmentStatics->SystemName;
+        return GWindowsEnvironmentStatics->m_SystemName;
     }
 
     Duration Environment::GetSystemUptime()
@@ -600,7 +598,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return GWindowsEnvironmentStatics->StartupTime;
+        return GWindowsEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -731,72 +729,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return GWindowsEnvironmentStatics->DeviceId;
+        return GWindowsEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return GWindowsEnvironmentStatics->DeviceName;
+        return GWindowsEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        return GWindowsEnvironmentStatics->DeviceModel;
+        return GWindowsEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        return GWindowsEnvironmentStatics->DeviceType;
+        return GWindowsEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        return GWindowsEnvironmentStatics->DeviceProperties;
+        return GWindowsEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return GWindowsEnvironmentStatics->ComputerName;
+        return GWindowsEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return GWindowsEnvironmentStatics->UserName;
+        return GWindowsEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return GWindowsEnvironmentStatics->ExecutablePath;
+        return GWindowsEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return GWindowsEnvironmentStatics->StartupPath;
+        return GWindowsEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return GWindowsEnvironmentStatics->ProfilePath;
+        return GWindowsEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return GWindowsEnvironmentStatics->DesktopPath;
+        return GWindowsEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return GWindowsEnvironmentStatics->DocumentsPath;
+        return GWindowsEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return GWindowsEnvironmentStatics->DownloadsPath;
+        return GWindowsEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return GWindowsEnvironmentStatics->TemporaryPath;
+        return GWindowsEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()

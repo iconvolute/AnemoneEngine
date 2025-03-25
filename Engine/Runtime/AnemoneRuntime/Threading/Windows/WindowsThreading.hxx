@@ -1,13 +1,22 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-
-#if !ANEMONE_PLATFORM_WINDOWS
-#error "This header should only be included on Windows platform"
-#endif
-
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
 
 #include <atomic>
+
+namespace Anemone
+{
+    using ThreadId = DWORD;
+    using ThreadHandle = Interop::Win32SafeHandle;
+}
+
+namespace Anemone::Internal
+{
+    using PlatformSemaphore = Interop::Win32SafeHandle;
+    using PlatformReaderWriterLock = SRWLOCK;
+    using PlatformCriticalSection = SRWLOCK;
+    using PlatformRecursiveCriticalSection = CRITICAL_SECTION;
+    using PlatformConditionVariable = CONDITION_VARIABLE;
+}
 
 namespace Anemone::Internal
 {

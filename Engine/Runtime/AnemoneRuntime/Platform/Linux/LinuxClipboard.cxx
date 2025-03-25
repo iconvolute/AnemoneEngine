@@ -4,6 +4,14 @@
 
 namespace Anemone
 {
+    void Clipboard::Initialize()
+    {
+    }
+
+    void Clipboard::Finalize()
+    {
+    }
+
     void Clipboard::Clear()
     {
         AE_PANIC("Not implemented");

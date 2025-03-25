@@ -83,6 +83,14 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
+    void FileSystem::Initialize()
+    {
+    }
+
+    void FileSystem::Finalize()
+    {
+    }
+
     auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, ErrorCode>
     {
         (void)path;

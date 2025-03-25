@@ -1,14 +1,25 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-
-#if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
 
 #include <sys/syscall.h>
 #include <linux/futex.h>
 
 #include <atomic>
+
+namespace Anemone
+{
+    using ThreadId = pid_t;
+    using ThreadHandle = Interop::UnixPthreadThreadHandle;
+}
+
+namespace Anemone::Internal
+{
+    using PlatformSemaphore = sem_t;
+    using PlatformReaderWriterLock = pthread_rwlock_t;
+    using PlatformCriticalSection = pthread_mutex_t;
+    using PlatformRecursiveCriticalSection = pthread_mutex_t;
+    using PlatformConditionVariable = pthread_cond_t;
+}
 
 namespace Anemone::Internal
 {
@@ -52,7 +63,7 @@ namespace Anemone::Internal
                     }
                     else
                     {
-                        AE_TRACE(Error, "Futex wait failed: errno={}, '{}'", errno, strerror(errno));
+                        anemone_debugbreak();
                     }
                 }
             }
@@ -97,5 +108,3 @@ namespace Anemone::Internal
         }
     };
 }
-
-#endif

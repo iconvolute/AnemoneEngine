@@ -1,11 +1,10 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Threading/Windows/WindowsConditionVariable.hxx"
+#include "AnemoneRuntime/Threading/Windows/WindowsThreading.hxx"
 #elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Threading/Unix/UnixConditionVariable.hxx"
+#include "AnemoneRuntime/Threading/Unix/UnixThreading.hxx"
 #else
 #error Not implemented
 #endif
@@ -13,6 +12,7 @@
 namespace Anemone
 {
     class CriticalSection;
+    class RecursiveCriticalSection;
 
     class RUNTIME_API ConditionVariable final
     {
@@ -32,6 +32,8 @@ namespace Anemone
     public:
         void Wait(CriticalSection& cs);
 
+        void Wait(RecursiveCriticalSection& cs);
+
         template <typename Predicate>
         void Wait(CriticalSection& cs, Predicate&& predicate)
         {
@@ -41,7 +43,18 @@ namespace Anemone
             }
         }
 
+        template <typename Predicate>
+        void Wait(RecursiveCriticalSection& cs, Predicate&& predicate)
+        {
+            while (!std::forward<Predicate>(predicate)())
+            {
+                this->Wait(cs);
+            }
+        }
+
         bool TryWait(CriticalSection& cs, Duration const& timeout);
+
+        bool TryWait(RecursiveCriticalSection& cs, Duration const& timeout);
 
         void NotifyOne();
 

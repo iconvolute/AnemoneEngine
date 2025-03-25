@@ -7,14 +7,10 @@
 
 #include <memory>
 
-namespace Anemone::Internal
+namespace Anemone
 {
     struct LinuxApplicationStatics final
     {
-        IApplicationEvents* Events = nullptr;
-
         IntrusiveList<Window> LinuxCollection{};
     };
-
-    extern UninitializedObject<LinuxApplicationStatics> GLinuxApplicationStatics;
 }

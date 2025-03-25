@@ -13,6 +13,14 @@
 
 namespace Anemone
 {
+    void StackTrace::Initialize()
+    {
+    }
+
+    void StackTrace::Finalize()
+    {
+    }
+
     void StackTrace::Walk(FunctionRef<void(void* address)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE

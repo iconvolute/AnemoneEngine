@@ -15,7 +15,6 @@ target_sources(AnemoneRuntime
         "WindowsDialogs.cxx"
 
         "WindowsEnvironment.cxx"
-        "WindowsEnvironment.hxx"
 
         "WindowsError.cxx"
         "WindowsError.hxx"
