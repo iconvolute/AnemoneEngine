@@ -1,5 +1,6 @@
 #include "AnemoneRuntime/Platform/EntryPoint.hxx"
-#include "AnemoneRuntime/Platform/Platform.hxx"
+#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
@@ -60,7 +61,6 @@ TRACELOGGING_DEFINE_PROVIDER(
     (0xc0b8bb2a, 0x7e1e, 0x5a0b, 0x0a, 0xcd, 0x3e, 0xe6, 0x18, 0x78, 0x95, 0xed));
 #endif
 
-#include "AnemoneRuntime/Platform/Platform.hxx"
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
@@ -225,8 +225,8 @@ EH eh{};
 
 anemone_noinline void test()
 {
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetVendor());
 }
 
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
@@ -237,7 +237,6 @@ int AnemoneMain(int argc, char** argv)
 {
     (void)argc;
     (void)argv;
-    Anemone::Application::SetEvents(&eh);
 
     if (auto run = Anemone::CommandLine::GetOption("run"))
     {
@@ -358,12 +357,12 @@ int AnemoneMain(int argc, char** argv)
     }
     test();
     AE_TRACE(Error, "Hello, World!");
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorProperties().Name);
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
-    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetProcessorProperties().EfficiencyCores);
-    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::Environment::GetProcessorProperties().PerformanceCores);
-    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::Environment::GetProcessorProperties().PhysicalCores);
-    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::Environment::GetProcessorProperties().LogicalCores);
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetVendor());
+    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::ProcessorProperties::GetEfficiencyCoresCount());
+    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::ProcessorProperties::GetPerformanceCoresCount());
+    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::ProcessorProperties::GetPhysicalCoresCount());
+    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::ProcessorProperties::GetLogicalCoresCount());
 
 #if ANEMONE_PLATFORM_WINDOWS
     if (Anemone::WindowsEnvironment::IsConsoleApplication())
@@ -385,8 +384,8 @@ int AnemoneMain(int argc, char** argv)
     }
 #endif
 
-    fmt::println("cpu-name:    '{}'", Anemone::Environment::GetProcessorProperties().Name);
-    fmt::println("cpu-vendor:  '{}'", Anemone::Environment::GetProcessorProperties().Vendor);
+    fmt::println("cpu-name:    '{}'", Anemone::ProcessorProperties::GetName());
+    fmt::println("cpu-vendor:  '{}'", Anemone::ProcessorProperties::GetVendor());
     /*fmt::println("device-name: '{}'", Anemone::Environment::GetDeviceName());
     fmt::println("device-id:   '{}'", Anemone::Environment::GetDeviceUniqueId());*/
 
