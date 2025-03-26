@@ -28,180 +28,19 @@ TEST_CASE("Uuid Ordering")
     REQUIRE(b >= b);
 }
 
-TEST_CASE("Uuid from bytes")
-{
-    using namespace Anemone;
-
-    SECTION("Create lower upper")
-    {
-        Uuid const value = Uuid::Create(0xF0E0D0C0B0A09080, 0x0706050403020100);
-        REQUIRE(value.Elements[0] == 0x00);
-        REQUIRE(value.Elements[1] == 0x01);
-        REQUIRE(value.Elements[2] == 0x02);
-        REQUIRE(value.Elements[3] == 0x03);
-        REQUIRE(value.Elements[4] == 0x04);
-        REQUIRE(value.Elements[5] == 0x05);
-        REQUIRE(value.Elements[6] == 0x06);
-        REQUIRE(value.Elements[7] == 0x07);
-        REQUIRE(value.Elements[8] == 0x80);
-        REQUIRE(value.Elements[9] == 0x90);
-        REQUIRE(value.Elements[10] == 0xA0);
-        REQUIRE(value.Elements[11] == 0xB0);
-        REQUIRE(value.Elements[12] == 0xC0);
-        REQUIRE(value.Elements[13] == 0xD0);
-        REQUIRE(value.Elements[14] == 0xE0);
-        REQUIRE(value.Elements[15] == 0xF0);
-    }
-}
-
-TEST_CASE("Uuid Version")
-{
-    using namespace Anemone;
-
-    SECTION("Empty")
-    {
-        Uuid const value = Uuid::Empty();
-        REQUIRE(value.GetVersion() == UuidVersion::Empty);
-    }
-
-    SECTION("Max")
-    {
-        Uuid const value = Uuid::Max();
-        REQUIRE(value.GetVersion() == UuidVersion::Max);
-    }
-
-    SECTION("Version - Empty")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Empty);
-        REQUIRE(value.GetVersion() == UuidVersion::Empty);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-0000-0000-000000000000}");
-    }
-
-    SECTION("Version - Mac")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Mac);
-        REQUIRE(value.GetVersion() == UuidVersion::Mac);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-1000-0000-000000000000}");
-    }
-
-    SECTION("Version - Dce")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Dce);
-        REQUIRE(value.GetVersion() == UuidVersion::Dce);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-2000-0000-000000000000}");
-    }
-
-    SECTION("Version - Md5")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Md5);
-        REQUIRE(value.GetVersion() == UuidVersion::Md5);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-3000-0000-000000000000}");
-    }
-
-    SECTION("Version - Random")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Random);
-        REQUIRE(value.GetVersion() == UuidVersion::Random);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-4000-0000-000000000000}");
-    }
-
-    SECTION("Version - Sha1")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Sha1);
-        REQUIRE(value.GetVersion() == UuidVersion::Sha1);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-5000-0000-000000000000}");
-    }
-
-    SECTION("Version - SortMac")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::SortMac);
-        REQUIRE(value.GetVersion() == UuidVersion::SortMac);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-6000-0000-000000000000}");
-    }
-
-    SECTION("Version - SortRand")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::SortRand);
-        REQUIRE(value.GetVersion() == UuidVersion::SortRand);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-7000-0000-000000000000}");
-    }
-
-    SECTION("Version - Custom")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Custom);
-        REQUIRE(value.GetVersion() == UuidVersion::Custom);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-8000-0000-000000000000}");
-    }
-
-    SECTION("Version - Max")
-    {
-        Uuid value{};
-        value.SetVersion(UuidVersion::Max);
-        REQUIRE(value.GetVersion() == UuidVersion::Max);
-
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-
-        REQUIRE(formatted == "{00000000-0000-f000-0000-000000000000}");
-    }
-}
-
 TEST_CASE("Uuid Derivation")
 {
     using namespace Anemone;
 
     Uuid const base = Anemone::NAMESPACE_DNS;
-    Uuid const derived1 = Uuid::CreateDerived(base, "Test", 2137);
 
-    REQUIRE(derived1 == Uuid{0x68, 0x54, 0x9d, 0xe9, 0x06, 0xc7, 0x83, 0xac, 0x06, 0x2d, 0x7d, 0xca, 0x04, 0x9f, 0xdf, 0xa4});
+    Uuid const actual1 = UuidGenerator::CreateNamed(base, "Test", 2137);
+    Uuid const expected1{0x68, 0x54, 0x9d, 0xe9, 0x06, 0xc7, 0xf3, 0xac, 0x06, 0x2d, 0x7d, 0xca, 0x04, 0x9f, 0xdf, 0xa4};
+    REQUIRE(actual1 == expected1);
 
-    Uuid const derived2 = Uuid::CreateDerived(derived1, "Test", 2137);
-    REQUIRE(derived2 == Uuid{0xcd, 0x92, 0x48, 0xcb, 0x02, 0xa6, 0x8f, 0x0a, 0x52, 0xd4, 0xda, 0x1e, 0x4e, 0x2c, 0xc0, 0x1e});
+    Uuid const actual2 = UuidGenerator::CreateNamed(actual1, "Test", 2137);
+    Uuid const expected2{0x17, 0xd9, 0x2e, 0x4c, 0xeb, 0x81, 0x12, 0x69, 0x43, 0x18, 0xf0, 0x1f, 0x56, 0x64, 0x93, 0x1c};
+    REQUIRE(actual2 == expected2);
 }
 
 TEST_CASE("Uuid Formatting")
@@ -211,49 +50,15 @@ TEST_CASE("Uuid Formatting")
     SECTION("Null Uuid")
     {
         Uuid const value{};
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value, UuidStringFormat::None));
-        REQUIRE(formatted == "00000000000000000000000000000000");
-    }
-
-    SECTION("Non-null Uuid")
-    {
-        Uuid const value = NAMESPACE_DNS;
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value, UuidStringFormat::None));
-        REQUIRE(formatted == "6ba7b8109dad11d180b400c04fd430c8");
-    }
-
-    SECTION("Braces Dashes")
-    {
-        Uuid const value = NAMESPACE_DNS;
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value, UuidStringFormat::BracesDashes));
-        REQUIRE(formatted == "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
-    }
-
-    SECTION("Braces")
-    {
-        Uuid const value = NAMESPACE_DNS;
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value, UuidStringFormat::Braces));
-        REQUIRE(formatted == "{6ba7b8109dad11d180b400c04fd430c8}");
-    }
-
-    SECTION("Dashes")
-    {
-        Uuid const value = NAMESPACE_DNS;
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value, UuidStringFormat::Dashes));
-        REQUIRE(formatted == "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+        std::string formatted = fmt::format("{}", value);
+        REQUIRE(formatted == "00000000-0000-0000-0000-000000000000");
     }
 
     SECTION("Default")
     {
         Uuid const value = NAMESPACE_DNS;
-        std::string formatted{};
-        REQUIRE(TryFormat(formatted, value));
-        REQUIRE(formatted == "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
+        std::string formatted = fmt::format("{}", value);
+        REQUIRE(formatted == "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
     }
 }
 
@@ -263,41 +68,20 @@ TEST_CASE("Uuid Parsing")
 
     SECTION("Too short string")
     {
-        Uuid value{};
-        REQUIRE_FALSE(TryParse(value, "{dead"));
+        auto value = UuidParser::Parse("{dead");
+        REQUIRE(!value.has_value());
     }
 
     SECTION("Unterminated braces")
     {
-        Uuid value{};
-        REQUIRE_FALSE(TryParse(value, "{6ba7b810-9dad-11d1-80b4-00c04fd430c8dade"));
+        auto value = UuidParser::Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8dade");
+        REQUIRE(!value.has_value());
     }
 
     SECTION("Valid with braces and dashes")
     {
-        Uuid value{};
-        REQUIRE(TryParse(value, "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}"));
-        REQUIRE(value == NAMESPACE_DNS);
-    }
-
-    SECTION("Valid with braces")
-    {
-        Uuid value{};
-        REQUIRE(TryParse(value, "{6ba7b8109dad11d180b400c04fd430c8}"));
-        REQUIRE(value == NAMESPACE_DNS);
-    }
-
-    SECTION("Valid with dashes")
-    {
-        Uuid value{};
-        REQUIRE(TryParse(value, "6ba7b810-9dad-11d1-80b4-00c04fd430c8"));
-        REQUIRE(value == NAMESPACE_DNS);
-    }
-
-    SECTION("Valid with only numbers")
-    {
-        Uuid value{};
-        REQUIRE(TryParse(value, "6ba7b8109dad11d180b400c04fd430c8"));
+        auto value = UuidParser::Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+        REQUIRE(value.has_value());
         REQUIRE(value == NAMESPACE_DNS);
     }
 }

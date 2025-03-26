@@ -21,126 +21,94 @@ namespace Anemone::Math
 namespace Anemone
 {
     struct DateTime;
+}
 
-    enum class UuidVariant
-    {
-        Future,
-        NCS,
-        RFC4112,
-        Microsoft,
-    };
-
-    enum class UuidVersion
-    {
-        Empty = 0,
-        Mac = 1,
-        Dce = 2,
-        Md5 = 3,
-        Random = 4,
-        Sha1 = 5,
-        SortMac = 6,
-        SortRand = 7,
-        Custom = 8,
-        Max = 15,
-    };
-
-    enum class UuidStringFormat
-    {
-        // XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-        None,
-        // XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX
-        Dashes,
-        // {XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX}
-        Braces,
-        // {XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX}
-        BracesDashes,
-    };
-
+namespace Anemone
+{
     struct Uuid final
     {
-    public:
         uint8_t Elements[16];
 
-    public:
-        [[nodiscard]] friend constexpr auto operator<=>(Uuid const& self, Uuid const& other) = default;
+        constexpr auto operator<=>(Uuid const&) const = default;
+    };
 
-        static constexpr Uuid Create(uint64_t upper, uint64_t lower)
+    struct UuidParser final
+    {
+        static constexpr int ParseDigit(char c) noexcept
         {
-            std::array values{lower, upper};
-            return std::bit_cast<Uuid>(values);
+            if (c >= '0' && c <= '9')
+            {
+                return static_cast<uint8_t>(c - '0');
+            }
+
+            if (c >= 'A' && c <= 'F')
+            {
+                return static_cast<uint8_t>(10 + c - 'A');
+            }
+
+            if (c >= 'a' && c <= 'f')
+            {
+                return static_cast<uint8_t>(10 + c - 'a');
+            }
+
+            return -1;
         }
 
-        RUNTIME_API static Uuid CreateRandom();
+        static constexpr auto Parse(std::string_view value) -> std::optional<Uuid>
+        {
+            //
+            // Parse Uuid in format "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
+            // X must be a hex digit, otherwise the function returns nullopt.
+            //
 
+            Uuid result;
+
+            if (value.size() != 36)
+            {
+                return std::nullopt;
+            }
+
+            size_t current = 0;
+
+            for (size_t i = 0; i < 16; ++i)
+            {
+                if ((i == 4) or (i == 6) or (i == 8) or (i == 10))
+                {
+                    if (value[current] != '-')
+                    {
+                        return std::nullopt;
+                    }
+
+                    ++current;
+                }
+
+                auto const hi = ParseDigit(value[current++]);
+                auto const lo = ParseDigit(value[current++]);
+
+                if ((hi < 0) || (lo < 0))
+                {
+                    return std::nullopt;
+                }
+
+                result.Elements[i] = (static_cast<uint8_t>(hi) << 4) | static_cast<uint8_t>(lo);
+            }
+
+            return result;
+        }
+    };
+
+    struct UuidGenerator final
+    {
         RUNTIME_API static Uuid CreateRandom(Math::Random& generator);
 
         RUNTIME_API static Uuid CreateSortable(Math::Random& generator);
 
-        RUNTIME_API static Uuid CreateSortable(DateTime dateTime, Math::Random& generator);
+        RUNTIME_API static Uuid CreateSortable(Math::Random& generator, DateTime dateTime);
 
-        RUNTIME_API static Uuid Create(std::string_view name, uint64_t seed = 0);
+        RUNTIME_API static Uuid CreateNamed(std::string_view name, uint64_t seed = 0);
 
-        RUNTIME_API static Uuid CreateDerived(Uuid const& base, std::string_view name, uint64_t seed = 0);
-
-        static constexpr Uuid Empty()
-        {
-            return Uuid{};
-        }
-
-        static constexpr Uuid Max()
-        {
-            return Create(std::numeric_limits<uint64_t>::max(), std::numeric_limits<uint64_t>::max());
-        }
-
-        [[nodiscard]] constexpr UuidVariant GetVariant() const
-        {
-            uint8_t const variant = this->Elements[8];
-
-            if ((variant & 0x80) == 0x00)
-            {
-                return UuidVariant::NCS;
-            }
-
-            if ((variant & 0xc0) == 0x80)
-            {
-                return UuidVariant::RFC4112;
-            }
-
-            if ((variant & 0xe0) == 0xc0)
-            {
-                return UuidVariant::Microsoft;
-            }
-
-            return UuidVariant::Future;
-        }
-
-        [[nodiscard]] constexpr UuidVersion GetVersion() const
-        {
-            return static_cast<UuidVersion>(this->Elements[6] >> 4);
-        }
-
-        constexpr void SetVersion(UuidVersion version)
-        {
-            this->Elements[6] &= 0x0f;
-            this->Elements[6] |= static_cast<uint8_t>(version) << 4;
-        }
+        RUNTIME_API static Uuid CreateNamed(Uuid const& base, std::string_view name, uint64_t seed = 0);
     };
-
-    static_assert(sizeof(Uuid) == 16);
-    static_assert(std::is_trivially_constructible_v<Uuid>);
-    static_assert(std::is_standard_layout_v<Uuid>);
-
-    // TODO: Implement in terms of string_builder when available.
-    [[nodiscard]] RUNTIME_API bool TryParse(Uuid& result, std::string_view value);
-
-    [[nodiscard]] RUNTIME_API bool TryFormat(std::string& result, Uuid const& value, UuidStringFormat format);
-
-    [[nodiscard]] RUNTIME_API size_t TryFormat(std::span<char> buffer, Uuid const& value, UuidStringFormat format);
-
-    inline bool TryFormat(std::string& result, Uuid const& value)
-    {
-        return TryFormat(result, value, UuidStringFormat::BracesDashes);
-    }
 
     inline constexpr Uuid NAMESPACE_DNS{
         {0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8},
@@ -159,65 +127,30 @@ namespace Anemone
 template <>
 struct fmt::formatter<Anemone::Uuid>
 {
-private:
-    Anemone::UuidStringFormat m_Format{Anemone::UuidStringFormat::BracesDashes};
-
 public:
     constexpr auto parse(auto& context) noexcept
     {
-        auto it = context.begin();
-
-        if (it != context.end())
-        {
-            switch (*it)
-            {
-            case 'n':
-                {
-                    ++it;
-                    this->m_Format = Anemone::UuidStringFormat::None;
-                    break;
-                }
-            case 'd':
-                {
-                    ++it;
-                    this->m_Format = Anemone::UuidStringFormat::Dashes;
-                    break;
-                }
-            case 'b':
-                {
-                    ++it;
-                    this->m_Format = Anemone::UuidStringFormat::Braces;
-                    break;
-                }
-
-            case 'f':
-                {
-                    ++it;
-                    this->m_Format = Anemone::UuidStringFormat::BracesDashes;
-                    break;
-                }
-
-            default:
-                {
-                    break;
-                }
-            }
-        }
-
-        return it;
+        return context.begin();
     }
 
-    auto format(Anemone::Uuid const& value, auto& context) noexcept
+    auto format(Anemone::Uuid const& value, auto& context) const noexcept
     {
-        std::array<char, 48> buffer{};
+        auto out = context.out();
 
-        size_t const processed = Anemone::TryFormat(buffer, value, this->m_Format);
-        if (processed != 0)
+        for (size_t i = 0; i < 16; ++i)
         {
-            return std::copy(buffer.data(), buffer.data() + processed, context.out());
+            constexpr const char* digits = "0123456789abcdef";
+
+            if (i == 4 || i == 6 || i == 8 || i == 10)
+            {
+                (*out++) = '-';
+            }
+
+            uint8_t const element{value.Elements[i]};
+            (*out++) = digits[(element >> 4) & 0x0F];
+            (*out++) = digits[element & 0x0F];
         }
 
-        context.on_error("Could not format Uuid to string");
-        return context.out();
+        return out;
     }
 };
