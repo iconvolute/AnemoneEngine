@@ -40,7 +40,7 @@ namespace Anemone
         // Register window class
         WNDCLASSEXW wc{
             .cbSize = sizeof(wc),
-            .style = CS_DBLCLKS,
+            .style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW,
             .lpfnWndProc = WindowsWindow::WndProc,
             .cbClsExtra = 0,
             .cbWndExtra = 0,

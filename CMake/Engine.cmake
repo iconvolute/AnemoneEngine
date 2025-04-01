@@ -131,6 +131,7 @@ function(_anemone_target_add_options target_name)
             PRIVATE
                 #-g
                 -ggdb
+                -fvisibility=hidden
                 #-ffast-math                                 # Enable fast math optimizations
         )
     endif()
@@ -285,7 +286,6 @@ function(_anemone_target_install target_name)
         install(FILES $<TARGET_PDB_FILE:${target_name}> DESTINATION bin OPTIONAL)
     endif()
 endfunction()
-
 
 function(anemone_add_module target_name)
 

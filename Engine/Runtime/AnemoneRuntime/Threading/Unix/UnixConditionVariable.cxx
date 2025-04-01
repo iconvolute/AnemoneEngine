@@ -17,12 +17,27 @@ namespace Anemone
         pthread_cond_destroy(&this->_inner);
     }
 
-    void ConditionVariable::Wait(CriticalSection& cs)
+    void ConditionVariable::WaitImpl(CriticalSection& cs)
     {
         pthread_cond_wait(&this->_inner, &cs._inner);
     }
 
-    bool ConditionVariable::TryWait(CriticalSection& cs, Duration const& timeout)
+    void ConditionVariable::WaitImpl(RecursiveCriticalSection& cs)
+    {
+        pthread_cond_wait(&this->_inner, &cs._inner);
+    }
+
+    bool ConditionVariable::TryWaitImpl(CriticalSection& cs, Duration const& timeout)
+    {
+        timespec ts{};
+        clock_gettime(CLOCK_REALTIME, &ts);
+        Interop::posix_ValidateTimeout(ts, timeout);
+
+        // Should fail on ETIMEDOUT only.
+        return pthread_cond_timedwait(&this->_inner, &cs._inner, &ts) == 0;
+    }
+
+    bool ConditionVariable::TryWaitImpl(RecursiveCriticalSection& cs, Duration const& timeout)
     {
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);

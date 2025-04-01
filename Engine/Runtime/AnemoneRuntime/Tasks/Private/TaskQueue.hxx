@@ -1,17 +1,18 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
-namespace Anemone::Tasks
+namespace Anemone::Private
 {
     class alignas(64) TaskQueue final
     {
     private:
-        Spinlock m_Lock{};
-        IntrusiveList<Task, Task> m_Items{};
-        size_t m_Count{};
+        mutable Spinlock m_lock{};
+        IntrusiveList<Task, Task> m_items{};
+        size_t m_count{};
 
     public:
         TaskQueue() = default;
@@ -26,34 +27,34 @@ namespace Anemone::Tasks
         {
             AE_ASSERT(task->GetDependencyAwaiter()->IsCompleted());
 
-            UniqueLock _{this->m_Lock};
-            this->m_Items.PushBack(task);
-            ++this->m_Count;
+            UniqueLock scope{this->m_lock};
+            this->m_items.PushBack(task);
+            ++this->m_count;
         }
 
         Task* Pop()
         {
-            UniqueLock _{this->m_Lock};
-            Task* result = this->m_Items.PopFront();
+            UniqueLock scope{this->m_lock};
+            Task* result = this->m_items.PopFront();
 
             if (result)
             {
-                --this->m_Count;
+                --this->m_count;
             }
 
             return result;
         }
 
-        bool IsEmpty()
+        bool IsEmpty() const
         {
-            UniqueLock _{this->m_Lock};
-            return this->m_Items.IsEmpty();
+            UniqueLock scope{this->m_lock};
+            return this->m_items.IsEmpty();
         }
 
-        size_t GetCount()
+        size_t GetCount() const
         {
-            UniqueLock _{this->m_Lock};
-            return this->m_Count;
+            UniqueLock scope{this->m_lock};
+            return this->m_count;
         }
     };
 }

@@ -336,14 +336,14 @@ namespace Anemone
     };
 
 
-    struct IApplicationEvents
+    struct RUNTIME_API IApplicationEvents
     {
     private:
         static IApplicationEvents* GCurrent;
 
     public:
-        RUNTIME_API IApplicationEvents();
-        RUNTIME_API virtual ~IApplicationEvents();
+        IApplicationEvents();
+        virtual ~IApplicationEvents();
 
         static IApplicationEvents* GetCurrent()
         {

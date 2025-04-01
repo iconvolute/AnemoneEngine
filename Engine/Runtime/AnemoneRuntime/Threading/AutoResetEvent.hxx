@@ -32,11 +32,11 @@ namespace Anemone
     public:
         void Wait()
         {
-            UniqueLock _{this->_cs};
+            UniqueLock lock{this->_cs};
 
             while (!this->_set)
             {
-                this->_cv.Wait(this->_cs);
+                this->_cv.Wait(lock);
             }
 
             this->_set = false;

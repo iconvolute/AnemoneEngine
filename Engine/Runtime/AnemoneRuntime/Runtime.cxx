@@ -9,6 +9,7 @@
 #include "AnemoneRuntime/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
+#include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
 
 
 namespace Anemone
@@ -28,10 +29,14 @@ namespace Anemone
 #if ANEMONE_BUILD_PROFILING
         Profiler::Initialize();
 #endif
+
+        Private::GTaskSchedulerStatics.Create();
     }
 
     void Runtime::Finalize()
     {
+        Private::GTaskSchedulerStatics.Destroy();
+
 #if ANEMONE_BUILD_PROFILING
         Profiler::Finalize();
 #endif

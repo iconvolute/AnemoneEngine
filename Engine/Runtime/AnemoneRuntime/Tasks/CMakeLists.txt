@@ -1,15 +1,10 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Awaiter.cxx"
         "Awaiter.hxx"
-        "Factory.hxx"
-        "ParallelFor.hxx"
-        "Runtime.cxx"
-        "Task.cxx"
+        "Parallel.hxx"
         "Task.hxx"
-        "TaskQueue.hxx"
-        "TaskScheduler.cxx"
         "TaskScheduler.hxx"
-        "TaskWorker.cxx"
-        "TaskWorker.hxx"
 )
+
+#add_subdirectory("Platform")
+add_subdirectory("Private")

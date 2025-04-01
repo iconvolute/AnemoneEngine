@@ -27,6 +27,9 @@ namespace Anemone
         LockT& _lock;
 
     public:
+        using Lock = LockT;
+
+    public:
         UniqueLock() = delete;
         UniqueLock(UniqueLock const&) = delete;
         UniqueLock(UniqueLock&&) = delete;
@@ -43,6 +46,11 @@ namespace Anemone
         {
             this->_lock.Leave();
         }
+
+        Lock& GetLock() const
+        {
+            return this->_lock;
+        }
     };
 
     template <typename LockT>
@@ -51,6 +59,9 @@ namespace Anemone
     {
     private:
         LockT& _lock;
+
+    public:
+        using Lock = LockT;
 
     public:
         SharedLock() = delete;
@@ -68,6 +79,11 @@ namespace Anemone
         ~SharedLock()
         {
             this->_lock.LeaveShared();
+        }
+
+        Lock& GetLock() const
+        {
+            return this->_lock;
         }
     };
 

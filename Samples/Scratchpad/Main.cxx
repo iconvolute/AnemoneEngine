@@ -2,78 +2,97 @@
 #include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
-#endif
 
 #include <string>
 #include <string_view>
 
-#if false
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Platform/PlatformEvents.hxx"
-#include "AnemoneRuntime/Platform/SplashScreen.hxx"
-#include "AnemoneRuntime/Platform/StackTrace.hxx"
-#include "AnemoneRuntime/Platform/Window.hxx"
+#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
+
+#include <expected>
+
+#include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
+#include "AnemoneRuntime/Threading/Lock.hxx"
 
-// AnemoneRuntime/Platform.hxx
 
-namespace Anemone
+namespace anemone
 {
-    enum class SpecialFolder
+    template <typename T>
+    struct bit_pack;
+
+    template <>
+    struct bit_pack<uint64_t> final
     {
-        Desktop,
-        Documents,
-        Downloads,
-        Temporary,
-        ApplicationData,
-        LocalApplicationData,
+        constexpr uint64_t operator()(uint32_t v1, uint32_t v0) const noexcept
+        {
+            return static_cast<uint64_t>(v1) << 32u | static_cast<uint64_t>(v0);
+        }
+
+        constexpr uint64_t operator()(uint16_t v3, uint16_t v2, uint16_t v1, uint16_t v0) const noexcept
+        {
+            return static_cast<uint64_t>(v3) << 48u | static_cast<uint64_t>(v2) << 32u | static_cast<uint64_t>(v1) << 16u | static_cast<uint64_t>(v0);
+        }
     };
 
-    struct FileSystem
+    template <>
+    struct bit_pack<uint32_t> final
     {
-        static std::string GetSpecialFolder(SpecialFolder folder);
+        constexpr uint32_t operator()(uint16_t v1, uint16_t v0) const noexcept
+        {
+            return static_cast<uint32_t>(v1) << 16u | static_cast<uint32_t>(v0);
+        }
+
+        constexpr uint32_t operator()(uint8_t v3, uint8_t v2, uint8_t v1, uint8_t v0) const noexcept
+        {
+            return static_cast<uint32_t>(v3) << 24u | static_cast<uint32_t>(v2) << 16u | static_cast<uint32_t>(v1) << 8u | static_cast<uint32_t>(v0);
+        }
+    };
+
+    template <>
+    struct bit_pack<uint16_t> final
+    {
+        constexpr uint16_t operator()(uint8_t v1, uint8_t v0) const noexcept
+        {
+            return static_cast<uint16_t>(v1) << 8u | static_cast<uint16_t>(v0);
+        }
+    };
+
+    template <typename T>
+    inline constexpr auto BitPack = bit_pack<T>{};
+}
+
+#include "AnemoneRuntime/Uuid.hxx"
+
+namespace Anemone::inline FileSystemX
+{
+    struct Base64
+    {
+        static std::expected<size_t, ErrorCode> GetEncodedSize(size_t size);
+        static std::expected<size_t, ErrorCode> GetDecodedSize(std::string_view encoded);
+
+        static std::expected<void, ErrorCode> Encode(std::span<std::byte const> data, std::span<char> encoded);
+        static std::expected<void, ErrorCode> Decode(std::string_view encoded, std::span<std::byte> data);
     };
 }
 
 
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
-
-#include <thread>
-
-// OutputDebugStringW allocates memory; use OutputDebugStringA instead
-// ErrorReporting - silent vs verbose
-// Assert / Panic functions
-// Not everything is restartable / testable.
-// - memory manager may "leak" when tried to "restart" it in a process itself
-
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Threading/Event.hxx"
-
-#include <winmeta.h>
-#include <TraceLoggingProvider.h>
-#include <TraceLoggingActivity.h>
-
-TRACELOGGING_DEFINE_PROVIDER(
-    GTraceLoggingProvider,
-    "AnemoneEngine.Runtime",
-    (0xc0b8bb2a, 0x7e1e, 0x5a0b, 0x0a, 0xcd, 0x3e, 0xe6, 0x18, 0x78, 0x95, 0xed));
-#endif
 
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 
-#include <print>
+#include "AnemoneRuntime/Platform/Dialogs.hxx"
 
 #include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-class EH : public Anemone::IApplicationEvents
+class EH final : public Anemone::IApplicationEvents
 {
 public:
+    EH() = default;
     ~EH() override = default;
+
     void OnMouseEnter(Anemone::Window& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
@@ -99,21 +118,41 @@ public:
 
     void OnMouseButtonDown(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
-        fmt::println("mouse button down: {}", std::to_underlying(args.Key));
+        AE_TRACE(Error, "mouse button down: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
 
-        Anemone::StackTrace::Walk([](void* ptr, std::string_view name)
+        std::string ret;
+        if (Anemone::Dialogs::OpenFile(&window, ret, "Select file",
+                std::array{
+                    Anemone::FileDialogFilter{"Any", "*.*"},
+                }) == Anemone::DialogResult::Ok)
         {
-            fmt::println("  {} {}", ptr, name);
-        });
+            AE_TRACE(Error, "Selected file: '{}'", ret);
 
-        AE_ASSERT(false);
+            Anemone::CriticalSection cs{};
+
+            {
+                Anemone::UniqueLock _{cs};
+
+                if (auto f = Anemone::FileSystem::GetFileInfo(ret))
+                {
+                    AE_TRACE(Error, "---------------");
+                    AE_TRACE(Error, "File-Size:     '{}'", f->Size);
+                    AE_TRACE(Error, "File-Created:  '{}'", f->Created);
+                    AE_TRACE(Error, "File-Accessed: '{}'", f->Accessed);
+                    AE_TRACE(Error, "File-Modified: '{}'", f->Modified);
+                    AE_TRACE(Error, "File-ReadOnly: '{}'", f->ReadOnly);
+                    AE_TRACE(Error, "File-Type:     '{}'", std::to_underlying(f->Type));
+                    AE_TRACE(Error, "---------------");
+                }
+            }
+        }
     }
 
     void OnMouseButtonUp(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
-        fmt::println("mouse button up: {}", std::to_underlying(args.Key));
+        AE_TRACE(Error, "mouse button up: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
     }
@@ -122,14 +161,18 @@ public:
     {
         (void)window;
         (void)args;
+
+        *(volatile void**)0x42069 = nullptr;
     }
 
     void OnKeyDown(Anemone::Window& window, Anemone::KeyEventArgs& args) override
     {
+        AE_TRACE(Error, "Key down: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
 
         AE_ASSERT(false);
+
     }
 
     void OnKeyUp(Anemone::Window& window, Anemone::KeyEventArgs& args) override
@@ -221,7 +264,9 @@ public:
     {
     }
 };
-EH eh{};
+
+#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 
 anemone_noinline void test()
 {
@@ -232,9 +277,81 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
 #include "AnemoneRuntime/Platform/Process.hxx"
+#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
+
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
+#endif
+#if ANEMONE_PLATFORM_LINUX
+#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#endif
+
+struct V2 : Anemone::DirectoryVisitor
+{
+    void Visit(std::string_view path, Anemone::FileInfo const& info) override
+    {
+        AE_TRACE(Error, "Path: '{}'", path);
+        AE_TRACE(Error, "Size: '{}'", info.Size);
+        AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
+        AE_TRACE(Error, "Created: '{}'", info.Created);
+        AE_TRACE(Error, "Accessed: '{}'", info.Accessed);
+        AE_TRACE(Error, "Modified: '{}'", info.Modified);
+        AE_TRACE(Error, "ReadOnly: '{}'", info.ReadOnly);
+    }
+};
+
+#include "AnemoneRuntime/Platform/MemoryMappedFile.hxx"
+#include "AnemoneRuntime/Tasks/Parallel.hxx"
+
+//
+// Engine : IApplicationEvents
+// GameEngine : Engine
+// EditorEngine : Engine
+//
+
 
 int AnemoneMain(int argc, char** argv)
 {
+    {
+        Anemone::Parallel::For(1024+2, 6, [](size_t index, size_t count)
+        {
+            AE_TRACE(Error, "work: tid: {:x}, index: {}, count: {}", Anemone::CurrentThread::Id(), index, count);
+        }, [](size_t count)
+        {
+            AE_TRACE(Error, "finalize: tid: {:x}, count: {}", Anemone::CurrentThread::Id(), count);
+        });
+    }
+    {
+        struct Vi : Anemone::DirectoryVisitor
+        {
+            void Visit(std::string_view path, Anemone::FileInfo const& info) override
+            {
+                AE_TRACE(Error, "Path: '{}'", path);
+                AE_TRACE(Error, "Size: '{}'", info.Size);
+                AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
+                AE_TRACE(Error, "Created: '{}'", info.Created);
+                AE_TRACE(Error, "Accessed: '{}'", info.Accessed);
+                AE_TRACE(Error, "Modified: '{}'", info.Modified);
+                AE_TRACE(Error, "ReadOnly: '{}'", info.ReadOnly);
+            }
+        };
+
+        Vi vi{};
+        (void)Anemone::FileSystem::DirectoryEnumerate(".", vi);
+    }
+
+    if (auto fh = Anemone::FileHandle::Create("non-existing", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
+    {
+        AE_TRACE(Error, "Should fail");
+    }
+    else
+    {
+        AE_TRACE(Error, "Non-existing: {}", fh.error());
+    }
+
+    Anemone::CurrentThread::YieldAnyThreadOnAnyProcessor();
+
+    test();
     (void)argc;
     (void)argv;
 
@@ -242,11 +359,23 @@ int AnemoneMain(int argc, char** argv)
     {
         AE_TRACE(Error, "run: '{}'", *run);
 
-        for (size_t i = 0; i < 10000; ++i)
+        if (auto h = Anemone::Process::Start("TestRuntime.exe", {}, {}))
+        {
+            if (auto w = h->Wait())
+            {
+                AE_TRACE(Error, "Waited succesfully: {}", *w);
+            }
+            else
+            {
+                AE_TRACE(Error, "Failed to wait: {}", w.error());
+            }
+        }
+
+        for (size_t i = 0; i < 5; ++i)
         {
             std::string strout{};
             std::string strerr{};
-            if (auto rc = Anemone::Process::Execute(*run, {}, {}, strout, strerr))
+            if (auto rc = Anemone::Process::Execute("TestNumerics.exe", {}, {}, strout, strerr))
             {
                 AE_TRACE(Error, "stdout: '{}'", strout);
                 AE_TRACE(Error, "stderr: '{}'", strerr);
@@ -307,10 +436,6 @@ int AnemoneMain(int argc, char** argv)
     AE_TRACE(Error, "hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], hashCurrent[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(hashCurrent[0]));
     AE_TRACE(Error, "hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
 
-#if ANEMONE_PLATFORM_WINDOWS
-    AE_TRACE(Error, "online: {}", Anemone::WindowsEnvironment::IsOnline());
-#endif
-
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
     {
         AE_TRACE(Error, "Positional arguments:");
@@ -364,30 +489,13 @@ int AnemoneMain(int argc, char** argv)
     AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::ProcessorProperties::GetPhysicalCoresCount());
     AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::ProcessorProperties::GetLogicalCoresCount());
 
-#if ANEMONE_PLATFORM_WINDOWS
-    if (Anemone::WindowsEnvironment::IsConsoleApplication())
-    {
-        MessageBoxW(nullptr, L"Console", L"Console", MB_OK | MB_ICONINFORMATION);
-    }
-    else
-    {
-        MessageBoxW(nullptr, L"No Console", L"No Console", MB_OK | MB_ICONERROR);
-    }
-
-    if (Anemone::WindowsEnvironment::IsConsoleRedirecting())
-    {
-        MessageBoxW(nullptr, L"Redirecting", L"Redirecting", MB_OK | MB_ICONINFORMATION);
-    }
-    else
-    {
-        MessageBoxW(nullptr, L"No Redirecting", L"No Redirecting", MB_OK | MB_ICONERROR);
-    }
-#endif
-
     fmt::println("cpu-name:    '{}'", Anemone::ProcessorProperties::GetName());
     fmt::println("cpu-vendor:  '{}'", Anemone::ProcessorProperties::GetVendor());
     /*fmt::println("device-name: '{}'", Anemone::Environment::GetDeviceName());
     fmt::println("device-id:   '{}'", Anemone::Environment::GetDeviceUniqueId());*/
+
+    EH eh{};
+
 
     if (auto window = Anemone::Application::MakeWindow(Anemone::WindowType::Form))
     {

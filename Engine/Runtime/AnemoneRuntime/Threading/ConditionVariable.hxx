@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Threading/Lock.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Threading/Windows/WindowsThreading.hxx"
@@ -29,32 +30,33 @@ namespace Anemone
         ConditionVariable& operator=(ConditionVariable&&) = delete;
         ~ConditionVariable();
 
+    private:
+        void WaitImpl(CriticalSection& lock);
+        void WaitImpl(RecursiveCriticalSection& lock);
+        bool TryWaitImpl(CriticalSection& lock, Duration const& timeout);
+        bool TryWaitImpl(RecursiveCriticalSection& lock, Duration const& timeout); 
+
     public:
-        void Wait(CriticalSection& cs);
+        template <UniqueLockable Lock>
+        void Wait(UniqueLock<Lock>& lock)
+        {
+            this->WaitImpl(lock.GetLock());
+        }
 
-        void Wait(RecursiveCriticalSection& cs);
-
-        template <typename Predicate>
-        void Wait(CriticalSection& cs, Predicate&& predicate)
+        template <UniqueLockable Lock, typename Predicate>
+        void Wait(UniqueLock<Lock>& lock, Predicate&& predicate)
         {
             while (!std::forward<Predicate>(predicate)())
             {
-                this->Wait(cs);
+                this->WaitImpl(lock.GetLock());
             }
         }
 
-        template <typename Predicate>
-        void Wait(RecursiveCriticalSection& cs, Predicate&& predicate)
+        template <UniqueLockable Lock>
+        bool TryWait(UniqueLock<Lock>& lock, Duration const& timeout)
         {
-            while (!std::forward<Predicate>(predicate)())
-            {
-                this->Wait(cs);
-            }
+            return this->TryWaitImpl(lock.GetLock(), timeout);
         }
-
-        bool TryWait(CriticalSection& cs, Duration const& timeout);
-
-        bool TryWait(RecursiveCriticalSection& cs, Duration const& timeout);
 
         void NotifyOne();
 
