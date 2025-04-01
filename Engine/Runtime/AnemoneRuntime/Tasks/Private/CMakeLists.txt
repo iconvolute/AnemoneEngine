@@ -1,6 +1,7 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "Awaiter.cxx"
+        "Parallel.cxx"
         "Task.cxx"
         "TaskQueue.cxx"
         "TaskQueue.hxx"
