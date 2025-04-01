@@ -1,5 +1,7 @@
 #include "AnemoneRuntime/Tasks/Parallel.hxx"
 
+#include <algorithm>
+
 namespace Anemone
 {
     void Parallel::For(
