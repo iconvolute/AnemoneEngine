@@ -1,14 +1,17 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <string_view>
 #include <fmt/format.h>
 
-namespace Anemone
+namespace Anemone::Private
 {
-    struct WindowsDebugger final
+    struct WindowsDebuggerStatics final
     {
+        WindowsDebuggerStatics();
+        ~WindowsDebuggerStatics();
+
         static void HandleCrash(PEXCEPTION_POINTERS pExceptionPointers);
 
         static void PrintRaw(const char* message);
@@ -21,4 +24,6 @@ namespace Anemone
             PrintFormatted(format, fmt::make_format_args(args...));
         }
     };
+
+    extern UninitializedObject<WindowsDebuggerStatics> GDebuggerStatics;
 }

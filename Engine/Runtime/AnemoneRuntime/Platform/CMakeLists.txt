@@ -8,7 +8,6 @@ target_sources(AnemoneRuntime
         "Application.cxx"
         "Application.hxx"
         "Clipboard.hxx"
-        "Debugger.hxx"
         "EntryPoint.hxx"
         "Environment.hxx"
         "FileHandle.hxx"

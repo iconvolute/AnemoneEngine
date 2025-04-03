@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Platform/Dialogs.hxx"
@@ -18,7 +18,7 @@ namespace Anemone
     {
         CommandLine::Initialize(argc, argv);
         Trace::Initialize();
-        Debugger::Initialize();
+        Private::GDebuggerStatics.Create();
         StackTrace::Initialize();
         Environment::Initialize();
         ProcessorProperties::Initialize();
@@ -47,7 +47,7 @@ namespace Anemone
         ProcessorProperties::Finalize();
         Environment::Finalize();
         StackTrace::Finalize();
-        Debugger::Finalize();
+        Private::GDebuggerStatics.Destroy();
         Trace::Finalize();
         CommandLine::Finalize();
     }

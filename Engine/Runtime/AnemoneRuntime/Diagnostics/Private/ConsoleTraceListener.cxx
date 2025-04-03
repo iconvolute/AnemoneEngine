@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Diagnostics/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
 
 namespace Anemone
 {

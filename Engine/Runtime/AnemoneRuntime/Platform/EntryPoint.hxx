@@ -19,9 +19,11 @@ extern "C"
 
 #include "AnemoneRuntime/Runtime.hxx"
 
-inline int AnemoneMain(int argc, char** argv);
+int AnemoneMain(int argc, char** argv);
 
 #if ANEMONE_PLATFORM_WINDOWS && defined(ANEMONE_APPLICATION_UI)
+
+#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 
 // ReSharper disable once CppNonInlineFunctionDefinitionInHeaderFile
 int WINAPI WinMain(

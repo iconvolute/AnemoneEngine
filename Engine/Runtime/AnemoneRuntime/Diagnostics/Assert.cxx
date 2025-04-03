@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <iterator>

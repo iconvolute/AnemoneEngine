@@ -1,9 +1,10 @@
 #include "AnemoneRuntime/Platform/Environment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <locale>
@@ -76,6 +77,7 @@ namespace Anemone
             }
         }
 
+        // TODO: Move this callbacks setup to WindowsDebugger?
         static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
         {
             if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
@@ -83,7 +85,7 @@ namespace Anemone
                 return EXCEPTION_CONTINUE_EXECUTION;
             }
 
-            WindowsDebugger::HandleCrash(lpExceptionPointers);
+            Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
             return EXCEPTION_CONTINUE_SEARCH;
         }
 
@@ -91,7 +93,7 @@ namespace Anemone
         {
             if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
             {
-                WindowsDebugger::HandleCrash(lpExceptionPointers);
+                Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
             }
 
             return EXCEPTION_EXECUTE_HANDLER;

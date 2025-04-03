@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <dwmapi.h>

@@ -1,14 +1,12 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
-
 #include <string_view>
 
 namespace Anemone
 {
     struct Debugger final
     {
-        static void Initialize();
-        static void Finalize();
+        Debugger() = delete;
 
         RUNTIME_API static void Break();
         RUNTIME_API static void Crash();

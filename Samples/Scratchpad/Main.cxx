@@ -79,7 +79,7 @@ namespace Anemone::inline FileSystemX
 
 
 #include "AnemoneRuntime/Platform/Application.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 
 #include "AnemoneRuntime/Platform/Dialogs.hxx"
