@@ -2,6 +2,14 @@
 
 namespace Anemone
 {
+    void Dialogs::Initialize()
+    {
+    }
+
+    void Dialogs::Finalize()
+    {
+    }
+
     DialogResult Dialogs::ShowMessageDialog(
         Window const* window,
         std::string_view message,
@@ -29,10 +37,7 @@ namespace Anemone
         (void)image;
         return DialogResult::Cancel;
     }
-}
 
-namespace Anemone
-{
     DialogResult Dialogs::OpenFile(
         Window const* window,
         std::string& result,

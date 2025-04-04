@@ -71,6 +71,7 @@ namespace Anemone::Diagnostics
     do \
     { \
         if (!(expression)) \
+            [[unlikely]] \
         { \
             if (::Anemone::Diagnostics::ReportAssertion(std::source_location::current(), #expression __VA_OPT__(, ) __VA_ARGS__)) \
             { \
@@ -98,6 +99,7 @@ namespace Anemone::Diagnostics
     do \
     { \
         if (!(expression)) \
+            [[unlikely]] \
         { \
         } \
     } while (false)
@@ -107,6 +109,7 @@ namespace Anemone::Diagnostics
     do \
     { \
         if (!(expression)) \
+            [[unlikely]] \
         { \
             anemone_debugbreak(); \
         } \

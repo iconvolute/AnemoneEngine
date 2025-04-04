@@ -1,34 +1,23 @@
 #pragma once
+#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Reference.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/Reference.hxx"
 
-namespace Anemone::Tasks
+#include <atomic>
+
+
+namespace Anemone
 {
     class Awaiter;
     class Task;
-    class TaskScheduler;
-    class TaskWorker;
 }
 
-namespace Anemone::Tasks
+namespace Anemone
 {
     class RUNTIME_API Awaiter final
     {
         friend class Reference<Awaiter>;
-
-    public:
-        static std::atomic<size_t> s_TotalAllocations;
-
-        void* operator new(std::size_t size, std::align_val_t al);
-        void* operator new(std::size_t size);
-        void operator delete(void* ptr, std::align_val_t al) noexcept;
-        void operator delete(void* ptr) noexcept;
-
-        void* operator new[](std::size_t size, std::align_val_t al) = delete;
-        void* operator new[](std::size_t size) = delete;
-        void operator delete[](void* ptr, std::align_val_t al) noexcept = delete;
-        void operator delete[](void* ptr) noexcept = delete;
 
     private:
         std::atomic<uint32_t> m_Value{};
@@ -58,7 +47,7 @@ namespace Anemone::Tasks
         {
             AE_ASSERT(list.IsEmpty());
 
-            UniqueLock _{this->m_Lock};
+            UniqueLock scope{this->m_Lock};
 
             if (this->IsCompleted())
             {
@@ -89,7 +78,7 @@ namespace Anemone::Tasks
     using AwaiterHandle = Reference<Awaiter>;
 }
 
-namespace Anemone::Tasks
+namespace Anemone
 {
     class [[nodiscard]] AwaiterCompletionDeferral final
     {

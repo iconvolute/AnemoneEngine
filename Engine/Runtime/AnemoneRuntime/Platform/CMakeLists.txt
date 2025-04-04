@@ -5,9 +5,9 @@ add_subdirectory("Windows")
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "Application.cxx"
         "Application.hxx"
         "Clipboard.hxx"
-        "Debugger.hxx"
         "EntryPoint.hxx"
         "Environment.hxx"
         "FileHandle.hxx"
@@ -15,9 +15,8 @@ target_sources(AnemoneRuntime
         "FilePath.hxx"
         "FileSystem.hxx"
         "NamedMutex.hxx"
-        "Platform.hxx"
-        "PlatformTraceListeners.hxx"
         "Process.hxx"
+        "ProcessorProperties.hxx"
         "StackTrace.hxx"
         "SystemAllocator.hxx"
         "Types.hxx"

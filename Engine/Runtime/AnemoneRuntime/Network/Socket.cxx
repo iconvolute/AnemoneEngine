@@ -2,6 +2,12 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
+#endif
+
+#include "AnemoneRuntime/Platform/Base/BaseError.hxx"
+
 #include <optional>
 #include <utility>
 
@@ -14,11 +20,12 @@ namespace Anemone::Network::Detail
     static ErrorCode GetLastSocketError()
     {
 #if ANEMONE_PLATFORM_WINDOWS
-        return Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError());
+        return Internal::TranslateErrorCodeWin32(WSAGetLastError());
 #else
-        return Anemone::System::Private::ErrorCodeFromErrno(errno);
+        return Internal::TranslateErrorCodeErrno(errno);
 #endif
     }
+
     static std::optional<int> ConvertSocketType(SocketType value)
     {
         switch (value)
@@ -145,12 +152,12 @@ namespace Anemone::Network
 #if ANEMONE_PLATFORM_WINDOWS
         if (handle == INVALID_SOCKET)
         {
-            return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+            return std::unexpected(Internal::TranslateErrorCodeWin32(WSAGetLastError()));
         }
 #else
         if (handle < 0)
         {
-            return std::unexpected(Anemone::System::Private::ErrorCodeFromErrno(errno));
+            return std::unexpected(Internal::TranslateErrorCodeErrno(errno));
         }
 #endif
 
@@ -164,12 +171,12 @@ namespace Anemone::Network
 #if ANEMONE_PLATFORM_WINDOWS
             if (not closesocket(this->m_native.Inner))
             {
-                return std::unexpected(Anemone::System::Private::ErrorCodeFromWin32Error(WSAGetLastError()));
+                return std::unexpected(Internal::TranslateErrorCodeWin32(WSAGetLastError()));
             }
 #else
             if (not close(this->m_native.Inner))
             {
-                return std::unexpected(Anemone::System::Private::ErrorCodeFromErrno(errno));
+                return std::unexpected(Internal::TranslateErrorCodeErrno(errno));
             }
 #endif
 

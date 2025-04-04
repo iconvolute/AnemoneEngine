@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_WINDOWS
 
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Threading/Windows/WindowsThread.hxx"
+#include "AnemoneRuntime/Threading/Windows/WindowsThreading.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
 #include <timeapi.h>
@@ -16,9 +16,11 @@ namespace Anemone
 {
     void CurrentThread::YieldAnyThreadOnAnyProcessor()
     {
-        timeBeginPeriod(1);
-        SleepEx(1, FALSE);
-        timeEndPeriod(1);
+        if (timeBeginPeriod(1) == TIMERR_NOERROR)
+        {
+            SleepEx(1, FALSE);
+            (void)timeEndPeriod(1);
+        }
     }
 
     void CurrentThread::YieldAnyThreadOnSameProcessor()

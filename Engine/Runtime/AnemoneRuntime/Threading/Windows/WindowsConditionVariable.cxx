@@ -14,12 +14,22 @@ namespace Anemone
 
     ConditionVariable::~ConditionVariable() = default;
 
-    void ConditionVariable::Wait(CriticalSection& cs)
+    void ConditionVariable::WaitImpl(CriticalSection& cs)
+    {
+        SleepConditionVariableSRW(&this->_inner, &cs._inner, INFINITE, 0);
+    }
+
+    void ConditionVariable::WaitImpl(RecursiveCriticalSection& cs)
     {
         SleepConditionVariableCS(&this->_inner, &cs._inner, INFINITE);
     }
 
-    bool ConditionVariable::TryWait(CriticalSection& cs, Duration const& timeout)
+    bool ConditionVariable::TryWaitImpl(CriticalSection& cs, Duration const& timeout)
+    {
+        return SleepConditionVariableSRW(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout), 0);
+    }
+
+    bool ConditionVariable::TryWaitImpl(RecursiveCriticalSection& cs, Duration const& timeout)
     {
         return SleepConditionVariableCS(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout));
     }

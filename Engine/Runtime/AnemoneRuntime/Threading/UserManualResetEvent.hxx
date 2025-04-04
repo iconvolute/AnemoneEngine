@@ -4,9 +4,9 @@
 #if ANEMONE_FEATURE_FUTEX
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Threading/Windows/WindowsFutex.hxx"
+#include "AnemoneRuntime/Threading/Windows/WindowsThreading.hxx"
 #elif ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Threading/Unix/UnixFutex.hxx"
+#include "AnemoneRuntime/Threading/Unix/UnixThreading.hxx"
 #else
 #error Not implemented
 #endif

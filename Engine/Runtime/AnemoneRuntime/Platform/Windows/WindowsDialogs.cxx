@@ -8,90 +8,234 @@
 
 namespace Anemone
 {
-    constexpr UINT CombineMessageDialogFlags(
-        MessageDialogType type,
-        MessageDialogImage image) noexcept
+    struct WindowsDialogsStatics final
     {
-        UINT result{};
-
-        switch (type)
+        static constexpr UINT CombineMessageDialogFlags(
+            MessageDialogType type,
+            MessageDialogImage image) noexcept
         {
-        case MessageDialogType::Ok:
-            result |= MB_OK;
-            break;
+            UINT result{};
 
-        case MessageDialogType::OkCancel:
-            result |= MB_OKCANCEL;
-            break;
+            switch (type)
+            {
+            case MessageDialogType::Ok:
+                result |= MB_OK;
+                break;
 
-        case MessageDialogType::YesNo:
-            result |= MB_YESNO;
-            break;
+            case MessageDialogType::OkCancel:
+                result |= MB_OKCANCEL;
+                break;
 
-        case MessageDialogType::YesNoCancel:
-            result |= MB_YESNOCANCEL;
-            break;
+            case MessageDialogType::YesNo:
+                result |= MB_YESNO;
+                break;
 
-        case MessageDialogType::AbortRetryIgnore:
-            result |= MB_CANCELTRYCONTINUE;
-            break;
+            case MessageDialogType::YesNoCancel:
+                result |= MB_YESNOCANCEL;
+                break;
 
-        case MessageDialogType::RetryCancel:
-            result |= MB_RETRYCANCEL;
-            break;
+            case MessageDialogType::AbortRetryIgnore:
+                result |= MB_CANCELTRYCONTINUE;
+                break;
+
+            case MessageDialogType::RetryCancel:
+                result |= MB_RETRYCANCEL;
+                break;
+            }
+
+            switch (image)
+            {
+            case MessageDialogImage::None:
+                break;
+
+            case MessageDialogImage::Error:
+                result |= MB_ICONERROR;
+                break;
+
+            case MessageDialogImage::Warning:
+                result |= MB_ICONWARNING;
+                break;
+
+            case MessageDialogImage::Information:
+                result |= MB_ICONINFORMATION;
+                break;
+
+            case MessageDialogImage::Question:
+                result |= MB_ICONQUESTION;
+                break;
+            }
+
+            return result;
         }
 
-        switch (image)
+        static constexpr DialogResult ConvertDialogResult(int value) noexcept
         {
-        case MessageDialogImage::None:
-            break;
+            switch (value)
+            {
+            case IDOK:
+                return DialogResult::Ok;
 
-        case MessageDialogImage::Error:
-            result |= MB_ICONERROR;
-            break;
+            case IDYES:
+                return DialogResult::Yes;
 
-        case MessageDialogImage::Warning:
-            result |= MB_ICONWARNING;
-            break;
+            case IDNO:
+                return DialogResult::No;
 
-        case MessageDialogImage::Information:
-            result |= MB_ICONINFORMATION;
-            break;
+            default:
+            case IDCANCEL:
+                return DialogResult::Cancel;
 
-        case MessageDialogImage::Question:
-            result |= MB_ICONQUESTION;
-            break;
+            case IDTRYAGAIN:
+                return DialogResult::Retry;
+
+            case IDCONTINUE:
+                return DialogResult::Ignore;
+
+            case IDABORT:
+                return DialogResult::Abort;
+            }
         }
 
-        return result;
+        static HRESULT SetDialogFilters(
+            IFileDialog& self,
+            std::span<FileDialogFilter const> filters)
+        {
+            std::vector<std::pair<std::wstring, std::wstring>> wfilters{};
+            wfilters.reserve(filters.size());
+
+            for (auto const& filter : filters)
+            {
+                auto& wfilter = wfilters.emplace_back();
+
+                Interop::win32_WidenString(wfilter.first, filter.Display);
+                Interop::win32_WidenString(wfilter.second, filter.Filter);
+            }
+
+            std::vector<COMDLG_FILTERSPEC> dialogFilters{};
+            dialogFilters.reserve(wfilters.size());
+
+            for (auto const& filter : wfilters)
+            {
+                dialogFilters.push_back({
+                    filter.first.c_str(),
+                    filter.second.c_str(),
+                });
+            }
+
+            // It's safe to pass temporary data here because the dialog will make a copy
+            return self.SetFileTypes(
+                static_cast<UINT>(dialogFilters.size()),
+                dialogFilters.data());
+        }
+
+        static bool GetResult(IFileDialog& self, std::string& result)
+        {
+            Microsoft::WRL::ComPtr<IShellItem> item{};
+
+            HRESULT hr = self.GetResult(item.GetAddressOf());
+
+            wchar_t* wpath{};
+
+            if (SUCCEEDED(hr))
+            {
+                hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wpath);
+
+                if (SUCCEEDED(hr))
+                {
+                    Interop::win32_NarrowString(result, wpath);
+                    CoTaskMemFree(wpath);
+
+                    return true;
+                }
+            }
+            else
+            {
+                result.clear();
+            }
+
+            return false;
+        }
+
+        static bool GetResults(
+            IFileOpenDialog& self,
+            std::vector<std::string>& results)
+        {
+            Microsoft::WRL::ComPtr<IShellItemArray> items{};
+            HRESULT hr = self.GetResults(items.GetAddressOf());
+
+            DWORD dwCount{};
+
+            if (SUCCEEDED(hr))
+            {
+                hr = items->GetCount(&dwCount);
+            }
+
+            for (DWORD i = 0; i < dwCount; ++i)
+            {
+                Microsoft::WRL::ComPtr<IShellItem> item{};
+                wchar_t* wPath{};
+
+                hr = items->GetItemAt(i, item.GetAddressOf());
+
+                if (SUCCEEDED(hr))
+                {
+                    hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wPath);
+
+                    if (SUCCEEDED(hr))
+                    {
+                        Interop::win32_NarrowString(results.emplace_back(), wPath);
+                        CoTaskMemFree(wPath);
+                    }
+                    else
+                    {
+                        break;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+
+            if (FAILED(hr))
+            {
+                results.clear();
+                return false;
+            }
+
+            return true;
+        }
+
+        static DialogResult DialogResultFromHRESULT(HRESULT hr)
+        {
+            switch (hr)
+            {
+            case HRESULT_FROM_WIN32(ERROR_CANCELLED):
+                {
+                    return DialogResult::Cancel;
+                }
+            case S_OK:
+                {
+                    return DialogResult::Ok;
+                }
+            default:
+                {
+                    break;
+                }
+            }
+            return DialogResult::Cancel;
+        }
+    };
+}
+
+namespace Anemone
+{
+    void Dialogs::Initialize()
+    {
     }
 
-    constexpr DialogResult ConvertDialogResult(int value) noexcept
+    void Dialogs::Finalize()
     {
-        switch (value)
-        {
-        case IDOK:
-            return DialogResult::Ok;
-
-        case IDYES:
-            return DialogResult::Yes;
-
-        case IDNO:
-            return DialogResult::No;
-
-        default:
-        case IDCANCEL:
-            return DialogResult::Cancel;
-
-        case IDTRYAGAIN:
-            return DialogResult::Retry;
-
-        case IDCONTINUE:
-            return DialogResult::Ignore;
-
-        case IDABORT:
-            return DialogResult::Abort;
-        }
     }
 
     DialogResult Dialogs::ShowMessageDialog(
@@ -127,143 +271,10 @@ namespace Anemone
             (native != nullptr) ? native->GetNativeHandle() : nullptr,
             wmessage.data(),
             wtitle.data(),
-            CombineMessageDialogFlags(type, image),
+            WindowsDialogsStatics::CombineMessageDialogFlags(type, image),
             MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 
-        return ConvertDialogResult(result);
-    }
-}
-
-namespace Anemone
-{
-    static HRESULT SetDialogFilters(
-        IFileDialog& self,
-        std::span<FileDialogFilter const> filters)
-    {
-        std::vector<std::pair<std::wstring, std::wstring>> wfilters{};
-        wfilters.reserve(filters.size());
-
-        for (auto const& filter : filters)
-        {
-            auto& wfilter = wfilters.emplace_back();
-
-            Interop::win32_WidenString(wfilter.first, filter.Display);
-            Interop::win32_WidenString(wfilter.second, filter.Filter);
-        }
-
-        std::vector<COMDLG_FILTERSPEC> dialogFilters{};
-        dialogFilters.reserve(wfilters.size());
-
-        for (auto const& filter : wfilters)
-        {
-            dialogFilters.push_back({
-                filter.first.c_str(),
-                filter.second.c_str(),
-            });
-        }
-
-        // It's safe to pass temporary data here because the dialog will make a copy
-        return self.SetFileTypes(
-            static_cast<UINT>(dialogFilters.size()),
-            dialogFilters.data());
-    }
-
-    static bool GetResult(IFileDialog& self, std::string& result)
-    {
-        Microsoft::WRL::ComPtr<IShellItem> item{};
-
-        HRESULT hr = self.GetResult(item.GetAddressOf());
-
-        wchar_t* wpath{};
-
-        if (SUCCEEDED(hr))
-        {
-            hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wpath);
-
-            if (SUCCEEDED(hr))
-            {
-                Interop::win32_NarrowString(result, wpath);
-                CoTaskMemFree(wpath);
-
-                return true;
-            }
-        }
-        else
-        {
-            result.clear();
-        }
-
-        return false;
-    }
-
-    static bool GetResults(
-        IFileOpenDialog& self,
-        std::vector<std::string>& results)
-    {
-        Microsoft::WRL::ComPtr<IShellItemArray> items{};
-        HRESULT hr = self.GetResults(items.GetAddressOf());
-
-        DWORD dwCount{};
-
-        if (SUCCEEDED(hr))
-        {
-            hr = items->GetCount(&dwCount);
-        }
-
-        for (DWORD i = 0; i < dwCount; ++i)
-        {
-            Microsoft::WRL::ComPtr<IShellItem> item{};
-            wchar_t* wPath{};
-
-            hr = items->GetItemAt(i, item.GetAddressOf());
-
-            if (SUCCEEDED(hr))
-            {
-                hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wPath);
-
-                if (SUCCEEDED(hr))
-                {
-                    Interop::win32_NarrowString(results.emplace_back(), wPath);
-                    CoTaskMemFree(wPath);
-                }
-                else
-                {
-                    break;
-                }
-            }
-            else
-            {
-                break;
-            }
-        }
-
-        if (FAILED(hr))
-        {
-            results.clear();
-            return false;
-        }
-
-        return true;
-    }
-
-    static DialogResult DialogResultFromHRESULT(HRESULT hr)
-    {
-        switch (hr)
-        {
-        case HRESULT_FROM_WIN32(ERROR_CANCELLED):
-            {
-                return DialogResult::Cancel;
-            }
-        case S_OK:
-            {
-                return DialogResult::Ok;
-            }
-        default:
-            {
-                break;
-            }
-        }
-        return DialogResult::Cancel;
+        return WindowsDialogsStatics::ConvertDialogResult(result);
     }
 
     DialogResult Dialogs::OpenFile(
@@ -282,7 +293,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = SetDialogFilters(*dialog.Get(), filters);
+            hr = WindowsDialogsStatics::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -300,9 +311,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (GetResult(*dialog.Get(), result))
+            if (WindowsDialogsStatics::GetResult(*dialog.Get(), result))
             {
-                return DialogResultFromHRESULT(hr);
+                return WindowsDialogsStatics::DialogResultFromHRESULT(hr);
             }
         }
 
@@ -325,7 +336,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = SetDialogFilters(*dialog.Get(), filters);
+            hr = WindowsDialogsStatics::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -354,9 +365,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (GetResults(*dialog.Get(), result))
+            if (WindowsDialogsStatics::GetResults(*dialog.Get(), result))
             {
-                return DialogResultFromHRESULT(hr);
+                return WindowsDialogsStatics::DialogResultFromHRESULT(hr);
             }
         }
 
@@ -379,7 +390,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = SetDialogFilters(*dialog.Get(), filters);
+            hr = WindowsDialogsStatics::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -397,9 +408,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (GetResult(*dialog.Get(), result))
+            if (WindowsDialogsStatics::GetResult(*dialog.Get(), result))
             {
-                return DialogResultFromHRESULT(hr);
+                return WindowsDialogsStatics::DialogResultFromHRESULT(hr);
             }
         }
 

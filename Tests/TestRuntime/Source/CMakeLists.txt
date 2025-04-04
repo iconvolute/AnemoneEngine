@@ -5,6 +5,7 @@ target_sources(TestRuntime
         "Flags.cxx"
         "Float16.cxx"
         "FNV.cxx"
+        "HandleTable.cxx"
         "IpAddress.cxx"
         "IpEndPoint.cxx"
         "Main.cxx"

@@ -19,7 +19,12 @@ namespace Anemone::Internal
             destination.Type = FileType::Directory;
             destination.Size = 0;
         }
-        else
+        else if (source.dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+        {
+            destination.Type = FileType::SymbolicLink;
+            destination.Size = 0;
+        }
+        else 
         {
             destination.Type = FileType::File;
             destination.Size = static_cast<int64_t>((static_cast<DWORD64>(source.nFileSizeHigh) << 32) | source.nFileSizeLow);
@@ -31,6 +36,16 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
+    void FileSystem::Initialize()
+    {
+        
+    }
+
+    void FileSystem::Finalize()
+    {
+        
+    }
+
     auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, ErrorCode>
     {
         //
@@ -642,22 +657,7 @@ namespace Anemone
                 }
 
                 FileInfo info;
-                info.Created = Interop::win32_into_DateTime(wfd.ftCreationTime);
-                info.Accessed = Interop::win32_into_DateTime(wfd.ftLastAccessTime);
-                info.Modified = Interop::win32_into_DateTime(wfd.ftLastWriteTime);
-
-                if (wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                {
-                    info.Type = FileType::Directory;
-                    info.Size = 0;
-                }
-                else
-                {
-                    info.Type = FileType::File;
-                    info.Size = (static_cast<int64_t>(wfd.nFileSizeHigh) << 32) | wfd.nFileSizeLow;
-                }
-
-                info.ReadOnly = (wfd.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+                Internal::FileInfoFromSystem(wfd, info);
 
                 std::string fullPath{path};
 
@@ -702,5 +702,50 @@ namespace Anemone
 
         RecursiveVisitor recursiveVisitor{visitor};
         return FileSystem::DirectoryEnumerate(path, recursiveVisitor);
+    }
+
+    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, ErrorCode>
+    {
+        std::wstring root;
+        if (not Interop::win32_WidenString(root, path))
+        {
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        Interop::win32_PathAddDirectorySeparator(root);
+        root.push_back(L'*');
+
+        WIN32_FIND_DATAW wfd;
+
+        if (Interop::Win32SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)})
+        {
+            do
+            {
+                if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+                {
+                    if (wcscmp(wfd.cFileName, L".") == 0 or wcscmp(wfd.cFileName, L"..") == 0)
+                    {
+                        continue;
+                    }
+                }
+
+                FileInfo info;
+                Internal::FileInfoFromSystem(wfd, info);
+
+                std::string fullPath{path};
+
+                Interop::string_buffer<char, 128> sFileName{};
+                Interop::win32_NarrowString(sFileName, wfd.cFileName);
+
+                FilePath::PushFragment(fullPath, sFileName.as_view());
+                FilePath::NormalizeDirectorySeparators(fullPath);
+
+                fn(fullPath, info);
+            } while (FindNextFileW(hFind.Get(), &wfd));
+
+            return {};
+        }
+
+        return std::unexpected(ErrorCode::PathNotFound);
     }
 }

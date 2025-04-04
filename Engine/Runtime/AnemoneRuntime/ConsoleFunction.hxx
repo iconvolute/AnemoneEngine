@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/FunctionRef.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 namespace Anemone
 {
@@ -11,6 +12,7 @@ namespace Anemone
     {
     private:
         IntrusiveList<IConsoleFunction, ConsoleFunctionRegistry> m_functions{};
+        mutable CriticalSection m_lock{};
 
     public:
         ConsoleFunctionRegistry() = default;

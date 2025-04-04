@@ -4,13 +4,9 @@
 #include "AnemoneRuntime/Reference.hxx"
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
 
-namespace Anemone::Tasks
+namespace Anemone
 {
-    class Task;
-    class TaskScheduler;
-    class TaskWorker;
-    class TaskDispatcher;
-    class TaskContext;
+    struct TaskScheduler;
 
     enum class TaskStatus : uint8_t
     {
@@ -52,25 +48,14 @@ namespace Anemone::Tasks
         LongRunning = 1u << 0u,
         Dispose = 1u << 1u,
     };
+
     using TaskOptions = Flags<TaskOption>;
 
     class RUNTIME_API Task : private IntrusiveListNode<Task, Task>
     {
         friend struct IntrusiveList<Task, Task>;
         friend class Reference<Task>;
-
-    public:
-        static std::atomic<size_t> s_TotalAllocations;
-
-        void* operator new(std::size_t size, std::align_val_t al);
-        void* operator new(std::size_t size);
-        void operator delete(void* ptr, std::align_val_t al) noexcept;
-        void operator delete(void* ptr) noexcept;
-
-        void* operator new[](std::size_t size, std::align_val_t al) = delete;
-        void* operator new[](std::size_t size) = delete;
-        void operator delete[](void* ptr, std::align_val_t al) noexcept = delete;
-        void operator delete[](void* ptr) noexcept = delete;
+        friend struct TaskScheduler;
 
     private:
         AwaiterHandle m_Awaiter{};
@@ -92,15 +77,12 @@ namespace Anemone::Tasks
     protected:
         virtual void OnExecute() { }
 
-    public: // TaskOperations?
+    public:
+        // TaskOperations?
         void Execute();
-
         void Abandon();
-
         void Dispatched(uint32_t id, AwaiterHandle const& awaiter, AwaiterHandle const& dependencyAwaiter);
-
         void DispatchedToPending();
-
         void PendingToDispatched();
 
     public:
@@ -139,6 +121,7 @@ namespace Anemone::Tasks
             return this->m_Id;
         }
 
+    public:
         uint32_t AcquireReference();
 
         uint32_t ReleaseReference();

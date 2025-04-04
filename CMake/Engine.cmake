@@ -45,9 +45,9 @@ function(_anemone_target_add_options target_name)
     # ASan support
     if (ANEMONE_BUILD_ASAN)
         if (MSVC)
-            target_compile_options(${target_name} PRIVATE -fsanitize=address)
+            target_compile_options(${target_name} PUBLIC -fsanitize=address)
         else()
-            target_compile_options(${target_name} PRIVATE -fsanitize=address)
+            target_compile_options(${target_name} PUBLIC -fsanitize=address)
         endif()
     endif()
 
@@ -56,7 +56,7 @@ function(_anemone_target_add_options target_name)
         if (MSVC)
             message(FATAL_ERROR "UBSan is not yet available on MSVC")
         else()
-            target_compile_options(${target_name} PRIVATE -fsanitize=undefined)
+            target_compile_options(${target_name} PUBLIC -fsanitize=undefined)
         endif()
     endif()
 
@@ -65,14 +65,14 @@ function(_anemone_target_add_options target_name)
         if (MSVC)
             message(FATAL_ERROR "TSan is not yet available on MSVC")
         else()
-            target_compile_options(${target_name} PRIVATE -fsanitize=thread)
+            target_compile_options(${target_name} PUBLIC -fsanitize=thread)
         endif()
     endif()
 
     # Code analyzer
     if (ANEMONE_BUILD_CODE_ANALYZE)
         if (MSVC)
-            target_compile_options(${target_name} PRIVATE /analyze)
+            target_compile_options(${target_name} PUBLIC /analyze)
         endif()
     endif()
 
@@ -131,6 +131,7 @@ function(_anemone_target_add_options target_name)
             PRIVATE
                 #-g
                 -ggdb
+                -fvisibility=hidden
                 #-ffast-math                                 # Enable fast math optimizations
         )
     endif()
@@ -285,7 +286,6 @@ function(_anemone_target_install target_name)
         install(FILES $<TARGET_PDB_FILE:${target_name}> DESTINATION bin OPTIONAL)
     endif()
 endfunction()
-
 
 function(anemone_add_module target_name)
 

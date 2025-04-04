@@ -69,11 +69,36 @@ namespace Anemone::Interop
         ClipCursor(nullptr);
     }
 
-    anemone_forceinline bool win32_IsForeground()
+    anemone_forceinline bool win32_IsProcessForeground()
     {
         DWORD dwProcessId{};
         GetWindowThreadProcessId(GetForegroundWindow(), &dwProcessId);
         return dwProcessId == GetCurrentProcessId();
+    }
+
+    inline bool win32_IsProcessEmulated()
+    {
+        USHORT processMachine = IMAGE_FILE_MACHINE_UNKNOWN;
+        USHORT nativeMachine = IMAGE_FILE_MACHINE_UNKNOWN;
+
+        if (IsWow64Process2(GetCurrentProcess(), &processMachine, &nativeMachine))
+        {
+#if ANEMONE_ARCHITECTURE_X64
+            if (nativeMachine != IMAGE_FILE_MACHINE_AMD64)
+            {
+                return true;
+            }
+#endif
+
+#if ANEMONE_ARCHITECTURE_ARM64
+            if (nativeMachine != IMAGE_FILE_MACHINE_ARM64)
+            {
+                return true;
+            }
+#endif
+        }
+
+        return false;
     }
 
     [[nodiscard]] anemone_forceinline bool win32_IsSystemVersion(
@@ -1293,6 +1318,12 @@ namespace Anemone::Interop
     {
         DWORD dwMode = 0;
         return GetConsoleMode(h, &dwMode) != FALSE;
+    }
+
+    anemone_forceinline bool win32_IsConsoleRedirecting(HANDLE handle)
+    {
+        DWORD dwType = GetFileType(handle);
+        return (dwType == FILE_TYPE_CHAR) or (dwType == FILE_TYPE_PIPE);
     }
 
     // HARD REQUIREMENT: Buffer must be zero terminated!

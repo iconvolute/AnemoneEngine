@@ -5,7 +5,14 @@
 
 #if ANEMONE_BUILD_PROFILING
 
-namespace Anemone::Profiler
+// Profiler system design:
+//  - development tool for performance analysis
+//    - not for production
+//    - compiled out from final build
+//    - may be initialized lazily (singleton)
+//    - used to initialize profiling handle sections at runtime
+
+namespace Anemone
 {
     enum class ProfilerLevel
     {
@@ -17,33 +24,42 @@ namespace Anemone::Profiler
 
     class ProfilerMarker;
 
-    class ProfilerMarkerRegistry final
+    class IProfilerBackend
     {
+    public:
+        virtual ~IProfilerBackend() = default;
+
+        virtual void BeginFrame() = 0;
+        virtual void EndFrame() = 0;
+
+        virtual void BeginMarker(ProfilerMarker& marker) = 0;
+        virtual void EndMarker(ProfilerMarker& marker) = 0;
+
+        virtual void EventMarker(ProfilerMarker& marker) = 0;
+    };
+
+    struct Profiler final
+    {
+        friend struct Runtime;
+
     private:
-        IntrusiveList<ProfilerMarker, ProfilerMarkerRegistry> m_markers{};
+        static void Initialize();
+        static void Finalize();
 
     public:
-        ProfilerMarkerRegistry() = default;
-        ProfilerMarkerRegistry(ProfilerMarkerRegistry const&) = delete;
-        ProfilerMarkerRegistry(ProfilerMarkerRegistry&&) = delete;
-        ProfilerMarkerRegistry& operator=(ProfilerMarkerRegistry const&) = delete;
-        ProfilerMarkerRegistry& operator=(ProfilerMarkerRegistry&&) = delete;
-        ~ProfilerMarkerRegistry() = default;
+        RUNTIME_API static void RegisterMarker(ProfilerMarker& marker);
+        RUNTIME_API static void UnregisterMarker(ProfilerMarker& marker);
+        RUNTIME_API static void EnumerateMarkers(FunctionRef<void(ProfilerMarker& marker)> callback);
 
-    public:
-        RUNTIME_API void Register(ProfilerMarker* marker);
-
-        RUNTIME_API void Unregister(ProfilerMarker* marker);
-
-        RUNTIME_API void Enumerate(FunctionRef<void(ProfilerMarker&)> callback);
-
-        RUNTIME_API static ProfilerMarkerRegistry& Get();
+        RUNTIME_API static void BeginMarker(ProfilerMarker& marker);
+        RUNTIME_API static void EndMarker(ProfilerMarker& marker);
+        RUNTIME_API static void EventMarker(ProfilerMarker& marker);
     };
 
     class RUNTIME_API ProfilerMarker final
-        : private IntrusiveListNode<ProfilerMarker, class ProfilerMarkerRegistry>
+        : private IntrusiveListNode<ProfilerMarker>
     {
-        friend struct IntrusiveList<ProfilerMarker, ProfilerMarkerRegistry>;
+        friend struct IntrusiveList<ProfilerMarker>;
 
     private:
         const char* m_name{};
@@ -75,33 +91,6 @@ namespace Anemone::Profiler
         }
     };
 
-    // Profiler system design:
-    //  - development tool for performance analysis
-    //    - not for production
-    //    - compiled out from final build
-    //    - may be initialized lazily (singleton)
-    //    - used to initialize profiling handle sections at runtime
-
-    class Profiler
-    {
-    protected:
-        Profiler() = default;
-
-    public:
-        Profiler(Profiler const&) = delete;
-        Profiler(Profiler&&) = delete;
-        Profiler& operator=(Profiler const&) = delete;
-        Profiler& operator=(Profiler&&) = delete;
-        virtual ~Profiler() = default;
-
-    public:
-        virtual void BeginMarker(ProfilerMarker& marker) = 0;
-        virtual void EndMarker(ProfilerMarker& marker) = 0;
-        virtual void Event(ProfilerMarker& marker) = 0;
-    };
-
-    extern Profiler* GProfiler;
-
     class ProfilerScope final
     {
     private:
@@ -111,10 +100,7 @@ namespace Anemone::Profiler
         ProfilerScope(ProfilerMarker& marker)
             : m_marker{&marker}
         {
-            if (GProfiler)
-            {
-                GProfiler->BeginMarker(*this->m_marker);
-            }
+            Profiler::BeginMarker(*this->m_marker);
         }
 
         ProfilerScope(ProfilerScope const&) = delete;
@@ -124,10 +110,7 @@ namespace Anemone::Profiler
 
         ~ProfilerScope()
         {
-            if (GProfiler)
-            {
-                GProfiler->EndMarker(*this->m_marker);
-            }
+            Profiler::EndMarker(*this->m_marker);
         }
     };
 
@@ -138,13 +121,13 @@ namespace Anemone::Profiler
 #if ANEMONE_BUILD_PROFILING
 
 #define AE_DECLARE_PROFILE(name) \
-    Anemone::Profiler::ProfilerMarker GProfilerMarker_##name { #name }
+    Anemone::ProfilerMarker GProfilerMarker_##name { #name }
 
 #define AE_PROFILE_SCOPE(name) \
-    Anemone::Profiler::ProfilerScope local_profiler_scope_##name { GProfilerMarker_##name }
+    Anemone::ProfilerScope local_profiler_scope_##name { GProfilerMarker_##name }
 
 #define AE_PROFILE_EVENT(name) \
-    Anemone::Profiler::GProfiler->Event(GProfilerMarker_##name);
+    Anemone::Profiler::EventMarker(GProfilerMarker_##name);
 
 #else
 

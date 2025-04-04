@@ -188,6 +188,17 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
+    void StackTrace::Initialize()
+    {
+        //
+        // Verify: Should DebugEngine be initialized here instead of at startup?
+        //
+    }
+
+    void StackTrace::Finalize()
+    {
+    }
+
     void StackTrace::Walk(FunctionRef<void(void* address)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE

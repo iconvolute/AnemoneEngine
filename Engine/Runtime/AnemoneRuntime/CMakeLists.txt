@@ -23,6 +23,8 @@ target_sources(AnemoneRuntime
         "Float.cxx"
         "Float.hxx"
         "FunctionRef.hxx"
+        "HandleTable.cxx"
+        "HandleTable.hxx"
         "Instant.cxx"
         "Instant.hxx"
         "Intrusive.hxx"
@@ -32,6 +34,8 @@ target_sources(AnemoneRuntime
         "Memory.hxx"
         "Reference.hxx"
         "Reflection.hxx"
+        "Runtime.cxx"
+        "Runtime.hxx"
         "String.cxx"
         "String.hxx"
         "Types.cxx"
@@ -46,7 +50,6 @@ target_sources(AnemoneRuntime
 )
 
 add_subdirectory("Crypto")
-add_subdirectory("Diagnostic")
 add_subdirectory("Diagnostics")
 add_subdirectory("Hash")
 add_subdirectory("Math")
@@ -55,7 +58,6 @@ add_subdirectory("Network")
 add_subdirectory("Platform")
 add_subdirectory("Profiler")
 add_subdirectory("Storage")
-add_subdirectory("System")
 add_subdirectory("Tasks")
 add_subdirectory("Threading")
 add_subdirectory("Security")

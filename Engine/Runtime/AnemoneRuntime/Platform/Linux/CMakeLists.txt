@@ -7,8 +7,6 @@ target_sources(AnemoneRuntime
 
         "LinuxClipboard.cxx"
 
-        "LinuxDebugger.cxx"
-
         "LinuxDialogs.cxx"
 
         "LinuxEnvironment.cxx"
@@ -18,17 +16,13 @@ target_sources(AnemoneRuntime
 
         "LinuxFileSystem.cxx"
 
-        #"LinuxInput.cxx"
-        #"LinuxInput.hxx"
-
         "LinuxMemoryMappedFile.cxx"
         "LinuxMemoryMappedFile.hxx"
 
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
 
-        "LinuxPlatform.cxx"
-        "LinuxPlatform.hxx"
+        "LinuxProcessorProperties.cxx"
 
         "LinuxPlatformTraceListeners.cxx"
 
@@ -37,9 +31,6 @@ target_sources(AnemoneRuntime
 
         "LinuxSharedLibrary.cxx"
         "LinuxSharedLibrary.hxx"
-
-        #"LinuxSplashScreen.cxx"
-        #"LinuxSplashScreen.hxx"
 
         "LinuxStackTrace.cxx"
 

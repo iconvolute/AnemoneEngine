@@ -4,16 +4,22 @@ namespace Anemone
 {
     void ConsoleFunctionRegistry::Register(IConsoleFunction* function)
     {
+        UniqueLock _{this->m_lock};
+
         this->m_functions.PushBack(function);
     }
 
     void ConsoleFunctionRegistry::Unregister(IConsoleFunction* function)
     {
+        UniqueLock _{this->m_lock};
+
         this->m_functions.Remove(function);
     }
 
     void ConsoleFunctionRegistry::Enumerate(FunctionRef<void(IConsoleFunction&)> callback)
     {
+        UniqueLock _{this->m_lock};
+
         this->m_functions.ForEach([&callback](IConsoleFunction& function)
         {
             callback(function);
@@ -22,6 +28,8 @@ namespace Anemone
 
     IConsoleFunction* ConsoleFunctionRegistry::FindByName(std::string_view name) const
     {
+        UniqueLock _{this->m_lock};
+
         return this->m_functions.Find([&name](IConsoleFunction const& function)
         {
             return function.Name() == name;

@@ -1,8 +1,7 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Platform.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <iterator>
@@ -14,7 +13,6 @@ namespace Anemone::Diagnostics
         std::string_view expression,
         std::string_view format,
         fmt::format_args args)
-    //! Reports assertion message.
     {
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
 
@@ -32,7 +30,7 @@ namespace Anemone::Diagnostics
             Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
-        // TODO: Flush any log messages.
+        Trace::Flush();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false
@@ -69,6 +67,7 @@ namespace Anemone::Diagnostics
             Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
+        Trace::Flush();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false

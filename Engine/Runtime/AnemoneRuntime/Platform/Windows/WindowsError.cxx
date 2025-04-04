@@ -161,7 +161,7 @@ namespace Anemone::Internal
             case __HRESULT_FROM_WIN32(ERROR_CANNOT_BREAK_OPLOCK):
             case __HRESULT_FROM_WIN32(ERROR_WRITE_PROTECT):
             case __HRESULT_FROM_WIN32(ERROR_INVALID_ACCESS):
-                // case __HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED):
+                // case __HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED): // E_ACCESSDENIED
                 return ErrorCode::AccessDenied;
 
             case __HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE):

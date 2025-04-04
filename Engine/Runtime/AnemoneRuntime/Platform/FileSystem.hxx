@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/Platform/FileHandle.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
+#include "AnemoneRuntime/FunctionRef.hxx"
 
 #include <string_view>
 #include <expected>
@@ -11,8 +12,14 @@ namespace Anemone
 {
     enum class FileType
     {
-        File,
+        Unknown,
         Directory,
+        File,
+        SymbolicLink,
+        BlockDevice,
+        CharacterDevice,
+        Socket,
+        NamedPipe,
     };
 
     struct FileInfo
@@ -36,6 +43,8 @@ namespace Anemone
         virtual void Visit(std::string_view path, FileInfo const& info) = 0;
     };
 
+    using DirectoryEnumerateFn = FunctionRef<void(std::string_view path, FileInfo const& info)>;
+
     enum class NameCollisionResolve
     {
         Overwrite,
@@ -45,6 +54,15 @@ namespace Anemone
 
     struct FileSystem
     {
+        friend struct Runtime;
+        
+    private:
+        static void Initialize();
+        static void Finalize();
+
+    public:
+        FileSystem() = delete;
+
         RUNTIME_API static auto FileExists(std::string_view path) -> std::expected<bool, ErrorCode>;
 
         RUNTIME_API static auto FileDelete(std::string_view path) -> std::expected<void, ErrorCode>;
@@ -68,6 +86,8 @@ namespace Anemone
         RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
 
         RUNTIME_API static auto DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
+
+        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, ErrorCode>;
     };
 
     //

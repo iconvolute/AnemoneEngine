@@ -1,9 +1,9 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
-#include "AnemoneRuntime/Platform/Windows/WindowsPlatform.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <dwmapi.h>
@@ -79,9 +79,11 @@ namespace Anemone
     {
         auto [dwStyle, dwExStyle] = Internal::MapNativeWindowStyle(this->m_type, this->m_mode);
 
+        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
+
         HWND const handle = CreateWindowExW(
             dwExStyle,
-            MAKEINTATOM(Internal::GWindowsApplicationStatics->MainWindowClass),
+            MAKEINTATOM(WindowsApplicationStatics::Get().MainWindowClass),
             L"Anemone",
             dwStyle,
             CW_USEDEFAULT,
@@ -90,7 +92,7 @@ namespace Anemone
             CW_USEDEFAULT,
             nullptr,
             nullptr,
-            Internal::GWindowsPlatformStatics->InstanceHandle,
+            hInstance,
             this);
 
         {
@@ -120,12 +122,12 @@ namespace Anemone
         ShowWindow(handle, SW_SHOWNORMAL);
         UpdateWindow(handle);
 
-        Internal::GWindowsApplicationStatics->WindowsCollection.PushBack(this);
+        WindowsApplicationStatics::Get().WindowsCollection.PushBack(this);
     }
 
     WindowsWindow::~WindowsWindow()
     {
-        Internal::GWindowsApplicationStatics->WindowsCollection.Remove(this);
+        WindowsApplicationStatics::Get().WindowsCollection.Remove(this);
 
         if (this->m_windowHandle != nullptr)
         {
@@ -370,6 +372,7 @@ namespace Anemone
     {
         this->m_cursorType = value;
 
+        // TODO: Move this to ApplicationStatics
         switch (value)
         {
         default:
@@ -378,50 +381,50 @@ namespace Anemone
             break;
 
         case CursorType::Arrow:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->ArrowCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().ArrowCursor;
             break;
 
         case CursorType::ArrowWait:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->ArrowWaitCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().ArrowWaitCursor;
             break;
         case CursorType::Text:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->TextCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().TextCursor;
             break;
         case CursorType::SizeHorizontal:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeHorizontalCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeHorizontalCursor;
             break;
         case CursorType::SizeVertical:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeVerticalCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeVerticalCursor;
             break;
         case CursorType::SizeLeft:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeLeftCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeLeftCursor;
             break;
         case CursorType::SizeTop:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopCursor;
             break;
         case CursorType::SizeRight:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeRightCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeRightCursor;
             break;
         case CursorType::SizeBottom:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomCursor;
             break;
         case CursorType::SizeTopLeft:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopLeftCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopLeftCursor;
             break;
         case CursorType::SizeTopRight:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeTopRightCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopRightCursor;
             break;
         case CursorType::SizeBottomLeft:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomLeftCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomLeftCursor;
             break;
         case CursorType::SizeBottomRight:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeBottomRightCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomRightCursor;
             break;
         case CursorType::SizeAll:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->SizeAllCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeAllCursor;
             break;
         case CursorType::Cross:
-            this->m_cursorHandle = Internal::GWindowsApplicationStatics->CrossCursor;
+            this->m_cursorHandle = WindowsApplicationStatics::Get().CrossCursor;
             break;
         }
     }
@@ -474,13 +477,13 @@ namespace Anemone
 
         AE_ASSERT(window != nullptr);
 
-        IApplicationEvents* events = Internal::GWindowsApplicationStatics->Events;
+        IApplicationEvents* events = IApplicationEvents::GetCurrent();
 
         bool handled = false;
 
         if (window->GetInputEnabled())
         {
-            handled = Internal::GWindowsInputStatics->FilterMessage(*window, message, wparam, lparam);
+            handled = WindowsApplicationStatics::Get().Input.FilterMessage(*window, message, wparam, lparam);
         }
 
         if (not handled)
@@ -725,11 +728,11 @@ namespace Anemone
 
                     if (e.Activated)
                     {
-                        Internal::GWindowsInputStatics->Deactivate();
+                        WindowsApplicationStatics::Get().Input.Deactivate();
                     }
                     else
                     {
-                        Internal::GWindowsInputStatics->Activate();
+                        WindowsApplicationStatics::Get().Input.Activate();
                     }
 
                     events->OnWindowActivated(*window, e);
@@ -740,11 +743,11 @@ namespace Anemone
                 {
                     if (wparam == 0)
                     {
-                        Internal::GWindowsInputStatics->Deactivate();
+                        WindowsApplicationStatics::Get().Input.Deactivate();
                     }
                     else
                     {
-                        Internal::GWindowsInputStatics->Activate();
+                        WindowsApplicationStatics::Get().Input.Activate();
                     }
                     break;
                 }
@@ -769,7 +772,7 @@ namespace Anemone
 
                     if (hitTest == HTCLIENT)
                     {
-                        if (Internal::GWindowsInputStatics->IsTracking(window->m_windowHandle))
+                        if (WindowsApplicationStatics::Get().Input.IsTracking(window->m_windowHandle))
                         {
                             ::SetCursor(nullptr);
                             return TRUE;

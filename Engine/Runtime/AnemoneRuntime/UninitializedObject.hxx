@@ -72,16 +72,18 @@ namespace Anemone
                 AE_PANIC("Object already initialized");
             }
 
+            this->m_initialized = true;
             std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
         }
 
         void Destroy()
         {
-            if (this->m_initialized)
+            if (not this->m_initialized)
             {
                 AE_PANIC("Object not initialized");
             }
             std::destroy_at(reinterpret_cast<T*>(this->_buffer));
+            this->m_initialized = false;
         }
     };
 }

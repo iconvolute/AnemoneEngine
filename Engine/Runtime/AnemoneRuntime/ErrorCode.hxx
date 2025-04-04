@@ -61,13 +61,6 @@ namespace Anemone
     };
 }
 
-namespace Anemone::System::Private
-{
-    RUNTIME_API ErrorCode ErrorCodeFromErrno(int error);
-
-    RUNTIME_API ErrorCode ErrorCodeFromWin32Error(uint32_t error);
-}
-
 template <>
 struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint32_t>
 {

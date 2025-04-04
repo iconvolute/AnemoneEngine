@@ -9,13 +9,9 @@ target_sources(AnemoneRuntime
 
         "WindowsCrashHandler.hxx"
 
-        "WindowsDebugger.cxx"
-        "WindowsDebugger.hxx"
-        
         "WindowsDialogs.cxx"
 
         "WindowsEnvironment.cxx"
-        "WindowsEnvironment.hxx"
 
         "WindowsError.cxx"
         "WindowsError.hxx"
@@ -38,13 +34,10 @@ target_sources(AnemoneRuntime
         "WindowsNamedMutex.cxx"
         "WindowsNamedMutex.hxx"
 
-        "WindowsPlatform.cxx"
-        "WindowsPlatform.hxx"
-
-        "WindowsPlatformTraceListeners.cxx"
-
         "WindowsProcess.cxx"
         "WindowsProcess.hxx"
+
+        "WindowsProcessorProperties.cxx"
 
         "WindowsSharedLibrary.cxx"
         "WindowsSharedLibrary.hxx"

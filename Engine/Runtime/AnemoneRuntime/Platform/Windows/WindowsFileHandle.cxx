@@ -124,9 +124,7 @@ namespace Anemone
                 return FileHandle{Interop::Win32SafeFileHandle{result}};
             }
 
-            AE_VERIFY_WIN32(GetLastError());
-
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Internal::TranslateErrorCodeWin32(GetLastError()));
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
