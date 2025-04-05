@@ -26,12 +26,8 @@ namespace Anemone
 
     struct ProcessorProperties final
     {
-        friend struct Runtime;
-    private:
-        static void Initialize();
-        static void Finalize();
+        ProcessorProperties() = delete;
 
-    public:
         RUNTIME_API static size_t GetPhysicalCoresCount();
         RUNTIME_API static size_t GetLogicalCoresCount();
         RUNTIME_API static size_t GetPerformanceCoresCount();

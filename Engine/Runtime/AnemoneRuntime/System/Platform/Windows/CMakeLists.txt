@@ -6,6 +6,8 @@ target_sources(AnemoneRuntime
         "WindowsClipboard.hxx"
         "WindowsDialogs.cxx"
         "WindowsDialogs.hxx"
+        "WindowsProcessorProperties.cxx"
+        "WindowsProcessorProperties.hxx"
 )
 
 endif()

@@ -6,6 +6,8 @@ target_sources(AnemoneRuntime
         "LinuxClipboard.hxx"
         "LinuxDialogs.cxx"
         "LinuxDialogs.hxx"
+        "LinuxProcessorProperties.cxx"
+        "LinuxProcessorProperties.hxx"
 )
 
 endif()

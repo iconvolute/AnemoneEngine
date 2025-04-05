@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Instant.hxx"
 #include "AnemoneRuntime/Tasks/Private/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone::Private

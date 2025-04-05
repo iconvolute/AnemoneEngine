@@ -2,7 +2,6 @@
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
-#include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
@@ -11,6 +10,7 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/System/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/System/Platform/Clipboard.hxx"
+#include "AnemoneRuntime/System/Platform/ProcessorProperties.hxx"
 
 
 namespace Anemone
@@ -23,7 +23,7 @@ namespace Anemone
         StackTrace::Initialize();
         Environment::Initialize();
         Private::GClipboardStatics.Create();
-        ProcessorProperties::Initialize();
+        Private::GProcessorProperties.Create();
         FileSystem::Initialize();
         Application::Initialize();
         Private::GDialogsStatics.Create();
@@ -46,7 +46,7 @@ namespace Anemone
         Private::GDialogsStatics.Destroy();
         Application::Finalize();
         FileSystem::Finalize();
-        ProcessorProperties::Finalize();
+        Private::GProcessorProperties.Destroy();
         Private::GClipboardStatics.Destroy();
         Environment::Finalize();
         StackTrace::Finalize();

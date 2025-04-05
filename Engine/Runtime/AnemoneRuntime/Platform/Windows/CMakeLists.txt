@@ -33,8 +33,6 @@ target_sources(AnemoneRuntime
         "WindowsProcess.cxx"
         "WindowsProcess.hxx"
 
-        "WindowsProcessorProperties.cxx"
-
         "WindowsSharedLibrary.cxx"
         "WindowsSharedLibrary.hxx"
 

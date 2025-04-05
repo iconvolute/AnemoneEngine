@@ -18,10 +18,6 @@ target_sources(AnemoneRuntime
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
 
-        "LinuxProcessorProperties.cxx"
-
-        "LinuxPlatformTraceListeners.cxx"
-
         "LinuxProcess.cxx"
         "LinuxProcess.hxx"
 
