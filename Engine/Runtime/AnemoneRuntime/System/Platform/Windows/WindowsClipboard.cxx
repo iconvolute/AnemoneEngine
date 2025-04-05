@@ -5,12 +5,12 @@
 
 namespace Anemone::Private
 {
+    UninitializedObject<WindowsClipboardStatics> GClipboardStatics{};
+
     WindowsClipboardStatics::WindowsClipboardStatics()
     {
         this->BinaryFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
     }
- 
-    UninitializedObject<WindowsClipboardStatics> GClipboardStatics{};
 }
 
 namespace Anemone

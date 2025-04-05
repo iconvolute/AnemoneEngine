@@ -5,8 +5,6 @@ target_sources(AnemoneRuntime
         "LinuxApplication.cxx"
         "LinuxApplication.hxx"
 
-        "LinuxEnvironment.cxx"
-
         "LinuxFileHandle.cxx"
         "LinuxFileHandle.hxx"
 

@@ -124,14 +124,6 @@ namespace Anemone
 {
     struct Environment final
     {
-        friend struct Runtime;
-    private:
-        static void Initialize();
-        static void Finalize();
-
-    public:
-        Environment() = delete;
-
         RUNTIME_API static bool GetEnvironmentVariable(std::string& result, std::string_view name);
         RUNTIME_API static bool SetEnvironmentVariable(std::string name, std::string_view value);
         RUNTIME_API static bool RemoveEnvironmentVariable(std::string_view name);

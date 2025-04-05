@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
@@ -53,75 +54,46 @@ namespace Anemone::Internal
     }
 }
 
-namespace Anemone
+namespace Anemone::Private
 {
-    struct WindowsEnvironmentStatics final
+    UninitializedObject<WindowsEnvironmentStatics> GEnvironmentStatics{};
+
+    static void SetupConsoleMode(HANDLE hStream)
     {
-        WindowsEnvironmentStatics();
-        ~WindowsEnvironmentStatics();
-
-        static void VerifyRequirements();
-
-        static void SetupConsoleMode(HANDLE hStream)
+        if (hStream)
         {
-            if (hStream)
-            {
-                DWORD dwMode = 0;
+            DWORD dwMode = 0;
 
-                if (GetConsoleMode(hStream, &dwMode))
-                {
-                    dwMode |= ENABLE_PROCESSED_OUTPUT;
-                    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                    SetConsoleMode(hStream, dwMode);
-                }
+            if (GetConsoleMode(hStream, &dwMode))
+            {
+                dwMode |= ENABLE_PROCESSED_OUTPUT;
+                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                SetConsoleMode(hStream, dwMode);
             }
         }
+    }
 
-        // TODO: Move this callbacks setup to WindowsDebugger?
-        static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+    // TODO: Move this callbacks setup to WindowsDebugger?
+    static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+    {
+        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
         {
-            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
-            {
-                return EXCEPTION_CONTINUE_EXECUTION;
-            }
+            return EXCEPTION_CONTINUE_EXECUTION;
+        }
 
+        Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+    static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
+    {
+        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+        {
             Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
-            return EXCEPTION_CONTINUE_SEARCH;
         }
 
-        static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
-        {
-            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
-            {
-                Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
-            }
-
-            return EXCEPTION_EXECUTE_HANDLER;
-        }
-
-    public:
-        DateTime m_StartupTime;
-
-        std::string m_SystemVersion;
-        std::string m_SystemId;
-        std::string m_SystemName;
-        std::string m_DeviceId;
-        std::string m_DeviceName;
-        std::string m_DeviceModel;
-        std::string m_DeviceManufacturer;
-        std::string m_DeviceVersion;
-        DeviceType m_DeviceType;
-        DeviceProperties m_DeviceProperties;
-        std::string m_ComputerName;
-        std::string m_UserName;
-        std::string m_ExecutablePath;
-        std::string m_StartupPath;
-        std::string m_ProfilePath;
-        std::string m_DesktopPath;
-        std::string m_DocumentsPath;
-        std::string m_DownloadsPath;
-        std::string m_TemporaryPath;
-    };
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
 
     WindowsEnvironmentStatics::WindowsEnvironmentStatics()
     {
@@ -292,7 +264,6 @@ namespace Anemone
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemVersion)");
         Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
-
     }
 
     WindowsEnvironmentStatics::~WindowsEnvironmentStatics()
@@ -376,18 +347,6 @@ namespace Anemone
         {
             Debugger::ReportApplicationStop("Windows 10 or newer required");
         }
-    }
-
-    UninitializedObject<WindowsEnvironmentStatics> GWindowsEnvironmentStatics{};
-
-    void Environment::Initialize()
-    {
-        GWindowsEnvironmentStatics.Create();
-    }
-
-    void Environment::Finalize()
-    {
-        GWindowsEnvironmentStatics.Destroy();
     }
 }
 
@@ -580,17 +539,17 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return GWindowsEnvironmentStatics->m_SystemVersion;
+        return Private::GEnvironmentStatics->m_SystemVersion;
     }
 
     std::string_view Environment::GetSystemId()
     {
-        return GWindowsEnvironmentStatics->m_SystemId;
+        return Private::GEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
     {
-        return GWindowsEnvironmentStatics->m_SystemName;
+        return Private::GEnvironmentStatics->m_SystemName;
     }
 
     Duration Environment::GetSystemUptime()
@@ -600,7 +559,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return GWindowsEnvironmentStatics->m_StartupTime;
+        return Private::GEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -731,72 +690,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return GWindowsEnvironmentStatics->m_DeviceId;
+        return Private::GEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return GWindowsEnvironmentStatics->m_DeviceName;
+        return Private::GEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        return GWindowsEnvironmentStatics->m_DeviceModel;
+        return Private::GEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        return GWindowsEnvironmentStatics->m_DeviceType;
+        return Private::GEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        return GWindowsEnvironmentStatics->m_DeviceProperties;
+        return Private::GEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return GWindowsEnvironmentStatics->m_ComputerName;
+        return Private::GEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return GWindowsEnvironmentStatics->m_UserName;
+        return Private::GEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return GWindowsEnvironmentStatics->m_ExecutablePath;
+        return Private::GEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return GWindowsEnvironmentStatics->m_StartupPath;
+        return Private::GEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return GWindowsEnvironmentStatics->m_ProfilePath;
+        return Private::GEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return GWindowsEnvironmentStatics->m_DesktopPath;
+        return Private::GEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return GWindowsEnvironmentStatics->m_DocumentsPath;
+        return Private::GEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return GWindowsEnvironmentStatics->m_DownloadsPath;
+        return Private::GEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return GWindowsEnvironmentStatics->m_TemporaryPath;
+        return Private::GEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()

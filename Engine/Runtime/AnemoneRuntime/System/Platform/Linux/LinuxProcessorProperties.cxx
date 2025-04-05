@@ -8,6 +8,8 @@
 
 namespace Anemone::Private
 {
+    UninitializedObject<LinuxProcessorProperties> GProcessorProperties{};
+
     LinuxProcessorProperties::LinuxProcessorProperties()
     {
         // This may not be accurate on all systems.
@@ -31,8 +33,6 @@ namespace Anemone::Private
             this->EfficiencyCores = 0;
         }
     }
-
-    UninitializedObject<LinuxProcessorProperties> GProcessorProperties{};
 }
 
 namespace Anemone

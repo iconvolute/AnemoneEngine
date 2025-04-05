@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 
 namespace Anemone
 {

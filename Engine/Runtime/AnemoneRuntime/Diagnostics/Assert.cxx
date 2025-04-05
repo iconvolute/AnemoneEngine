@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 

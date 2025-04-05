@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Platform/EntryPoint.hxx"
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
 
 
@@ -268,7 +268,7 @@ public:
     }
 };
 
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
 
 anemone_noinline void test()

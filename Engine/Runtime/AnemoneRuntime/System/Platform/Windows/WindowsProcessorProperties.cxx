@@ -4,6 +4,8 @@
 
 namespace Anemone::Private
 {
+    UninitializedObject<WindowsProcessorProperties> GProcessorProperties{};
+
     WindowsProcessorProperties::WindowsProcessorProperties()
     {
         {
@@ -130,8 +132,6 @@ namespace Anemone::Private
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(VendorIdentifier)");
         Interop::win32_NarrowString(this->Vendor, buffer.as_view());
     }
-
-    UninitializedObject<WindowsProcessorProperties> GProcessorProperties{};
 }
 
 namespace Anemone

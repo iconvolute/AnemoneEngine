@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 
 #include <array>
 #include <iterator>
