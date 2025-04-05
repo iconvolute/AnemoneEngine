@@ -1,15 +1,13 @@
-#include "AnemoneRuntime/Platform/Dialogs.hxx"
+#include "AnemoneRuntime/System/Platform/Linux/LinuxDialogs.hxx"
+#include "AnemoneRuntime/System/Dialogs.hxx"
+
+namespace Anemone::Private
+{
+    UninitializedObject<LinuxDialogsStatics> GDialogsStatics;
+}
 
 namespace Anemone
 {
-    void Dialogs::Initialize()
-    {
-    }
-
-    void Dialogs::Finalize()
-    {
-    }
-
     DialogResult Dialogs::ShowMessageDialog(
         Window const* window,
         std::string_view message,

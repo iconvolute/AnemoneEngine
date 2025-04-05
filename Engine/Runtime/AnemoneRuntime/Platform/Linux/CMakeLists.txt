@@ -7,8 +7,6 @@ target_sources(AnemoneRuntime
 
         "LinuxClipboard.cxx"
 
-        "LinuxDialogs.cxx"
-
         "LinuxEnvironment.cxx"
 
         "LinuxFileHandle.cxx"

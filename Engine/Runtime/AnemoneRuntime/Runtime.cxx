@@ -6,7 +6,7 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
-#include "AnemoneRuntime/Platform/Dialogs.hxx"
+#include "AnemoneRuntime/System/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
@@ -24,7 +24,7 @@ namespace Anemone
         ProcessorProperties::Initialize();
         FileSystem::Initialize();
         Application::Initialize();
-        Dialogs::Initialize();
+        Private::GDialogsStatics.Create();
 
 #if ANEMONE_BUILD_PROFILING
         Profiler::Initialize();
@@ -41,7 +41,7 @@ namespace Anemone
         Profiler::Finalize();
 #endif
 
-        Dialogs::Finalize();
+        Private::GDialogsStatics.Destroy();
         Application::Finalize();
         FileSystem::Finalize();
         ProcessorProperties::Finalize();

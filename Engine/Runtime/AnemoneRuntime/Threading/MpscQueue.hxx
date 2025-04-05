@@ -54,10 +54,10 @@ namespace Anemone
             }
 
             size_t const head = this->m_Head.fetch_add(1, std::memory_order::acquire);
-            ANEMONE_ASSERT(this->m_Slots[head % this->m_Capacity].Element == nullptr);
+            AE_ASSERT(this->m_Slots[head % this->m_Capacity].Element == nullptr);
 
             [[maybe_unused]] T* const result = this->m_Slots[head % this->m_Capacity].Element.exchange(element, std::memory_order::release);
-            ANEMONE_ASSERT(result == nullptr);
+            AE_ASSERT(result == nullptr);
             return true;
         }
 

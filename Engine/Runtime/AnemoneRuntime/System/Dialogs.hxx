@@ -51,12 +51,8 @@ namespace Anemone
 {
     struct Dialogs final
     {
-        friend struct Runtime;
-    private:
-        static void Initialize();
-        static void Finalize();
+        Dialogs() = delete;
 
-    public:
         RUNTIME_API static DialogResult ShowMessageDialog(
             Window const* window,
             std::string_view message,

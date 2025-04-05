@@ -9,8 +9,6 @@ target_sources(AnemoneRuntime
 
         "WindowsCrashHandler.hxx"
 
-        "WindowsDialogs.cxx"
-
         "WindowsEnvironment.cxx"
 
         "WindowsError.cxx"
