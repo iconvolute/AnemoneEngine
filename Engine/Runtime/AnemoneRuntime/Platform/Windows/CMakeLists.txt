@@ -5,8 +5,6 @@ target_sources(AnemoneRuntime
         "WindowsApplication.cxx"
         "WindowsApplication.hxx"
 
-        "WindowsClipboard.cxx"
-
         "WindowsCrashHandler.hxx"
 
         "WindowsEnvironment.cxx"

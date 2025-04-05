@@ -2,16 +2,13 @@
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
+namespace Anemone::Private
+{
+    UninitializedObject<LinuxClipboardStatics> GClipboardStatics;
+}
+
 namespace Anemone
 {
-    void Clipboard::Initialize()
-    {
-    }
-
-    void Clipboard::Finalize()
-    {
-    }
-
     void Clipboard::Clear()
     {
         AE_PANIC("Not implemented");

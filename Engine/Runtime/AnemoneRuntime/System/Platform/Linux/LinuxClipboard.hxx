@@ -4,9 +4,9 @@
 
 namespace Anemone::Private
 {
-    struct LinuxDialogsStatics final
+    struct LinuxClipboardStatics final
     {
     };
 
-    extern UninitializedObject<LinuxDialogsStatics> GDialogsStatics;
+    extern UninitializedObject<LinuxClipboardStatics> GClipboardStatics;
 }

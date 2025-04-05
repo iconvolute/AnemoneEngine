@@ -81,6 +81,7 @@ namespace Anemone::inline FileSystemX
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
+#include "AnemoneRuntime/System/Clipboard.hxx"
 
 #include "AnemoneRuntime/System/Dialogs.hxx"
 
@@ -146,6 +147,8 @@ public:
                     AE_TRACE(Error, "File-Type:     '{}'", std::to_underlying(f->Type));
                     AE_TRACE(Error, "---------------");
                 }
+
+                Anemone::Clipboard::SetText(ret);
             }
         }
     }

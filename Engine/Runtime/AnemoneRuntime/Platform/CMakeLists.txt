@@ -7,7 +7,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         "Application.cxx"
         "Application.hxx"
-        "Clipboard.hxx"
         "EntryPoint.hxx"
         "Environment.hxx"
         "FileHandle.hxx"

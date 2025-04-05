@@ -2,14 +2,15 @@
 #include "AnemoneRuntime/Platform/Application.hxx"
 #include "AnemoneRuntime/CommandLine.hxx"
 #include "AnemoneRuntime/Platform/Environment.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
-#include "AnemoneRuntime/System/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
+
+#include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
+#include "AnemoneRuntime/System/Platform/Dialogs.hxx"
+#include "AnemoneRuntime/System/Platform/Clipboard.hxx"
 
 
 namespace Anemone
@@ -21,6 +22,7 @@ namespace Anemone
         Private::GDebuggerStatics.Create();
         StackTrace::Initialize();
         Environment::Initialize();
+        Private::GClipboardStatics.Create();
         ProcessorProperties::Initialize();
         FileSystem::Initialize();
         Application::Initialize();
@@ -45,6 +47,7 @@ namespace Anemone
         Application::Finalize();
         FileSystem::Finalize();
         ProcessorProperties::Finalize();
+        Private::GClipboardStatics.Destroy();
         Environment::Finalize();
         StackTrace::Finalize();
         Private::GDebuggerStatics.Destroy();
