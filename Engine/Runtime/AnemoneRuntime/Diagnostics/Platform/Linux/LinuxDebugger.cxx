@@ -1,3 +1,4 @@
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxDebugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"

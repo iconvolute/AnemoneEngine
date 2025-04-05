@@ -1,10 +1,10 @@
-#include "AnemoneRuntime/Platform/Environment.hxx"
+#include "AnemoneRuntime/System/Platform/Linux/LinuxEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
-#include "AnemoneRuntime/Platform/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <clocale>
@@ -389,12 +389,12 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return GLinuxEnvironmentStatics->m_SystemVersion;
+        return Private::GEnvironmentStatics->m_SystemVersion;
     }
 
     std::string_view Environment::GetSystemId()
     {
-        return GLinuxEnvironmentStatics->m_SystemId;
+        return Private::GEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
@@ -413,7 +413,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return GLinuxEnvironmentStatics->m_StartupTime;
+        return Private::GEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -569,47 +569,47 @@ namespace Anemone
 
     std::string_view Environment::GetComputerName()
     {
-        return GLinuxEnvironmentStatics->m_ComputerName;
+        return Private::GEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return GLinuxEnvironmentStatics->m_UserName;
+        return Private::GEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return GLinuxEnvironmentStatics->m_ExecutablePath;
+        return Private::GEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return GLinuxEnvironmentStatics->m_StartupPath;
+        return Private::GEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return GLinuxEnvironmentStatics->m_ProfilePath;
+        return Private::GEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return GLinuxEnvironmentStatics->m_DesktopPath;
+        return Private::GEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return GLinuxEnvironmentStatics->m_DocumentsPath;
+        return Private::GEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return GLinuxEnvironmentStatics->m_DownloadsPath;
+        return Private::GEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return GLinuxEnvironmentStatics->m_TemporaryPath;
+        return Private::GEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()

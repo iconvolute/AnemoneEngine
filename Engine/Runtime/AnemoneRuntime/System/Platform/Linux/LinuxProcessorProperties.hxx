@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/ProcessorProperties.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <string>

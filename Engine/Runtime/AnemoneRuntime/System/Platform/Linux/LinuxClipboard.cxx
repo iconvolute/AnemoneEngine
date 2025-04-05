@@ -1,5 +1,6 @@
-#include "AnemoneRuntime/Platform/Clipboard.hxx"
+#include "AnemoneRuntime/System/Clipboard.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/System/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::Private
