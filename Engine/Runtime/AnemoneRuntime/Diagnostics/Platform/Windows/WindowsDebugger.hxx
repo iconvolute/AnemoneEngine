@@ -7,22 +7,16 @@
 
 namespace Anemone::Private
 {
-    struct WindowsDebuggerStatics final
+    class WindowsDebuggerStatics final
     {
+    private:
+        LPTOP_LEVEL_EXCEPTION_FILTER m_PreviousExceptionFilter{};
+
+    public:
         WindowsDebuggerStatics();
         ~WindowsDebuggerStatics();
 
         static void HandleCrash(PEXCEPTION_POINTERS pExceptionPointers);
-
-        static void PrintRaw(const char* message);
-
-        static void PrintFormatted(std::string_view format, fmt::format_args args);
-
-        template <typename... Args>
-        static void Print(std::string_view format, Args const&... args)
-        {
-            PrintFormatted(format, fmt::make_format_args(args...));
-        }
     };
 
     extern UninitializedObject<WindowsDebuggerStatics> GDebuggerStatics;

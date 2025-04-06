@@ -13,11 +13,10 @@
 
 #include <Windows.h>
 #include <Psapi.h>
+#include <objbase.h>
 #include <bcrypt.h>
 #include <wrl/client.h>
 #include <netlistmgr.h>
-
-#define ENABLE_HEAP_CORRUPTION_CRASHES false
 
 namespace Anemone::Internal
 {
@@ -73,32 +72,13 @@ namespace Anemone::Private
         }
     }
 
-    // TODO: Move this callbacks setup to WindowsDebugger?
-    static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
-    {
-        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
-        {
-            return EXCEPTION_CONTINUE_EXECUTION;
-        }
-
-        Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
-        return EXCEPTION_CONTINUE_SEARCH;
-    }
-
-    static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
-    {
-        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
-        {
-            Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
-        }
-
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
-
     WindowsEnvironmentStatics::WindowsEnvironmentStatics()
     {
         // Initialize COM
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
+        {
+            Debugger::ReportApplicationStop("Failed to initialize COM.");
+        }
 
         // Initialize DPI awareness.
         SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
@@ -120,13 +100,6 @@ namespace Anemone::Private
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
 
         VerifyRequirements();
-
-        // Setup crash handling callbacks.
-        SetUnhandledExceptionFilter(OnUnhandledExceptionFilter);
-
-#if ENABLE_HEAP_CORRUPTION_CRASHES
-        AddVectoredExceptionHandler(0, OnUnhandledExceptionVEH);
-#endif
 
         WSADATA wsaData{};
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)

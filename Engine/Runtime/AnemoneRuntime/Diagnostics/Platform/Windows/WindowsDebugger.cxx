@@ -11,6 +11,8 @@
 
 #include <iterator>
 
+#define ENABLE_HEAP_CORRUPTION_CRASHES false
+
 namespace Anemone::Private
 {
     class WindowsDebugTraceListener final : public TraceListener
@@ -108,30 +110,67 @@ namespace Anemone::Private
     static UninitializedObject<WindowsDebugTraceListener> GWindowsDebugTraceListener{};
     static UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener{};
 
-    static std::optional<ConsoleTraceListener> GConsoleTraceListener2{};
-
     UninitializedObject<WindowsDebuggerStatics> GDebuggerStatics{};
+
+    static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+    {
+        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
+        {
+            return EXCEPTION_CONTINUE_EXECUTION;
+        }
+
+        Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+
+#if ENABLE_HEAP_CORRUPTION_CRASHES
+    static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
+    {
+        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+        {
+            Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
+        }
+
+        return EXCEPTION_EXECUTE_HANDLER;
+    }
+#endif
 
     WindowsDebuggerStatics::WindowsDebuggerStatics()
     {
         if (Interop::win32_IsConsoleApplication(GetModuleHandleW(nullptr)))
         {
-            //GConsoleTraceListener.Create();
-            //Trace::AddListener(*GConsoleTraceListener);
-
-            GConsoleTraceListener2.emplace();
-            Trace::AddListener(*GConsoleTraceListener2);
+            GConsoleTraceListener.Create();
+            Trace::AddListener(*GConsoleTraceListener);
         }
+
+#if !ANEMONE_BUILD_SHIPPING
+        //
+        // Debug trace listener is available only on non-shipping builds.
+        //
 
         GWindowsDebugTraceListener.Create();
         Trace::AddListener(*GWindowsDebugTraceListener);
+#endif
 
         GWindowsEtwTraceListener.Create();
         Trace::AddListener(*GWindowsEtwTraceListener);
+
+        this->m_PreviousExceptionFilter = SetUnhandledExceptionFilter(OnUnhandledExceptionFilter);
+
+#if ENABLE_HEAP_CORRUPTION_CRASHES
+        AddVectoredExceptionHandler(0, OnUnhandledExceptionVEH);
+#endif
     }
 
     WindowsDebuggerStatics::~WindowsDebuggerStatics()
     {
+        // Restore previous exception filter
+        SetUnhandledExceptionFilter(this->m_PreviousExceptionFilter);
+
+#if ENABLE_HEAP_CORRUPTION_CRASHES
+        RemoveVectoredExceptionHandler(OnUnhandledExceptionVEH);
+#endif
+
         if (GWindowsEtwTraceListener)
         {
             Trace::RemoveListener(*GWindowsEtwTraceListener);
@@ -144,10 +183,10 @@ namespace Anemone::Private
             GWindowsDebugTraceListener.Destroy();
         }
 
-        if (GConsoleTraceListener2)
+        if (GConsoleTraceListener)
         {
-            Trace::RemoveListener(*GConsoleTraceListener2);
-            GConsoleTraceListener2.reset();
+            Trace::RemoveListener(*GConsoleTraceListener);
+            GConsoleTraceListener.Destroy();
         }
     }
 
@@ -242,23 +281,6 @@ namespace Anemone::Private
 
         // Terminate process immediately
         TerminateProcess(hProcess, 66602137u);
-    }
-
-    void WindowsDebuggerStatics::PrintRaw(const char* message)
-    {
-        OutputDebugStringA(message);
-    }
-
-    void WindowsDebuggerStatics::PrintFormatted(std::string_view format, fmt::format_args args)
-    {
-        fmt::memory_buffer buffer{};
-        std::back_insert_iterator out{buffer};
-        out = fmt::vformat_to(out, format, args);
-
-        // OutputDebugString requires null at end.
-        (*out) = '\0';
-
-        Interop::win32_OutputDebugString(buffer.data(), buffer.size());
     }
 }
 
