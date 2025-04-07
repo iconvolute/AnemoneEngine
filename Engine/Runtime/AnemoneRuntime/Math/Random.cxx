@@ -98,24 +98,24 @@ namespace Anemone::Random
     struct UniformDistribution<float> final
     {
         template <typename Generator>
-        static constexpr float operator()(Generator& generator)
+        static constexpr float Next(Generator& generator)
         {
             uint64_t const sample = Next(generator);
             return Float32::Compose(0, sample >> 32u) - 1.0f;
         }
 
         template <typename Generator>
-        static constexpr float operator()(Generator& generator, float max) 
+        static constexpr float Next(Generator& generator, float max) 
         {
-            float const sample = operator()(generator);
+            float const sample = Next(generator);
             float const result = sample * max;
             return result;
         }
 
         template <typename Generator>
-        static constexpr float operator()(Generator& generator, float min, float max) 
+        static constexpr float Next(Generator& generator, float min, float max) 
         {
-            float const sample = operator()(generator);
+            float const sample = Next(generator);
             float const scale = (max - min);
             float const result = (sample * scale) + min;
             return result;
@@ -126,11 +126,11 @@ namespace Anemone::Random
     struct UniformDistribution<Math::Packed::Vector3F> final
     {
         template <typename Generator>
-        static constexpr Math::Packed::Vector3F operator()(Generator& generator) 
+        static constexpr Math::Packed::Vector3F Next(Generator& generator) 
         {
-            float const x = UniformDistribution<float>{}(generator);
-            float const y = UniformDistribution<float>{}(generator);
-            float const z = UniformDistribution<float>{}(generator);
+            float const x = UniformDistribution<float>::Next(generator);
+            float const y = UniformDistribution<float>::Next(generator);
+            float const z = UniformDistribution<float>::Next(generator);
             return Math::Packed::Vector3F{x, y, z};
         }
     };

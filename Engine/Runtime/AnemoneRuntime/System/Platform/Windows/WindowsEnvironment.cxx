@@ -172,8 +172,17 @@ namespace Anemone::Private
         }
 
         // Determine system ID
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(Software\Microsoft\Cryptography)", LR"(MachineGuid)");
-        Interop::win32_NarrowString(this->m_SystemId, buffer.as_view());
+        if (Interop::win32_registry_key key{
+                HKEY_LOCAL_MACHINE,
+                LR"(SOFTWARE\Microsoft\Cryptography)",
+                KEY_READ,
+            })
+        {
+            if (key.read_string(L"MachineGuid", buffer))
+            {
+                Interop::win32_NarrowString(this->m_SystemId, buffer.as_view());
+            }
+        }
 
         // Executable path
         Interop::win32_QueryFullProcessImageName(buffer);
@@ -225,6 +234,38 @@ namespace Anemone::Private
         Interop::win32_GetTempPath(buffer);
         Interop::win32_NarrowString(this->m_TemporaryPath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
+
+        if (Interop::win32_registry_key keySystem{
+                HKEY_LOCAL_MACHINE,
+                LR"(HARDWARE\DESCRIPTION\System)",
+                KEY_READ,
+            })
+        {
+            if (keySystem.read_string(L"SystemBiosVersion", buffer))
+            {
+                Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());
+            }
+
+            if (Interop::win32_registry_key keyBios{
+                    keySystem.get(),
+                    LR"(BIOS)",
+                    KEY_READ,
+                })
+            {
+                if (keyBios.read_string(L"SystemManufacturer", buffer))
+                {
+                    Interop::win32_NarrowString(this->m_DeviceManufacturer, buffer.as_view());
+                }
+                if (keyBios.read_string(L"SystemProductName", buffer))
+                {
+                    Interop::win32_NarrowString(this->m_DeviceName, buffer.as_view());
+                }
+                if (keyBios.read_string(L"SystemVersion", buffer))
+                {
+                    Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
+                }
+            }
+        }
 
         Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
         Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());

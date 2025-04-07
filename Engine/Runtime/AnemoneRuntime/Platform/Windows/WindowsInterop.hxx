@@ -651,7 +651,7 @@ namespace Anemone::Interop
                     reinterpret_cast<LPBYTE>(buffer.data()),
                     &dwSize);
 
-                if (dwType != REG_SZ)
+                if ((dwType != REG_SZ) and (dwType != REG_MULTI_SZ))
                 {
                     // Invalid type
                     capacity = 0;
@@ -660,8 +660,22 @@ namespace Anemone::Interop
 
                 if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
                 {
-                    DWORD const dwFinal = (dwSize / sizeof(wchar_t));
-                    capacity = dwFinal;
+                    DWORD dwCharCount = (dwSize / sizeof(wchar_t));
+
+                    if (dwType == REG_MULTI_SZ)
+                    {
+                        auto chars = buffer.subspan(0, dwCharCount);
+
+                        for (wchar_t& ch : chars)
+                        {
+                            if (ch == L'\0')
+                            {
+                                ch = L'\n';
+                            }
+                        }
+                    }
+
+                    capacity = dwCharCount;
                     return true;
                 }
 
