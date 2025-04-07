@@ -24,7 +24,7 @@ namespace Anemone
             // Get part.
             if (std::basic_string_view<CharT> const part = value.substr(start, pos - start); !part.empty() || !removeEmpty)
             {
-                callback(part);
+                std::forward<CallbackT>(callback)(part);
             }
 
             if (pos == std::basic_string_view<CharT>::npos)
@@ -135,7 +135,7 @@ namespace Anemone
             // Get part.
             if (std::basic_string_view<CharT> const part = value.substr(start, pos - start); !part.empty() || !removeEmpty)
             {
-                callback(part);
+                std::forward<CallbackT>(callback)(part);
             }
 
             if (pos == std::basic_string_view<CharT>::npos)

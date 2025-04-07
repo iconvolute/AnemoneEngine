@@ -431,12 +431,12 @@ namespace Anemone::Interop
                     if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
                     {
                         DWORD const dwCharCount = (dwSize / sizeof(wchar_t));
-    
+
                         // Check if the string is already null-terminated
-                        bool const alreadyNullTerminated = (dwCharCount > 0 && 
-                                                      dwCharCount <= buffer.size() && 
-                                                      buffer[dwCharCount - 1] == L'\0');
-                        
+                        bool const alreadyNullTerminated = (dwCharCount > 0 &&
+                            dwCharCount <= buffer.size() &&
+                            buffer[dwCharCount - 1] == L'\0');
+
                         capacity = dwCharCount;
 
                         if (not alreadyNullTerminated)
@@ -444,7 +444,7 @@ namespace Anemone::Interop
                             // Include the null terminator.
                             ++capacity;
                         }
-                        
+
                         return true;
                     }
 
@@ -502,7 +502,7 @@ namespace Anemone::Interop
     public:
         win32_registry_key() = default;
 
-        explicit win32_registry_key(HKEY key, const wchar_t* subKey, REGSAM access = KEY_READ | KEY_WRITE)
+        explicit win32_registry_key(HKEY key, const wchar_t* subKey, REGSAM access)
         {
             if (RegOpenKeyExW(key, subKey, 0, access, &this->m_key) != ERROR_SUCCESS)
             {
@@ -510,7 +510,7 @@ namespace Anemone::Interop
             }
         }
 
-        win32_registry_key(HKEY key)
+        explicit win32_registry_key(HKEY key)
             : m_key{key}
         {
         }
@@ -535,32 +535,109 @@ namespace Anemone::Interop
             return *this;
         }
 
-        ~win32_registry_key() noexcept
+        ~win32_registry_key()
         {
             this->close();
         }
 
-        void close() noexcept
+        static win32_registry_key open_readonly(HKEY key, const wchar_t* subKey)
         {
-            if (this->m_key)
+            return win32_registry_key{key, subKey, KEY_READ};
+        }
+
+        static win32_registry_key open_readwrite(HKEY key, const wchar_t* subKey)
+        {
+            return win32_registry_key{key, subKey, KEY_READ | KEY_WRITE};
+        }
+
+        void close()
+        {
+            if (this->m_key != nullptr)
             {
                 RegCloseKey(this->m_key);
                 this->m_key = nullptr;
             }
         }
 
-        [[nodiscard]] HKEY get() const noexcept
+        [[nodiscard]] HKEY get() const
         {
             return this->m_key;
         }
 
-        [[nodiscard]] explicit operator bool() const noexcept
+        [[nodiscard]] explicit operator bool() const
         {
             return this->m_key != nullptr;
         }
 
+        template <typename Callback = void(std::wstring_view value)>
+        [[nodiscard]] bool read_strings(const wchar_t* name, Callback&& callback) const
+        {
+            string_buffer<wchar_t, 512> storage{};
+
+            if (adapt_string_buffer(storage, [&](std::span<wchar_t> view, size_t& capacity)
+            {
+                DWORD dwType = 0;
+                DWORD dwSize = static_cast<DWORD>(view.size());
+
+                LSTATUS const status = RegQueryValueExW(
+                    this->m_key,
+                    name,
+                    nullptr,
+                    &dwType,
+                    reinterpret_cast<LPBYTE>(view.data()),
+                    &dwSize);
+
+                if ((dwType != REG_SZ) and (dwType != REG_MULTI_SZ))
+                {
+                    capacity = 0;
+                    return false;
+                }
+
+                if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
+                {
+                    DWORD const dwCharCount = (dwSize / sizeof(wchar_t));
+                    capacity = dwCharCount;
+                    return true;
+                }
+
+                capacity = 0;
+                return false;
+            }))
+            {
+                // Storage buffer contains one or more string(s)
+                auto view = storage.as_view();
+
+                // Start from string beginning.
+                std::wstring_view::size_type start{};
+
+                while (true)
+                {
+                    // Find separator position.
+                    std::wstring_view::size_type const pos = view.find_first_of(L'\0', start);
+
+                    // Get part.
+                    if (std::wstring_view const part = view.substr(start, pos - start); !part.empty())
+                    {
+                        std::forward<Callback>(callback)(part);
+                    }
+
+                    if (pos == std::wstring_view::npos)
+                    {
+                        break;
+                    }
+
+                    // Move past separator.
+                    start = pos + 1;
+                }
+
+                return true;
+            }
+
+            return false;
+        }
+
         template <size_t CapacityT>
-        bool read_string(const wchar_t* name, string_buffer<wchar_t, CapacityT>& result)
+        [[nodiscard]] bool read_string(const wchar_t* name, string_buffer<wchar_t, CapacityT>& result) const
         {
             return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
@@ -593,7 +670,39 @@ namespace Anemone::Interop
             });
         }
 
-        bool delete_value(const wchar_t* name)
+        [[nodiscard]] bool read_dword(const wchar_t* name, DWORD& result) const
+        {
+            DWORD dwSize = sizeof(DWORD);
+            DWORD dwType = 0;
+
+            LSTATUS const status = RegQueryValueExW(
+                this->m_key,
+                name,
+                nullptr,
+                &dwType,
+                reinterpret_cast<LPBYTE>(&result),
+                &dwSize);
+
+            return (dwType == REG_DWORD) and (status == ERROR_SUCCESS);
+        }
+
+        [[nodiscard]] bool read_qword(const wchar_t* name, DWORD64& result) const
+        {
+            DWORD dwSize = sizeof(DWORD64);
+            DWORD dwType = 0;
+
+            LSTATUS const status = RegQueryValueExW(
+                this->m_key,
+                name,
+                nullptr,
+                &dwType,
+                reinterpret_cast<LPBYTE>(&result),
+                &dwSize);
+
+            return (dwType == REG_QWORD) and (status == ERROR_SUCCESS);
+        }
+
+        [[nodiscard]] bool delete_value(const wchar_t* name) const
         {
             return RegDeleteValueW(this->m_key, name) == ERROR_SUCCESS;
         }

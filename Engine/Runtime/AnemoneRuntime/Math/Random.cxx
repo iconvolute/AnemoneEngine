@@ -17,11 +17,123 @@ namespace Anemone::Math::Detail
 
         seed += 0x9E3779B97F4A7C15u;
         uint64_t const z0 = seed;
-        uint64_t const z1 = (z0 ^ (z0 >> 30)) * 0xBF58476D1CE4E5B9u;
-        uint64_t const z2 = (z1 ^ (z1 >> 27)) * 0x94D049BB133111EBu;
-        uint64_t const z3 = (z2 ^ (z2 >> 31));
+        uint64_t const z1 = (z0 ^ (z0 >> 30u)) * 0xBF58476D1CE4E5B9u;
+        uint64_t const z2 = (z1 ^ (z1 >> 27u)) * 0x94D049BB133111EBu;
+        uint64_t const z3 = (z2 ^ (z2 >> 31u));
         return z3;
     }
+}
+
+namespace Anemone::Random
+{
+    struct Xorshiro256ss final
+    {
+        uint64_t state[4];
+    };
+
+    constexpr void Initialize(Xorshiro256ss& self, uint64_t seed)
+    {
+        for (uint64_t& state : self.state)
+        {
+            state = Math::Detail::SplitMix64(seed);
+        }
+    }
+
+    constexpr uint64_t Next(Xorshiro256ss& self)
+    {
+        uint64_t const result = std::rotl<uint64_t>(self.state[1] * 5u, 7u) * 9u;
+        uint64_t const t = self.state[1] << 17u;
+
+        self.state[2] ^= self.state[0];
+        self.state[3] ^= self.state[1];
+        self.state[1] ^= self.state[2];
+        self.state[0] ^= self.state[3];
+
+        self.state[2] ^= t;
+        self.state[3] = std::rotl<uint64_t>(self.state[3], 45u);
+
+        return result;
+    }
+}
+
+namespace Anemone::Random
+{
+    struct Xorshiro512ss final
+    {
+        uint64_t state[8];
+    };
+
+    constexpr void Initialize(Xorshiro512ss& self, uint64_t seed)
+    {
+        for (uint64_t& state : self.state)
+        {
+            state = Math::Detail::SplitMix64(seed);
+        }
+    }
+
+    constexpr uint64_t Next(Xorshiro512ss& self)
+    {
+        uint64_t const result = std::rotl<uint64_t>(self.state[1] * 5u, 7u) * 9u;
+        uint64_t const t = self.state[1] << 11u;
+
+        self.state[2] ^= self.state[0];
+        self.state[5] ^= self.state[1];
+        self.state[1] ^= self.state[2];
+        self.state[7] ^= self.state[3];
+        self.state[3] ^= self.state[4];
+        self.state[4] ^= self.state[5];
+        self.state[0] ^= self.state[6];
+        self.state[6] ^= self.state[7];
+
+        self.state[6] ^= t;
+        self.state[7] = std::rotl<uint64_t>(self.state[7], 21u);
+
+        return result;
+    }
+
+    template <typename T>
+    struct UniformDistribution;
+
+    template <>
+    struct UniformDistribution<float> final
+    {
+        template <typename Generator>
+        static constexpr float operator()(Generator& generator)
+        {
+            uint64_t const sample = Next(generator);
+            return Float32::Compose(0, sample >> 32u) - 1.0f;
+        }
+
+        template <typename Generator>
+        static constexpr float operator()(Generator& generator, float max) 
+        {
+            float const sample = operator()(generator);
+            float const result = sample * max;
+            return result;
+        }
+
+        template <typename Generator>
+        static constexpr float operator()(Generator& generator, float min, float max) 
+        {
+            float const sample = operator()(generator);
+            float const scale = (max - min);
+            float const result = (sample * scale) + min;
+            return result;
+        }
+    };
+
+    template <>
+    struct UniformDistribution<Math::Packed::Vector3F> final
+    {
+        template <typename Generator>
+        static constexpr Math::Packed::Vector3F operator()(Generator& generator) 
+        {
+            float const x = UniformDistribution<float>{}(generator);
+            float const y = UniformDistribution<float>{}(generator);
+            float const z = UniformDistribution<float>{}(generator);
+            return Math::Packed::Vector3F{x, y, z};
+        }
+    };
 }
 
 namespace Anemone::Math
@@ -34,7 +146,7 @@ namespace Anemone::Math
         uint64_t s3 = this->_state[3];
 
         uint64_t const result = Bitwise::BitRotateLeft(s1 * 5, 7) * 9;
-        uint64_t t = s1 << 17;
+        uint64_t t = s1 << 17u;
 
         s2 ^= s0;
         s3 ^= s1;
