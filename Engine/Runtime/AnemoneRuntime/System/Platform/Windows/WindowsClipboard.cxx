@@ -69,12 +69,14 @@ namespace Anemone
             Interop::win32_WidenString(buffer, value);
             std::wstring_view const data = buffer.as_view();
 
-            if (HGLOBAL const handle = GlobalAlloc(GMEM_MOVEABLE, data.size() * sizeof(wchar_t)); handle != nullptr)
+            size_t const size = data.size() + 1; // Include null terminator.
+
+            if (HGLOBAL const handle = GlobalAlloc(GMEM_MOVEABLE, size * sizeof(wchar_t)); handle != nullptr)
             {
                 if (void* const destination = GlobalLock(handle); destination != nullptr)
                 {
                     // Copy zero terminated string.
-                    std::memcpy(destination, data.data(), data.size() * sizeof(wchar_t));
+                    std::memcpy(destination, data.data(), size * sizeof(wchar_t));
                     GlobalUnlock(handle);
 
                     if (SetClipboardData(CF_UNICODETEXT, handle) != nullptr)

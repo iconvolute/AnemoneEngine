@@ -430,8 +430,21 @@ namespace Anemone::Interop
 
                     if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
                     {
-                        DWORD const dwFinal = (dwSize / sizeof(wchar_t));
-                        capacity = dwFinal + 1;
+                        DWORD const dwCharCount = (dwSize / sizeof(wchar_t));
+    
+                        // Check if the string is already null-terminated
+                        bool const alreadyNullTerminated = (dwCharCount > 0 && 
+                                                      dwCharCount <= buffer.size() && 
+                                                      buffer[dwCharCount - 1] == L'\0');
+                        
+                        capacity = dwCharCount;
+
+                        if (not alreadyNullTerminated)
+                        {
+                            // Include the null terminator.
+                            ++capacity;
+                        }
+                        
                         return true;
                     }
 
