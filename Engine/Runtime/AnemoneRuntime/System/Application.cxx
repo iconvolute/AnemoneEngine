@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Application.hxx"
+#include "AnemoneRuntime/System/Application.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone

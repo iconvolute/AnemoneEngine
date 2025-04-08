@@ -1,8 +1,9 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
-#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -83,7 +84,7 @@ namespace Anemone
 
         HWND const handle = CreateWindowExW(
             dwExStyle,
-            MAKEINTATOM(WindowsApplicationStatics::Get().MainWindowClass),
+            MAKEINTATOM(Private::GApplicationStatics->MainWindowClass),
             L"Anemone",
             dwStyle,
             CW_USEDEFAULT,
@@ -96,38 +97,37 @@ namespace Anemone
             this);
 
         {
-            DWORD preference = DWMWCP_DONOTROUND;
+            constexpr DWORD preference = DWMWCP_DONOTROUND;
 
-            if (HRESULT hr = DwmSetWindowAttribute(handle, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(DWORD)); FAILED(hr))
+            if (HRESULT const hr = DwmSetWindowAttribute(handle, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(DWORD)); FAILED(hr))
             {
-                AE_TRACE(Error, "DwmSetWindowAttribute(DWMWA_WINDOW_CORNER_PREFERENCE) failed: {}", hr);
+                AE_VERIFY_HRESULT(hr);
             }
         }
 
         {
-            BOOL enable = TRUE;
+            constexpr BOOL enable = TRUE;
 
-            if (HRESULT hr = DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL)); FAILED(hr))
+            if (HRESULT const hr = DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL)); FAILED(hr))
             {
-                AE_TRACE(Error, "DwmSetWindowAttribute(DWMWA_USE_IMMERSIVE_DARK_MODE) failed: {}", hr);
+                AE_VERIFY_HRESULT(hr);
             }
         }
 
         if (handle == nullptr)
         {
-            // TODO Log error
             Debugger::ReportApplicationStop("Failed to create window.");
         }
 
         ShowWindow(handle, SW_SHOWNORMAL);
         UpdateWindow(handle);
 
-        WindowsApplicationStatics::Get().WindowsCollection.PushBack(this);
+        Private::GApplicationStatics->WindowsCollection.PushBack(this);
     }
 
     WindowsWindow::~WindowsWindow()
     {
-        WindowsApplicationStatics::Get().WindowsCollection.Remove(this);
+        Private::GApplicationStatics->WindowsCollection.Remove(this);
 
         if (this->m_windowHandle != nullptr)
         {
@@ -371,62 +371,8 @@ namespace Anemone
     void WindowsWindow::SetCursor(CursorType value)
     {
         this->m_cursorType = value;
+        this->m_cursorHandle = Private::GApplicationStatics->GetCursor(value);
 
-        // TODO: Move this to ApplicationStatics
-        switch (value)
-        {
-        default:
-        case CursorType::None:
-            this->m_cursorHandle = {};
-            break;
-
-        case CursorType::Arrow:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().ArrowCursor;
-            break;
-
-        case CursorType::ArrowWait:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().ArrowWaitCursor;
-            break;
-        case CursorType::Text:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().TextCursor;
-            break;
-        case CursorType::SizeHorizontal:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeHorizontalCursor;
-            break;
-        case CursorType::SizeVertical:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeVerticalCursor;
-            break;
-        case CursorType::SizeLeft:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeLeftCursor;
-            break;
-        case CursorType::SizeTop:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopCursor;
-            break;
-        case CursorType::SizeRight:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeRightCursor;
-            break;
-        case CursorType::SizeBottom:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomCursor;
-            break;
-        case CursorType::SizeTopLeft:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopLeftCursor;
-            break;
-        case CursorType::SizeTopRight:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeTopRightCursor;
-            break;
-        case CursorType::SizeBottomLeft:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomLeftCursor;
-            break;
-        case CursorType::SizeBottomRight:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeBottomRightCursor;
-            break;
-        case CursorType::SizeAll:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().SizeAllCursor;
-            break;
-        case CursorType::Cross:
-            this->m_cursorHandle = WindowsApplicationStatics::Get().CrossCursor;
-            break;
-        }
     }
 
     CursorType WindowsWindow::GetCursor() const
@@ -483,7 +429,7 @@ namespace Anemone
 
         if (window->GetInputEnabled())
         {
-            handled = WindowsApplicationStatics::Get().Input.FilterMessage(*window, message, wparam, lparam);
+            handled = Private::GApplicationStatics->Input.FilterMessage(*window, message, wparam, lparam);
         }
 
         if (not handled)
@@ -510,8 +456,9 @@ namespace Anemone
                     }
                     else
                     {
-                        uint32_t character;
                         uint16_t const lowSurrogate = static_cast<uint16_t>(wparam);
+
+                        uint32_t character;
 
                         if (IS_SURROGATE_PAIR(window->m_characterHighSurrogate, lowSurrogate))
                         {
@@ -691,7 +638,7 @@ namespace Anemone
 
             case WM_NCCALCSIZE:
                 {
-                    if ((lparam != 0) && (wparam != 0) && (window->m_type == WindowType::Game) && (window->m_mode == WindowMode::Windowed) && IsZoomed(handle))
+                    if ((lparam != 0) && (wparam != 0) && (window->m_type == WindowType::Game) && (window->m_mode == WindowMode::Windowed) && (IsZoomed(handle) != FALSE))
                     {
                         // Maximized fullscreen border-less game window has visible border in multiple displays
                         // scenario. Limit this by adjusting window placement to just fit display - we are still
@@ -728,11 +675,11 @@ namespace Anemone
 
                     if (e.Activated)
                     {
-                        WindowsApplicationStatics::Get().Input.Deactivate();
+                        Private::GApplicationStatics->Input.Deactivate();
                     }
                     else
                     {
-                        WindowsApplicationStatics::Get().Input.Activate();
+                        Private::GApplicationStatics->Input.Activate();
                     }
 
                     events->OnWindowActivated(*window, e);
@@ -743,22 +690,24 @@ namespace Anemone
                 {
                     if (wparam == 0)
                     {
-                        WindowsApplicationStatics::Get().Input.Deactivate();
+                        Private::GApplicationStatics->Input.Deactivate();
                     }
                     else
                     {
-                        WindowsApplicationStatics::Get().Input.Activate();
+                        Private::GApplicationStatics->Input.Activate();
                     }
                     break;
                 }
 
             case WM_ENDSESSION:
                 {
+                    UINT const reason = static_cast<UINT>(lparam);
+
                     EndSessionEventArgs e{
-                        .LogOff = (lparam & ENDSESSION_LOGOFF) == ENDSESSION_LOGOFF,
+                        .LogOff = (reason & ENDSESSION_LOGOFF) == ENDSESSION_LOGOFF,
                         .Shutdown = (wparam != FALSE),
-                        .Force = (lparam & ENDSESSION_CRITICAL) == ENDSESSION_CRITICAL,
-                        .CloseApplication = (lparam & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
+                        .Force = (reason & ENDSESSION_CRITICAL) == ENDSESSION_CRITICAL,
+                        .CloseApplication = (reason & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
                     };
 
                     events->OnEndSession(e);
@@ -772,7 +721,7 @@ namespace Anemone
 
                     if (hitTest == HTCLIENT)
                     {
-                        if (WindowsApplicationStatics::Get().Input.IsTracking(window->m_windowHandle))
+                        if (Private::GApplicationStatics->Input.IsTracking(window->m_windowHandle))
                         {
                             ::SetCursor(nullptr);
                             return TRUE;
@@ -789,7 +738,7 @@ namespace Anemone
 
             case WM_SYSCOMMAND:
                 {
-                    switch (wparam & 0xFFF0)
+                    switch (wparam & 0xFFF0u)
                     {
                     case SC_SCREENSAVE:
                     case SC_MONITORPOWER:

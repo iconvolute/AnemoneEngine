@@ -214,6 +214,39 @@ namespace Anemone::Interop
     {
         return static_cast<int>(std::min(value, size_t{INT32_MAX}));
     }
+
+    template <size_t StaticCapacityT>
+    inline bool unix_LoadFile(string_buffer<char, StaticCapacityT>& buffer, const char* path)
+    {
+        bool result = false;
+
+        int const fd = open(path, O_RDONLY);
+
+        if (fd != -1)
+        {
+            struct stat fs;
+            if (fstat(fd, &fs) == 0)
+            {
+                buffer.resize(fs.st_size + 1u);
+
+                ssize_t const processed = read(fd, buffer.data(), buffer.size());
+
+                if (processed >= 0)
+                {
+                    buffer.trim(static_cast<size_t>(processed));
+                    result = true;
+                }
+                else
+                {
+                    buffer.trim(0);
+                }
+            }
+
+            close(fd);
+        }
+
+        return result;
+    }
 }
 
 // https://www.remlab.net/op/futex-condvar.shtml

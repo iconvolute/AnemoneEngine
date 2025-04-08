@@ -5,11 +5,13 @@
 #include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsCrashHandler.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
 
 #include <iterator>
+
 
 #define ENABLE_HEAP_CORRUPTION_CRASHES false
 
@@ -17,11 +19,14 @@ namespace Anemone::Private
 {
     class WindowsDebugTraceListener final : public TraceListener
     {
+    private:
+        CriticalSection m_lock{};
     public:
         void TraceEvent(TraceLevel level, const char* message, size_t size) override
         {
             (void)level;
 
+            UniqueLock scope{this->m_lock};
             Interop::win32_OutputDebugString(message, size + 1);
             Interop::win32_OutputDebugString("\r\n", 3);
         }

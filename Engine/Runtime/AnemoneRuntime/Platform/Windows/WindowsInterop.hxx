@@ -394,106 +394,6 @@ namespace Anemone::Interop
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool win32_QueryRegistry(string_buffer<wchar_t, CapacityT>& result, HKEY key, const wchar_t* subkey, const wchar_t* name) noexcept
-    {
-        if ((key == nullptr) or (subkey == nullptr) or (name == nullptr))
-        {
-            return false;
-        }
-
-        bool succeeded = false;
-
-        for (int32_t const flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
-        {
-            if (succeeded)
-            {
-                break;
-            }
-
-            HKEY current = nullptr;
-
-            if (RegOpenKeyExW(key, subkey, 0, static_cast<REGSAM>(KEY_READ | flag), &current) == ERROR_SUCCESS)
-            {
-                if (adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
-                {
-                    DWORD const dwLength = static_cast<DWORD>(buffer.size());
-
-                    DWORD dwSize = dwLength * sizeof(wchar_t);
-                    LSTATUS const status = RegQueryValueExW(
-                        current,
-                        name,
-                        nullptr,
-                        nullptr,
-                        reinterpret_cast<LPBYTE>(buffer.data()),
-                        &dwSize);
-
-                    if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
-                    {
-                        DWORD const dwCharCount = (dwSize / sizeof(wchar_t));
-
-                        // Check if the string is already null-terminated
-                        bool const alreadyNullTerminated = (dwCharCount > 0 &&
-                            dwCharCount <= buffer.size() &&
-                            buffer[dwCharCount - 1] == L'\0');
-
-                        capacity = dwCharCount;
-
-                        if (not alreadyNullTerminated)
-                        {
-                            // Include the null terminator.
-                            ++capacity;
-                        }
-
-                        return true;
-                    }
-
-                    capacity = 0;
-                    return false;
-                }))
-                {
-                    succeeded = true;
-                }
-
-                RegCloseKey(current);
-            }
-        }
-
-        return succeeded;
-    }
-
-    anemone_forceinline bool win32_QueryRegistry(DWORD& result, HKEY key, const wchar_t* subkey, const wchar_t* name)
-    {
-        if ((key == nullptr) or (subkey == nullptr) or (name == nullptr))
-        {
-            return false;
-        }
-
-        for (int32_t const flag : {KEY_WOW64_32KEY, KEY_WOW64_64KEY})
-        {
-            HKEY current = nullptr;
-
-            if (RegOpenKeyExW(key, subkey, 0, static_cast<REGSAM>(KEY_READ | flag), &current) == ERROR_SUCCESS)
-            {
-                DWORD dwSize = sizeof(DWORD);
-                LSTATUS const status = RegQueryValueExW(
-                    current,
-                    name,
-                    nullptr,
-                    nullptr,
-                    reinterpret_cast<LPBYTE>(&result),
-                    &dwSize);
-
-                if (status == ERROR_SUCCESS)
-                {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
     struct win32_registry_key final
     {
     private:
@@ -569,11 +469,9 @@ namespace Anemone::Interop
             return this->m_key != nullptr;
         }
 
-        template <typename Callback = void(std::wstring_view value)>
-        [[nodiscard]] bool read_strings(const wchar_t* name, Callback&& callback) const
+        template <size_t CapacityT, typename Callback = void(std::wstring_view value)>
+        [[nodiscard]] bool read_strings(const wchar_t* name, string_buffer<wchar_t, CapacityT>& storage, Callback&& callback) const
         {
-            string_buffer<wchar_t, 512> storage{};
-
             if (adapt_string_buffer(storage, [&](std::span<wchar_t> view, size_t& capacity)
             {
                 DWORD dwType = 0;

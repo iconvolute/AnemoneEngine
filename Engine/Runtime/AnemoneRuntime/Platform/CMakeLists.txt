@@ -5,8 +5,6 @@ add_subdirectory("Windows")
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Application.cxx"
-        "Application.hxx"
         "EntryPoint.hxx"
         "FileHandle.hxx"
         "FilePath.cxx"

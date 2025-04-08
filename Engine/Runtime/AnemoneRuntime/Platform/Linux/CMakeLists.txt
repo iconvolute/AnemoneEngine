@@ -2,9 +2,6 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "LinuxApplication.cxx"
-        "LinuxApplication.hxx"
-
         "LinuxFileHandle.cxx"
         "LinuxFileHandle.hxx"
 
@@ -25,9 +22,6 @@ target_sources(AnemoneRuntime
         "LinuxStackTrace.cxx"
 
         "LinuxSystemAllocator.cxx"
-
-        "LinuxWindow.cxx"
-        "LinuxWindow.hxx"
 )
 
 endif()

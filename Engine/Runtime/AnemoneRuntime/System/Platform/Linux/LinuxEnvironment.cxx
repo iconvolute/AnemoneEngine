@@ -65,35 +65,21 @@ namespace Anemone::Private
 
         // System ID
         {
-            std::array<char, 128> buffer{};
+            Interop::string_buffer<char, 128> buffer{};
 
-            if (int fd = open("/etc/machine-id", O_RDONLY); fd != -1)
+            if (Interop::unix_LoadFile(buffer, "/etc/machine-id"))
             {
-                ssize_t processed = read(fd, buffer.data(), buffer.size() - 1);
-
-                if (processed > 0)
-                {
-                    buffer[32] = 0;
-                    this->m_SystemId = buffer.data();
-                }
-
-                close(fd);
+                buffer.trim(32);
+                this->m_SystemId = UuidParser::Parse(buffer.as_view()).value_or(Uuid{});
             }
-            else if (int fd = open("/var/lib/dbus/machine-id", O_RDONLY); fd != -1)
+            else if (Interop::unix_LoadFile(buffer, "/var/lib/dbus/machine-id"))
             {
-                ssize_t processed = read(fd, buffer.data(), buffer.size() - 1);
-
-                if (processed > 0)
-                {
-                    buffer[32] = 0;
-                    this->m_SystemId = buffer.data();
-                }
-
-                close(fd);
+                buffer.trim(32);
+                this->m_SystemId = UuidParser::Parse(buffer.as_view()).value_or(Uuid{});
             }
             else
             {
-                this->m_SystemId = "Unknown";
+                this->m_SystemId = {};
             }
         }
 
@@ -392,7 +378,7 @@ namespace Anemone
         return Private::GEnvironmentStatics->m_SystemVersion;
     }
 
-    std::string_view Environment::GetSystemId()
+    Uuid Environment::GetSystemId()
     {
         return Private::GEnvironmentStatics->m_SystemId;
     }

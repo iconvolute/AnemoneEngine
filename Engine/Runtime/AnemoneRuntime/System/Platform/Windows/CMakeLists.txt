@@ -2,6 +2,8 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "WindowsApplication.cxx"
+        "WindowsApplication.hxx"
         "WindowsClipboard.cxx"
         "WindowsClipboard.hxx"
         "WindowsDialogs.cxx"
@@ -10,6 +12,8 @@ target_sources(AnemoneRuntime
         "WindowsEnvironment.hxx"
         "WindowsProcessorProperties.cxx"
         "WindowsProcessorProperties.hxx"
+        "WindowsWindow.cxx"
+        "WindowsWindow.hxx"
 )
 
 endif()

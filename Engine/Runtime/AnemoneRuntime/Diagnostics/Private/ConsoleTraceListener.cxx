@@ -6,7 +6,7 @@ namespace Anemone
     {
         (void)level;
 
-        UniqueLock _{this->_lock};
+        UniqueLock scope{this->_lock};
 
         std::fwrite(message, size, 1, stdout);
         std::fputc('\n', stdout);
@@ -14,7 +14,7 @@ namespace Anemone
 
     void ConsoleTraceListener::Flush()
     {
-        UniqueLock _{this->_lock};
+        UniqueLock scope{this->_lock};
 
         std::fflush(stdout);
     }

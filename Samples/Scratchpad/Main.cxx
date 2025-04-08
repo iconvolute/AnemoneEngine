@@ -78,7 +78,7 @@ namespace Anemone::inline FileSystemX
 
 
 
-#include "AnemoneRuntime/Platform/Application.hxx"
+#include "AnemoneRuntime/System/Application.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
@@ -134,7 +134,7 @@ public:
             Anemone::CriticalSection cs{};
 
             {
-                Anemone::UniqueLock _{cs};
+                Anemone::UniqueLock scope{cs};
 
                 if (auto f = Anemone::FileSystem::GetFileInfo(ret))
                 {
@@ -282,9 +282,8 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Platform/Process.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
-#endif
+#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
+
 #if ANEMONE_PLATFORM_LINUX
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #endif
@@ -316,7 +315,15 @@ struct V2 : Anemone::DirectoryVisitor
 int AnemoneMain(int argc, char** argv)
 {
     {
-        Anemone::Parallel::For(1024+2, 6, [](size_t index, size_t count)
+        AE_TRACE(Error, "{}", Anemone::Environment::GetDeviceUniqueId());
+        AE_TRACE(Error, "Default: '{}'", Anemone::Environment::GetSystemId());
+        AE_TRACE(Error, "Braces:  '{:b}'", Anemone::Environment::GetSystemId());
+        AE_TRACE(Error, "Dashes:  '{:d}'", Anemone::Environment::GetSystemId());
+        AE_TRACE(Error, "Raw:     '{:r}'", Anemone::Environment::GetSystemId());
+        AE_TRACE(Error, "Full:    '{:f}'", Anemone::Environment::GetSystemId());
+    }
+    {
+        Anemone::Parallel::For(1024 + 2, 6, [](size_t index, size_t count)
         {
             AE_TRACE(Error, "work: tid: {:x}, index: {}, count: {}", Anemone::CurrentThread::Id(), index, count);
         }, [](size_t count)

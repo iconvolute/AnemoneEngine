@@ -16,7 +16,7 @@ namespace Anemone::Private
         DateTime m_StartupTime;
 
         std::string m_SystemVersion;
-        std::string m_SystemId;
+        Uuid m_SystemId;
         std::string m_SystemName;
         std::string m_DeviceId;
         std::string m_DeviceName;

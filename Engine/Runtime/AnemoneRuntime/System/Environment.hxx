@@ -4,6 +4,7 @@
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/DateTime.hxx"
 #include "AnemoneRuntime/Instant.hxx"
+#include "AnemoneRuntime/Uuid.hxx"
 
 #include <span>
 #include <cstdint>
@@ -132,7 +133,7 @@ namespace Anemone
         RUNTIME_API static ColorRef GetScreenPixel(Math::PointF position, float gamma);
 
         RUNTIME_API static std::string_view GetSystemVersion();
-        RUNTIME_API static std::string_view GetSystemId();
+        RUNTIME_API static Uuid GetSystemId();
         RUNTIME_API static std::string_view GetSystemName();
 
         RUNTIME_API static Duration GetSystemUptime();

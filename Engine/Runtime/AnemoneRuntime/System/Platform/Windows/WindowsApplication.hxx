@@ -1,14 +1,14 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Application.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/System/Application.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 
 #include <memory>
 
-namespace Anemone
+namespace Anemone::Private
 {
     struct WindowsApplicationStatics final
     {
@@ -42,6 +42,8 @@ namespace Anemone
 
         ~WindowsApplicationStatics();
 
-        static WindowsApplicationStatics& Get();
+        [[nodiscard]] HCURSOR GetCursor(CursorType cursor) const;
     };
+
+    extern UninitializedObject<WindowsApplicationStatics> GApplicationStatics;
 }

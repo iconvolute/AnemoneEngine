@@ -2,13 +2,8 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "WindowsApplication.cxx"
-        "WindowsApplication.hxx"
 
         "WindowsCrashHandler.hxx"
-
-        "WindowsError.cxx"
-        "WindowsError.hxx"
 
         "WindowsFileHandle.cxx"
         "WindowsFileHandle.hxx"
@@ -40,9 +35,6 @@ target_sources(AnemoneRuntime
         "WindowsStackTrace.cxx"
 
         "WindowsSystemAllocator.cxx"
-
-        "WindowsWindow.cxx"
-        "WindowsWindow.hxx"
 )
 
 endif()

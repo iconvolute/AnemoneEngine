@@ -1,7 +1,5 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "BaseError.cxx"
-        "BaseError.hxx"
 
         "BaseHeaders.hxx"
 

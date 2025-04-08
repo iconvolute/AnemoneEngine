@@ -52,21 +52,21 @@ namespace Anemone
 
     void Trace::AddListener(TraceListener& listener)
     {
-        UniqueLock _{GTraceStatics->Lock};
+        UniqueLock scope{GTraceStatics->Lock};
 
         GTraceStatics->Listeners.PushBack(&listener);
     }
 
     void Trace::RemoveListener(TraceListener& listener)
     {
-        UniqueLock _{GTraceStatics->Lock};
+        UniqueLock scope{GTraceStatics->Lock};
 
         GTraceStatics->Listeners.Remove(&listener);
     }
 
     void Trace::TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
     {
-        SharedLock _{GTraceStatics->Lock};
+        SharedLock scope{GTraceStatics->Lock};
 
         if (not GTraceStatics->Listeners.IsEmpty())
         {
@@ -94,7 +94,7 @@ namespace Anemone
 
     void Trace::Flush()
     {
-        SharedLock _{GTraceStatics->Lock};
+        SharedLock scope{GTraceStatics->Lock};
 
         GTraceStatics->Listeners.ForEach([](TraceListener& listener)
         {

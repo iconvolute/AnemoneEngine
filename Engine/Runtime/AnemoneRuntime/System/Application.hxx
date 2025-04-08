@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Window.hxx"
+#include "AnemoneRuntime/System/Window.hxx"
 #include "AnemoneRuntime/Flags.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Point.hxx"
@@ -393,8 +393,6 @@ namespace Anemone
 {
     struct Application
     {
-        RUNTIME_API static void Initialize();
-        RUNTIME_API static void Finalize();
         RUNTIME_API static void ProcessMessages();
 
         RUNTIME_API static std::unique_ptr<Window> MakeWindow(WindowType type);

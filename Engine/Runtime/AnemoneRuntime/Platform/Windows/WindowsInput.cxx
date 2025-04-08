@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
 

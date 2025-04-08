@@ -43,7 +43,7 @@ namespace Anemone
     {
         ProfilerMarkerRegistry& registry = ProfilerMarkerRegistry::Get();
 
-        UniqueLock lock{registry.Lock};
+        UniqueLock scope{registry.Lock};
         registry.Markers.PushBack(&marker);
     }
 
@@ -51,7 +51,7 @@ namespace Anemone
     {
         ProfilerMarkerRegistry& registry = ProfilerMarkerRegistry::Get();
 
-        UniqueLock lock{registry.Lock};
+        UniqueLock scope{registry.Lock};
         registry.Markers.Remove(&marker);
     }
 

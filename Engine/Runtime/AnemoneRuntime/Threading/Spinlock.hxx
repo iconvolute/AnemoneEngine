@@ -55,7 +55,7 @@ namespace Anemone
         template <typename F>
         auto With(F&& f) -> std::invoke_result_t<F&&>
         {
-            UniqueLock lock{*this};
+            UniqueLock scope{*this};
             return std::forward<F>(f)();
         }
     };
@@ -138,7 +138,7 @@ namespace Anemone
         template <typename F>
         auto With(F&& f) -> std::invoke_result_t<F&&>
         {
-            UniqueLock lock{*this};
+            UniqueLock scope{*this};
             return std::forward<F>(f)();
         }
     };

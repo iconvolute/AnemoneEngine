@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsEnvironment.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
@@ -172,7 +172,7 @@ namespace Anemone::Private
         }
 
         // Determine system ID
-        if (Interop::win32_registry_key key{
+        if (Interop::win32_registry_key const key{
                 HKEY_LOCAL_MACHINE,
                 LR"(SOFTWARE\Microsoft\Cryptography)",
                 KEY_READ,
@@ -180,7 +180,10 @@ namespace Anemone::Private
         {
             if (key.read_string(L"MachineGuid", buffer))
             {
-                Interop::win32_NarrowString(this->m_SystemId, buffer.as_view());
+                Interop::string_buffer<char, 64> utf8Buffer;
+                Interop::win32_NarrowString(utf8Buffer, buffer.as_view());
+
+                this->m_SystemId = UuidParser::Parse(utf8Buffer.as_view()).value_or(Uuid{});
             }
         }
 
@@ -235,7 +238,7 @@ namespace Anemone::Private
         Interop::win32_NarrowString(this->m_TemporaryPath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
 
-        if (Interop::win32_registry_key keySystem{
+        if (Interop::win32_registry_key const keySystem{
                 HKEY_LOCAL_MACHINE,
                 LR"(HARDWARE\DESCRIPTION\System)",
                 KEY_READ,
@@ -245,8 +248,12 @@ namespace Anemone::Private
             {
                 Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());
             }
+            else
+            {
+                Debugger::ReportApplicationStop("Failed to get system information");
+            }
 
-            if (Interop::win32_registry_key keyBios{
+            if (Interop::win32_registry_key const keyBios{
                     keySystem.get(),
                     LR"(BIOS)",
                     KEY_READ,
@@ -256,28 +263,38 @@ namespace Anemone::Private
                 {
                     Interop::win32_NarrowString(this->m_DeviceManufacturer, buffer.as_view());
                 }
+                else
+                {
+                    Debugger::ReportApplicationStop("Failed to get system information");
+                }
+
                 if (keyBios.read_string(L"SystemProductName", buffer))
                 {
                     Interop::win32_NarrowString(this->m_DeviceName, buffer.as_view());
                 }
+                else
+                {
+                    Debugger::ReportApplicationStop("Failed to get system information");
+                }
+
                 if (keyBios.read_string(L"SystemVersion", buffer))
                 {
                     Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
                 }
+                else
+                {
+                    Debugger::ReportApplicationStop("Failed to get system information");
+                }
+            }
+            else
+            {
+                Debugger::ReportApplicationStop("Failed to get system information");
             }
         }
-
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)", LR"(SystemBiosVersion)");
-        Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());
-
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemManufacturer)");
-        Interop::win32_NarrowString(this->m_DeviceManufacturer, buffer.as_view());
-
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemProductName)");
-        Interop::win32_NarrowString(this->m_DeviceName, buffer.as_view());
-
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\BIOS)", LR"(SystemVersion)");
-        Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
+        else
+        {
+            Debugger::ReportApplicationStop("Failed to get system information");
+        }
     }
 
     WindowsEnvironmentStatics::~WindowsEnvironmentStatics()
@@ -411,7 +428,7 @@ namespace Anemone
             .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
         };
 
-        MONITORENUMPROC const fillDisplayDevicesInformation = [](HMONITOR handle, HDC, LPRECT, LPARAM context) -> BOOL
+        MONITORENUMPROC fillDisplayDevicesInformation = [](HMONITOR handle, HDC, LPRECT, LPARAM context) -> BOOL
         {
             DisplayMetrics& displayMetrics = *reinterpret_cast<DisplayMetrics*>(context); // NOLINT(performance-no-int-to-ptr)
 
@@ -556,7 +573,7 @@ namespace Anemone
         return Private::GEnvironmentStatics->m_SystemVersion;
     }
 
-    std::string_view Environment::GetSystemId()
+    Uuid Environment::GetSystemId()
     {
         return Private::GEnvironmentStatics->m_SystemId;
     }

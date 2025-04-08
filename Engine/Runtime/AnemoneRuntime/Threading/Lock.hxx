@@ -24,7 +24,7 @@ namespace Anemone
     class [[nodiscard, jetbrains::guard]] UniqueLock final
     {
     private:
-        LockT& _lock;
+        LockT* _lock;
 
     public:
         using Lock = LockT;
@@ -37,19 +37,19 @@ namespace Anemone
         UniqueLock& operator=(UniqueLock&&) = delete;
 
         explicit UniqueLock(LockT& lock)
-            : _lock{lock}
+            : _lock{&lock}
         {
-            this->_lock.Enter();
+            this->_lock->Enter();
         }
 
         ~UniqueLock()
         {
-            this->_lock.Leave();
+            this->_lock->Leave();
         }
 
         Lock& GetLock() const
         {
-            return this->_lock;
+            return *this->_lock;
         }
     };
 
@@ -90,14 +90,14 @@ namespace Anemone
     template <typename Lock, typename Callback>
     auto WithLock(Lock& lock, Callback&& callback) -> std::invoke_result_t<Callback&&>
     {
-        UniqueLock _{lock};
+        UniqueLock scope{lock};
         return std::forward<Callback>(callback)();
     }
 
     template <typename Lock, typename Callback>
     auto WithSharedLock(Lock& lock, Callback&& callback) -> std::invoke_result_t<Callback&&>
     {
-        SharedLock _{lock};
+        SharedLock scope{lock};
         return std::forward<Callback>(callback)();
     }
 }

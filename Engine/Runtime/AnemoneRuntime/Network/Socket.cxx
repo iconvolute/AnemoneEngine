@@ -2,11 +2,7 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
-#endif
-
-#include "AnemoneRuntime/Platform/Base/BaseError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 
 #include <optional>
 #include <utility>

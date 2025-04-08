@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/Base/BaseError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Common/CommonError.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
 

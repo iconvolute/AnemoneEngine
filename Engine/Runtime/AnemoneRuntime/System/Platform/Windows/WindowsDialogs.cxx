@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsDialogs.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsWindow.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/System/Dialogs.hxx"
 

@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::Internal

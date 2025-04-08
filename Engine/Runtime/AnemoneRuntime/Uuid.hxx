@@ -34,7 +34,7 @@ namespace Anemone
 
     struct UuidParser final
     {
-        static constexpr int ParseDigit(char c) noexcept
+        static constexpr uint8_t ParseDigit(char c) noexcept
         {
             if (c >= '0' && c <= '9')
             {
@@ -51,46 +51,57 @@ namespace Anemone
                 return static_cast<uint8_t>(10 + c - 'a');
             }
 
-            return -1;
+            return 16;
         }
 
         static constexpr auto Parse(std::string_view value) -> std::optional<Uuid>
         {
-            //
-            // Parse Uuid in format "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-            // X must be a hex digit, otherwise the function returns nullopt.
-            //
+            // Valid UUID string representation will have one of these lengths.
+            size_t const size = value.size();
+
+            if ((size == 34u) or (size == 38u))
+            {
+                // '{uuid}'
+                value.remove_prefix(1);
+                value.remove_suffix(1);
+            }
+
+            bool const dashes = (size == 36u) or (size == 38u);
+
+            uint8_t maxDigit = 0;
 
             Uuid result;
-
-            if (value.size() != 36)
-            {
-                return std::nullopt;
-            }
 
             size_t current = 0;
 
             for (size_t i = 0; i < 16; ++i)
             {
-                if ((i == 4) or (i == 6) or (i == 8) or (i == 10))
+                if (dashes)
                 {
-                    if (value[current] != '-')
+                    if ((i == 4) or (i == 6) or (i == 8) or (i == 10))
                     {
-                        return std::nullopt;
+                        if (value[current] != '-')
+                        {
+                            return std::nullopt;
+                        }
+
+                        ++current;
                     }
-
-                    ++current;
                 }
 
-                auto const hi = ParseDigit(value[current++]);
-                auto const lo = ParseDigit(value[current++]);
+                uint8_t const hi = ParseDigit(value[current++]);
+                uint8_t const lo = ParseDigit(value[current++]);
 
-                if ((hi < 0) || (lo < 0))
-                {
-                    return std::nullopt;
-                }
+                maxDigit |= hi;
+                maxDigit |= lo;
 
-                result.Elements[i] = (static_cast<uint8_t>(hi) << 4) | static_cast<uint8_t>(lo);
+                result.Elements[i] = static_cast<uint8_t>(
+                    (static_cast<uint8_t>(hi) << 4u) | static_cast<uint8_t>(lo));
+            }
+
+            if (maxDigit >= 16u)
+            {
+                return std::nullopt;
             }
 
             return result;
@@ -127,28 +138,103 @@ namespace Anemone
 template <>
 struct fmt::formatter<Anemone::Uuid>
 {
+private:
+    bool m_dashes = true;
+    bool m_braces = true;
+
 public:
     constexpr auto parse(auto& context) noexcept
     {
-        return context.begin();
+        auto it = context.begin();
+
+        if (it != context.end())
+        {
+            switch (*it)
+            {
+            case 'd':
+                {
+                    ++it;
+                    this->m_braces = false;
+                    this->m_dashes = true;
+                    break;
+                }
+            case 'b':
+                {
+                    ++it;
+                    this->m_braces = true;
+                    this->m_dashes = false;
+                    break;
+                }
+
+            case 'f':
+                {
+                    ++it;
+                    this->m_braces = true;
+                    this->m_dashes = true;
+                    break;
+                }
+
+            case 'r':
+                {
+                    ++it;
+                    this->m_braces = false;
+                    this->m_dashes = false;
+                    break;
+                }
+
+            default:
+                {
+                    break;
+                }
+            }
+        }
+
+        return it;
     }
 
     auto format(Anemone::Uuid const& value, auto& context) const noexcept
     {
         auto out = context.out();
 
-        for (size_t i = 0; i < 16; ++i)
+        size_t i = 0u;
+
+        if (this->m_braces)
         {
-            constexpr const char* digits = "0123456789abcdef";
+            (*out++) = '{';
+        }
 
-            if (i == 4 || i == 6 || i == 8 || i == 10)
+        constexpr const char* digits = "0123456789abcdef";
+
+        if (this->m_dashes)
+        {
+            for (uint8_t const element : value.Elements)
             {
-                (*out++) = '-';
-            }
 
-            uint8_t const element{value.Elements[i]};
-            (*out++) = digits[(element >> 4) & 0x0F];
-            (*out++) = digits[element & 0x0F];
+                if (i == 4 || i == 6 || i == 8 || i == 10)
+                {
+                    (*out++) = '-';
+                }
+
+                (*out++) = digits[static_cast<size_t>((element >> 4u) & 0x0Fu)];
+                (*out++) = digits[static_cast<size_t>(element & 0x0Fu)];
+
+                ++i;
+            }
+        }
+        else
+        {
+            for (uint8_t const element : value.Elements)
+            {
+                (*out++) = digits[static_cast<size_t>((element >> 4u) & 0x0Fu)];
+                (*out++) = digits[static_cast<size_t>(element & 0x0Fu)];
+
+                ++i;
+            }
+        }
+
+        if (this->m_braces)
+        {
+            (*out++) = '}';
         }
 
         return out;

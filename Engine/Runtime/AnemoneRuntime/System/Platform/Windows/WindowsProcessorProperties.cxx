@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsProcessorProperties.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 
 namespace Anemone::Private
 {
@@ -123,14 +124,33 @@ namespace Anemone::Private
             }
         }
 
-        // Query CPU name from registry
-        Interop::string_buffer<wchar_t, 128> buffer{};
+        if (Interop::win32_registry_key const key{HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", KEY_READ})
+        {
+            // Query CPU name from registry
+            Interop::string_buffer<wchar_t, 128> buffer{};
 
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(ProcessorNameString)");
-        Interop::win32_NarrowString(this->Name, buffer.as_view());
+            if (key.read_string(LR"(ProcessorNameString)", buffer))
+            {
+                Interop::win32_NarrowString(this->Name, buffer.as_view());
+            }
+            else
+            {
+                Debugger::ReportApplicationStop("Cannot obtain processor information");
+            }
 
-        Interop::win32_QueryRegistry(buffer, HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", LR"(VendorIdentifier)");
-        Interop::win32_NarrowString(this->Vendor, buffer.as_view());
+            if (key.read_string(LR"(VendorIdentifier)", buffer))
+            {
+                Interop::win32_NarrowString(this->Vendor, buffer.as_view());
+            }
+            else
+            {
+                Debugger::ReportApplicationStop("Cannot obtain processor information");
+            }
+        }
+        else
+        {
+            Debugger::ReportApplicationStop("Cannot obtain processor information");
+        }
     }
 }
 

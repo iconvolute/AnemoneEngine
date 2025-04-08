@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Platform/Base/BaseError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 
 #include <dirent.h>
 

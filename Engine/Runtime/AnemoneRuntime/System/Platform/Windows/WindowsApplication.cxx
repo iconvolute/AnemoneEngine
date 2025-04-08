@@ -1,12 +1,12 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsApplication.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone
+namespace Anemone::Private
 {
-    static UninitializedObject<WindowsApplicationStatics> GWindowsApplicationStatics;
+    UninitializedObject<WindowsApplicationStatics> GApplicationStatics;
 
     WindowsApplicationStatics::WindowsApplicationStatics()
     {
@@ -70,37 +70,77 @@ namespace Anemone
             hInstance);
     }
 
-    WindowsApplicationStatics& WindowsApplicationStatics::Get()
+    HCURSOR WindowsApplicationStatics::GetCursor(CursorType cursor) const
     {
-        return GWindowsApplicationStatics.Get();
+        switch (cursor)
+        {
+        default:
+        case CursorType::None:
+            return {};
+
+        case CursorType::Arrow:
+            return this->ArrowCursor;
+
+        case CursorType::ArrowWait:
+            return this->ArrowWaitCursor;
+
+        case CursorType::Text:
+            return this->TextCursor;
+
+        case CursorType::SizeHorizontal:
+            return this->SizeHorizontalCursor;
+
+        case CursorType::SizeVertical:
+            return this->SizeVerticalCursor;
+
+        case CursorType::SizeLeft:
+            return this->SizeLeftCursor;
+
+        case CursorType::SizeTop:
+            return this->SizeTopCursor;
+
+        case CursorType::SizeRight:
+            return this->SizeRightCursor;
+
+        case CursorType::SizeBottom:
+            return this->SizeBottomCursor;
+
+        case CursorType::SizeTopLeft:
+            return this->SizeTopLeftCursor;
+
+        case CursorType::SizeTopRight:
+            return this->SizeTopRightCursor;
+
+        case CursorType::SizeBottomLeft:
+            return this->SizeBottomLeftCursor;
+
+        case CursorType::SizeBottomRight:
+            return this->SizeBottomRightCursor;
+
+        case CursorType::SizeAll:
+            return this->SizeAllCursor;
+
+        case CursorType::Cross:
+            return this->CrossCursor;
+        }
     }
 }
 
 namespace Anemone
 {
-    void Application::Initialize()
-    {
-        GWindowsApplicationStatics.Create();
-    }
-
-    void Application::Finalize()
-    {
-        GWindowsApplicationStatics.Destroy();
-    }
-
     void Application::ProcessMessages()
     {
         // Process messages.
         MSG message{};
 
-        while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE))
+        while (PeekMessageW(&message, nullptr, 0, 0, PM_REMOVE) != FALSE)
         {
             TranslateMessage(&message);
             DispatchMessageW(&message);
         }
 
         // Pool input devices.
-        GWindowsApplicationStatics->Input.Poll();
+        Private::GApplicationStatics->Input.Poll();
     }
 
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)

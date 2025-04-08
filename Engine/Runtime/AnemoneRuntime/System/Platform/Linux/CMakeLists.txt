@@ -2,6 +2,8 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "LinuxApplication.cxx"
+        "LinuxApplication.hxx"
         "LinuxClipboard.cxx"
         "LinuxClipboard.hxx"
         "LinuxDialogs.cxx"
@@ -10,6 +12,8 @@ target_sources(AnemoneRuntime
         "LinuxEnvironment.hxx"
         "LinuxProcessorProperties.cxx"
         "LinuxProcessorProperties.hxx"
+        "LinuxWindow.cxx"
+        "LinuxWindow.hxx"
 )
 
 endif()

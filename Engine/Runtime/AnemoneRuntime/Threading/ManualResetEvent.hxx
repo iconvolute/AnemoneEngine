@@ -32,7 +32,7 @@ namespace Anemone
     public:
         void Wait()
         {
-            UniqueLock lock{this->_cs};
+            UniqueLock scope{this->_cs};
 
             while (!this->_set)
             {
@@ -43,7 +43,7 @@ namespace Anemone
         void Set()
         {
             {
-                UniqueLock _{this->_cs};
+                UniqueLock scope{this->_cs};
                 this->_set = true;
             }
 
@@ -52,7 +52,7 @@ namespace Anemone
 
         void Reset()
         {
-            UniqueLock _{this->_cs};
+            UniqueLock scope{this->_cs};
             this->_set = false;
         }
     };
