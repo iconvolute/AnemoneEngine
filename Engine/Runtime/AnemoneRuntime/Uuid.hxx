@@ -56,47 +56,63 @@ namespace Anemone
 
         static constexpr auto Parse(std::string_view value) -> std::optional<Uuid>
         {
-            // Valid UUID string representation will have one of these lengths.
-            size_t const size = value.size();
-
-            if ((size == 34u) or (size == 38u))
+            if (size_t const size = value.size(); (size == 34u) or (size == 38u))
             {
+                if ((value.front() != '{') or (value.back() != '}'))
+                {
+                    return std::nullopt;
+                }
+
                 // '{uuid}'
                 value.remove_prefix(1);
                 value.remove_suffix(1);
             }
 
-            bool const dashes = (size == 36u) or (size == 38u);
-
             uint8_t maxDigit = 0;
-
             Uuid result;
 
             size_t current = 0;
 
-            for (size_t i = 0; i < 16; ++i)
+            if (size_t const size = value.size(); size == 32u)
             {
-                if (dashes)
+                for (uint8_t& element : result.Elements)
+                {
+                    uint8_t const hi = ParseDigit(value[current++]);
+                    uint8_t const lo = ParseDigit(value[current++]);
+
+                    maxDigit |= hi;
+                    maxDigit |= lo;
+
+                    element = static_cast<uint8_t>((hi << 4u) | lo);
+                }
+            }
+            else if (size == 36u)
+            {
+                size_t i = 0;
+
+                for (uint8_t& element : result.Elements)
                 {
                     if ((i == 4) or (i == 6) or (i == 8) or (i == 10))
                     {
-                        if (value[current] != '-')
-                        {
-                            return std::nullopt;
-                        }
+                        maxDigit |= (value[current] == '-') ? 0u : 16u;
 
                         ++current;
                     }
+
+                    uint8_t const hi = ParseDigit(value[current++]);
+                    uint8_t const lo = ParseDigit(value[current++]);
+
+                    maxDigit |= hi;
+                    maxDigit |= lo;
+
+                    element = static_cast<uint8_t>((hi << 4u) | lo);
+
+                    ++i;
                 }
-
-                uint8_t const hi = ParseDigit(value[current++]);
-                uint8_t const lo = ParseDigit(value[current++]);
-
-                maxDigit |= hi;
-                maxDigit |= lo;
-
-                result.Elements[i] = static_cast<uint8_t>(
-                    (static_cast<uint8_t>(hi) << 4u) | static_cast<uint8_t>(lo));
+            }
+            else
+            {
+                maxDigit |= 16u;
             }
 
             if (maxDigit >= 16u)

@@ -36,7 +36,7 @@ namespace Anemone
 
             while (!this->_set)
             {
-                this->_cv.Wait(lock);
+                this->_cv.Wait(scope);
             }
         }
 

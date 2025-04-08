@@ -51,14 +51,42 @@ TEST_CASE("Uuid Formatting")
     {
         Uuid const value{};
         std::string formatted = fmt::format("{}", value);
-        REQUIRE(formatted == "00000000-0000-0000-0000-000000000000");
+        REQUIRE(formatted == "{00000000-0000-0000-0000-000000000000}");
     }
 
     SECTION("Default")
     {
         Uuid const value = NAMESPACE_DNS;
         std::string formatted = fmt::format("{}", value);
+        REQUIRE(formatted == "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
+    }
+
+    SECTION("Braces")
+    {
+        Uuid const value = NAMESPACE_DNS;
+        std::string formatted = fmt::format("{:b}", value);
+        REQUIRE(formatted == "{6ba7b8109dad11d180b400c04fd430c8}");
+    }
+
+    SECTION("Dashes")
+    {
+        Uuid const value = NAMESPACE_DNS;
+        std::string formatted = fmt::format("{:d}", value);
         REQUIRE(formatted == "6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+    }
+
+    SECTION("Full")
+    {
+        Uuid const value = NAMESPACE_DNS;
+        std::string formatted = fmt::format("{:f}", value);
+        REQUIRE(formatted == "{6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
+    }
+
+    SECTION("Raw")
+    {
+        Uuid const value = NAMESPACE_DNS;
+        std::string formatted = fmt::format("{:r}", value);
+        REQUIRE(formatted == "6ba7b8109dad11d180b400c04fd430c8");
     }
 }
 
@@ -72,15 +100,66 @@ TEST_CASE("Uuid Parsing")
         REQUIRE(!value.has_value());
     }
 
-    SECTION("Unterminated braces")
+    SECTION("Valid +braces +dashes")
     {
-        auto value = UuidParser::Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8dade");
+        auto value = UuidParser::Parse("{6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
+        REQUIRE(value.has_value());
+        REQUIRE(value == NAMESPACE_DNS);
+    }
+
+    SECTION("Invalid dashes +braces +dashes")
+    {
+        auto value = UuidParser::Parse("{6ba7b810x9dad-11d1-80b4-00c04fd430c8}");
         REQUIRE(!value.has_value());
     }
 
-    SECTION("Valid with braces and dashes")
+    SECTION("Invalid braces front +braces +dashes")
+    {
+        auto value = UuidParser::Parse("[6ba7b810-9dad-11d1-80b4-00c04fd430c8}");
+        REQUIRE(!value.has_value());
+    }
+
+    SECTION("Invalid braces back +braces +dashes")
+    {
+        auto value = UuidParser::Parse("{6ba7b810-9dad-11d1-80b4-00c04fd430c8]");
+        REQUIRE(!value.has_value());
+    }
+
+    SECTION("Valid +braces -dashes")
+    {
+        auto value = UuidParser::Parse("{6ba7b8109dad11d180b400c04fd430c8}");
+        REQUIRE(value.has_value());
+        REQUIRE(value == NAMESPACE_DNS);
+    }
+
+    SECTION("Invalid braces front +braces -dashes")
+    {
+        auto value = UuidParser::Parse("[6ba7b8109dad11d180b400c04fd430c8}");
+        REQUIRE(!value.has_value());
+    }
+
+    SECTION("Invalid braces back +braces -dashes")
+    {
+        auto value = UuidParser::Parse("{6ba7b8109dad11d180b400c04fd430c8]");
+        REQUIRE(!value.has_value());
+    }
+
+    SECTION("Valid -braces +dashes")
     {
         auto value = UuidParser::Parse("6ba7b810-9dad-11d1-80b4-00c04fd430c8");
+        REQUIRE(value.has_value());
+        REQUIRE(value == NAMESPACE_DNS);
+    }
+
+    SECTION("Invalid dashes -braces +dashes")
+    {
+        auto value = UuidParser::Parse("6ba7b810x9dad-11d1-80b4-00c04fd430c8");
+        REQUIRE(!value.has_value());
+    }
+
+    SECTION("Valid -braces -dashes")
+    {
+        auto value = UuidParser::Parse("6ba7b8109dad11d180b400c04fd430c8");
         REQUIRE(value.has_value());
         REQUIRE(value == NAMESPACE_DNS);
     }
