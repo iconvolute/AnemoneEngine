@@ -65,21 +65,29 @@ namespace Anemone::Private
 
         // System ID
         {
-            Interop::string_buffer<char, 128> buffer{};
+            Interop::string_buffer<char, 64> buffer{};
+
+            std::optional<Uuid> parsed{};
 
             if (Interop::unix_LoadFile(buffer, "/etc/machine-id"))
             {
                 buffer.trim(32);
-                this->m_SystemId = UuidParser::Parse(buffer.as_view()).value_or(Uuid{});
+                parsed = UuidParser::Parse(buffer.as_view());
             }
             else if (Interop::unix_LoadFile(buffer, "/var/lib/dbus/machine-id"))
             {
                 buffer.trim(32);
-                this->m_SystemId = UuidParser::Parse(buffer.as_view()).value_or(Uuid{});
+                parsed = UuidParser::Parse(buffer.as_view());
+            }
+            
+            
+            if (parsed)
+            {
+                this->m_SystemId = *parsed;
             }
             else
             {
-                this->m_SystemId = {};
+                AE_TRACE(Warning, "Failed to parse machine id");
             }
         }
 
@@ -525,32 +533,27 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Private::GEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Private::GEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Private::GEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Private::GEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        AE_PANIC("Not implemented");
-        return {};
+        return Private::GEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
