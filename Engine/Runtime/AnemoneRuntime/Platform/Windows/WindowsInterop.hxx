@@ -446,7 +446,7 @@ namespace Anemone::Interop
 
         static win32_registry_key open(HKEY key, const wchar_t* name, bool writable)
         {
-            if (HKEY result{}; RegOpenKeyExW(key, name, 0, GetMask(writable), &result) != ERROR_SUCCESS)
+            if (HKEY result{}; RegOpenKeyExW(key, name, 0, GetMask(writable), &result) == ERROR_SUCCESS)
             {
                 return win32_registry_key{result};
             }
@@ -461,9 +461,9 @@ namespace Anemone::Interop
 
         win32_registry_key open_subkey(const wchar_t* name, bool writable) const
         {
-            if (HKEY result{}; RegOpenKeyExW(this->m_key, name, 0, GetMask(writable), &result) != ERROR_SUCCESS)
+            if (this->m_key)
             {
-                return win32_registry_key{result};
+                return open(this->m_key, name, writable);
             }
 
             return {};
