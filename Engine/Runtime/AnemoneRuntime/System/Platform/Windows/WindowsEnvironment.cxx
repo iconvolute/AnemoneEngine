@@ -172,11 +172,7 @@ namespace Anemone::Private
         }
 
         // Determine system ID
-        if (Interop::win32_registry_key const key{
-                HKEY_LOCAL_MACHINE,
-                LR"(SOFTWARE\Microsoft\Cryptography)",
-                KEY_READ,
-            })
+        if (auto key = Interop::win32_registry_key::open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)"))
         {
             if (key.read_string(L"MachineGuid", buffer))
             {
@@ -238,11 +234,7 @@ namespace Anemone::Private
         Interop::win32_NarrowString(this->m_TemporaryPath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
 
-        if (Interop::win32_registry_key const keySystem{
-                HKEY_LOCAL_MACHINE,
-                LR"(HARDWARE\DESCRIPTION\System)",
-                KEY_READ,
-            })
+        if (auto const keySystem = Interop::win32_registry_key::open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)"))
         {
             if (keySystem.read_string(L"SystemBiosVersion", buffer))
             {
@@ -253,11 +245,7 @@ namespace Anemone::Private
                 Debugger::ReportApplicationStop("Failed to get system information");
             }
 
-            if (Interop::win32_registry_key const keyBios{
-                    keySystem.get(),
-                    LR"(BIOS)",
-                    KEY_READ,
-                })
+            if (auto const keyBios = keySystem.open_subkey(LR"(BIOS)"))
             {
                 if (keyBios.read_string(L"SystemManufacturer", buffer))
                 {

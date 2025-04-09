@@ -399,16 +399,20 @@ namespace Anemone::Interop
     private:
         HKEY m_key{};
 
+        static constexpr REGSAM GetMask(bool writable)
+        {
+            REGSAM accessMask = KEY_READ;
+
+            if (writable)
+            {
+                accessMask |= KEY_WRITE;
+            }
+
+            return accessMask;
+        }
+
     public:
         win32_registry_key() = default;
-
-        explicit win32_registry_key(HKEY key, const wchar_t* subKey, REGSAM access)
-        {
-            if (RegOpenKeyExW(key, subKey, 0, access, &this->m_key) != ERROR_SUCCESS)
-            {
-                this->m_key = nullptr;
-            }
-        }
 
         explicit win32_registry_key(HKEY key)
             : m_key{key}
@@ -440,14 +444,34 @@ namespace Anemone::Interop
             this->close();
         }
 
-        static win32_registry_key open_readonly(HKEY key, const wchar_t* subKey)
+        static win32_registry_key open(HKEY key, const wchar_t* name, bool writable)
         {
-            return win32_registry_key{key, subKey, KEY_READ};
+            if (HKEY result{}; RegOpenKeyExW(key, name, 0, GetMask(writable), &result) != ERROR_SUCCESS)
+            {
+                return win32_registry_key{result};
+            }
+
+            return {};
         }
 
-        static win32_registry_key open_readwrite(HKEY key, const wchar_t* subKey)
+        static win32_registry_key open(HKEY key, const wchar_t* name)
         {
-            return win32_registry_key{key, subKey, KEY_READ | KEY_WRITE};
+            return open(key, name, false);
+        }
+
+        win32_registry_key open_subkey(const wchar_t* name, bool writable) const
+        {
+            if (HKEY result{}; RegOpenKeyExW(this->m_key, name, 0, GetMask(writable), &result) != ERROR_SUCCESS)
+            {
+                return win32_registry_key{result};
+            }
+
+            return {};
+        }
+
+        win32_registry_key open_subkey(const wchar_t* name) const
+        {
+            return open_subkey(name, false);
         }
 
         void close()

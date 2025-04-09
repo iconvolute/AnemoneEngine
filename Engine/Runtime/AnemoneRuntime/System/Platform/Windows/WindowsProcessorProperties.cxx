@@ -124,7 +124,7 @@ namespace Anemone::Private
             }
         }
 
-        if (Interop::win32_registry_key const key{HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)", KEY_READ})
+        if (auto const key = Interop::win32_registry_key::open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)"))
         {
             // Query CPU name from registry
             Interop::string_buffer<wchar_t, 128> buffer{};
