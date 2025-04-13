@@ -25,9 +25,9 @@ namespace Anemone
 
         RUNTIME_API static void Execute(Task& task);
 
-        RUNTIME_API static void Wait(AwaiterHandle& awaiter);
+        RUNTIME_API static void Wait(AwaiterHandle const& awaiter);
 
-        RUNTIME_API static bool TryWait(AwaiterHandle& awaiter, Duration timeout);
+        RUNTIME_API static bool TryWait(AwaiterHandle const& awaiter, Duration timeout);
 
         RUNTIME_API static void Delay(Duration timeout);
 

@@ -46,10 +46,10 @@ namespace Anemone::Private
             TaskPriority priority);
 
         void Execute(Task& task);
-        void Wait(AwaiterHandle& awaiter);
-        bool TryWait(AwaiterHandle& awaiter, Duration timeout);
+        void Wait(AwaiterHandle const& awaiter);
+        bool TryWait(AwaiterHandle const& awaiter, Duration timeout);
         void Delay(Duration timeout);
-        uint32_t GetWorkerCount();
+        uint32_t GetWorkerCount() const;
 
     private:
         void TaskWorkerEntryPoint(uint32_t workerId);

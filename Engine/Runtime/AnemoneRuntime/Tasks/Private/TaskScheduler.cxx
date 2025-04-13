@@ -143,7 +143,7 @@ namespace Anemone::Private
         task.ReleaseReference();
     }
 
-    void TaskSchedulerStatics::Wait(AwaiterHandle& awaiter)
+    void TaskSchedulerStatics::Wait(AwaiterHandle const& awaiter)
     {
         AE_ASSERT(awaiter);
 
@@ -163,7 +163,7 @@ namespace Anemone::Private
         });
     }
 
-    bool TaskSchedulerStatics::TryWait(AwaiterHandle& awaiter, Duration timeout)
+    bool TaskSchedulerStatics::TryWait(AwaiterHandle const& awaiter, Duration timeout)
     {
         if (timeout < Duration{})
         {
@@ -216,15 +216,13 @@ namespace Anemone::Private
         });
     }
 
-    uint32_t TaskSchedulerStatics::GetWorkerCount()
+    uint32_t TaskSchedulerStatics::GetWorkerCount() const
     {
         return static_cast<uint32_t>(this->m_Workers.size());
     }
 
-    void TaskSchedulerStatics::TaskWorkerEntryPoint(uint32_t workerId)
+    void TaskSchedulerStatics::TaskWorkerEntryPoint([[maybe_unused]] uint32_t workerId)
     {
-        AE_TRACE(Information, "Task worker started (id: {}, tid: {:x})", workerId, CurrentThread::Id());
-
         while (true)
         {
             //
@@ -259,12 +257,9 @@ namespace Anemone::Private
 
             if (this->m_CancellationToken.IsCancelled())
             {
-                AE_TRACE(Information, "Task worker stop requested (id: {}, tid: {:x})", workerId, CurrentThread::Id());
                 break;
             }
         }
-
-        AE_TRACE(Information, "Task worker stopped (id: {}, tid: {:x})", workerId, CurrentThread::Id());
     }
 }
 
@@ -284,12 +279,12 @@ namespace Anemone
         Private::GTaskSchedulerStatics->Execute(task);
     }
 
-    void TaskScheduler::Wait(AwaiterHandle& awaiter)
+    void TaskScheduler::Wait(AwaiterHandle const& awaiter)
     {
         Private::GTaskSchedulerStatics->Wait(awaiter);
     }
 
-    bool TaskScheduler::TryWait(AwaiterHandle& awaiter, Duration timeout)
+    bool TaskScheduler::TryWait(AwaiterHandle const& awaiter, Duration timeout)
     {
         return Private::GTaskSchedulerStatics->TryWait(awaiter, timeout);
     }
