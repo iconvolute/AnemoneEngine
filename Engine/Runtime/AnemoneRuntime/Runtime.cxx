@@ -5,6 +5,7 @@
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
 
+#include "AnemoneRuntime/Diagnostics/Private/TraceStatics.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/System/Platform/Application.hxx"
 #include "AnemoneRuntime/System/Platform/Dialogs.hxx"
@@ -18,7 +19,7 @@ namespace Anemone
     void Runtime::Initialize(int argc, char** argv)
     {
         CommandLine::Initialize(argc, argv);
-        Trace::Initialize();
+        Private::GTraceStatics.Create();
         Private::GDebuggerStatics.Create();
         StackTrace::Initialize();
         Private::GEnvironmentStatics.Create();
@@ -51,7 +52,7 @@ namespace Anemone
         Private::GEnvironmentStatics.Destroy();
         StackTrace::Finalize();
         Private::GDebuggerStatics.Destroy();
-        Trace::Finalize();
+        Private::GTraceStatics.Destroy();
         CommandLine::Finalize();
     }
 }
