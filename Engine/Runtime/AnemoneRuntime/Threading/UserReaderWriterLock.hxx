@@ -68,6 +68,13 @@ namespace Anemone
             this->m_bits.fetch_add(-Reader, std::memory_order::release);
         }
 
+        template <typename F>
+        auto WithShared(F&& f) -> std::invoke_result_t<F&&>
+        {
+            SharedLock scope{*this};
+            return std::forward<F>(f)();
+        }
+
     public:
         void Enter()
         {
@@ -87,6 +94,13 @@ namespace Anemone
         {
             static_assert(Reader > (Writer + Upgraded));
             this->m_bits.fetch_and(~(Writer | Upgraded), std::memory_order::release);
+        }
+
+        template <typename F>
+        auto With(F&& f) -> std::invoke_result_t<F&&>
+        {
+            UniqueLock scope{*this};
+            return std::forward<F>(f)();
         }
 
     public:

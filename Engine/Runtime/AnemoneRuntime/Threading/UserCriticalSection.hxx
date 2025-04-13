@@ -65,6 +65,13 @@ namespace Anemone
 
             Internal::Futex::WakeOne(this->m_Flag);
         }
+
+        template <typename F>
+        auto With(F&& f) -> std::invoke_result_t<F&&>
+        {
+            UniqueLock scope{*this};
+            return std::forward<F>(f)();
+        }
     };
 }
 
