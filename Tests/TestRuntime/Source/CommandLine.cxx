@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneRuntime/CommandLine.hxx"
+#include "AnemoneRuntime/System/CommandLine.hxx"
 
 TEST_CASE("Command Line - Parsing")
 {

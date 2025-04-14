@@ -85,7 +85,7 @@ namespace Anemone::inline FileSystemX
 
 #include "AnemoneRuntime/System/Dialogs.hxx"
 
-#include "AnemoneRuntime/CommandLine.hxx"
+#include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 class EH final : public Anemone::IApplicationEvents

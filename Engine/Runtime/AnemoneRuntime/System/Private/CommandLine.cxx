@@ -1,6 +1,6 @@
-#include "AnemoneRuntime/CommandLine.hxx"
+#include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/System/Private/CommandLineStatics.hxx"
 
 #include <algorithm>
 #include <atomic>
@@ -8,24 +8,6 @@
 
 namespace Anemone
 {
-    struct CommandLineStatics final
-    {
-        int ArgC = 0;
-        char** ArgV = nullptr;
-    };
-
-    static UninitializedObject<CommandLineStatics> GCommandLineStatics{};
-
-    void CommandLine::Initialize(int argc, char* argv[])
-    {
-        GCommandLineStatics.Create(argc, argv);
-    }
-
-    void CommandLine::Finalize()
-    {
-        GCommandLineStatics.Destroy();
-    }
-
     constexpr std::optional<std::string_view> ExtractTokenValue(std::string_view token, std::string_view name)
     {
         std::optional<std::string_view> result{};
@@ -63,56 +45,7 @@ namespace Anemone
         return result;
     }
 
-    auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
-    {
-        std::optional<std::string_view> result{};
-
-        
-        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
-        {
-            std::string_view token{GCommandLineStatics->ArgV[i]};
-
-            if (auto value = ExtractTokenValue(token, name); value.has_value())
-            {
-                result = *value;
-
-                // NOTE: do not break this loop - we explicitly want last value provided by the user.
-            }
-        }
-
-        return result;
-    }
-
-    void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
-    {
-        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
-        {
-            std::string_view token{GCommandLineStatics->ArgV[i]};
-
-            if (auto value = ExtractTokenValue(token, name))
-            {
-                values.emplace_back(*value);
-            }
-        }
-    }
-
-    void CommandLine::GetPositional(std::vector<std::string_view>& positional)
-    {
-        for (int i = 1; i < GCommandLineStatics->ArgC; ++i)
-        {
-            std::string_view token{GCommandLineStatics->ArgV[i]};
-
-            if (token.starts_with('-'))
-            {
-                // Not a positional argument.
-                continue;
-            }
-
-            positional.emplace_back(token);
-        }
-    }
-
-    std::string_view CommandLine::UnquoteToken(std::string_view s)
+    constexpr std::string_view UnquoteToken(std::string_view s)
     {
         if (s.starts_with('\"'))
         {
@@ -134,7 +67,7 @@ namespace Anemone
         return s;
     }
 
-    std::string_view CommandLine::ParseToken(std::string_view& s)
+    constexpr std::string_view ParseToken(std::string_view& s)
     {
         // Skip past whitespaces
         if (auto const start = s.find_first_not_of(" \t"); start != std::string_view::npos)
@@ -204,6 +137,57 @@ namespace Anemone
         std::string_view result{s.begin(), it};
         s.remove_prefix(result.size());
         return result;
+    }
+}
+
+namespace Anemone
+{
+    auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
+    {
+        std::optional<std::string_view> result{};
+
+        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        {
+            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+
+            if (auto value = ExtractTokenValue(token, name); value.has_value())
+            {
+                result = *value;
+
+                // NOTE: do not break this loop - we explicitly want last value provided by the user.
+            }
+        }
+
+        return result;
+    }
+
+    void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
+    {
+        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        {
+            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+
+            if (auto value = ExtractTokenValue(token, name))
+            {
+                values.emplace_back(*value);
+            }
+        }
+    }
+
+    void CommandLine::GetPositional(std::vector<std::string_view>& positional)
+    {
+        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        {
+            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+
+            if (token.starts_with('-'))
+            {
+                // Not a positional argument.
+                continue;
+            }
+
+            positional.emplace_back(token);
+        }
     }
 
     void CommandLine::Parse(

@@ -4,8 +4,6 @@ target_sources(AnemoneRuntime
         "Branchless.hxx"
         "Checked.cxx"
         "Checked.hxx"
-        "CommandLine.cxx"
-        "CommandLine.hxx"
         "Compression.cxx"
         "Compression.hxx"
         "ConsoleFunction.cxx"
