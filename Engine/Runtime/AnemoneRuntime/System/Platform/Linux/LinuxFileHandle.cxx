@@ -1,99 +1,98 @@
-#include "AnemoneRuntime/Platform/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxFileHandle.hxx"
+#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <unistd.h>
 #include <sys/file.h>
 
-namespace Anemone
+namespace Anemone::Internal
 {
-    namespace
+    constexpr mode_t TranslateToOpenMode(Flags<FileOption> options)
     {
-        constexpr mode_t TranslateToOpenMode(Flags<FileOption> options)
+        mode_t result = S_IRUSR | S_IWUSR;
+
+        if (options.Any(FileOption::ShareDelete))
         {
-            mode_t result = S_IRUSR | S_IWUSR;
-
-            if (options.Any(FileOption::ShareDelete))
-            {
-                result |= 0;
-            }
-
-            if (options.Any(FileOption::ShareRead))
-            {
-                result |= S_IRGRP | S_IROTH;
-            }
-
-            if (options.Any(FileOption::ShareWrite))
-            {
-                result |= S_IWGRP | S_IWOTH;
-            }
-
-            return result;
+            result |= 0;
         }
 
-        constexpr int TranslateToOpenFlags(FileMode mode, Flags<FileAccess> access, Flags<FileOption> options, bool failForSymlinks)
+        if (options.Any(FileOption::ShareRead))
         {
-            int result = O_CLOEXEC;
-
-            if (failForSymlinks)
-            {
-                result |= O_NOFOLLOW;
-            }
-
-            switch (mode)
-            {
-            case FileMode::OpenExisting:
-                break;
-
-            case FileMode::TruncateExisting:
-                result |= O_TRUNC;
-                break;
-
-            case FileMode::OpenAlways:
-                result |= O_CREAT;
-                break;
-
-            case FileMode::CreateAlways:
-                result |= O_CREAT | O_TRUNC;
-                break;
-
-            case FileMode::CreateNew:
-                result |= O_CREAT | O_EXCL;
-                break;
-            }
-
-            switch (access)
-            {
-            case FileAccess::Read:
-                result |= O_RDONLY;
-                break;
-
-            case FileAccess::Write:
-                result |= O_WRONLY;
-                break;
-
-            case FileAccess::ReadWrite:
-                result |= O_RDWR;
-                break;
-            }
-
-            if (options.Any(FileOption::WriteThrough))
-            {
-                result |= O_SYNC;
-            }
-
-            return result;
+            result |= S_IRGRP | S_IROTH;
         }
+
+        if (options.Any(FileOption::ShareWrite))
+        {
+            result |= S_IWGRP | S_IWOTH;
+        }
+
+        return result;
+    }
+
+    constexpr int TranslateToOpenFlags(FileMode mode, Flags<FileAccess> access, Flags<FileOption> options, bool failForSymlinks)
+    {
+        int result = O_CLOEXEC;
+
+        if (failForSymlinks)
+        {
+            result |= O_NOFOLLOW;
+        }
+
+        switch (mode)
+        {
+        case FileMode::OpenExisting:
+            break;
+
+        case FileMode::TruncateExisting:
+            result |= O_TRUNC;
+            break;
+
+        case FileMode::OpenAlways:
+            result |= O_CREAT;
+            break;
+
+        case FileMode::CreateAlways:
+            result |= O_CREAT | O_TRUNC;
+            break;
+
+        case FileMode::CreateNew:
+            result |= O_CREAT | O_EXCL;
+            break;
+        }
+
+        switch (access)
+        {
+        case FileAccess::Read:
+            result |= O_RDONLY;
+            break;
+
+        case FileAccess::Write:
+            result |= O_WRONLY;
+            break;
+
+        case FileAccess::ReadWrite:
+            result |= O_RDWR;
+            break;
+        }
+
+        if (options.Any(FileOption::WriteThrough))
+        {
+            result |= O_SYNC;
+        }
+
+        return result;
     }
 }
 
 namespace Anemone
 {
-    std::expected<LinuxFileHandle, ErrorCode> LinuxFileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
+    std::expected<FileHandle, ErrorCode> FileHandle::Create(
+        std::string_view path,
+        FileMode mode,
+        Flags<FileAccess> access,
+        Flags<FileOption> options)
     {
-        int const flags = TranslateToOpenFlags(mode, access, options, false);
-        mode_t const fmode = TranslateToOpenMode(options);
+        int const flags = Internal::TranslateToOpenFlags(mode, access, options, false);
+        mode_t const fmode = Internal::TranslateToOpenMode(options);
 
         Interop::string_buffer<char, 256> spath{path};
         Interop::UnixSafeFdHandle fd{open(spath.c_str(), flags, fmode)};
@@ -124,13 +123,13 @@ namespace Anemone
                 }
             }
 
-            return LinuxFileHandle{std::move(fd)};
+            return FileHandle{std::move(fd)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> LinuxFileHandle::CreatePipe(LinuxFileHandle& read, LinuxFileHandle& write)
+    std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
     {
         int fd[2];
 
@@ -139,13 +138,13 @@ namespace Anemone
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
-        read = LinuxFileHandle{Interop::UnixSafeFdHandle{fd[0]}};
-        write = LinuxFileHandle{Interop::UnixSafeFdHandle{fd[1]}};
+        read = FileHandle{Interop::UnixSafeFdHandle{fd[0]}};
+        write = FileHandle{Interop::UnixSafeFdHandle{fd[1]}};
 
         return {};
     }
 
-    std::expected<void, ErrorCode> LinuxFileHandle::Flush()
+    std::expected<void, ErrorCode> FileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
 
@@ -157,7 +156,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> LinuxFileHandle::GetLength() const
+    std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
@@ -171,7 +170,7 @@ namespace Anemone
         return st.st_size;
     }
 
-    std::expected<void, ErrorCode> LinuxFileHandle::Truncate(int64_t length)
+    std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
     {
         AE_ASSERT(this->_handle);
 
@@ -183,7 +182,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> LinuxFileHandle::GetPosition() const
+    std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
 
@@ -197,7 +196,7 @@ namespace Anemone
         return position;
     }
 
-    std::expected<void, ErrorCode> LinuxFileHandle::SetPosition(int64_t position)
+    std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -209,7 +208,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<size_t, ErrorCode> LinuxFileHandle::Read(std::span<std::byte> buffer)
+    std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -251,7 +250,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> LinuxFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -293,7 +292,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> LinuxFileHandle::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -335,7 +334,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> LinuxFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 

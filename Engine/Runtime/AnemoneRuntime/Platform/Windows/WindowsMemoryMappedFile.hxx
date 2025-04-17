@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Platform/Base/BaseMemoryMappedFile.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/System/FileHandle.hxx"
 
 #include <string_view>
 #include <expected>
@@ -9,8 +10,6 @@
 
 namespace Anemone
 {
-    class WindowsFileHandle;
-
     class RUNTIME_API WindowsMemoryMappedFile final
     {
     private:
@@ -79,7 +78,7 @@ namespace Anemone
             -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
 
         static auto Create(
-            WindowsFileHandle const& fileHandle,
+            FileHandle const& fileHandle,
             int64_t capacity,
             MemoryMappedFileAccess access)
             -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
@@ -92,7 +91,7 @@ namespace Anemone
             -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
 
         static auto Create(
-            WindowsFileHandle const& fileHandle,
+            FileHandle const& fileHandle,
             std::string_view name,
             int64_t capacity,
             MemoryMappedFileAccess access)
@@ -106,7 +105,7 @@ namespace Anemone
 
         // Named, create or open, fail for any other reason.
         static auto OpenOrCreate(
-            WindowsFileHandle const& fileHandle,
+            FileHandle const& fileHandle,
             std::string_view name,
             int64_t capacity,
             MemoryMappedFileAccess access)

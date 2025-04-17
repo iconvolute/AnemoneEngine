@@ -2,9 +2,6 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "LinuxFileHandle.cxx"
-        "LinuxFileHandle.hxx"
-
         "LinuxFileSystem.cxx"
 
         "LinuxMemoryMappedFile.cxx"
@@ -12,9 +9,6 @@ target_sources(AnemoneRuntime
 
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
-
-        "LinuxProcess.cxx"
-        "LinuxProcess.hxx"
 
         "LinuxSharedLibrary.cxx"
         "LinuxSharedLibrary.hxx"

@@ -210,9 +210,16 @@ namespace Anemone::Interop
         return result;
     }
 
+    //
+    // On Linux, read() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552) bytes,
+    // returning the number of bytes actually transferred.
+    //
+
+    inline constexpr size_t unix_MaxIoRequestLength = 0x7ffff000uz;
+
     [[nodiscard]] constexpr int unix_ValidateIoRequestLength(size_t value)
     {
-        return static_cast<int>(std::min(value, size_t{INT32_MAX}));
+        return static_cast<int>(std::min(value, unix_MaxIoRequestLength));
     }
 
     template <size_t StaticCapacityT>

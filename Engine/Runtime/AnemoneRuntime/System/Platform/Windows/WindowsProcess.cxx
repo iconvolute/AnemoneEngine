@@ -1,9 +1,8 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsProcess.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
+#include "AnemoneRuntime/System/Process.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-namespace Anemone
+namespace Anemone::Internal
 {
     inline std::expected<void, ErrorCode> CreatePipeForRedirection(
         Interop::Win32SafeFileHandle& hOutParent,
@@ -43,14 +42,104 @@ namespace Anemone
         hOutChild.Attach(hChild);
         return {};
     }
+}
 
-    std::expected<WindowsProcess, ErrorCode> WindowsProcess::Start(
+namespace Anemone
+{
+    std::expected<int32_t, ErrorCode> Process::Wait()
+    {
+        AE_ASSERT(this->_handle);
+
+        if (Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {}))
+        {
+            if (WaitForSingleObject(handle.Get(), INFINITE) != WAIT_OBJECT_0)
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            DWORD dwExitCode;
+
+            if (not GetExitCodeProcess(handle.Get(), &dwExitCode))
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            return static_cast<int32_t>(dwExitCode);
+        }
+
+        return std::unexpected(ErrorCode::InvalidHandle);
+    }
+
+    std::expected<int32_t, ErrorCode> Process::TryWait()
+    {
+        AE_ASSERT(this->_handle);
+
+        if (this->_handle)
+        {
+            DWORD dwExitCode;
+
+            if (not GetExitCodeProcess(this->_handle.Get(), &dwExitCode))
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            if (dwExitCode == STILL_ACTIVE)
+            {
+                return std::unexpected(ErrorCode::OperationInProgress);
+            }
+
+            this->_handle = {};
+            return static_cast<int32_t>(dwExitCode);
+        }
+
+        return std::unexpected(ErrorCode::InvalidHandle);
+    }
+
+    std::expected<void, ErrorCode> Process::Terminate()
+    {
+        AE_ASSERT(this->_handle);
+
+        if (Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {}))
+        {
+            if (!TerminateProcess(handle.Get(), 0))
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            if (WaitForSingleObject(handle.Get(), INFINITE) == WAIT_FAILED)
+            {
+                return std::unexpected(ErrorCode::InvalidOperation);
+            }
+
+            return {};
+        }
+
+        return std::unexpected(ErrorCode::InvalidHandle);
+    }
+
+    auto Process::Start(
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory)
+        -> std::expected<Process, ErrorCode>
+    {
+        return Process::Start(
+            path,
+            params,
+            workingDirectory,
+            nullptr,
+            nullptr,
+            nullptr);
+    }
+
+    auto Process::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
-        WindowsFileHandle* input,
-        WindowsFileHandle* output,
-        WindowsFileHandle* error)
+        FileHandle* input,
+        FileHandle* output,
+        FileHandle* error)
+        -> std::expected<Process, ErrorCode>
     {
         bool const redirectInput = input != nullptr;
         bool const redirectOutput = output != nullptr;
@@ -94,7 +183,7 @@ namespace Anemone
         {
             if (redirectInput)
             {
-                if (auto rc = CreatePipeForRedirection(fhWriteInput, fhReadInput, true))
+                if (auto rc = Internal::CreatePipeForRedirection(fhWriteInput, fhReadInput, true))
                 {
                     startup_info.hStdInput = fhReadInput.Get();
                 }
@@ -110,7 +199,7 @@ namespace Anemone
 
             if (redirectOutput)
             {
-                if (auto rc = CreatePipeForRedirection(fhReadOutput, fhWriteOutput, false))
+                if (auto rc = Internal::CreatePipeForRedirection(fhReadOutput, fhWriteOutput, false))
                 {
                     startup_info.hStdOutput = fhWriteOutput.Get();
                 }
@@ -126,7 +215,7 @@ namespace Anemone
 
             if (redirectError)
             {
-                if (auto rc = CreatePipeForRedirection(fhReadError, fhWriteError, false))
+                if (auto rc = Internal::CreatePipeForRedirection(fhReadError, fhWriteError, false))
                 {
                     startup_info.hStdError = fhWriteError.Get();
                 }
@@ -180,99 +269,94 @@ namespace Anemone
         {
             if (input)
             {
-                (*input) = WindowsFileHandle{std::move(fhWriteInput)};
+                (*input) = FileHandle{std::move(fhWriteInput)};
             }
 
             if (output)
             {
-                (*output) = WindowsFileHandle{std::move(fhReadOutput)};
+                (*output) = FileHandle{std::move(fhReadOutput)};
             }
 
             if (error)
             {
-                (*error) = WindowsFileHandle{std::move(fhReadError)};
+                (*error) = FileHandle{std::move(fhReadError)};
             }
 
             CloseHandle(process_information.hThread);
 
-            return WindowsProcess{Interop::Win32SafeHandle{process_information.hProcess}};
+            return Process{Interop::Win32SafeHandle{process_information.hProcess}};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<int32_t, ErrorCode> WindowsProcess::Wait()
+    auto Process::Execute(
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory)
+        -> std::expected<int32_t, ErrorCode>
     {
-        AE_ASSERT(this->_handle);
-
-        Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {});
-
-        if (handle)
+        return Process::Start(path, params, workingDirectory, nullptr, nullptr, nullptr)
+            .and_then([](Process process)
         {
-            if (WaitForSingleObject(handle.Get(), INFINITE) != WAIT_OBJECT_0)
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
-
-            DWORD dwExitCode;
-
-            if (!GetExitCodeProcess(handle.Get(), &dwExitCode))
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
-
-            return static_cast<int32_t>(dwExitCode);
-        }
-
-        return std::unexpected(ErrorCode::InvalidHandle);
+            return process.Wait();
+        });
     }
 
-    std::expected<int32_t, ErrorCode> WindowsProcess::TryWait()
+    auto Process::Execute(
+        std::string_view path,
+        std::optional<std::string_view> const& params,
+        std::optional<std::string_view> const& workingDirectory,
+        FunctionRef<void(std::string_view)> output,
+        FunctionRef<void(std::string_view)> error)
+        -> std::expected<int32_t, ErrorCode>
     {
-        AE_ASSERT(this->_handle);
+        FileHandle pipeOutput{};
+        FileHandle pipeError{};
 
-        if (this->_handle)
+        if (auto process = Process::Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
         {
-            DWORD dwExitCode;
+            std::array<char, 512> buffer;
+            std::span view = std::as_writable_bytes(std::span{buffer});
 
-            if (!GetExitCodeProcess(this->_handle.Get(), &dwExitCode))
+            while (true)
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
+                auto rc = process->TryWait();
 
-            if (dwExitCode == STILL_ACTIVE)
-            {
-                return std::unexpected(ErrorCode::OperationInProgress);
-            }
+                while (auto processed = pipeOutput.Read(view))
+                {
+                    if (*processed == 0)
+                    {
+                        break;
+                    }
 
-            this->_handle = {};
-            return static_cast<int32_t>(dwExitCode);
+                    output(std::string_view{buffer.data(), *processed});
+                }
+
+                while (auto processed = pipeError.Read(view))
+                {
+                    if (*processed == 0)
+                    {
+                        break;
+                    }
+
+                    error(std::string_view{buffer.data(), *processed});
+                }
+
+                if (rc)
+                {
+                    return *rc;
+                }
+
+                if (rc.error() != ErrorCode::OperationInProgress)
+                {
+                    return std::unexpected(rc.error());
+                }
+            }
         }
-
-        return std::unexpected(ErrorCode::InvalidHandle);
-    }
-
-    std::expected<void, ErrorCode> WindowsProcess::Terminate()
-    {
-        AE_ASSERT(this->_handle);
-
-        Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {});
-
-        if (handle)
+        else
         {
-            if (!TerminateProcess(handle.Get(), 0))
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
-
-            if (WaitForSingleObject(handle.Get(), INFINITE) == WAIT_FAILED)
-            {
-                return std::unexpected(ErrorCode::InvalidOperation);
-            }
-
-            return {};
+            return std::unexpected(process.error());
         }
-
-        return std::unexpected(ErrorCode::InvalidHandle);
     }
 }

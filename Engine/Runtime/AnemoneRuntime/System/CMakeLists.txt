@@ -8,6 +8,7 @@ target_sources(AnemoneRuntime
         "Clipboard.hxx"
         "Dialogs.hxx"
         "Environment.hxx"
+        "Process.hxx"
         "ProcessorProperties.hxx"
         "Window.hxx"
 )

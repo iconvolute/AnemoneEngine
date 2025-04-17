@@ -6,12 +6,10 @@ add_subdirectory("Windows")
 target_sources(AnemoneRuntime
     PRIVATE
         "EntryPoint.hxx"
-        "FileHandle.hxx"
         "FilePath.cxx"
         "FilePath.hxx"
         "FileSystem.hxx"
         "NamedMutex.hxx"
-        "Process.hxx"
         "StackTrace.hxx"
         "SystemAllocator.hxx"
         "Types.hxx"

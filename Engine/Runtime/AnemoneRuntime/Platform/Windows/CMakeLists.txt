@@ -5,9 +5,6 @@ target_sources(AnemoneRuntime
 
         "WindowsCrashHandler.hxx"
 
-        "WindowsFileHandle.cxx"
-        "WindowsFileHandle.hxx"
-
         "WindowsFileSystem.cxx"
 
         "WindowsHeaders.hxx"
@@ -22,9 +19,6 @@ target_sources(AnemoneRuntime
 
         "WindowsNamedMutex.cxx"
         "WindowsNamedMutex.hxx"
-
-        "WindowsProcess.cxx"
-        "WindowsProcess.hxx"
 
         "WindowsSharedLibrary.cxx"
         "WindowsSharedLibrary.hxx"

@@ -6,9 +6,4 @@ target_sources(AnemoneRuntime
         "BaseInterop.hxx"
 
         "BaseSafeHandle.hxx"
-
-        "BaseFileHandle.hxx"
-
-        "BaseProcess.cxx"
-        "BaseProcess.hxx"
 )

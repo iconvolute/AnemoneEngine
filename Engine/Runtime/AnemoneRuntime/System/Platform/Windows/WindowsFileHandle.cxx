@@ -1,11 +1,14 @@
-#include "AnemoneRuntime/Platform/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
+#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 
 namespace Anemone
 {
-    std::expected<WindowsFileHandle, ErrorCode> WindowsFileHandle::Create(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
+    std::expected<FileHandle, ErrorCode> FileHandle::Create(
+        std::string_view path,
+        FileMode mode,
+        Flags<FileAccess> access,
+        Flags<FileOption> options)
     {
         DWORD dwCreationDisposition;
 
@@ -130,7 +133,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> WindowsFileHandle::CreatePipe(FileHandle& read, FileHandle& write)
+    std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
     {
         HANDLE hRead = nullptr;
         HANDLE hWrite = nullptr;
@@ -151,7 +154,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidOperation);
     }
 
-    std::expected<void, ErrorCode> WindowsFileHandle::Flush()
+    std::expected<void, ErrorCode> FileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
 
@@ -163,7 +166,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> WindowsFileHandle::GetLength() const
+    std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
@@ -177,7 +180,7 @@ namespace Anemone
         return liLength.QuadPart;
     }
 
-    std::expected<void, ErrorCode> WindowsFileHandle::Truncate(int64_t length)
+    std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
     {
         AE_ASSERT(this->_handle);
 
@@ -198,7 +201,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> WindowsFileHandle::GetPosition() const
+    std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
 
@@ -213,7 +216,7 @@ namespace Anemone
         return std::bit_cast<int64_t>(liPosition);
     }
 
-    std::expected<void, ErrorCode> WindowsFileHandle::SetPosition(int64_t position)
+    std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -227,7 +230,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<size_t, ErrorCode> WindowsFileHandle::Read(std::span<std::byte> buffer)
+    std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -257,7 +260,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> WindowsFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -295,7 +298,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> WindowsFileHandle::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -324,7 +327,7 @@ namespace Anemone
         return dwProcessed;
     }
 
-    std::expected<size_t, ErrorCode> WindowsFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 

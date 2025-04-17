@@ -76,8 +76,6 @@ namespace Anemone::inline FileSystemX
     };
 }
 
-
-
 #include "AnemoneRuntime/System/Application.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
@@ -175,7 +173,6 @@ public:
         (void)args;
 
         AE_ASSERT(false);
-
     }
 
     void OnKeyUp(Anemone::Window& window, Anemone::KeyEventArgs& args) override
@@ -277,9 +274,9 @@ anemone_noinline void test()
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetVendor());
 }
 
-#include "AnemoneRuntime/Platform/FileHandle.hxx"
+#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/Platform/Process.hxx"
+#include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 #include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
@@ -385,7 +382,13 @@ int AnemoneMain(int argc, char** argv)
         {
             std::string strout{};
             std::string strerr{};
-            if (auto rc = Anemone::Process::Execute("TestNumerics.exe", {}, {}, strout, strerr))
+            if (auto rc = Anemone::Process::Execute("TestNumerics.exe", {}, {}, [&](std::string_view s)
+            {
+                strout.append(s);
+            }, [&](std::string_view s)
+            {
+                strerr.append(s);
+            }))
             {
                 AE_TRACE(Error, "stdout: '{}'", strout);
                 AE_TRACE(Error, "stderr: '{}'", strerr);

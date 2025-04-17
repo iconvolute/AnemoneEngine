@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsFileHandle.hxx"
+#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
@@ -205,7 +205,7 @@ namespace Anemone
             capacity);
     }
 
-    auto WindowsMemoryMappedFile::Create(WindowsFileHandle const& fileHandle, int64_t capacity, MemoryMappedFileAccess access)
+    auto WindowsMemoryMappedFile::Create(FileHandle const& fileHandle, int64_t capacity, MemoryMappedFileAccess access)
         -> std::expected<WindowsMemoryMappedFile, ErrorCode>
     {
         return CreateCore(
@@ -232,7 +232,7 @@ namespace Anemone
             capacity);
     }
 
-    auto WindowsMemoryMappedFile::Create(WindowsFileHandle const& fileHandle, std::string_view name, int64_t capacity, MemoryMappedFileAccess access)
+    auto WindowsMemoryMappedFile::Create(FileHandle const& fileHandle, std::string_view name, int64_t capacity, MemoryMappedFileAccess access)
         -> std::expected<WindowsMemoryMappedFile, ErrorCode>
     {
         Interop::win32_FilePathW wsName;
@@ -264,7 +264,7 @@ namespace Anemone
     }
 
     // Named, create or open, fail for any other reason.
-    auto WindowsMemoryMappedFile::OpenOrCreate(WindowsFileHandle const& fileHandle, std::string_view name, int64_t capacity, MemoryMappedFileAccess access)
+    auto WindowsMemoryMappedFile::OpenOrCreate(FileHandle const& fileHandle, std::string_view name, int64_t capacity, MemoryMappedFileAccess access)
         -> std::expected<WindowsMemoryMappedFile, ErrorCode>
     {
         Interop::win32_FilePathW wsName;
