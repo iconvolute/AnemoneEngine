@@ -20,9 +20,6 @@ target_sources(AnemoneRuntime
         "WindowsNamedMutex.cxx"
         "WindowsNamedMutex.hxx"
 
-        "WindowsSharedLibrary.cxx"
-        "WindowsSharedLibrary.hxx"
-
         "WindowsSplashScreen.cxx"
         "WindowsSplashScreen.hxx"
 

@@ -1,11 +1,9 @@
-#include "AnemoneRuntime/Platform/Windows/WindowsSharedLibrary.hxx"
+#include "AnemoneRuntime/System/SharedLibrary.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 namespace Anemone
 {
-    std::expected<WindowsSharedLibrary, ErrorCode> WindowsSharedLibrary::Open(
-        std::string_view path)
+    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>
     {
         Interop::win32_FilePathW wPath{};
         Interop::win32_WidenString(wPath, path);
@@ -14,13 +12,13 @@ namespace Anemone
 
         if (h)
         {
-            return WindowsSharedLibrary{std::move(h)};
+            return SharedLibrary{std::move(h)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void*, ErrorCode> WindowsSharedLibrary::GetSymbol(const char* name) const
+    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, ErrorCode>
     {
         AE_ASSERT(this->_handle);
 

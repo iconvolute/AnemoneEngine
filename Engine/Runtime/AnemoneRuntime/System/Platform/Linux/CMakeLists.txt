@@ -16,6 +16,8 @@ target_sources(AnemoneRuntime
         "LinuxProcess.hxx"
         "LinuxProcessorProperties.cxx"
         "LinuxProcessorProperties.hxx"
+        "LinuxSharedLibrary.cxx"
+        "LinuxSharedLibrary.hxx"
         "LinuxWindow.cxx"
         "LinuxWindow.hxx"
 )

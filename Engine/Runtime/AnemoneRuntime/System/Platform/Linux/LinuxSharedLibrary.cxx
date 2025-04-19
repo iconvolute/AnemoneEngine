@@ -1,14 +1,12 @@
-#include "AnemoneRuntime/Platform/SharedLibrary.hxx"
+#include "AnemoneRuntime/System/SharedLibrary.hxx"
 #include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <utility>
 #include <dlfcn.h>
 
 namespace Anemone
 {
-    std::expected<LinuxSharedLibrary, ErrorCode> LinuxSharedLibrary::Open(
-        std::string_view path)
+    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>
     {
         Interop::unix_Path uPath{path};
 
@@ -22,7 +20,7 @@ namespace Anemone
         return std::unexpected(ErrorCode::InvalidArgument);
     }
 
-    std::expected<void*, ErrorCode> LinuxSharedLibrary::GetSymbol(const char* name) const
+    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, ErrorCode>
     {
         if (this->_handle)
         {

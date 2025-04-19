@@ -10,9 +10,6 @@ target_sources(AnemoneRuntime
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
 
-        "LinuxSharedLibrary.cxx"
-        "LinuxSharedLibrary.hxx"
-
         "LinuxStackTrace.cxx"
 
         "LinuxSystemAllocator.cxx"
