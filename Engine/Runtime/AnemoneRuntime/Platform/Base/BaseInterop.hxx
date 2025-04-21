@@ -14,7 +14,7 @@ namespace Anemone::Interop
         std::unique_ptr<CharT[]> m_Dynamic{};
         size_t m_Capacity{StaticCapacityT};
         size_t m_Size{};
-        CharT m_Static[StaticCapacityT];
+        CharT m_Static[StaticCapacityT + 1];
 
     public:
         constexpr string_buffer() noexcept
@@ -24,14 +24,14 @@ namespace Anemone::Interop
 
         constexpr explicit string_buffer(std::basic_string_view<CharT> value)
         {
-            this->resize_for_override(value.size() + 1);
+            this->resize_for_override(value.size());
             std::copy(value.begin(), value.end(), this->m_Data);
             this->trim(value.size());
         }
 
         constexpr explicit string_buffer(const char* value, size_t length)
         {
-            this->resize_for_override(length + 1);
+            this->resize_for_override(length);
             std::copy(value, value + length, this->m_Data);
             this->trim(length);
         }
@@ -54,44 +54,43 @@ namespace Anemone::Interop
                 this->m_Dynamic = nullptr;
                 this->m_Data = this->m_Static;
                 this->m_Capacity = StaticCapacityT;
-                this->m_Size = size;
             }
             else if (size > this->m_Capacity)
             {
                 size_t const capacity = size;
 
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity);
+                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
                 this->m_Data = this->m_Dynamic.get();
                 this->m_Capacity = capacity;
-                this->m_Size = size;
             }
+
+            this->m_Size = size;
+            this->m_Data[this->m_Size] = {};
         }
 
         constexpr void resize(size_t size)
         {
-            // Test if need to copy data from static to dynamic buffer
             if (size > StaticCapacityT)
             {
+                // Copy data from static to dynamic buffer
                 size_t const capacity = size;
 
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity);
+                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
                 std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Dynamic.get());
                 this->m_Data = this->m_Dynamic.get();
                 this->m_Capacity = capacity;
             }
-            // Test if need to copy data from dynamic to static buffer
             else if (this->m_Dynamic and (size <= StaticCapacityT))
             {
+                // Copy data from dynamic to static buffer
                 std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Static);
                 this->m_Dynamic = nullptr;
                 this->m_Data = this->m_Static;
                 this->m_Capacity = StaticCapacityT;
             }
-            // Trim the buffer
-            else
-            {
-                this->m_Size = size;
-            }
+
+            this->m_Size = size;
+            this->m_Data[this->m_Size] = {};
         }
 
         constexpr void trim(size_t size) noexcept
@@ -172,36 +171,36 @@ namespace Anemone::Interop
     template <typename StringBufferT, typename CallbackT>
     bool adapt_string_buffer(StringBufferT& buffer, CallbackT callback) noexcept
     {
-        size_t requiredCapacity{};
-        if (not callback(buffer.as_buffer_span(), requiredCapacity))
+        size_t requiredSize{};
+        if (not callback(buffer.as_buffer_span(), requiredSize))
         {
             buffer.trim(0);
             return false;
         }
 
-        if (requiredCapacity <= buffer.capacity())
+        if (requiredSize <= buffer.capacity())
         {
-            assert(requiredCapacity != 0);
-            buffer.trim(requiredCapacity - 1);
+            assert(requiredSize != 0);
+            buffer.trim(requiredSize);
             return true;
         }
 
         size_t bufferLength{};
         do
         {
-            bufferLength = requiredCapacity;
+            bufferLength = requiredSize;
 
             buffer.resize_for_override(bufferLength);
 
-            if (not callback(buffer.as_buffer_span(), requiredCapacity))
+            if (not callback(buffer.as_buffer_span(), requiredSize))
             {
                 buffer.trim(0);
                 return false;
             }
-        } while (requiredCapacity > bufferLength);
+        } while (requiredSize > bufferLength);
 
-        assert(requiredCapacity != 0);
-        buffer.trim(requiredCapacity - 1);
+        assert(requiredSize != 0);
+        buffer.trim(requiredSize);
         return true;
     }
 }

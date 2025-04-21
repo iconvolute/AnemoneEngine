@@ -139,22 +139,58 @@ namespace Anemone::Interop
         HANDLE const hProcess = GetCurrentProcess();
         return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD dwSize = static_cast<DWORD>(buffer.size());
+            DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
 
             if (QueryFullProcessImageNameW(hProcess, 0, buffer.data(), &dwSize))
             {
-                capacity = dwSize + 1;
+                capacity = dwSize;
                 return true;
             }
 
             if (DWORD const dwError = GetLastError(); dwError == ERROR_INSUFFICIENT_BUFFER)
             {
-                capacity = static_cast<size_t>(dwSize) * 2;
+                capacity = static_cast<size_t>(dwSize) * 2uz;
                 return true;
             }
 
             capacity = 0;
             return false;
+        });
+    }
+
+    template <size_t CapacityT>
+    anemone_forceinline bool win32_GetModuleFileNameW(string_buffer<wchar_t, CapacityT>& result, HMODULE handle)
+    {
+        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        {
+            // MSDN:
+            //  The size of the lpFilename buffer, in WCHARs.
+            SetLastError(ERROR_SUCCESS);
+            DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
+
+            DWORD dwLength = GetModuleFileNameW(handle, buffer.data(), dwSize);
+
+            if (dwLength == 0)
+            {
+                // MSDN:
+                //  If the function fails, the return value is 0 (zero).
+                capacity = 0;
+                return false;
+            }
+
+            if (DWORD const dwError = GetLastError(); dwError == ERROR_INSUFFICIENT_BUFFER)
+            {
+                // MSDN:
+                //  If the buffer is too small to hold the module name, the string is truncated to nSize characters
+                //  including the terminating null character, the function returns nSize, and the function sets the
+                //  last error to ERROR_INSUFFICIENT_BUFFER.
+
+                // Try to double capacity if the buffer is too small.
+                dwLength *= 2u;
+            }
+
+            capacity = dwLength;
+            return true;
         });
     }
 
@@ -341,9 +377,20 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
-            if (DWORD const dwLength = GetCurrentDirectoryW(static_cast<DWORD>(buffer.size()), buffer.data()); dwLength != 0)
+            // MSDN:
+            //  If the function succeeds, the return value specifies the number of characters that are written to the
+            //  buffer, not including the terminating null character.
+
+            if (DWORD dwLength = GetCurrentDirectoryW(static_cast<DWORD>(buffer.size() + 1uz), buffer.data()); dwLength != 0)
             {
-                capacity = static_cast<size_t>(dwLength) + 1;
+                if (dwLength > buffer.size())
+                {
+                    // MSDN:
+                    //  If the buffer that is pointed to by lpBuffer is not large enough, the return value specifies
+                    //  the required size of the buffer, in characters, including the null-terminating character.
+                    --dwLength;
+                }
+                capacity = static_cast<size_t>(dwLength);
                 return true;
             }
 
@@ -375,18 +422,28 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
-            SetLastError(ERROR_SUCCESS);
-            DWORD dwLength = GetEnvironmentVariableW(name, buffer.data(), static_cast<DWORD>(buffer.size()));
+            // MSDN:
+            //  The size of the buffer pointed to by the lpBuffer parameter, including the null-terminating character,
+            //  in characters.
 
-            if ((dwLength == 0) and GetLastError() != ERROR_SUCCESS)
+            SetLastError(ERROR_SUCCESS);
+            DWORD dwLength = GetEnvironmentVariableW(name, buffer.data(), static_cast<DWORD>(buffer.size() + 1uz));
+
+            if ((dwLength == 0) and (GetLastError() != ERROR_SUCCESS))
             {
+                // MSDN:
+                //  If the function fails, the return value is zero.
                 capacity = 0;
                 return false;
             }
 
-            if (dwLength < buffer.size())
+            if (dwLength > buffer.size())
             {
-                ++dwLength;
+                // MSDN:
+                //  If lpBuffer is not large enough to hold the data, the return value is the buffer size, in
+                //  characters, required to hold the string and its terminating null character and the contents of
+                //  lpBuffer are undefined.
+                --dwLength;
             }
 
             capacity = dwLength;
@@ -496,17 +553,18 @@ namespace Anemone::Interop
         template <size_t CapacityT, typename Callback = void(std::wstring_view value)>
         [[nodiscard]] bool read_strings(const wchar_t* name, string_buffer<wchar_t, CapacityT>& storage, Callback&& callback) const
         {
-            if (adapt_string_buffer(storage, [&](std::span<wchar_t> view, size_t& capacity)
+            if (adapt_string_buffer(storage, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
                 DWORD dwType = 0;
-                DWORD dwSize = static_cast<DWORD>(view.size());
+                DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz) * sizeof(wchar_t);
 
+                // REG_SZ requires a zero terminator.
                 LSTATUS const status = RegQueryValueExW(
                     this->m_key,
                     name,
                     nullptr,
                     &dwType,
-                    reinterpret_cast<LPBYTE>(view.data()),
+                    reinterpret_cast<LPBYTE>(buffer.data()),
                     &dwSize);
 
                 if ((dwType != REG_SZ) and (dwType != REG_MULTI_SZ))
@@ -517,7 +575,11 @@ namespace Anemone::Interop
 
                 if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
                 {
-                    DWORD const dwCharCount = (dwSize / sizeof(wchar_t));
+                    // MSDN:
+                    //  If the buffer specified by lpData parameter is not large enough to hold the data, the function
+                    //  returns ERROR_MORE_DATA and stores the required buffer size in the variable pointed to by
+                    //  lpcbData.
+                    DWORD const dwCharCount = (dwSize / sizeof(wchar_t)) - 1u;
                     capacity = dwCharCount;
                     return true;
                 }
@@ -564,7 +626,9 @@ namespace Anemone::Interop
             return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
                 DWORD dwType = 0;
-                DWORD dwSize = static_cast<DWORD>(buffer.size());
+                DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz) * sizeof(wchar_t);
+
+                // REG_SZ requires a zero terminator.
                 LSTATUS const status = RegQueryValueExW(
                     this->m_key,
                     name,
@@ -582,7 +646,11 @@ namespace Anemone::Interop
 
                 if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
                 {
-                    DWORD dwCharCount = (dwSize / sizeof(wchar_t));
+                    // MSDN:
+                    //  If the buffer specified by lpData parameter is not large enough to hold the data, the function
+                    //  returns ERROR_MORE_DATA and stores the required buffer size in the variable pointed to by
+                    //  lpcbData.
+                    DWORD dwCharCount = (dwSize / sizeof(wchar_t)) - 1u;
 
                     if (dwType == REG_MULTI_SZ)
                     {
@@ -649,7 +717,7 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
-            UINT const length = GetSystemDirectoryW(buffer.data(), static_cast<UINT>(buffer.size()));
+            UINT length = GetSystemDirectoryW(buffer.data(), static_cast<UINT>(buffer.size() + 1uz));
 
             if (length == 0)
             {
@@ -657,7 +725,19 @@ namespace Anemone::Interop
                 return false;
             }
 
-            capacity = length + 1;
+            // MSDN:
+            //  If the function succeeds, the return value is the length, in TCHARs, of the string copied to the
+            //  buffer, not including the terminating null character.
+
+            if (length > buffer.size())
+            {
+                // MSDN:
+                //  If the length is greater than the size of the buffer, the return value is the size of the buffer
+                //  required to hold the path, including the terminating null character.
+                --length;
+            }
+
+            capacity = length;
             return true;
         });
     }
@@ -668,7 +748,9 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD const length = GetFullPathNameW(path, static_cast<DWORD>(buffer.size()), buffer.data(), nullptr);
+            // MSDN:
+            //  The size of the buffer to receive the null-terminated string for the drive and path, in TCHARs.
+            DWORD length = GetFullPathNameW(path, static_cast<DWORD>(buffer.size() + 1uz), buffer.data(), nullptr);
 
             if (length == 0)
             {
@@ -676,7 +758,19 @@ namespace Anemone::Interop
                 return false;
             }
 
-            capacity = length + 1;
+            // MSDN:
+            //  If the function succeeds, the return value is the length, in TCHARs, of the string copied to lpBuffer,
+            //  not including the terminating null character.
+
+            if (length > buffer.size())
+            {
+                // MSDN:
+                //  If the lpBuffer buffer is too small to contain the path, the return value is the size, in TCHARs,
+                //  of the buffer that is required to hold the path and the terminating null character.
+                --length;
+            }
+
+            capacity = length;
             return true;
         });
     }
@@ -700,18 +794,26 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD dwSize = static_cast<DWORD>(buffer.size());
+            // MSDN:
+            //  On input, specifies the size of the buffer, in TCHARs.
+            DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
+
             if (GetComputerNameW(buffer.data(), &dwSize))
             {
-                // Trimmed
-                capacity = static_cast<size_t>(dwSize) + 1;
+                // MSDN:
+                //  On output, the number of TCHARs copied to the destination buffer, not including the terminating null
+                //  character.
+                capacity = static_cast<size_t>(dwSize);
                 return true;
             }
 
             if (GetLastError() == ERROR_BUFFER_OVERFLOW)
             {
-                // Retry with that buffer size.
-                capacity = dwSize;
+                // MSDN:
+                //  If the buffer is too small, the function fails and GetLastError returns ERROR_BUFFER_OVERFLOW.
+                //  The lpnSize parameter specifies the size of the buffer required, including the terminating null
+                //  character.
+                capacity = dwSize - 1u;
                 return true;
             }
 
@@ -725,18 +827,25 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD dwSize = static_cast<DWORD>(buffer.size());
+            // MSDN:
+            //  On input, specifies the size of the buffer, in TCHARs.
+
+            DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
             if (GetComputerNameExW(format, buffer.data(), &dwSize))
             {
-                // Trimmed
-                capacity = static_cast<size_t>(dwSize) + 1;
+                // MSDN:
+                //  On output, receives the number of TCHARs copied to the destination buffer, not including the
+                //  terminating null character.
+                capacity = static_cast<size_t>(dwSize);
                 return true;
             }
 
             if (GetLastError() == ERROR_MORE_DATA)
             {
-                // Retry with that buffer size.
-                capacity = dwSize;
+                // MSDN:
+                //  If the buffer is too small, the function fails and GetLastError returns ERROR_MORE_DATA.
+                //  This parameter receives the size of the buffer required, including the terminating null character.
+                capacity = dwSize - 1uz;
                 return true;
             }
 
@@ -750,18 +859,22 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD dwSize = static_cast<DWORD>(buffer.size());
+            DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
             if (GetUserNameW(buffer.data(), &dwSize))
             {
-                // Trimmed
-                capacity = dwSize;
+                // MSDN:
+                //  On output, the variable receives the number of TCHARs copied to the buffer, including the
+                //  terminating null character.
+                capacity = dwSize - 1uz;
                 return true;
             }
 
             if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
             {
-                // Retry with that buffer size.
-                capacity = dwSize;
+                // MSDN:
+                //  If lpBuffer is too small, the function fails and GetLastError returns ERROR_INSUFFICIENT_BUFFER.
+                //  This parameter receives the required buffer size, including the terminating null character.
+                capacity = dwSize - 1uz;
                 return true;
             }
 
@@ -777,7 +890,7 @@ namespace Anemone::Interop
 
         HMODULE const hKernel32 = GetModuleHandleW(L"kernel32.dll");
 
-        Fn getTempPath = reinterpret_cast<Fn>(reinterpret_cast<void*>(GetProcAddress(hKernel32, "GetTempPath2W"))); // NOLINT(bugprone-casting-through-void)
+        Fn getTempPath = std::bit_cast<Fn>(GetProcAddress(hKernel32, "GetTempPathW"));
 
         if (not getTempPath)
         {
@@ -786,11 +899,25 @@ namespace Anemone::Interop
 
         return adapt_string_buffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD const length = getTempPath(static_cast<DWORD>(buffer.size()), buffer.data());
+            DWORD length = getTempPath(static_cast<DWORD>(buffer.size() + 1uz), buffer.data());
 
             if (length != 0)
             {
-                capacity = static_cast<size_t>(length) + 1;
+                // MSDN:
+                //  If the function succeeds, the return value is the length, in TCHARs, of the string copied to
+                //  lpBuffer, not including the terminating null character.
+                //
+                
+
+                if (length > buffer.size())
+                {
+                    // MSDN:
+                    //  If the return value is greater than nBufferLength, the return value is the length, in TCHARs,
+                    //  of the buffer required to hold the path.
+                    --length;
+                }
+
+                capacity = static_cast<size_t>(length);
                 return true;
             }
 
@@ -804,10 +931,22 @@ namespace Anemone::Interop
     {
         return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
-            DWORD const length = GetLongPathNameW(path, buffer.data(), static_cast<DWORD>(buffer.size()));
+            DWORD length = GetLongPathNameW(path, buffer.data(), static_cast<DWORD>(buffer.size() + 1uz));
 
             if (length != 0)
             {
+                // MSDN:
+                //  If the function succeeds, the return value is the length, in TCHARs, of the string copied to
+                //  lpszLongPath, not including the terminating null character.
+
+                if (length > buffer.size())
+                {
+                    // MSDN:
+                    //  If the lpBuffer buffer is too small to contain the path, the return value is the size,
+                    //  in TCHARs, of the buffer that is required to hold the path and the terminating null character.
+                    --length;
+                }
+
                 capacity = length;
                 return true;
             }
@@ -820,31 +959,23 @@ namespace Anemone::Interop
     template <size_t CapacityT>
     anemone_forceinline bool win32_GetUserPreferredUILanguages(string_buffer<wchar_t, CapacityT>& result, DWORD flags, ULONG& numLanguages)
     {
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
-        {
-            ULONG uSize = static_cast<ULONG>(buffer.size());
+        // TODO: This API should be replaced with proper splitting as well.
+        ULONG uSize = 0;
 
-            if (GetUserPreferredUILanguages(flags, &numLanguages, buffer.data(), &uSize))
+        if (GetUserPreferredUILanguages(flags, &numLanguages, nullptr, &uSize))
+        {
+            result.resize_for_override(uSize - 1uz);
+
+            if (GetUserPreferredUILanguages(flags, &numLanguages, result.data(), &uSize))
             {
                 // Trim to result.
-                capacity = uSize;
+                result.trim(uSize - 1uz);
                 return true;
             }
+        }
 
-            if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
-            {
-                // Retry with 2x buffer size.
-                capacity = buffer.size() * 2;
-                return true;
-            }
-
-            capacity = 0;
-            return false;
-        });
+        return false;
     }
-
-    // SHGetFolderPathW; todo
-    // GetModuleFileNameW
 }
 
 namespace Anemone::Interop
