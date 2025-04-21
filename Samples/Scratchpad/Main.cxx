@@ -307,9 +307,11 @@ struct V2 : Anemone::DirectoryVisitor
 // EditorEngine : Engine
 //
 
-
 int AnemoneMain(int argc, char** argv)
 {
+#if false
+    (void)Anemone::Process::Start("DevDebugger.exe", fmt::format("--pid {}", GetCurrentProcessId()), {});
+#endif
     {
         AE_TRACE(Error, "{}", Anemone::Environment::GetDeviceUniqueId());
         AE_TRACE(Error, "Default: '{}'", Anemone::Environment::GetSystemId());
@@ -360,45 +362,6 @@ int AnemoneMain(int argc, char** argv)
     test();
     (void)argc;
     (void)argv;
-
-    if (auto run = Anemone::CommandLine::GetOption("run"))
-    {
-        AE_TRACE(Error, "run: '{}'", *run);
-
-        if (auto h = Anemone::Process::Start("TestRuntime.exe", {}, {}))
-        {
-            if (auto w = h->Wait())
-            {
-                AE_TRACE(Error, "Waited succesfully: {}", *w);
-            }
-            else
-            {
-                AE_TRACE(Error, "Failed to wait: {}", w.error());
-            }
-        }
-
-        for (size_t i = 0; i < 5; ++i)
-        {
-            std::string strout{};
-            std::string strerr{};
-            if (auto rc = Anemone::Process::Execute("TestNumerics.exe", {}, {}, [&](std::string_view s)
-            {
-                strout.append(s);
-            }, [&](std::string_view s)
-            {
-                strerr.append(s);
-            }))
-            {
-                AE_TRACE(Error, "stdout: '{}'", strout);
-                AE_TRACE(Error, "stderr: '{}'", strerr);
-                AE_TRACE(Error, "exit: {}", *rc);
-            }
-            else
-            {
-                AE_TRACE(Error, "error: '{}'", rc.error());
-            }
-        }
-    }
 
     Anemone::FNV1A128 original{};
 
@@ -517,6 +480,7 @@ int AnemoneMain(int argc, char** argv)
         while (window->IsVisible())
         {
             Anemone::Application::ProcessMessages();
+            SleepEx(16, TRUE);
         }
     }
 

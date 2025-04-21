@@ -14,8 +14,116 @@
 #include <DbgHelp.h>
 #include <TlHelp32.h>
 
+#include <comip.h>
 #include <wrl/client.h>
 #include <DbgEng.h>
+
+Microsoft::WRL::ComPtr<IDebugClient9> GDebugClient{};
+Microsoft::WRL::ComPtr<IDebugAdvanced4> GDebugAdvanced{};
+Microsoft::WRL::ComPtr<IDebugControl> GDebugControl{};
+Microsoft::WRL::ComPtr<IDebugRegisters2> GDebugRegisters{};
+Microsoft::WRL::ComPtr<IDebugSymbols5> GDebugSymbols{};
+
+std::string ReportErrorWin32(DWORD error)
+{
+    CHAR szMessageBuffer[512];
+
+    DWORD dwChars = FormatMessageA(
+        FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+        nullptr,
+        error,
+        MAKELANGID(LANG_NEUTRAL, SUBLANG_NEUTRAL),
+        szMessageBuffer,
+        512,
+        nullptr);
+
+    if (0 == dwChars)
+    {
+        HINSTANCE hInst = LoadLibraryW(L"Ntdsbmsg.dll");
+
+        if (hInst)
+        {
+            dwChars = FormatMessageA(
+                FORMAT_MESSAGE_FROM_HMODULE | FORMAT_MESSAGE_IGNORE_INSERTS,
+                hInst,
+                error,
+                0,
+                szMessageBuffer,
+                512,
+                nullptr);
+
+            FreeLibrary(hInst);
+        }
+    }
+
+    if (dwChars > 3)
+    {
+        if (szMessageBuffer[dwChars - 1] == L'\n')
+        {
+            --dwChars;
+        }
+
+        if (szMessageBuffer[dwChars - 1] == L'\r')
+        {
+            --dwChars;
+        }
+
+        if (szMessageBuffer[dwChars - 1] == L'.')
+        {
+            --dwChars;
+        }
+
+        szMessageBuffer[dwChars] = L'\0';
+    }
+
+    return szMessageBuffer;
+}
+
+std::string ReportErrorHRESULT(HRESULT hresult)
+{
+    return ReportErrorWin32(static_cast<DWORD>(hresult));
+}
+
+void AbortIfFailed(HRESULT hr, std::source_location const& location = std::source_location::current())
+{
+    if (FAILED(hr))
+    {
+        std::println(
+            stderr,
+            "{}:{}: Failed {:08x} ('{}')",
+            location.file_name(),
+            location.line(),
+            static_cast<uint32_t>(hr),
+            ReportErrorHRESULT(hr));
+    }
+}
+
+
+std::optional<std::string> GetModuleNameByAddress(DWORD64 address)
+{
+    CHAR moduleName[MAX_PATH];
+
+    ULONG index{};
+    ULONG64 base{};
+
+    if (SUCCEEDED(GDebugSymbols->GetModuleByOffset(address, 0, &index, &base)))
+    {
+        ULONG displacement{};
+
+        if (SUCCEEDED(GDebugSymbols->GetModuleNameString(
+                DEBUG_MODNAME_MODULE,
+                index,
+                base,
+                moduleName,
+                sizeof(moduleName),
+                &displacement)))
+        {
+            return std::string{moduleName};
+        }
+    }
+
+    return std::nullopt;
+}
 
 struct CommandLineEnumerator
 {
@@ -142,28 +250,33 @@ public:
     }
 
     virtual ~MyOutput() = default;
+
     MyOutput(const MyOutput&) = delete;
+
     MyOutput& operator=(const MyOutput&) = delete;
 
-    // Inherited via IDebugOutputCallbacks
-    HRESULT __stdcall QueryInterface(REFIID InterfaceId, PVOID* Interface) override
+    STDMETHODIMP QueryInterface(
+        REFIID InterfaceId,
+        PVOID* Interface) override
     {
         (void)InterfaceId;
         (void)Interface;
-        return E_NOTIMPL;
+        return E_NOINTERFACE;
     }
 
-    ULONG __stdcall AddRef() override
+    STDMETHODIMP_(ULONG) AddRef() override
     {
         return 0;
     }
 
-    ULONG __stdcall Release() override
+    STDMETHODIMP_(ULONG) Release() override
     {
         return 0;
     }
 
-    HRESULT __stdcall Output(ULONG Mask, PCSTR Text) override
+    STDMETHODIMP Output(
+        ULONG Mask,
+        PCSTR Text) override
     {
         if (Mask & DEBUG_OUTPUT_NORMAL)
         {
@@ -182,93 +295,250 @@ class MyCallback : public IDebugEventCallbacks
 public:
     MyCallback() = default;
     virtual ~MyCallback() = default;
-    // Inherited via IDebugEventCallbacks
-    HRESULT __stdcall QueryInterface(REFIID InterfaceId,
+
+    STDMETHODIMP QueryInterface(
+        REFIID InterfaceId,
         PVOID* Interface) override;
-    ULONG __stdcall AddRef(void) override;
-    ULONG __stdcall Release(void) override;
-    HRESULT __stdcall GetInterestMask(PULONG Mask) override;
-    HRESULT __stdcall Breakpoint(PDEBUG_BREAKPOINT Bp) override;
-    HRESULT __stdcall Exception(PEXCEPTION_RECORD64 Exception,
+
+    STDMETHODIMP_(ULONG) AddRef() override;
+
+    STDMETHODIMP_(ULONG) Release() override;
+
+    STDMETHODIMP GetInterestMask(
+        PULONG Mask) override;
+
+    STDMETHODIMP Breakpoint(
+        PDEBUG_BREAKPOINT Bp) override;
+
+    STDMETHODIMP Exception(
+        PEXCEPTION_RECORD64 Exception,
         ULONG FirstChance) override;
-    HRESULT __stdcall CreateThread(ULONG64 Handle, ULONG64 DataOffset,
+
+    STDMETHODIMP CreateThread(
+        ULONG64 Handle,
+        ULONG64 DataOffset,
         ULONG64 StartOffset) override;
-    HRESULT __stdcall ExitThread(ULONG ExitCode) override;
-    HRESULT __stdcall ExitProcess(ULONG ExitCode) override;
-    HRESULT __stdcall LoadModule(ULONG64 ImageFileHandle, ULONG64 BaseOffset,
-        ULONG ModuleSize, PCSTR ModuleName,
-        PCSTR ImageName, ULONG CheckSum,
+
+    STDMETHODIMP ExitThread(
+        ULONG ExitCode) override;
+
+    STDMETHODIMP ExitProcess(
+        ULONG ExitCode) override;
+
+    STDMETHODIMP LoadModule(
+        ULONG64 ImageFileHandle,
+        ULONG64 BaseOffset,
+        ULONG ModuleSize,
+        PCSTR ModuleName,
+        PCSTR ImageName,
+        ULONG CheckSum,
         ULONG TimeDateStamp) override;
-    HRESULT __stdcall UnloadModule(PCSTR ImageBaseName,
+
+    STDMETHODIMP UnloadModule(
+        PCSTR ImageBaseName,
         ULONG64 BaseOffset) override;
-    HRESULT __stdcall SystemError(ULONG Error, ULONG Level) override;
-    HRESULT __stdcall SessionStatus(ULONG Status) override;
-    HRESULT __stdcall ChangeDebuggeeState(ULONG Flags, ULONG64 Argument) override;
-    HRESULT __stdcall ChangeEngineState(ULONG Flags, ULONG64 Argument) override;
-    HRESULT __stdcall ChangeSymbolState(ULONG Flags, ULONG64 Argument) override;
-    HRESULT __stdcall CreateProcessW(ULONG64 ImageFileHandle, ULONG64 Handle,
-        ULONG64 BaseOffset, ULONG ModuleSize,
-        PCSTR ModuleName, PCSTR ImageName,
-        ULONG CheckSum, ULONG TimeDateStamp,
+
+    STDMETHODIMP SystemError(
+        ULONG Error,
+        ULONG Level) override;
+
+    STDMETHODIMP SessionStatus(
+        ULONG Status) override;
+
+    STDMETHODIMP ChangeDebuggeeState(
+        ULONG Flags,
+        ULONG64 Argument) override;
+
+    STDMETHODIMP ChangeEngineState(
+        ULONG Flags,
+        ULONG64 Argument) override;
+
+    STDMETHODIMP ChangeSymbolState(
+        ULONG Flags,
+        ULONG64 Argument) override;
+
+    STDMETHODIMP CreateProcessW(
+        ULONG64 ImageFileHandle,
+        ULONG64 Handle,
+        ULONG64 BaseOffset,
+        ULONG ModuleSize,
+        PCSTR ModuleName,
+        PCSTR ImageName,
+        ULONG CheckSum,
+        ULONG TimeDateStamp,
         ULONG64 InitialThreadHandle,
         ULONG64 ThreadDataOffset,
         ULONG64 StartOffset) override;
 };
 
-HRESULT __stdcall MyCallback::QueryInterface(REFIID InterfaceId,
+STDMETHODIMP MyCallback::QueryInterface(
+    REFIID InterfaceId,
     PVOID* Interface)
 {
     (void)InterfaceId;
     (void)Interface;
-    return E_NOTIMPL;
+    return E_NOINTERFACE;
 }
-ULONG __stdcall MyCallback::AddRef() { return 0; }
-ULONG __stdcall MyCallback::Release() { return 0; }
-HRESULT __stdcall MyCallback::GetInterestMask(PULONG Mask)
+
+STDMETHODIMP_(ULONG) MyCallback::AddRef()
+{
+    return 0;
+}
+
+STDMETHODIMP_(ULONG) MyCallback::Release()
+{
+    return 0;
+}
+
+STDMETHODIMP MyCallback::GetInterestMask(
+    PULONG Mask)
 {
     *Mask = 0;
+    *Mask = DEBUG_EVENT_EXCEPTION;
     return S_OK;
 }
-HRESULT __stdcall MyCallback::Breakpoint(PDEBUG_BREAKPOINT Bp)
+
+STDMETHODIMP MyCallback::Breakpoint(
+    PDEBUG_BREAKPOINT Bp)
 {
-    ULONG64 bp_offset;
-    HRESULT hr = Bp->GetOffset(&bp_offset);
-    if (FAILED(hr))
-        return hr;
-    // Break on breakpoints? Seems reasonable.
-    return DEBUG_STATUS_BREAK;
+    ULONG breakpointId{};
+    HRESULT hr = Bp->GetId(&breakpointId);
+
+    if (SUCCEEDED(hr))
+    {
+        std::println("Breakpoint: {:016X}", breakpointId);
+    }
+    else
+    {
+        std::println("Breakpoint: Failed to get ID");
+    }
+
+    return DEBUG_STATUS_GO;
 }
-HRESULT __stdcall MyCallback::Exception(PEXCEPTION_RECORD64 Exception,
+
+STDMETHODIMP MyCallback::Exception(
+    PEXCEPTION_RECORD64 Exception,
     ULONG FirstChance)
 {
-    std::println("Exception: {:016X} FirstChance: {}",
+    std::println("Exception: {:016X} FirstChance: {}, Module: {}",
         Exception->ExceptionAddress,
-        FirstChance);
-    return E_NOTIMPL;
+        FirstChance,
+        GetModuleNameByAddress(Exception->ExceptionAddress).value_or("<unknown>"));
+
+    // std::println("--------------------");
+    // AbortIfFailed(GDebugRegisters->OutputRegisters(DEBUG_OUTCTL_THIS_CLIENT, DEBUG_REGISTERS_ALL));
+    // std::println("--------------------");
+    // AbortIfFailed(GDebugControl->OutputCurrentState(DEBUG_OUTCTL_THIS_CLIENT, DEBUG_CURRENT_DEFAULT));
+    // std::println("--------------------");
+    // AbortIfFailed(GDebugControl->OutputStackTrace(DEBUG_OUTCTL_THIS_CLIENT, nullptr, 128, DEBUG_STACK_FRAME_NUMBERS | DEBUG_STACK_FRAME_ADDRESSES | DEBUG_STACK_FUNCTION_INFO));
+    // std::println("--------------------");
+
+    ULONG executeMode = DEBUG_EXECUTE_DEFAULT;
+    // List modules
+    std::println("=======");
+    std::println("Modules");
+    std::println("=======");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "lm", executeMode));
+    std::println();
+
+    // Print "parallel stacks"
+
+    std::println("===============");
+    std::println("Parallel Stacks");
+    std::println("===============");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "~*k", executeMode));
+    std::println();
+
+    // Print registers
+    std::println("=========");
+    std::println("Registers");
+    std::println("=========");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "r", executeMode));
+    std::println();
+
+    // Print exception record
+    std::println("================");
+    std::println("Exception Record");
+    std::println("================");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, ".exr -1", executeMode));
+    std::println();
+
+    // Disassemble code at place where crashed
+    std::println("===========");
+    std::println("Disassembly");
+    std::println("===========");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "ub @$ip", executeMode));
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "u @$ip", executeMode));
+    std::println();
+
+    // Disassemble code at place where crashed
+    std::println("==============");
+    std::println("Stack Contents");
+    std::println("==============");
+    // display pointers+symbols, 1 column, at current stack pointer
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "dps /c1 @$csp L-16", executeMode));
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "dps /c1 @$csp L16", executeMode));
+    std::println();
+
+#if false
+    ULONG flags{};
+    flags |= DEBUG_FORMAT_USER_SMALL_FULL_MEMORY;
+    flags |= DEBUG_FORMAT_USER_SMALL_HANDLE_DATA;
+    flags |= DEBUG_FORMAT_USER_SMALL_PROCESS_THREAD_DATA;
+    flags |= DEBUG_FORMAT_USER_SMALL_THREAD_INFO;
+    flags |= DEBUG_FORMAT_USER_SMALL_CODE_SEGMENTS;
+    flags |= DEBUG_FORMAT_USER_SMALL_FULL_MEMORY_INFO;
+    flags |= DEBUG_FORMAT_USER_SMALL_DATA_SEGMENTS;
+
+    AbortIfFailed(GDebugClient->WriteDumpFile2("test.dmp", DEBUG_DUMP_SMALL, flags, "Comment!"));
+#endif
+
+    
+    std::println("=======");
+    std::println("Modules");
+    std::println("=======");
+    AbortIfFailed(GDebugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "!pe", executeMode));
+    std::println();
+
+    return DEBUG_STATUS_GO;
 }
-HRESULT __stdcall MyCallback::CreateThread(ULONG64 Handle, ULONG64 DataOffset,
+
+STDMETHODIMP MyCallback::CreateThread(
+    ULONG64 Handle,
+    ULONG64 DataOffset,
     ULONG64 StartOffset)
 {
     std::println("CreateThread: {:016X} DataOffset: {:016X} StartOffset: {:016X}",
         Handle,
         DataOffset,
         StartOffset);
-    return E_NOTIMPL;
+
+    return DEBUG_STATUS_GO;
 }
-HRESULT __stdcall MyCallback::ExitThread(ULONG ExitCode)
+
+STDMETHODIMP MyCallback::ExitThread(
+    ULONG ExitCode)
 {
     std::println("ExitThread: {}", ExitCode);
-    return E_NOTIMPL;
+
+    return DEBUG_STATUS_GO;
 }
-HRESULT __stdcall MyCallback::ExitProcess(ULONG ExitCode)
+STDMETHODIMP MyCallback::ExitProcess(
+    ULONG ExitCode)
 {
     std::println("ExitProcess: {}", ExitCode);
-    return E_NOTIMPL;
+
+    return DEBUG_STATUS_GO;
 }
-HRESULT __stdcall MyCallback::LoadModule(ULONG64 ImageFileHandle,
-    ULONG64 BaseOffset, ULONG ModuleSize,
-    PCSTR ModuleName, PCSTR ImageName,
-    ULONG CheckSum, ULONG TimeDateStamp)
+
+STDMETHODIMP MyCallback::LoadModule(
+    ULONG64 ImageFileHandle,
+    ULONG64 BaseOffset,
+    ULONG ModuleSize,
+    PCSTR ModuleName,
+    PCSTR ImageName,
+    ULONG CheckSum,
+    ULONG TimeDateStamp)
 {
     std::println("LoadModule: {:016X} BaseOffset: {:016X} ModuleSize: {} ModuleName: {} ImageName: {} CheckSum: {} TimeDateStamp: {}",
         ImageFileHandle,
@@ -279,52 +549,81 @@ HRESULT __stdcall MyCallback::LoadModule(ULONG64 ImageFileHandle,
         CheckSum,
         TimeDateStamp);
 
-    return E_NOTIMPL;
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::UnloadModule(PCSTR ImageBaseName,
+
+STDMETHODIMP MyCallback::UnloadModule(
+    PCSTR ImageBaseName,
     ULONG64 BaseOffset)
 {
     std::println("UnloadModule: {} BaseOffset: {:016X}",
         ImageBaseName,
         BaseOffset);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::SystemError(ULONG Error, ULONG Level)
+
+STDMETHODIMP MyCallback::SystemError(
+    ULONG Error,
+    ULONG Level)
 {
     std::println("SystemError: {} Level: {}", Error, Level);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::SessionStatus(ULONG Status)
+
+STDMETHODIMP MyCallback::SessionStatus(
+    ULONG Status)
 {
     std::println("SessionStatus: {}", Status);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::ChangeDebuggeeState(ULONG Flags,
+
+STDMETHODIMP MyCallback::ChangeDebuggeeState(
+    ULONG Flags,
     ULONG64 Argument)
 {
     std::println("ChangeDebuggeeState: {} Argument: {:016X}",
         Flags,
         Argument);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::ChangeEngineState(ULONG Flags, ULONG64 Argument)
+
+STDMETHODIMP MyCallback::ChangeEngineState(
+    ULONG Flags,
+    ULONG64 Argument)
 {
     std::println("ChangeEngineState: {} Argument: {:016X}",
         Flags,
         Argument);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::ChangeSymbolState(ULONG Flags, ULONG64 Argument)
+
+STDMETHODIMP MyCallback::ChangeSymbolState(
+    ULONG Flags,
+    ULONG64 Argument)
 {
     std::println("ChangeSymbolState: {} Argument: {:016X}",
         Flags,
         Argument);
-    return E_NOTIMPL;
+
+    return S_OK;
 }
-HRESULT __stdcall MyCallback::CreateProcessW(
-    ULONG64 ImageFileHandle, ULONG64 Handle, ULONG64 BaseOffset,
-    ULONG ModuleSize, PCSTR ModuleName, PCSTR ImageName, ULONG CheckSum,
-    ULONG TimeDateStamp, ULONG64 InitialThreadHandle, ULONG64 ThreadDataOffset,
+
+STDMETHODIMP MyCallback::CreateProcessW(
+    ULONG64 ImageFileHandle,
+    ULONG64 Handle,
+    ULONG64 BaseOffset,
+    ULONG ModuleSize,
+    PCSTR ModuleName,
+    PCSTR ImageName,
+    ULONG CheckSum,
+    ULONG TimeDateStamp,
+    ULONG64 InitialThreadHandle,
+    ULONG64 ThreadDataOffset,
     ULONG64 StartOffset)
 {
     std::println("CreateProcessW: {:016X} Handle: {:016X} BaseOffset: {:016X} ModuleSize: {} ModuleName: {} ImageName: {} CheckSum: {} TimeDateStamp: {} InitialThreadHandle: {:016X} ThreadDataOffset: {:016X} StartOffset: {:016X}",
@@ -340,18 +639,7 @@ HRESULT __stdcall MyCallback::CreateProcessW(
         ThreadDataOffset,
         StartOffset);
 
-    // Should fire once the target process is launched. Break to create
-    // breakpoints, etc.
-    return DEBUG_STATUS_BREAK;
-}
-
-void AbortIfFailed(HRESULT hr, std::source_location const& location = std::source_location::current())
-{
-    if (FAILED(hr))
-    {
-        std::println(stderr, "{}:{}: Failed {:08x}", location.file_name(), location.line(), static_cast<uint32_t>(hr));
-        std::abort();
-    }
+    return S_OK;
 }
 
 int main(int argc, char* argv[])
@@ -372,83 +660,78 @@ int main(int argc, char* argv[])
 
     if (argc)
     {
-        Microsoft::WRL::ComPtr<IDebugClient9> debugClient{};
-        MyOutput output{debugClient};
+        MyOutput output{GDebugClient};
         MyCallback callback{};
 
         std::println("DebuggerPid: {}, ClientPid: {}",
             GetCurrentProcessId(),
             options.ProcessId.value());
 
-        AbortIfFailed(DebugCreate(IID_PPV_ARGS(debugClient.GetAddressOf())));
-        
-        Microsoft::WRL::ComPtr<IDebugAdvanced4> debugAdvanced{};
-        AbortIfFailed(debugClient->QueryInterface(IID_PPV_ARGS(debugAdvanced.GetAddressOf())));
-        
-        Microsoft::WRL::ComPtr<IDebugControl> debugControl{};
-        AbortIfFailed(debugClient->QueryInterface(IID_PPV_ARGS(debugControl.GetAddressOf())));
-        AbortIfFailed(debugControl->AddEngineOptions(DEBUG_ENGOPT_INITIAL_BREAK));
+        AbortIfFailed(DebugCreate(IID_PPV_ARGS(GDebugClient.GetAddressOf())));
 
-        AbortIfFailed(debugClient->SetOutputCallbacks(&output));
-        AbortIfFailed(debugClient->SetEventCallbacks(&callback));
+        AbortIfFailed(GDebugClient->QueryInterface(IID_PPV_ARGS(GDebugAdvanced.GetAddressOf())));
 
-        AbortIfFailed(debugClient->AttachProcess(0, pid, DEBUG_ATTACH_NONINVASIVE));
-        AbortIfFailed(debugControl->WaitForEvent(0, INFINITE));
+        AbortIfFailed(GDebugClient->QueryInterface(IID_PPV_ARGS(GDebugControl.GetAddressOf())));
+        // AbortIfFailed(GDebugControl->AddEngineOptions(DEBUG_ENGOPT_INITIAL_BREAK));
 
-        ULONG executeMode = DEBUG_EXECUTE_DEFAULT;
+        AbortIfFailed(GDebugClient->QueryInterface(IID_PPV_ARGS(GDebugRegisters.GetAddressOf())));
+        AbortIfFailed(GDebugClient->QueryInterface(IID_PPV_ARGS(GDebugSymbols.GetAddressOf())));
 
-        // Set frames limit 128 entries
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, ".kframes 0n128", executeMode));
+        AbortIfFailed(GDebugClient->SetOutputCallbacks(&output));
+        AbortIfFailed(GDebugClient->SetEventCallbacks(&callback));
 
-        // List modules
-        std::println("=======");
-        std::println("Modules");
-        std::println("=======");
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "lm", executeMode));
-        std::println();
+        AbortIfFailed(GDebugClient->AttachProcess(0, pid, DEBUG_ATTACH_INVASIVE_RESUME_PROCESS));
+        std::println("Attached to process: {}", pid);
 
-        // Print "parallel stacks"
 
-        std::println("===============");
-        std::println("Parallel Stacks");
-        std::println("===============");
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "~*k", executeMode));
-        std::println();
+        //
+        // Here the application is running. We need to wait for the events.
+        //
 
-        // Print registers
-        std::println("=========");
-        std::println("Registers");
-        std::println("=========");
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "r", executeMode));
-        std::println();
+        bool finished = false;
 
-        // Print exception record
-        std::println("================");
-        std::println("Exception Record");
-        std::println("================");
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, ".exr -1", executeMode));
-        std::println();
+        while (true)
+        {
 
-        // Disassemble code at place where crashed
-        std::println("===========");
-        std::println("Disassembly");
-        std::println("===========");
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "ub @$ip", executeMode));
-        AbortIfFailed(debugControl->Execute(DEBUG_OUTCTL_THIS_CLIENT, "u @$ip", executeMode));
-        std::println();
+            std::println("Wait for event");
+            if (FAILED(GDebugControl->WaitForEvent(DEBUG_WAIT_DEFAULT, INFINITE)))
+            {
+                std::println("No more events");
+                break;
+            }
 
-        ULONG flags{};
-        flags |= DEBUG_FORMAT_USER_SMALL_FULL_MEMORY;
-        flags |= DEBUG_FORMAT_USER_SMALL_HANDLE_DATA;
-        flags |= DEBUG_FORMAT_USER_SMALL_PROCESS_THREAD_DATA;
-        flags |= DEBUG_FORMAT_USER_SMALL_THREAD_INFO;
-        flags |= DEBUG_FORMAT_USER_SMALL_CODE_SEGMENTS;
-        flags |= DEBUG_FORMAT_USER_SMALL_FULL_MEMORY_INFO;
-        flags |= DEBUG_FORMAT_USER_SMALL_DATA_SEGMENTS;
+            ULONG status{};
+            AbortIfFailed(GDebugControl->GetExecutionStatus(&status));
+            std::println("Status: {}", status);
 
-        AbortIfFailed(debugClient->WriteDumpFile2("e:\\test.dmp", DEBUG_DUMP_SMALL, flags, "Comment!"));
+            if (status == DEBUG_STATUS_BREAK)
+            {
+                AbortIfFailed(GDebugControl->SetExecutionStatus(DEBUG_STATUS_GO));
+            }
+            else if (status == DEBUG_STATUS_NO_DEBUGGEE)
+            {
+                finished = true;
+            }
 
-        AbortIfFailed(debugClient->DetachProcesses());
+            if (finished)
+            {
+                std::println("Finished 2");
+                break;
+            }
+        }
+
+        ULONG status{};
+        AbortIfFailed(GDebugControl->GetExecutionStatus(&status));
+        std::println("Status: {}", status);
+
+        AbortIfFailed(GDebugClient->EndSession(DEBUG_END_ACTIVE_TERMINATE));
+
+
+        GDebugRegisters = nullptr;
+        GDebugControl = nullptr;
+        GDebugAdvanced = nullptr;
+        GDebugSymbols = nullptr;
+        GDebugClient = nullptr;
 
         return 2137;
     }
