@@ -11,6 +11,7 @@
 #include <TraceLoggingProvider.h>
 
 #include <iterator>
+#include <format>
 
 
 #define ENABLE_HEAP_CORRUPTION_CRASHES false
@@ -215,6 +216,7 @@ namespace Anemone::Private
         DWORD const dwThreadId = GetThreadId(hThread);
 
         Interop::CrashDetails crashDetails{};
+        std::string_view{ANEMONE_ENGINE_BUILD_ID}.copy(crashDetails.BuildId, sizeof(crashDetails.BuildId) - 1);
         crashDetails.ProcessId = dwProcessId;
         crashDetails.ThreadId = dwThreadId;
 
@@ -232,20 +234,25 @@ namespace Anemone::Private
         }
 
         {
-            Interop::Mapping mapping{dwProcessId, dwThreadId};
-            mapping.Write(crashDetails);
+            std::optional<Interop::Mapping> mapping = Interop::Mapping::Create(dwProcessId, dwThreadId);
 
-            wchar_t commandLine[MAX_PATH + 1];
-
-            if (swprintf_s(
-                    commandLine,
-                    L"AnemoneCrashReporter.exe --pid %u --tid %u",
-                    static_cast<UINT>(dwProcessId),
-                    static_cast<UINT>(dwThreadId)) < 0)
+            if (not mapping)
             {
                 // Terminate process immediately
-                Debugger::ReportApplicationStop("Could not format command line");
+                Debugger::ReportApplicationStop("Could not create memory mapped file");
+                return;
             }
+
+            mapping->Write(crashDetails);
+
+            wchar_t commandLine[MAX_PATH + 1];
+            auto commandLineFormatResult = std::format_to_n(
+                commandLine,
+                MAX_PATH,
+                L"AnemoneCrashReporter.exe --pid {} --tid {}",
+                dwProcessId,
+                dwThreadId);
+            (*commandLineFormatResult.out) = L'\0';
 
             STARTUPINFOW startupInfo{};
             startupInfo.cb = sizeof(startupInfo);
@@ -333,7 +340,11 @@ namespace Anemone
         }
 
         wchar_t commandLine[MAX_PATH + 1];
-        swprintf_s(commandLine, L"vsjitdebugger.exe -p %lu", GetCurrentProcessId());
+        auto commandLineFormatResult = std::format_to_n(
+            commandLine,
+            MAX_PATH,
+            L"vsjitdebugger.exe -p {}", GetCurrentProcessId());
+        (*commandLineFormatResult.out) = L'\0';
 
         STARTUPINFOW si{
             .cb = sizeof(si),

@@ -1,203 +1,346 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseMemoryMappedFile.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
-#include "AnemoneRuntime/System/FileHandle.hxx"
 
-#include <string_view>
-#include <expected>
 #include <span>
 
-namespace Anemone
+namespace Anemone::Interop
 {
-    class RUNTIME_API WindowsMemoryMappedFile final
+    enum class MemoryMappedFileAccess : uint8_t
     {
-    private:
-        Interop::Win32SafeMemoryMappedFileHandle _handle;
-
-    private:
-        WindowsMemoryMappedFile(Interop::Win32SafeMemoryMappedFileHandle handle)
-            : _handle{std::move(handle)}
-        {
-        }
-
-    public:
-        WindowsMemoryMappedFile() = default;
-
-        WindowsMemoryMappedFile(WindowsMemoryMappedFile const&) = delete;
-
-        WindowsMemoryMappedFile(WindowsMemoryMappedFile&&) noexcept = default;
-
-        WindowsMemoryMappedFile& operator=(WindowsMemoryMappedFile const&) = delete;
-
-        WindowsMemoryMappedFile& operator=(WindowsMemoryMappedFile&&) noexcept = default;
-
-        ~WindowsMemoryMappedFile() = default;
-
-    public:
-        [[nodiscard]] explicit operator bool() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] bool IsValid() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] Interop::Win32SafeMemoryMappedFileHandle const& GetNativeHandle() const
-        {
-            return this->_handle;
-        }
-
-    private:
-        static auto OpenCore(
-            const wchar_t* name,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        static auto CreateCore(
-            Interop::Win32SafeFileHandle const& handle,
-            const wchar_t* name,
-            MemoryMappedFileAccess access,
-            int64_t capacity)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        static auto OpenOrCreateCore(
-            Interop::Win32SafeFileHandle const& handle,
-            const wchar_t* name,
-            MemoryMappedFileAccess access,
-            int64_t capacity)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-    public:
-        // Anonymous, in-process memory mapped file.
-        static auto Create(
-            int64_t capacity,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        static auto Create(
-            FileHandle const& fileHandle,
-            int64_t capacity,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        // Named, create, fail if exists.
-        static auto Create(
-            std::string_view name,
-            int64_t capacity,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        static auto Create(
-            FileHandle const& fileHandle,
-            std::string_view name,
-            int64_t capacity,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        // Named, open, fail if doesn't exist.
-        static auto Open(
-            std::string_view name,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
-
-        // Named, create or open, fail for any other reason.
-        static auto OpenOrCreate(
-            FileHandle const& fileHandle,
-            std::string_view name,
-            int64_t capacity,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedFile, ErrorCode>;
+        ReadOnly,
+        ReadWrite,
+        CopyOnWrite,
+        ReadExecute,
     };
 
-    using MemoryMappedFile = WindowsMemoryMappedFile;
+    constexpr static DWORD win32_ConvertFileMapAccess(MemoryMappedFileAccess access)
+    {
+        DWORD result = 0;
+
+        switch (access)
+        {
+        case MemoryMappedFileAccess::ReadOnly:
+            result = FILE_MAP_READ;
+            break;
+
+        case MemoryMappedFileAccess::ReadWrite:
+            result = FILE_MAP_READ | FILE_MAP_WRITE;
+            break;
+
+        case MemoryMappedFileAccess::CopyOnWrite:
+            result = FILE_MAP_COPY;
+            break;
+
+        case MemoryMappedFileAccess::ReadExecute:
+            result = FILE_MAP_READ | FILE_MAP_EXECUTE;
+            break;
+
+        default:
+            break;
+        }
+
+        return result;
+    }
+
+    constexpr DWORD win32_ConvertPageAccess(MemoryMappedFileAccess access)
+    {
+        DWORD result = 0;
+        switch (access)
+        {
+        case MemoryMappedFileAccess::ReadOnly:
+            result = PAGE_READONLY;
+            break;
+        case MemoryMappedFileAccess::ReadWrite:
+            result = PAGE_READWRITE;
+            break;
+        case MemoryMappedFileAccess::CopyOnWrite:
+            result = PAGE_WRITECOPY;
+            break;
+        case MemoryMappedFileAccess::ReadExecute:
+            result = PAGE_EXECUTE_READ;
+            break;
+        default:
+            break;
+        }
+
+        return result;
+    }
 }
 
-namespace Anemone
+namespace Anemone::Interop
 {
-    class RUNTIME_API WindowsMemoryMappedView final
+    inline auto win32_MemoryMappedFileHandle_OpenCore(
+        const wchar_t* name,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
     {
-    private:
-        Interop::Win32SafeMemoryMappedViewHandle _handle;
+        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
 
-    private:
-        WindowsMemoryMappedView(Interop::Win32SafeMemoryMappedViewHandle handle)
-            : _handle{std::move(handle)}
+        return Win32SafeMemoryMappedFileHandle{OpenFileMappingW(dwDesiredAccess, FALSE, name)};
+    }
+
+    inline auto win32_MemoryMappedFileHandle_CreateCore(
+        Win32SafeFileHandle const& handle,
+        const wchar_t* name,
+        MemoryMappedFileAccess access,
+        int64_t capacity)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        AE_ASSERT(capacity > 0);
+
+        SECURITY_ATTRIBUTES sa{
+            .nLength = sizeof(SECURITY_ATTRIBUTES),
+            .lpSecurityDescriptor = nullptr,
+            .bInheritHandle = FALSE,
+        };
+
+        DWORD const dwPageAccess = win32_ConvertPageAccess(access);
+        DWORD const dwCapacityHigh = static_cast<DWORD>(capacity >> 32);
+        DWORD const dwCapacityLow = static_cast<DWORD>(capacity);
+
+        HANDLE const hFile = handle.Get();
+
+        Interop::Win32SafeMemoryMappedFileHandle result;
+        result.Attach(CreateFileMappingW(
+            hFile,
+            &sa,
+            dwPageAccess,
+            dwCapacityHigh,
+            dwCapacityLow,
+            name));
+
+        DWORD const dwError = GetLastError();
+
+        if (result)
         {
+            if (dwError == ERROR_ALREADY_EXISTS)
+            {
+                return {};
+            }
+        }
+        else
+        {
+            return {};
         }
 
-    public:
-        WindowsMemoryMappedView() = default;
+        return result;
+    }
 
-        WindowsMemoryMappedView(WindowsMemoryMappedView const&) = delete;
+    inline auto win32_MemoryMappedFileHandle_OpenOrCreateCore(
+        Win32SafeFileHandle const& handle,
+        const wchar_t* name,
+        MemoryMappedFileAccess access,
+        int64_t capacity)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        AE_ASSERT(capacity > 0);
 
-        WindowsMemoryMappedView(WindowsMemoryMappedView&&) noexcept = default;
+        SECURITY_ATTRIBUTES sa{
+            .nLength = sizeof(SECURITY_ATTRIBUTES),
+            .lpSecurityDescriptor = nullptr,
+            .bInheritHandle = FALSE,
+        };
 
-        WindowsMemoryMappedView& operator=(WindowsMemoryMappedView const&) = delete;
+        size_t retries = 20;
 
-        WindowsMemoryMappedView& operator=(WindowsMemoryMappedView&&) noexcept = default;
+        HANDLE const hFile = handle.Get();
 
-        ~WindowsMemoryMappedView() = default;
+        DWORD const dwPageAccess = win32_ConvertPageAccess(access);
+        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwCapacityHigh = static_cast<DWORD>(capacity >> 32);
+        DWORD const dwCapacityLow = static_cast<DWORD>(capacity);
 
-    public:
-        static auto Create(
-            WindowsMemoryMappedFile const& fileHandle,
-            MemoryMappedFileAccess access)
-            -> std::expected<WindowsMemoryMappedView, ErrorCode>;
+        Interop::Win32SafeMemoryMappedFileHandle result;
 
-        static auto Create(
-            WindowsMemoryMappedFile const& fileHandle,
-            MemoryMappedFileAccess access,
-            int64_t offset,
-            int64_t size)
-            -> std::expected<WindowsMemoryMappedView, ErrorCode>;
-
-    public:
-        std::expected<void, ErrorCode> Flush() const;
-
-        std::expected<void, ErrorCode> Flush(
-            size_t offset,
-            size_t size) const;
-
-    public:
-        [[nodiscard]] explicit operator bool() const
+        while (retries)
         {
-            return this->_handle.IsValid();
-        }
-        [[nodiscard]] bool IsValid() const
-        {
-            return this->_handle.IsValid();
-        }
-        [[nodiscard]] Interop::Win32SafeMemoryMappedViewHandle const& GetNativeHandle() const
-        {
-            return this->_handle;
+            result.Attach(CreateFileMappingW(
+                hFile,
+                &sa,
+                dwPageAccess,
+                dwCapacityHigh,
+                dwCapacityLow,
+                name));
+
+            if (result)
+            {
+                break;
+            }
+
+            if (DWORD const dwError = GetLastError(); dwError != ERROR_ACCESS_DENIED)
+            {
+                return {};
+            }
+
+            result.Attach(OpenFileMappingW(dwDesiredAccess, FALSE, name));
+
+            if (result)
+            {
+                break;
+            }
+
+            if (DWORD const dwError = GetLastError(); dwError != ERROR_FILE_NOT_FOUND)
+            {
+                return {};
+            }
+
+            --retries;
+            SleepEx(100, TRUE);
         }
 
-        [[nodiscard]] void* GetData()
+        return result;
+    }
+
+    inline auto win32_CreateMemoryMappedFile(
+        int64_t capacity,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_CreateCore(
+            {},
+            nullptr,
+            access,
+            capacity);
+    }
+
+    inline auto win32_CreateMemoryMappedFile(
+        Win32SafeFileHandle const& fileHandle,
+        int64_t capacity,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_CreateCore(
+            fileHandle,
+            nullptr,
+            access,
+            capacity);
+    }
+
+    // Named, create, fail if exists
+    inline auto win32_CreateMemoryMappedFile(
+        const wchar_t* name,
+        int64_t capacity,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_CreateCore(
+            {},
+            name,
+            access,
+            capacity);
+    }
+
+    inline auto win32_CreateMemoryMappedFile(
+        Win32SafeFileHandle const& fileHandle,
+        const wchar_t* name,
+        int64_t capacity,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_CreateCore(
+            fileHandle,
+            name,
+            access,
+            capacity);
+    }
+
+    inline auto win32_OpenMemoryMappedFile(
+        const wchar_t* name,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_OpenCore(
+            name,
+            access);
+    }
+
+    inline auto win32_OpenMemoryMappedFile(
+        Win32SafeFileHandle const& fileHandle,
+        const wchar_t* name,
+        int64_t capacity,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedFileHandle
+    {
+        return win32_MemoryMappedFileHandle_OpenOrCreateCore(
+            fileHandle,
+            name,
+            access,
+            capacity);
+    }
+}
+
+namespace Anemone::Interop
+{
+    inline auto win32_CreateMemoryMappedView(
+        Win32SafeMemoryMappedFileHandle const& handle,
+        MemoryMappedFileAccess access)
+        -> Win32SafeMemoryMappedViewHandle
+    {
+        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+
+        LPVOID data = MapViewOfFile(
+            handle.Get(),
+            dwDesiredAccess,
+            0,
+            0,
+            0);
+
+        size_t size = 0;
+
+        if (data)
         {
-            return this->_handle.GetData();
-        }
-        [[nodiscard]] void const* GetData() const
-        {
-            return this->_handle.GetData();
-        }
-        [[nodiscard]] size_t GetSize() const
-        {
-            return this->_handle.GetSize();
+            MEMORY_BASIC_INFORMATION mbi;
+            VirtualQuery(data, &mbi, sizeof(mbi));
+            size = mbi.RegionSize;
         }
 
-        std::span<std::byte> AsSpan()
-        {
-            return std::span{static_cast<std::byte*>(this->GetData()), this->GetSize()};
-        }
+        return Win32SafeMemoryMappedViewHandle{data, size};
+    }
 
-        std::span<std::byte const> AsSpan() const
-        {
-            return std::span{static_cast<std::byte const*>(this->GetData()), this->GetSize()};
-        }
-    };
+    inline auto win32_CreateMemoryMappedView(
+        Win32SafeMemoryMappedFileHandle const& handle,
+        MemoryMappedFileAccess access,
+        int64_t offset,
+        int64_t size)
+        -> Win32SafeMemoryMappedViewHandle
+    {
+        AE_ASSERT(size > 0);
+        size_t const validSize = static_cast<size_t>(size);
 
-    using MemoryMappedView = WindowsMemoryMappedView;
+        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwFileOffsetHigh = static_cast<DWORD>(offset >> 32);
+        DWORD const dwFileOffsetLow = static_cast<DWORD>(offset);
+
+        LPVOID data = MapViewOfFile(
+            handle.Get(),
+            dwDesiredAccess,
+            dwFileOffsetHigh,
+            dwFileOffsetLow,
+            validSize);
+
+        return Win32SafeMemoryMappedViewHandle{data, validSize};
+    }
+
+    inline auto win32_FlushMemoryMappedView(
+        Win32SafeMemoryMappedViewHandle const& handle)
+        -> bool
+    {
+        AE_ASSERT(handle);
+
+        return FlushViewOfFile(handle.GetData(), handle.GetSize());
+    }
+
+    inline auto win32_FlushMemoryMappedView(
+        Win32SafeMemoryMappedViewHandle const& handle,
+        size_t offset,
+        size_t size)
+        -> bool
+    {
+        AE_ASSERT(handle);
+        AE_ASSERT((offset + size) <= handle.GetSize());
+
+        return FlushViewOfFile(
+            static_cast<std::byte const*>(handle.GetData()) + offset,
+            size);
+    }
 }

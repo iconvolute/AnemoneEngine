@@ -14,7 +14,6 @@ target_sources(AnemoneRuntime
 
         "WindowsInterop.hxx"
 
-        "WindowsMemoryMappedFile.cxx"
         "WindowsMemoryMappedFile.hxx"
 
         "WindowsNamedMutex.cxx"

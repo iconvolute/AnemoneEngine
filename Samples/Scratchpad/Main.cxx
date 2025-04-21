@@ -299,7 +299,6 @@ struct V2 : Anemone::DirectoryVisitor
     }
 };
 
-#include "AnemoneRuntime/Platform/MemoryMappedFile.hxx"
 #include "AnemoneRuntime/Tasks/Parallel.hxx"
 
 //

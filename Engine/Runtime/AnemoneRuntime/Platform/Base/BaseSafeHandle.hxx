@@ -1,6 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
+#include <span>
+
 namespace Anemone::Interop
 {
     template <typename HandleT, typename TraitsT>
@@ -208,6 +210,20 @@ namespace Anemone::Interop
                 this->_data = TraitsT::Invalid();
                 this->_size = 0;
             }
+        }
+
+        [[nodiscard]] std::span<std::byte> AsSpan()
+        {
+            return std::span<std::byte>(
+                reinterpret_cast<std::byte*>(this->_data),
+                this->_size);
+        }
+
+        [[nodiscard]] std::span<std::byte const> AsSpan() const
+        {
+            return std::span<std::byte const>(
+                reinterpret_cast<std::byte const*>(this->_data),
+                this->_size);
         }
     };
 }

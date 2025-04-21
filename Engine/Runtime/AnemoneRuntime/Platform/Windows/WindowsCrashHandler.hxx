@@ -1,10 +1,14 @@
 #pragma once
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
+
+#include <format>
 
 namespace Anemone::Interop
 {
     struct CrashDetails
     {
+        CHAR BuildId[64];
         DWORD ProcessId;
         DWORD ThreadId;
         EXCEPTION_RECORD ExceptionRecord;
@@ -19,52 +23,63 @@ namespace Anemone::Interop
         DWORD ZmmhRegistersLength;
     };
 
-    struct Mapping
+    struct Mapping final
     {
-        HANDLE Handle;
-        void* Buffer;
+    private:
+        Win32SafeMemoryMappedFileHandle _handle;
+        Win32SafeMemoryMappedViewHandle _view;
 
-        Mapping(DWORD processId, DWORD threadId)
+    private:
+        explicit Mapping(
+            Win32SafeMemoryMappedFileHandle handle,
+            Win32SafeMemoryMappedViewHandle view)
+            : _handle{std::move(handle)}
+            , _view{std::move(view)}
         {
-            wchar_t name[MAX_PATH];
-            swprintf_s(name, L"AnemoneCrashDetails_pid%u_tid%u", static_cast<UINT>(processId), static_cast<UINT>(threadId));
+        }
 
-            Handle = CreateFileMappingW(
-                INVALID_HANDLE_VALUE,
-                nullptr,
-                PAGE_READWRITE,
-                0,
+    public:
+        static std::optional<Mapping> Create(DWORD processId, DWORD threadId)
+        {
+            wchar_t name[MAX_PATH + 1];
+            auto nameFormatResult = std::format_to_n(
+                name,
+                MAX_PATH,
+                L"AnemoneCrashDetails_pid{}_tid{}",
+                processId,
+                threadId);
+            (*nameFormatResult.out) = L'\0';
+
+            Win32SafeMemoryMappedFileHandle handle = win32_OpenMemoryMappedFile(
+                Win32SafeFileHandle{},
+                name,
                 sizeof(CrashDetails),
-                name);
-            if (Handle == nullptr)
+                MemoryMappedFileAccess::ReadWrite);
+
+            if (handle)
             {
-                return;
+                Win32SafeMemoryMappedViewHandle view = win32_CreateMemoryMappedView(
+                    handle,
+                    MemoryMappedFileAccess::ReadWrite);
+
+                if (view)
+                {
+                    return Mapping{std::move(handle), std::move(view)};
+                }
             }
 
-            Buffer = MapViewOfFile(Handle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CrashDetails));
+            return std::nullopt;
         }
 
-        ~Mapping()
-        {
-            if (Buffer != nullptr)
-            {
-                UnmapViewOfFile(Buffer);
-            }
-
-            if (Handle != nullptr)
-            {
-                CloseHandle(Handle);
-            }
-        }
-
+    public:
         void Write(CrashDetails const& crashDetails)
         {
-            if (Buffer != nullptr)
+            if (this->_view)
             {
-                CopyMemory(Buffer, &crashDetails, sizeof(CrashDetails));
+                CopyMemory(this->_view.GetData(), &crashDetails, sizeof(CrashDetails));
             }
 
-            FlushViewOfFile(Buffer, sizeof(CrashDetails));
+            win32_FlushMemoryMappedView(this->_view);
         }
     };
 }

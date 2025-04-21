@@ -13,6 +13,8 @@
 #include <DbgHelp.h>
 #include <TlHelp32.h>
 
+#include "AnemoneGeneratedConfigurationProperties.hxx"
+
 struct CommandLineEnumerator
 {
 private:
@@ -162,8 +164,10 @@ struct ParsedOptions
     std::optional<bool> FullDump{};
 };
 
+// Note: Synchronize with runtime crash handler.
 struct CrashDetails
 {
+    CHAR BuildId[64];
     DWORD ProcessId;
     DWORD ThreadId;
     EXCEPTION_RECORD ExceptionRecord;
@@ -283,6 +287,11 @@ void LogNeonRegister(size_t index, ARM64_NT_NEON128 const& value) noexcept
 
 void PrintContext(HANDLE hProcess, CrashDetails const& context)
 {
+    std::println("ProcessId: {:08X} ThreadId: {:08X}",
+        context.ProcessId,
+        context.ThreadId);
+    std::println("Build Id: {}", context.BuildId);
+
 #if defined(_M_AMD64)
     if (context.Context.ContextFlags & CONTEXT_INTEGER)
     {
@@ -520,16 +529,22 @@ void LogBinaryHexDump(std::span<std::byte> buffer, uintptr_t base) noexcept
 
 std::optional<CrashDetails> ReadCrashDetails(DWORD processId, DWORD threadId)
 {
-    wchar_t name[MAX_PATH];
-    swprintf_s(name, L"AnemoneCrashDetails_pid%u_tid%u", static_cast<UINT>(processId), static_cast<UINT>(threadId));
+    wchar_t name[MAX_PATH + 1];
+    auto nameFormatResult = std::format_to_n(
+        name,
+        MAX_PATH,
+        L"AnemoneCrashDetails_pid{}_tid{}",
+        processId,
+        threadId);
+    (*nameFormatResult.out) = L'\0';
 
-    HANDLE hMapping = OpenFileMappingW(FILE_MAP_ALL_ACCESS, FALSE, name);
+    HANDLE hMapping = OpenFileMappingW(FILE_MAP_READ, FALSE, name);
     if (hMapping == nullptr)
     {
         return std::nullopt;
     }
 
-    void* buffer = MapViewOfFile(hMapping, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(CrashDetails));
+    void* buffer = MapViewOfFile(hMapping, FILE_MAP_READ, 0, 0, sizeof(CrashDetails));
     if (buffer == nullptr)
     {
         CloseHandle(hMapping);
@@ -620,6 +635,7 @@ int main(int argc, char* argv[])
     }
 
     std::fwprintf(stderr, L"Opened process\n");
+
     // Read crash details from process.
     auto crashDetails = ReadCrashDetails(*options.ProcessId, *options.ThreadId);
 
@@ -631,6 +647,15 @@ int main(int argc, char* argv[])
     }
 
     std::fwprintf(stderr, L"Got details\n");
+
+    if (std::string_view{crashDetails->BuildId} != ANEMONE_ENGINE_BUILD_ID)
+    {
+        std::println(stderr, "Invalid build id");
+        std::println("- expected: {}", ANEMONE_ENGINE_BUILD_ID);
+        std::println("- reported: {}", crashDetails->BuildId);
+        CloseHandle(hProcess);
+        return 1;
+    }
 
     PrintContext(hProcess, *crashDetails);
 
@@ -668,24 +693,20 @@ int main(int argc, char* argv[])
     SYSTEMTIME st{};
     GetLocalTime(&st);
 
-    wchar_t wFileName[128];
-
-    if (swprintf_s(
-            wFileName,
-            L"pid-%u-tid-%u-%04u-%02u-%02u-%02u-%02u-%02u.dmp",
-            static_cast<UINT>(*options.ProcessId),
-            static_cast<UINT>(*options.ThreadId),
-            st.wYear,
-            st.wMonth,
-            st.wDay,
-            st.wHour,
-            st.wMinute,
-            st.wSecond) < 0)
-    {
-        std::println(stderr, "Failed to format dump name: {}", GetLastError());
-        CloseHandle(hProcess);
-        return 1;
-    }
+    wchar_t wFileName[MAX_PATH + 1];
+    auto wFileNameFormatResult = std::format_to_n(
+        wFileName,
+        MAX_PATH,
+        L"Dump-Id-{}-{}-Date{:04}-{:02}-{:02}Time{:02}-{:02}-{:02}.dmp",
+        *options.ProcessId,
+        *options.ThreadId,
+        st.wYear,
+        st.wMonth,
+        st.wDay,
+        st.wHour,
+        st.wMinute,
+        st.wSecond);
+    (*wFileNameFormatResult.out) = L'\0';
 
     HANDLE hFile = CreateFileW(
         wFileName,
