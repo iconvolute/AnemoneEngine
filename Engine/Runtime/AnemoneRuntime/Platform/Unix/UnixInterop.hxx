@@ -234,7 +234,7 @@ namespace Anemone::Interop
             struct stat fs;
             if (fstat(fd, &fs) == 0)
             {
-                buffer.resize(fs.st_size + 1u);
+                buffer.resize(fs.st_size);
 
                 ssize_t const processed = read(fd, buffer.data(), buffer.size());
 
