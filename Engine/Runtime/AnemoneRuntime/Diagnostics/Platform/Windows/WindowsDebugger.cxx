@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsCrashHandler.hxx"
+#include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #include <winmeta.h>
@@ -12,6 +12,26 @@
 
 #include <iterator>
 #include <format>
+
+namespace Anemone::Internal
+{
+    struct CrashDetails
+    {
+        CHAR BuildId[64];
+        DWORD ProcessId;
+        DWORD ThreadId;
+        EXCEPTION_RECORD ExceptionRecord;
+        CONTEXT Context;
+        PVOID XmmRegisters;
+        PVOID YmmRegisters;
+        PVOID ZmmRegisters;
+        PVOID ZmmhRegisters;
+        DWORD XmmRegistersLength;
+        DWORD YmmRegistersLength;
+        DWORD ZmmRegistersLength;
+        DWORD ZmmhRegistersLength;
+    };
+}
 
 
 #define ENABLE_HEAP_CORRUPTION_CRASHES false
@@ -215,8 +235,9 @@ namespace Anemone::Private
         DWORD const dwProcessId = GetProcessId(hProcess);
         DWORD const dwThreadId = GetThreadId(hThread);
 
-        Interop::CrashDetails crashDetails{};
+        Internal::CrashDetails crashDetails{};
         std::string_view{ANEMONE_ENGINE_BUILD_ID}.copy(crashDetails.BuildId, sizeof(crashDetails.BuildId) - 1);
+
         crashDetails.ProcessId = dwProcessId;
         crashDetails.ThreadId = dwThreadId;
 
@@ -234,16 +255,40 @@ namespace Anemone::Private
         }
 
         {
-            std::optional<Interop::Mapping> mapping = Interop::Mapping::Create(dwProcessId, dwThreadId);
+            wchar_t name[MAX_PATH + 1];
+            auto nameFormatResult = std::format_to_n(
+                name,
+                MAX_PATH,
+                L"AnemoneCrashDetails_pid{}_tid{}",
+                dwProcessId,
+                dwThreadId);
+            (*nameFormatResult.out) = L'\0';
 
-            if (not mapping)
+            Interop::Win32SafeMemoryMappedFileHandle fhMapping = Interop::win32_OpenMemoryMappedFile(
+                Interop::Win32SafeFileHandle{},
+                name,
+                sizeof(Internal::CrashDetails),
+                Interop::MemoryMappedFileAccess::ReadWrite);
+
+            if (not fhMapping)
             {
-                // Terminate process immediately
-                Debugger::ReportApplicationStop("Could not create memory mapped file");
+                Debugger::ReportApplicationStop("Could not open memory mapped file");
                 return;
             }
 
-            mapping->Write(crashDetails);
+            Interop::Win32SafeMemoryMappedViewHandle fvMapping = Interop::win32_CreateMemoryMappedView(
+                fhMapping,
+                Interop::MemoryMappedFileAccess::ReadWrite);
+
+            if (not fvMapping)
+            {
+                Debugger::ReportApplicationStop("Could not create memory mapped view");
+                return;
+            }
+
+            CopyMemory(fvMapping.GetData(), &crashDetails, sizeof(Internal::CrashDetails));
+
+            Interop::win32_FlushMemoryMappedView(fvMapping);
 
             wchar_t commandLine[MAX_PATH + 1];
             auto commandLineFormatResult = std::format_to_n(

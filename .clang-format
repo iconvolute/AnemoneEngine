@@ -31,6 +31,9 @@ AttributeMacros: [
     anemone_noinline,
     anemone_forceinline
 ]
+TypenameMacros: [
+    'STDMETHOD', 'STDMETHODIMP_'
+]
 #AlignArrayOfStructures: Left
 #AllowShortBlocksOnASingleLine: Never
 #AllowShortEnumsOnASingleLine: false

@@ -2,9 +2,6 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-
-        "WindowsCrashHandler.hxx"
-
         "WindowsFileSystem.cxx"
 
         "WindowsHeaders.hxx"
