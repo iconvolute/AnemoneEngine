@@ -103,6 +103,196 @@ namespace Anemone
         {XINPUT_GAMEPAD_RIGHT_THUMB, GamepadButton ::RightStick},
     };
 
+    static constexpr auto GKeyMapping = [] {
+        std::array<VirtualKey, 256> result{};
+        result[VK_LBUTTON] = VirtualKey::LeftButton;
+        result[VK_RBUTTON] = VirtualKey::RightButton;
+        result[VK_CANCEL] = VirtualKey::Cancel;
+        result[VK_MBUTTON] = VirtualKey::MiddleButton;
+        result[VK_XBUTTON1] = VirtualKey::XButton1;
+        result[VK_XBUTTON2] = VirtualKey::XButton2;
+        result[VK_BACK] = VirtualKey::Back;
+        result[VK_TAB] = VirtualKey::Tab;
+        result[VK_CLEAR] = VirtualKey::Clear;
+        result[VK_RETURN] = VirtualKey::Enter;
+        result[VK_SHIFT] = VirtualKey::Shift;
+        result[VK_CONTROL] = VirtualKey::Control;
+        result[VK_MENU] = VirtualKey::Menu;
+        result[VK_PAUSE] = VirtualKey::Pause;
+        result[VK_CAPITAL] = VirtualKey::CapitalLock;
+        result[VK_KANA] = VirtualKey::Kana;
+        result[VK_HANGUL] = VirtualKey::Hangul;
+        result[VK_IME_ON] = VirtualKey::ImeOn;
+        result[VK_JUNJA] = VirtualKey::Junja;
+        result[VK_FINAL] = VirtualKey::Final;
+        result[VK_HANJA] = VirtualKey::Hanja;
+        result[VK_KANJI] = VirtualKey::Kanji;
+        result[VK_IME_OFF] = VirtualKey::ImeOff;
+        result[VK_ESCAPE] = VirtualKey::Escape;
+        result[VK_CONVERT] = VirtualKey::Convert;
+        result[VK_NONCONVERT] = VirtualKey::NonConvert;
+        result[VK_ACCEPT] = VirtualKey::Accept;
+        result[VK_MODECHANGE] = VirtualKey::ModeChange;
+        result[VK_SPACE] = VirtualKey::Space;
+        result[VK_PRIOR] = VirtualKey::PageUp;
+        result[VK_NEXT] = VirtualKey::PageDown;
+        result[VK_END] = VirtualKey::End;
+        result[VK_HOME] = VirtualKey::Home;
+        result[VK_LEFT] = VirtualKey::Left;
+        result[VK_UP] = VirtualKey::Up;
+        result[VK_RIGHT] = VirtualKey::Right;
+        result[VK_DOWN] = VirtualKey::Down;
+        result[VK_SELECT] = VirtualKey::Select;
+        result[VK_PRINT] = VirtualKey::Print;
+        result[VK_EXECUTE] = VirtualKey::Execute;
+        result[VK_SNAPSHOT] = VirtualKey::Snapshot;
+        result[VK_INSERT] = VirtualKey::Insert;
+        result[VK_DELETE] = VirtualKey::Delete;
+        result[VK_HELP] = VirtualKey::Help;
+        result['0'] = VirtualKey::Number0;
+        result['1'] = VirtualKey::Number1;
+        result['2'] = VirtualKey::Number2;
+        result['3'] = VirtualKey::Number3;
+        result['4'] = VirtualKey::Number4;
+        result['5'] = VirtualKey::Number5;
+        result['6'] = VirtualKey::Number6;
+        result['7'] = VirtualKey::Number7;
+        result['8'] = VirtualKey::Number8;
+        result['9'] = VirtualKey::Number9;
+        result['A'] = VirtualKey::A;
+        result['B'] = VirtualKey::B;
+        result['C'] = VirtualKey::C;
+        result['D'] = VirtualKey::D;
+        result['E'] = VirtualKey::E;
+        result['F'] = VirtualKey::F;
+        result['G'] = VirtualKey::G;
+        result['H'] = VirtualKey::H;
+        result['I'] = VirtualKey::I;
+        result['J'] = VirtualKey::J;
+        result['K'] = VirtualKey::K;
+        result['L'] = VirtualKey::L;
+        result['M'] = VirtualKey::M;
+        result['N'] = VirtualKey::N;
+        result['O'] = VirtualKey::O;
+        result['P'] = VirtualKey::P;
+        result['Q'] = VirtualKey::Q;
+        result['R'] = VirtualKey::R;
+        result['S'] = VirtualKey::S;
+        result['T'] = VirtualKey::T;
+        result['U'] = VirtualKey::U;
+        result['V'] = VirtualKey::V;
+        result['W'] = VirtualKey::W;
+        result['X'] = VirtualKey::X;
+        result['Y'] = VirtualKey::Y;
+        result['Z'] = VirtualKey::Z;
+        result[VK_LWIN] = VirtualKey::LeftWindows;
+        result[VK_RWIN] = VirtualKey::RightWindows;
+        result[VK_APPS] = VirtualKey::Application;
+        result[VK_SLEEP] = VirtualKey::Sleep;
+        result[VK_NUMPAD0] = VirtualKey::NumberPad0;
+        result[VK_NUMPAD1] = VirtualKey::NumberPad1;
+        result[VK_NUMPAD2] = VirtualKey::NumberPad2;
+        result[VK_NUMPAD3] = VirtualKey::NumberPad3;
+        result[VK_NUMPAD4] = VirtualKey::NumberPad4;
+        result[VK_NUMPAD5] = VirtualKey::NumberPad5;
+        result[VK_NUMPAD6] = VirtualKey::NumberPad6;
+        result[VK_NUMPAD7] = VirtualKey::NumberPad7;
+        result[VK_NUMPAD8] = VirtualKey::NumberPad8;
+        result[VK_NUMPAD9] = VirtualKey::NumberPad9;
+        result[VK_MULTIPLY] = VirtualKey::Multiply;
+        result[VK_ADD] = VirtualKey::Add;
+        result[VK_SEPARATOR] = VirtualKey::Separator;
+        result[VK_SUBTRACT] = VirtualKey::Subtract;
+        result[VK_DECIMAL] = VirtualKey::Decimal;
+        result[VK_DIVIDE] = VirtualKey::Divide;
+        result[VK_F1] = VirtualKey::F1;
+        result[VK_F2] = VirtualKey::F2;
+        result[VK_F3] = VirtualKey::F3;
+        result[VK_F4] = VirtualKey::F4;
+        result[VK_F5] = VirtualKey::F5;
+        result[VK_F6] = VirtualKey::F6;
+        result[VK_F7] = VirtualKey::F7;
+        result[VK_F8] = VirtualKey::F8;
+        result[VK_F9] = VirtualKey::F9;
+        result[VK_F10] = VirtualKey::F10;
+        result[VK_F11] = VirtualKey::F11;
+        result[VK_F12] = VirtualKey::F12;
+        result[VK_F13] = VirtualKey::F13;
+        result[VK_F14] = VirtualKey::F14;
+        result[VK_F15] = VirtualKey::F15;
+        result[VK_F16] = VirtualKey::F16;
+        result[VK_F17] = VirtualKey::F17;
+        result[VK_F18] = VirtualKey::F18;
+        result[VK_F19] = VirtualKey::F19;
+        result[VK_F20] = VirtualKey::F20;
+        result[VK_F21] = VirtualKey::F21;
+        result[VK_F22] = VirtualKey::F22;
+        result[VK_F23] = VirtualKey::F23;
+        result[VK_F24] = VirtualKey::F24;
+        result[VK_NAVIGATION_VIEW] = VirtualKey::NavigationView;
+        result[VK_NAVIGATION_MENU] = VirtualKey::NavigationMenu;
+        result[VK_NAVIGATION_UP] = VirtualKey::NavigationUp;
+        result[VK_NAVIGATION_DOWN] = VirtualKey::NavigationDown;
+        result[VK_NAVIGATION_LEFT] = VirtualKey::NavigationLeft;
+        result[VK_NAVIGATION_RIGHT] = VirtualKey::NavigationRight;
+        result[VK_NAVIGATION_ACCEPT] = VirtualKey::NavigationAccept;
+        result[VK_NAVIGATION_CANCEL] = VirtualKey::NavigationCancel;
+        result[VK_NUMLOCK] = VirtualKey::NumberKeyLock;
+        result[VK_SCROLL] = VirtualKey::Scroll;
+        result[VK_LSHIFT] = VirtualKey::LeftShift;
+        result[VK_RSHIFT] = VirtualKey::RightShift;
+        result[VK_LCONTROL] = VirtualKey::LeftControl;
+        result[VK_RCONTROL] = VirtualKey::RightControl;
+        result[VK_LMENU] = VirtualKey::LeftAlt;
+        result[VK_RMENU] = VirtualKey::RightAlt;
+        result[VK_BROWSER_BACK] = VirtualKey::GoBack;
+        result[VK_BROWSER_FORWARD] = VirtualKey::GoForward;
+        result[VK_BROWSER_REFRESH] = VirtualKey::Refresh;
+        result[VK_BROWSER_STOP] = VirtualKey::Stop;
+        result[VK_BROWSER_SEARCH] = VirtualKey::Search;
+        result[VK_BROWSER_FAVORITES] = VirtualKey::Favorites;
+        result[VK_BROWSER_HOME] = VirtualKey::GoHome;
+        result[VK_GAMEPAD_A] = VirtualKey::GamepadA;
+        result[VK_GAMEPAD_B] = VirtualKey::GamepadB;
+        result[VK_GAMEPAD_X] = VirtualKey::GamepadX;
+        result[VK_GAMEPAD_Y] = VirtualKey::GamepadY;
+        result[VK_GAMEPAD_RIGHT_SHOULDER] = VirtualKey::GamepadRightShoulder;
+        result[VK_GAMEPAD_LEFT_SHOULDER] = VirtualKey::GamepadLeftShoulder;
+        result[VK_GAMEPAD_LEFT_TRIGGER] = VirtualKey::GamepadLeftTrigger;
+        result[VK_GAMEPAD_RIGHT_TRIGGER] = VirtualKey::GamepadRightTrigger;
+        result[VK_GAMEPAD_DPAD_UP] = VirtualKey::GamepadDPadUp;
+        result[VK_GAMEPAD_DPAD_DOWN] = VirtualKey::GamepadDPadDown;
+        result[VK_GAMEPAD_DPAD_LEFT] = VirtualKey::GamepadDPadLeft;
+        result[VK_GAMEPAD_DPAD_RIGHT] = VirtualKey::GamepadDPadRight;
+        result[VK_GAMEPAD_MENU] = VirtualKey::GamepadMenu;
+        result[VK_GAMEPAD_VIEW] = VirtualKey::GamepadView;
+        result[VK_GAMEPAD_LEFT_THUMBSTICK_BUTTON] = VirtualKey::GamepadLeftThumbstickButton;
+        result[VK_GAMEPAD_RIGHT_THUMBSTICK_BUTTON] = VirtualKey::GamepadRightThumbstickButton;
+        result[VK_GAMEPAD_LEFT_THUMBSTICK_UP] = VirtualKey::GamepadLeftThumbstickUp;
+        result[VK_GAMEPAD_LEFT_THUMBSTICK_DOWN] = VirtualKey::GamepadLeftThumbstickDown;
+        result[VK_GAMEPAD_LEFT_THUMBSTICK_RIGHT] = VirtualKey::GamepadLeftThumbstickRight;
+        result[VK_GAMEPAD_LEFT_THUMBSTICK_LEFT] = VirtualKey::GamepadLeftThumbstickLeft;
+        result[VK_GAMEPAD_RIGHT_THUMBSTICK_UP] = VirtualKey::GamepadRightThumbstickUp;
+        result[VK_GAMEPAD_RIGHT_THUMBSTICK_DOWN] = VirtualKey::GamepadRightThumbstickDown;
+        result[VK_GAMEPAD_RIGHT_THUMBSTICK_RIGHT] = VirtualKey::GamepadRightThumbstickRight;
+        result[VK_GAMEPAD_RIGHT_THUMBSTICK_LEFT] = VirtualKey::GamepadRightThumbstickLeft;
+        return result;
+    }();
+
+    constexpr VirtualKey MapSystemKeyToVirtualKey(UINT vk)
+    {
+#if true
+        return static_cast<VirtualKey>(vk);
+#else
+        if (vk < GKeyMapping.size())
+        {
+            return GKeyMapping[vk];
+        }
+
+        return VirtualKey::None;
+#endif
+    }
+
     void WindowsInput::Poll()
     {
         XINPUT_STATE state;
@@ -380,7 +570,7 @@ namespace Anemone
         }
 
         KeyEventArgs e;
-        e.Key = static_cast<VirtualKey>(vk);
+        e.Key = MapSystemKeyToVirtualKey(vk);
         e.Modifiers = this->m_modifiers;
         e.Repeat = (keyFlags & KF_REPEAT) != 0;
 
