@@ -133,6 +133,13 @@ namespace Anemone::Math
 
         return Math::Packed::Vector2F{x, y};
     }
+
+    inline Math::Vector3F RandomBarycentric(Random& generator)
+    {
+        float const r1 = Math::Sqrt(generator.NextFloat());
+        float const r2 = generator.NextFloat();
+        return Math::Vector3F::Create(1.0f - r1, r1 * (1.0f - r2), r1 * r2);
+    }
 }
 
 namespace Anemone::Math
