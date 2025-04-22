@@ -24,7 +24,7 @@ namespace Anemone
             this->m_Counter = 0;
         }
 
-        RUNTIME_API void Spin();
+        RUNTIME_API void SpinOnce();
 
         bool NextSpinWillYield() const
         {
@@ -41,7 +41,7 @@ namespace Anemone
 
         while (spins != 0)
         {
-            spinner.Spin();
+            spinner.SpinOnce();
             --spins;
         }
     }
@@ -55,7 +55,7 @@ namespace Anemone
 
         while (!predicate())
         {
-            spinner.Spin();
+            spinner.SpinOnce();
         }
     }
 
@@ -73,7 +73,7 @@ namespace Anemone
             }
             else
             {
-                spinner.Spin();
+                spinner.SpinOnce();
             }
         }
     }
@@ -91,7 +91,7 @@ namespace Anemone
             }
             else
             {
-                spinner.Spin();
+                spinner.SpinOnce();
             }
         }
 

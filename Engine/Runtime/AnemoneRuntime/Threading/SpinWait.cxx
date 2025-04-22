@@ -3,7 +3,7 @@
 
 namespace Anemone
 {
-    void SpinWait::Spin()
+    void SpinWait::SpinOnce()
     {
         if (this->NextSpinWillYield())
         {
