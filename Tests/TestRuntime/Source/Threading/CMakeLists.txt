@@ -4,4 +4,5 @@ target_sources(TestRuntime
         "Locking.cxx"
         "ManualResetEvent.cxx"
         "Semaphore.cxx"
+        "UserReaderWriterLock.cxx"
 )

@@ -18,7 +18,6 @@
 
 namespace Anemone
 {
-    // NOTE: This implementation does not use futexes.
     class UserReaderWriterLock final
     {
     private:
@@ -44,10 +43,27 @@ namespace Anemone
     public:
         void EnterShared()
         {
-            WaitForCompletion([this]
+            SpinWait spinner;
+            while (true)
             {
-                return this->TryEnterShared();
-            });
+                if (TryEnterShared())
+                {
+                    return;
+                }
+                
+                int32_t current = m_bits.load(std::memory_order::acquire);
+                if ((current & (Writer | Upgraded)))
+                {
+                    if (spinner.NextSpinWillYield())
+                    {
+                        Internal::Futex::Wait(m_bits, current);
+                    }
+                    else
+                    {
+                        spinner.SpinOnce();
+                    }
+                }
+            }
         }
 
         bool TryEnterShared()
@@ -65,7 +81,13 @@ namespace Anemone
 
         void LeaveShared()
         {
-            this->m_bits.fetch_add(-Reader, std::memory_order::release);
+            int32_t oldValue = this->m_bits.fetch_add(-Reader, std::memory_order::release);
+            
+            // If this was the last reader and someone might be waiting, wake them
+            if (oldValue == Reader)
+            {
+                Internal::Futex::WakeOne(m_bits);
+            }
         }
 
         template <typename F>
@@ -75,13 +97,30 @@ namespace Anemone
             return std::forward<F>(f)();
         }
 
-    public:
+        public:
         void Enter()
         {
-            WaitForCompletion([this]
+            SpinWait spinner;
+            while (true)
             {
-                return this->TryEnter();
-            });
+                if (TryEnter())
+                {
+                    return;
+                }
+                
+                int32_t current = m_bits.load(std::memory_order::acquire);
+                if (current != 0)
+                {
+                    if (spinner.NextSpinWillYield())
+                    {
+                        Internal::Futex::Wait(m_bits, current);
+                    }
+                    else
+                    {
+                        spinner.SpinOnce();
+                    }
+                }
+            }
         }
 
         bool TryEnter()
@@ -93,7 +132,14 @@ namespace Anemone
         void Leave()
         {
             static_assert(Reader > (Writer + Upgraded));
-            this->m_bits.fetch_and(~(Writer | Upgraded), std::memory_order::release);
+            int32_t oldValue = m_bits.fetch_and(~(Writer | Upgraded), std::memory_order::release);
+            
+            // If we released a writer lock and there might be waiters, wake them all
+            // We wake all since we don't know if waiters are readers or writers
+            if (oldValue & Writer)
+            {
+                Internal::Futex::WakeAll(m_bits);
+            }
         }
 
         template <typename F>
@@ -103,7 +149,7 @@ namespace Anemone
             return std::forward<F>(f)();
         }
 
-    public:
+        public:
         void LeaveAndEnterShared()
         {
             this->m_bits.fetch_add(Reader, std::memory_order_acquire);
@@ -112,34 +158,78 @@ namespace Anemone
 
         void EnterUpgrade()
         {
-            WaitForCompletion([this]
+            SpinWait spinner;
+            while (true)
             {
-                return this->TryEnterUpgrade();
-            });
+                if (TryEnterUpgrade())
+                {
+                    return;
+                }
+                
+                int32_t current = m_bits.load(std::memory_order::acquire);
+                if ((current & (Writer | Upgraded)))
+                {
+                    if (spinner.NextSpinWillYield())
+                    {
+                        Internal::Futex::Wait(m_bits, current);
+                    }
+                    else
+                    {
+                        spinner.SpinOnce();
+                    }
+                }
+            }
         }
 
         void LeaveUpgrade()
         {
-            this->m_bits.fetch_add(-Upgraded, std::memory_order_acq_rel);
+            int32_t oldValue = this->m_bits.fetch_add(-Upgraded, std::memory_order_acq_rel);
+            
+            // If anyone might be waiting, wake them
+            if (oldValue & Upgraded)
+            {
+                Internal::Futex::WakeOne(m_bits);
+            }
         }
 
         void LeaveUpgradeAndEnter()
         {
-            WaitForCompletion([this]
+            SpinWait spinner;
+            while (true)
             {
-                return this->TryLeaveUpgradeAndEnter();
-            });
+                if (TryLeaveUpgradeAndEnter())
+                {
+                    return;
+                }
+                
+                int32_t current = m_bits.load(std::memory_order::acquire);
+                if (current != Upgraded)
+                {
+                    if (spinner.NextSpinWillYield())
+                    {
+                        Internal::Futex::Wait(m_bits, current);
+                    }
+                    else
+                    {
+                        spinner.SpinOnce();
+                    }
+                }
+            }
         }
 
         void LeaveUpgradeAndEnterShared()
         {
             this->m_bits.fetch_add(Reader - Upgraded, std::memory_order_acq_rel);
+            // No need to wake as we're transitioning to a less exclusive state
         }
 
         void LeaveAndEnterUpgrade()
         {
             this->m_bits.fetch_or(Upgraded, std::memory_order_acquire);
             this->m_bits.fetch_add(-Writer, std::memory_order_release);
+            
+            // Wake all readers since we're transitioning to a less exclusive state
+            Internal::Futex::WakeAll(m_bits);
         }
 
         bool TryLeaveUpgradeAndEnter()
@@ -152,7 +242,18 @@ namespace Anemone
         {
             int32_t value = this->m_bits.fetch_or(Upgraded, std::memory_order_acquire);
 
-            return ((value & (Upgraded | Writer)) == 0);
+            // If already locked for writer or upgrade, revert our change
+            if ((value & (Upgraded | Writer)))
+            {
+                // Only revert if we actually made a change (i.e., Upgraded wasn't already set)
+                if (!(value & Upgraded))
+                {
+                    this->m_bits.fetch_and(~Upgraded, std::memory_order_release);
+                }
+                return false;
+            }
+
+            return true;
         }
     };
 }
