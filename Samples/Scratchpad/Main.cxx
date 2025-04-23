@@ -480,7 +480,7 @@ int AnemoneMain(int argc, char** argv)
         while (window->IsVisible())
         {
             Anemone::Application::ProcessMessages();
-            SleepEx(16, TRUE);
+            Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
         }
     }
 

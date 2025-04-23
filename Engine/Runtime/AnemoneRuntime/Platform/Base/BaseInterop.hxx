@@ -23,6 +23,7 @@ namespace Anemone::Interop
         }
 
         constexpr explicit string_buffer(std::basic_string_view<CharT> value)
+            : m_Data{m_Static}
         {
             this->resize_for_override(value.size());
             std::copy(value.begin(), value.end(), this->m_Data);
@@ -30,6 +31,7 @@ namespace Anemone::Interop
         }
 
         constexpr explicit string_buffer(const char* value, size_t length)
+            : m_Data{m_Static}
         {
             this->resize_for_override(length);
             std::copy(value, value + length, this->m_Data);

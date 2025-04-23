@@ -4,9 +4,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         "LinuxFileSystem.cxx"
 
-        "LinuxMemoryMappedFile.cxx"
-        "LinuxMemoryMappedFile.hxx"
-
         "LinuxNamedMutex.cxx"
         "LinuxNamedMutex.hxx"
 

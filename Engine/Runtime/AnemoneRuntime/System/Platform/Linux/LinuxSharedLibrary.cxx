@@ -14,7 +14,7 @@ namespace Anemone
 
         if (h)
         {
-            return LinuxSharedLibrary{std::move(h)};
+            return SharedLibrary{std::move(h)};
         }
 
         return std::unexpected(ErrorCode::InvalidArgument);
