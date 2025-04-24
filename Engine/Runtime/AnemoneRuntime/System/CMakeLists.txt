@@ -1,5 +1,5 @@
 add_subdirectory("Platform")
-add_subdirectory("Private")
+add_subdirectory("Internal")
 
 target_sources(AnemoneRuntime
     PRIVATE

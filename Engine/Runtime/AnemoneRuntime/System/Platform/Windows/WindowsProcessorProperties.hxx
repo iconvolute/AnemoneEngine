@@ -4,7 +4,7 @@
 
 #include <string>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct WindowsProcessorProperties final
     {

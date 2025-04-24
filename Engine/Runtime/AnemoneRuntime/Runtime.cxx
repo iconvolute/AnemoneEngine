@@ -3,55 +3,55 @@
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
-#include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
-#include "AnemoneRuntime/Diagnostics/Private/TraceStatics.hxx"
+#include "AnemoneRuntime/Tasks/Internal/TaskScheduler.hxx"
+#include "AnemoneRuntime/Diagnostics/Internal/TraceStatics.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Debugger.hxx"
 #include "AnemoneRuntime/System/Platform/Application.hxx"
 #include "AnemoneRuntime/System/Platform/Dialogs.hxx"
 #include "AnemoneRuntime/System/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/System/Platform/ProcessorProperties.hxx"
 #include "AnemoneRuntime/System/Platform/Environment.hxx"
-#include "AnemoneRuntime/System/Private/CommandLineStatics.hxx"
+#include "AnemoneRuntime/System/Internal/CommandLineStatics.hxx"
 
 namespace Anemone
 {
     void Runtime::Initialize(int argc, char** argv)
     {
-        Private::GCommandLineStatics.Create(argc, argv);
-        Private::GTraceStatics.Create();
-        Private::GDebuggerStatics.Create();
+        Internal::GCommandLineStatics.Create(argc, argv);
+        Internal::GTraceStatics.Create();
+        Internal::GDebuggerStatics.Create();
         StackTrace::Initialize();
-        Private::GEnvironmentStatics.Create();
-        Private::GClipboardStatics.Create();
-        Private::GProcessorProperties.Create();
+        Internal::GEnvironmentStatics.Create();
+        Internal::GClipboardStatics.Create();
+        Internal::GProcessorProperties.Create();
         FileSystem::Initialize();
-        Private::GApplicationStatics.Create();
-        Private::GDialogsStatics.Create();
+        Internal::GApplicationStatics.Create();
+        Internal::GDialogsStatics.Create();
 
 #if ANEMONE_BUILD_PROFILING
         Profiler::Initialize();
 #endif
 
-        Private::GTaskSchedulerStatics.Create();
+        Internal::GTaskSchedulerStatics.Create();
     }
 
     void Runtime::Finalize()
     {
-        Private::GTaskSchedulerStatics.Destroy();
+        Internal::GTaskSchedulerStatics.Destroy();
 
 #if ANEMONE_BUILD_PROFILING
         Profiler::Finalize();
 #endif
 
-        Private::GDialogsStatics.Destroy();
-        Private::GApplicationStatics.Destroy();
+        Internal::GDialogsStatics.Destroy();
+        Internal::GApplicationStatics.Destroy();
         FileSystem::Finalize();
-        Private::GProcessorProperties.Destroy();
-        Private::GClipboardStatics.Destroy();
-        Private::GEnvironmentStatics.Destroy();
+        Internal::GProcessorProperties.Destroy();
+        Internal::GClipboardStatics.Destroy();
+        Internal::GEnvironmentStatics.Destroy();
         StackTrace::Finalize();
-        Private::GDebuggerStatics.Destroy();
-        Private::GTraceStatics.Destroy();
-        Private::GCommandLineStatics.Destroy();
+        Internal::GDebuggerStatics.Destroy();
+        Internal::GTraceStatics.Destroy();
+        Internal::GCommandLineStatics.Destroy();
     }
 }

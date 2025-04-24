@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/System/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<LinuxClipboardStatics> GClipboardStatics;
 }

@@ -5,7 +5,7 @@
 #include <array>
 #include <iterator>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     inline constexpr int64_t SecondsInMinute = 60;
     inline constexpr int64_t SecondsInHour = 60 * SecondsInMinute;
@@ -72,7 +72,7 @@ namespace Anemone
 
     std::optional<DateTime> DateTime::FromMembers(DateTimeMembers const& members)
     {
-        if (std::optional<Duration> const datePart = Private::DateToSeconds(members.Year, members.Month, members.Day))
+        if (std::optional<Duration> const datePart = Internal::DateToSeconds(members.Year, members.Month, members.Day))
         {
             DateTime result{
                 .Inner = *datePart,
@@ -103,28 +103,28 @@ namespace Anemone
     {
         DateTimeMembers result; // NOLINT(cppcoreguidelines-pro-type-member-init)
 
-        int32_t n = static_cast<int32_t>(this->Inner.Seconds / Private::SecondsInDay);
+        int32_t n = static_cast<int32_t>(this->Inner.Seconds / Internal::SecondsInDay);
 
         result.DayOfWeek = (n + 1) % 7;
 
-        int32_t const y400 = static_cast<int32_t>(n / Private::DaysIn400Years);
+        int32_t const y400 = static_cast<int32_t>(n / Internal::DaysIn400Years);
 
-        n -= static_cast<int32_t>(y400 * Private::DaysIn400Years);
+        n -= static_cast<int32_t>(y400 * Internal::DaysIn400Years);
 
-        int32_t y100 = static_cast<int32_t>(n / Private::DaysIn100Years);
+        int32_t y100 = static_cast<int32_t>(n / Internal::DaysIn100Years);
 
         if (y100 == 4)
         {
             y100 = 3;
         }
 
-        n -= static_cast<int32_t>(y100 * Private::DaysIn100Years);
+        n -= static_cast<int32_t>(y100 * Internal::DaysIn100Years);
 
-        int32_t const y4 = static_cast<int32_t>(n / Private::DaysIn4Years);
+        int32_t const y4 = static_cast<int32_t>(n / Internal::DaysIn4Years);
 
-        n -= static_cast<int32_t>(y4 * Private::DaysIn4Years);
+        n -= static_cast<int32_t>(y4 * Internal::DaysIn4Years);
 
-        int32_t y1 = static_cast<int32_t>(n / Private::DaysInYear);
+        int32_t y1 = static_cast<int32_t>(n / Internal::DaysInYear);
 
         if (y1 == 4)
         {
@@ -133,13 +133,13 @@ namespace Anemone
 
         result.Year = (y400 * 400) + (y100 * 100) + (y4 * 4) + y1 + 1;
 
-        n -= static_cast<int32_t>(y1 * Private::DaysInYear);
+        n -= static_cast<int32_t>(y1 * Internal::DaysInYear);
 
         result.DayOfYear = n + 1;
 
         bool const leap = (y1 == 3 && (y4 != 24 || y100 == 3));
 
-        auto const& daysToMonth = (leap ? Private::DaysBeforeMonth366 : Private::DaysBeforeMonth365);
+        auto const& daysToMonth = (leap ? Internal::DaysBeforeMonth366 : Internal::DaysBeforeMonth365);
 
         int32_t m = (n >> 5) + 1;
 

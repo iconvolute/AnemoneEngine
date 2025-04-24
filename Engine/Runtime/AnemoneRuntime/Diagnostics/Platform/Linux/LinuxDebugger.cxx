@@ -1,9 +1,9 @@
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxDebugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     static UninitializedObject<ConsoleTraceListener> GConsoleTraceListener{};
 

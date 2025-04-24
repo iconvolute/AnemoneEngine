@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<WindowsApplicationStatics> GApplicationStatics;
 
@@ -140,7 +140,7 @@ namespace Anemone
         }
 
         // Pool input devices.
-        Private::GApplicationStatics->Input.Poll();
+        Internal::GApplicationStatics->Input.Poll();
     }
 
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)

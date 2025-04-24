@@ -9,7 +9,7 @@
 #include <bit>
 #include <cmath>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     constexpr uint64_t MultiplyHigh(uint64_t left, uint64_t right, uint64_t& lower)
     {
@@ -204,7 +204,7 @@ namespace Anemone
         static constexpr UInt128 Multiply(UInt128 left, UInt128 right)
         {
             uint64_t lower;
-            uint64_t upper = Private::MultiplyHigh(left._lower, right._lower, lower);
+            uint64_t upper = Internal::MultiplyHigh(left._lower, right._lower, lower);
             upper += (left._lower * right._upper) + (left._upper * right._lower);
             return UInt128{upper, lower};
         }
@@ -914,7 +914,7 @@ namespace Anemone
         static constexpr Int128 UncheckedMultiply(Int128 left, Int128 right)
         {
             uint64_t lower;
-            uint64_t upper = Private::MultiplyHigh(left._lower, right._lower, lower);
+            uint64_t upper = Internal::MultiplyHigh(left._lower, right._lower, lower);
             upper += (left._lower * right._upper) + (left._upper * right._lower);
             return Int128{upper, lower};
         }

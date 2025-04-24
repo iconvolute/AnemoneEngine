@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Platform/Linux/LinuxApplication.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<LinuxApplicationStatics> GApplicationStatics;
 }

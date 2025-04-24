@@ -4,13 +4,13 @@
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Tasks/Private/TaskWorker.hxx"
-#include "AnemoneRuntime/Tasks/Private/TaskQueue.hxx"
+#include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
+#include "AnemoneRuntime/Tasks/Internal/TaskQueue.hxx"
 
 #include <atomic>
 #include <vector>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     class TaskWorker;
 

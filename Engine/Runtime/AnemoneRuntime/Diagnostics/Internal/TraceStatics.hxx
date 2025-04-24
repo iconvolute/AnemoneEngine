@@ -7,7 +7,7 @@
 
 #include <array>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct TraceStatics final
     {

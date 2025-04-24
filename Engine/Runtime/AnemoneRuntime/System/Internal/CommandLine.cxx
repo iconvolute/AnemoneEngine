@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/System/Private/CommandLineStatics.hxx"
+#include "AnemoneRuntime/System/Internal/CommandLineStatics.hxx"
 
 #include <algorithm>
 #include <atomic>
@@ -146,9 +146,9 @@ namespace Anemone
     {
         std::optional<std::string_view> result{};
 
-        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
@@ -163,9 +163,9 @@ namespace Anemone
 
     void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
     {
-        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name))
             {
@@ -176,9 +176,9 @@ namespace Anemone
 
     void CommandLine::GetPositional(std::vector<std::string_view>& positional)
     {
-        for (int i = 1; i < Private::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
         {
-            std::string_view token{Private::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
 
             if (token.starts_with('-'))
             {

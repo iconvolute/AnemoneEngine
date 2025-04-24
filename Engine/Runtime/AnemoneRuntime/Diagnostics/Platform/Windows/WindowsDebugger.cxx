@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-#include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
@@ -36,7 +36,7 @@ namespace Anemone::Internal
 
 #define ENABLE_HEAP_CORRUPTION_CRASHES false
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     class WindowsDebugTraceListener final : public TraceListener
     {
@@ -54,7 +54,7 @@ namespace Anemone::Private
     };
 }
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     // C0B8BB2A-7E1E-5A0B-0ACD-3EE6187895ED
     // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
@@ -130,7 +130,7 @@ namespace Anemone::Private
 
 }
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     static UninitializedObject<ConsoleTraceListener> GConsoleTraceListener{};
     static UninitializedObject<WindowsDebugTraceListener> GWindowsDebugTraceListener{};
@@ -145,7 +145,7 @@ namespace Anemone::Private
             return EXCEPTION_CONTINUE_EXECUTION;
         }
 
-        Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
+        Internal::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
         return EXCEPTION_CONTINUE_SEARCH;
     }
 
@@ -154,7 +154,7 @@ namespace Anemone::Private
     {
         if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
         {
-            Private::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
+            Internal::WindowsDebuggerStatics::HandleCrash(lpExceptionPointers);
         }
 
         return EXCEPTION_EXECUTE_HANDLER;

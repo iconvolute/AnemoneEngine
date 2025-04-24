@@ -5,7 +5,7 @@
 
 #include <vector>
 
-namespace Anemone::Graphics::Private
+namespace Anemone::Graphics::Internal
 {
     constexpr PixelFormat PixelFormatFromDxgi(DXGI_FORMAT format)
     {
@@ -1368,18 +1368,18 @@ namespace Anemone::Graphics
 {
     std::expected<std::unique_ptr<Image>, ErrorCode> ImageDecoder_DDS(std::span<std::byte> buffer)
     {
-        Private::DDS_HEADER const* header{};
-        Private::DDS_HEADER_DXT10 const* header10{};
+        Internal::DDS_HEADER const* header{};
+        Internal::DDS_HEADER_DXT10 const* header10{};
         std::span<std::byte> resources{};
 
-        if (auto ec = Private::ParseFileHeader(buffer, header, header10, resources))
+        if (auto ec = Internal::ParseFileHeader(buffer, header, header10, resources))
         {
             size_t width = header->Width;
             size_t height = header->Height;
             size_t depth = header->Depth;
 
             ImageDimension dimension;
-            Private::DXGI_FORMAT format = Private::DXGI_FORMAT_UNKNOWN;
+            Internal::DXGI_FORMAT format = Internal::DXGI_FORMAT_UNKNOWN;
 
             size_t arraySize = 1;
             size_t mipCount = header->MipMapCount;
@@ -1389,7 +1389,7 @@ namespace Anemone::Graphics
                 mipCount = 1;
             }
 
-            if ((header->PixelFormat.Flags & Private::DDS_PIXELFORMAT_FOURCC) and (header->PixelFormat.FourCC == Private::MakeFourCC('D', 'X', '1', '0')))
+            if ((header->PixelFormat.Flags & Internal::DDS_PIXELFORMAT_FOURCC) and (header->PixelFormat.FourCC == Internal::MakeFourCC('D', 'X', '1', '0')))
             {
                 if (header10 == nullptr)
                 {
@@ -1405,11 +1405,11 @@ namespace Anemone::Graphics
 
                 switch (header10->Format) // NOLINT(clang-diagnostic-switch-enum)
                 {
-                case Private::DXGI_FORMAT_NV12:
-                case Private::DXGI_FORMAT_P010:
-                case Private::DXGI_FORMAT_P016:
-                case Private::DXGI_FORMAT_420_OPAQUE:
-                    if (header10->ResourceDimension != Private::DDS_RESOURCE_DIMENSION_TEXTURE_2D)
+                case Internal::DXGI_FORMAT_NV12:
+                case Internal::DXGI_FORMAT_P010:
+                case Internal::DXGI_FORMAT_P016:
+                case Internal::DXGI_FORMAT_420_OPAQUE:
+                    if (header10->ResourceDimension != Internal::DDS_RESOURCE_DIMENSION_TEXTURE_2D)
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
@@ -1421,31 +1421,31 @@ namespace Anemone::Graphics
 
                     break;
 
-                case Private::DXGI_FORMAT_YUY2:
-                case Private::DXGI_FORMAT_Y210:
-                case Private::DXGI_FORMAT_Y216:
-                case Private::DXGI_FORMAT_P208:
+                case Internal::DXGI_FORMAT_YUY2:
+                case Internal::DXGI_FORMAT_Y210:
+                case Internal::DXGI_FORMAT_Y216:
+                case Internal::DXGI_FORMAT_P208:
                     if ((width % 2) != 0)
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
                     break;
 
-                case Private::DXGI_FORMAT_NV11:
+                case Internal::DXGI_FORMAT_NV11:
                     if ((width % 4) != 0)
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
                     break;
 
-                case Private::DXGI_FORMAT_AI44:
-                case Private::DXGI_FORMAT_IA44:
-                case Private::DXGI_FORMAT_P8:
-                case Private::DXGI_FORMAT_A8P8:
+                case Internal::DXGI_FORMAT_AI44:
+                case Internal::DXGI_FORMAT_IA44:
+                case Internal::DXGI_FORMAT_P8:
+                case Internal::DXGI_FORMAT_A8P8:
                     return std::unexpected(ErrorCode::NotSupported);
 
-                case Private::DXGI_FORMAT_V208:
-                    if ((header10->ResourceDimension != Private::DDS_RESOURCE_DIMENSION_TEXTURE_2D))
+                case Internal::DXGI_FORMAT_V208:
+                    if ((header10->ResourceDimension != Internal::DDS_RESOURCE_DIMENSION_TEXTURE_2D))
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
@@ -1457,7 +1457,7 @@ namespace Anemone::Graphics
                     break;
 
                 default:
-                    if (Private::GetBitsPerPixel(header10->Format) == 0)
+                    if (Internal::GetBitsPerPixel(header10->Format) == 0)
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
@@ -1467,8 +1467,8 @@ namespace Anemone::Graphics
 
                 switch (header10->ResourceDimension)
                 {
-                case Private::DDS_RESOURCE_DIMENSION_TEXTURE_1D:
-                    if ((header->Flags & Private::DDS_HEADER_HEIGHT) and (height != 1))
+                case Internal::DDS_RESOURCE_DIMENSION_TEXTURE_1D:
+                    if ((header->Flags & Internal::DDS_HEADER_HEIGHT) and (height != 1))
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
@@ -1476,8 +1476,8 @@ namespace Anemone::Graphics
                     dimension = ImageDimension::Texture1D;
                     break;
 
-                case Private::DDS_RESOURCE_DIMENSION_TEXTURE_2D:
-                    if (header10->MiscFlags & Private::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE)
+                case Internal::DDS_RESOURCE_DIMENSION_TEXTURE_2D:
+                    if (header10->MiscFlags & Internal::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE)
                     {
                         arraySize *= 6;
                         dimension = ImageDimension::TextureCube;
@@ -1491,8 +1491,8 @@ namespace Anemone::Graphics
 
                     break;
 
-                case Private::DDS_RESOURCE_DIMENSION_TEXTURE_3D:
-                    if (not(header->Flags & Private::DDS_HEADER_VOLUME))
+                case Internal::DDS_RESOURCE_DIMENSION_TEXTURE_3D:
+                    if (not(header->Flags & Internal::DDS_HEADER_VOLUME))
                     {
                         return std::unexpected(ErrorCode::NotSupported);
                     }
@@ -1511,22 +1511,22 @@ namespace Anemone::Graphics
             }
             else
             {
-                format = Private::GetFormat(header->PixelFormat);
+                format = Internal::GetFormat(header->PixelFormat);
 
-                if (format == Private::DXGI_FORMAT_UNKNOWN)
+                if (format == Internal::DXGI_FORMAT_UNKNOWN)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (header->Flags & Private::DDS_HEADER_VOLUME)
+                if (header->Flags & Internal::DDS_HEADER_VOLUME)
                 {
                     dimension = ImageDimension::Texture3D;
                 }
                 else
                 {
-                    if (header->Cubemap & Private::DDS_CUBEMAP)
+                    if (header->Cubemap & Internal::DDS_CUBEMAP)
                     {
-                        if ((header->Cubemap & Private::DDS_CUBEMAP_ALLFACES) != Private::DDS_CUBEMAP_ALLFACES)
+                        if ((header->Cubemap & Internal::DDS_CUBEMAP_ALLFACES) != Internal::DDS_CUBEMAP_ALLFACES)
                         {
                             return std::unexpected(ErrorCode::NotSupported);
                         }
@@ -1542,13 +1542,13 @@ namespace Anemone::Graphics
                     depth = 1;
                 }
 
-                if (Private::GetBitsPerPixel(format) == 0)
+                if (Internal::GetBitsPerPixel(format) == 0)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
             }
 
-            if (mipCount > Private::DDS_MAX_MIP_LEVELS)
+            if (mipCount > Internal::DDS_MAX_MIP_LEVELS)
             {
                 return std::unexpected(ErrorCode::NotSupported);
             }
@@ -1556,46 +1556,46 @@ namespace Anemone::Graphics
             switch (dimension) // NOLINT(clang-diagnostic-switch-enum)
             {
             case ImageDimension::Texture1D:
-                if (arraySize > Private::DDS_TEXTURE_1D_ARRAY_AXIS_DIMENSION)
+                if (arraySize > Internal::DDS_TEXTURE_1D_ARRAY_AXIS_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (width > Private::DDS_TEXTURE_1D_U_DIMENSION)
+                if (width > Internal::DDS_TEXTURE_1D_U_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
                 break;
 
             case ImageDimension::Texture2D:
-                if (arraySize > Private::DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION)
+                if (arraySize > Internal::DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (width > Private::DDS_TEXTURE_2D_UV_DIMENSION)
+                if (width > Internal::DDS_TEXTURE_2D_UV_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (height > Private::DDS_TEXTURE_2D_UV_DIMENSION)
+                if (height > Internal::DDS_TEXTURE_2D_UV_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
                 break;
 
             case ImageDimension::TextureCube:
-                if (arraySize > Private::DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION)
+                if (arraySize > Internal::DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (width > Private::DDS_TEXTURE_CUBE_DIMENSION)
+                if (width > Internal::DDS_TEXTURE_CUBE_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (height > Private::DDS_TEXTURE_CUBE_DIMENSION)
+                if (height > Internal::DDS_TEXTURE_CUBE_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
@@ -1612,17 +1612,17 @@ namespace Anemone::Graphics
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (width > Private::DDS_TEXTURE_3D_UVW_DIMENSION)
+                if (width > Internal::DDS_TEXTURE_3D_UVW_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (height > Private::DDS_TEXTURE_3D_UVW_DIMENSION)
+                if (height > Internal::DDS_TEXTURE_3D_UVW_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
 
-                if (depth > Private::DDS_TEXTURE_3D_UVW_DIMENSION)
+                if (depth > Internal::DDS_TEXTURE_3D_UVW_DIMENSION)
                 {
                     return std::unexpected(ErrorCode::NotSupported);
                 }
@@ -1639,14 +1639,14 @@ namespace Anemone::Graphics
             resourcesCount *= mipCount;
             resourcesCount *= planesCount;
 
-            if (resourcesCount > Private::DDS_MAX_SUBRESOURCES)
+            if (resourcesCount > Internal::DDS_MAX_SUBRESOURCES)
             {
                 return std::unexpected(ErrorCode::NotSupported);
             }
 
             size_t maxSize = (dimension == ImageDimension::Texture3D)
-                ? Private::DDS_TEXTURE_3D_UVW_DIMENSION
-                : Private::DDS_TEXTURE_2D_UV_DIMENSION;
+                ? Internal::DDS_TEXTURE_3D_UVW_DIMENSION
+                : Internal::DDS_TEXTURE_2D_UV_DIMENSION;
 
             size_t skipMips = 0;
             size_t outWidth = 0;
@@ -1655,7 +1655,7 @@ namespace Anemone::Graphics
 
             std::vector<ImageSurface> subresources{};
 
-            if (auto rc = Private::ParseSubresources(
+            if (auto rc = Internal::ParseSubresources(
                     width,
                     height,
                     depth,
@@ -1680,8 +1680,8 @@ namespace Anemone::Graphics
                     mipCount,
                     arraySize,
                     dimension,
-                    Private::PixelFormatFromDxgi(format),
-                    Private::GetAlphaMode(header, header10));
+                    Internal::PixelFormatFromDxgi(format),
+                    Internal::GetAlphaMode(header, header10));
 
                 size_t index = 0;
                 std::span<ImageSurface> imageSurfaces = result->GetSubresources();
@@ -1719,7 +1719,7 @@ namespace Anemone::Graphics
     std::expected<void, ErrorCode> ImageEncoder_DDS(Storage::DataWriter& writer, Image const& image)
     {
         size_t const mipCount = image.GetMipMapCount();
-        if ((mipCount == 0) or (mipCount > Private::DDS_MAX_MIP_LEVELS))
+        if ((mipCount == 0) or (mipCount > Internal::DDS_MAX_MIP_LEVELS))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -1732,7 +1732,7 @@ namespace Anemone::Graphics
 
         ImageDimension const dimension = image.GetDimension();
 
-        Private::DXGI_FORMAT const format = Private::PixelFormatToDxgi(image.GetFormat());
+        Internal::DXGI_FORMAT const format = Internal::PixelFormatToDxgi(image.GetFormat());
 
         ImageSize const size = image.GetSize();
 
@@ -1749,40 +1749,40 @@ namespace Anemone::Graphics
         uint32_t ddsDepth = static_cast<uint32_t>(size.Depth);
 
         uint32_t ddsHeaderCubemap = 0;
-        uint32_t ddsHeaderSurface = Private::DDS_SURFACE_TEXTURE;
-        uint32_t ddsHeaderFlags = Private::DDS_HEADER_CAPS | Private::DDS_HEADER_PIXELFORMAT;
+        uint32_t ddsHeaderSurface = Internal::DDS_SURFACE_TEXTURE;
+        uint32_t ddsHeaderFlags = Internal::DDS_HEADER_CAPS | Internal::DDS_HEADER_PIXELFORMAT;
 
         if (mipCount > 1)
         {
-            ddsHeaderFlags |= Private::DDS_HEADER_MIPMAP;
-            ddsHeaderSurface |= Private::DDS_SURFACE_MIPMAP;
+            ddsHeaderFlags |= Internal::DDS_HEADER_MIPMAP;
+            ddsHeaderSurface |= Internal::DDS_SURFACE_MIPMAP;
         }
 
         switch (dimension)
         {
         case ImageDimension::Texture1D:
-            ddsResourceDimension = Private::DDS_RESOURCE_DIMENSION_TEXTURE_1D;
+            ddsResourceDimension = Internal::DDS_RESOURCE_DIMENSION_TEXTURE_1D;
             AE_ASSERT(ddsHeight == 1);
             AE_ASSERT(ddsDepth == 1);
             ddsHeight = 1;
             ddsWidth = 1;
-            ddsHeaderFlags |= Private::DDS_HEADER_WIDTH;
+            ddsHeaderFlags |= Internal::DDS_HEADER_WIDTH;
             break;
 
         case ImageDimension::Texture2D:
-            ddsResourceDimension = Private::DDS_RESOURCE_DIMENSION_TEXTURE_2D;
+            ddsResourceDimension = Internal::DDS_RESOURCE_DIMENSION_TEXTURE_2D;
             AE_ASSERT(ddsDepth == 1);
             ddsDepth = 1;
-            ddsHeaderFlags |= Private::DDS_HEADER_WIDTH | Private::DDS_HEADER_HEIGHT;
+            ddsHeaderFlags |= Internal::DDS_HEADER_WIDTH | Internal::DDS_HEADER_HEIGHT;
             break;
 
         case ImageDimension::TextureCube:
-            ddsResourceDimension = Private::DDS_RESOURCE_DIMENSION_TEXTURE_2D;
+            ddsResourceDimension = Internal::DDS_RESOURCE_DIMENSION_TEXTURE_2D;
             AE_ASSERT(ddsDepth == 1);
             ddsDepth = 1;
-            ddsHeaderFlags |= Private::DDS_HEADER_WIDTH | Private::DDS_HEADER_HEIGHT;
-            ddsHeaderSurface |= Private::DDS_SURFACE_CUBEMAP;
-            ddsHeaderCubemap |= Private::DDS_CUBEMAP_ALLFACES;
+            ddsHeaderFlags |= Internal::DDS_HEADER_WIDTH | Internal::DDS_HEADER_HEIGHT;
+            ddsHeaderSurface |= Internal::DDS_SURFACE_CUBEMAP;
+            ddsHeaderCubemap |= Internal::DDS_CUBEMAP_ALLFACES;
 
             AE_ASSERT(ddsWidth == ddsHeight);
 
@@ -1801,14 +1801,14 @@ namespace Anemone::Graphics
             break;
 
         case ImageDimension::Texture3D:
-            ddsResourceDimension = Private::DDS_RESOURCE_DIMENSION_TEXTURE_3D;
+            ddsResourceDimension = Internal::DDS_RESOURCE_DIMENSION_TEXTURE_3D;
             AE_ASSERT(arrayCount == 1);
             if (arrayCount != 1)
             {
                 return std::unexpected(ErrorCode::InvalidArgument);
             }
-            ddsHeaderFlags |= Private::DDS_HEADER_WIDTH | Private::DDS_HEADER_HEIGHT | Private::DDS_HEADER_VOLUME;
-            ddsHeaderCubemap |= Private::DDS_CUBEMAP_VOLUME;
+            ddsHeaderFlags |= Internal::DDS_HEADER_WIDTH | Internal::DDS_HEADER_HEIGHT | Internal::DDS_HEADER_VOLUME;
+            ddsHeaderCubemap |= Internal::DDS_CUBEMAP_VOLUME;
             break;
 
         case ImageDimension::Unknown:
@@ -1816,19 +1816,19 @@ namespace Anemone::Graphics
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        uint32_t ddsResourceFlags = IsCube(dimension) ? Private::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE : 0;
+        uint32_t ddsResourceFlags = IsCube(dimension) ? Internal::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE : 0;
 
-        Private::DDS_HEADER header{
+        Internal::DDS_HEADER header{
             .Size = sizeof(header),
             .Flags = ddsHeaderFlags,
             .Height = ddsHeight,
             .Width = ddsWidth,
             .Depth = ddsDepth,
             .MipMapCount = static_cast<uint32_t>(mipCount),
-            .PixelFormat = Private::DDS_PIXELFORMAT{
-                .Size = sizeof(Private::DDS_PIXELFORMAT),
-                .Flags = Private::DDS_PIXELFORMAT_FOURCC,
-                .FourCC = Private::MakeFourCC('D', 'X', '1', '0'),
+            .PixelFormat = Internal::DDS_PIXELFORMAT{
+                .Size = sizeof(Internal::DDS_PIXELFORMAT),
+                .Flags = Internal::DDS_PIXELFORMAT_FOURCC,
+                .FourCC = Internal::MakeFourCC('D', 'X', '1', '0'),
                 .RGBBitCount = 0,
                 .RBitMask = 0,
                 .GBitMask = 0,
@@ -1839,15 +1839,15 @@ namespace Anemone::Graphics
             .Cubemap = ddsHeaderCubemap,
         };
 
-        Private::DDS_HEADER_DXT10 header10{
+        Internal::DDS_HEADER_DXT10 header10{
             .Format = format,
             .ResourceDimension = ddsResourceDimension,
             .MiscFlags = ddsResourceFlags,
             .ArraySize = static_cast<uint32_t>(arrayCount),
-            .MiscFlags2 = Private::ConvertAlphaMode_DXT10(image.GetAlphaMode()),
+            .MiscFlags2 = Internal::ConvertAlphaMode_DXT10(image.GetAlphaMode()),
         };
 
-        uint32_t signature = Private::DDS_HEADER_SIGNATURE;
+        uint32_t signature = Internal::DDS_HEADER_SIGNATURE;
 
         if (not writer.Write(std::as_bytes(std::span(&signature, 1))))
         {

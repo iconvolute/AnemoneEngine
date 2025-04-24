@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Duration.hxx"
 #include "AnemoneRuntime/Threading/Runnable.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     class TaskWorker final : public Runnable
     {

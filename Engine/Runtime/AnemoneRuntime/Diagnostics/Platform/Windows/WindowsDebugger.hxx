@@ -5,7 +5,7 @@
 #include <string_view>
 #include <fmt/format.h>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     class WindowsDebuggerStatics final
     {

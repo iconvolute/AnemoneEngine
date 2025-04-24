@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct WindowsEnvironmentStatics final
     {

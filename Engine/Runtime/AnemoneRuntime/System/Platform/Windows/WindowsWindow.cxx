@@ -84,7 +84,7 @@ namespace Anemone
 
         HWND const handle = CreateWindowExW(
             dwExStyle,
-            MAKEINTATOM(Private::GApplicationStatics->MainWindowClass),
+            MAKEINTATOM(Internal::GApplicationStatics->MainWindowClass),
             L"Anemone",
             dwStyle,
             CW_USEDEFAULT,
@@ -122,12 +122,12 @@ namespace Anemone
         ShowWindow(handle, SW_SHOWNORMAL);
         UpdateWindow(handle);
 
-        Private::GApplicationStatics->WindowsCollection.PushBack(this);
+        Internal::GApplicationStatics->WindowsCollection.PushBack(this);
     }
 
     WindowsWindow::~WindowsWindow()
     {
-        Private::GApplicationStatics->WindowsCollection.Remove(this);
+        Internal::GApplicationStatics->WindowsCollection.Remove(this);
 
         if (this->m_windowHandle != nullptr)
         {
@@ -371,7 +371,7 @@ namespace Anemone
     void WindowsWindow::SetCursor(CursorType value)
     {
         this->m_cursorType = value;
-        this->m_cursorHandle = Private::GApplicationStatics->GetCursor(value);
+        this->m_cursorHandle = Internal::GApplicationStatics->GetCursor(value);
 
     }
 
@@ -429,7 +429,7 @@ namespace Anemone
 
         if (window->GetInputEnabled())
         {
-            handled = Private::GApplicationStatics->Input.FilterMessage(*window, message, wparam, lparam);
+            handled = Internal::GApplicationStatics->Input.FilterMessage(*window, message, wparam, lparam);
         }
 
         if (not handled)
@@ -675,11 +675,11 @@ namespace Anemone
 
                     if (e.Activated)
                     {
-                        Private::GApplicationStatics->Input.Deactivate();
+                        Internal::GApplicationStatics->Input.Deactivate();
                     }
                     else
                     {
-                        Private::GApplicationStatics->Input.Activate();
+                        Internal::GApplicationStatics->Input.Activate();
                     }
 
                     events->OnWindowActivated(*window, e);
@@ -690,11 +690,11 @@ namespace Anemone
                 {
                     if (wparam == 0)
                     {
-                        Private::GApplicationStatics->Input.Deactivate();
+                        Internal::GApplicationStatics->Input.Deactivate();
                     }
                     else
                     {
-                        Private::GApplicationStatics->Input.Activate();
+                        Internal::GApplicationStatics->Input.Activate();
                     }
                     break;
                 }
@@ -721,7 +721,7 @@ namespace Anemone
 
                     if (hitTest == HTCLIENT)
                     {
-                        if (Private::GApplicationStatics->Input.IsTracking(window->m_windowHandle))
+                        if (Internal::GApplicationStatics->Input.IsTracking(window->m_windowHandle))
                         {
                             ::SetCursor(nullptr);
                             return TRUE;

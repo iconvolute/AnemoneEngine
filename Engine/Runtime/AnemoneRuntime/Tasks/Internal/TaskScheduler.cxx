@@ -1,11 +1,11 @@
-#include "AnemoneRuntime/Tasks/Private/TaskScheduler.hxx"
+#include "AnemoneRuntime/Tasks/Internal/TaskScheduler.hxx"
 #include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Tasks/Private/TaskWorker.hxx"
+#include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     AE_DECLARE_PROFILE(TaskWorkerWait);
     AE_DECLARE_PROFILE(TaskWorkerProcess);
@@ -154,7 +154,7 @@ namespace Anemone::Private
         },
             [&]
         {
-            if (Task* current = Private::GTaskSchedulerStatics->m_Queue.Pop())
+            if (Task* current = Internal::GTaskSchedulerStatics->m_Queue.Pop())
             {
                 Execute(*current);
             }
@@ -271,31 +271,31 @@ namespace Anemone
         AwaiterHandle const& dependency,
         TaskPriority priority)
     {
-        Private::GTaskSchedulerStatics->Dispatch(task, awaiter, dependency, priority);
+        Internal::GTaskSchedulerStatics->Dispatch(task, awaiter, dependency, priority);
     }
 
     void TaskScheduler::Execute(Task& task)
     {
-        Private::GTaskSchedulerStatics->Execute(task);
+        Internal::GTaskSchedulerStatics->Execute(task);
     }
 
     void TaskScheduler::Wait(AwaiterHandle const& awaiter)
     {
-        Private::GTaskSchedulerStatics->Wait(awaiter);
+        Internal::GTaskSchedulerStatics->Wait(awaiter);
     }
 
     bool TaskScheduler::TryWait(AwaiterHandle const& awaiter, Duration timeout)
     {
-        return Private::GTaskSchedulerStatics->TryWait(awaiter, timeout);
+        return Internal::GTaskSchedulerStatics->TryWait(awaiter, timeout);
     }
 
     void TaskScheduler::Delay(Duration timeout)
     {
-        Private::GTaskSchedulerStatics->Delay(timeout);
+        Internal::GTaskSchedulerStatics->Delay(timeout);
     }
 
     uint32_t TaskScheduler::GetWorkerCount()
     {
-        return Private::GTaskSchedulerStatics->GetWorkerCount();
+        return Internal::GTaskSchedulerStatics->GetWorkerCount();
     }
 }

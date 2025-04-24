@@ -137,19 +137,19 @@ namespace Anemone::Math::Detail
 #if false
     template <>
     inline Mask<double>::Mask(bool x, bool y, bool z, bool w)
-        : Private::Mask<double>{
+        : Internal::Mask<double>{
               _mm256_castsi256_pd(_mm256_setr_epi64x(
-                  x ? Private::AvxMaskComponentInt64 : 0,
-                  y ? Private::AvxMaskComponentInt64 : 0,
-                  z ? Private::AvxMaskComponentInt64 : 0,
-                  w ? Private::AvxMaskComponentInt64 : 0))}
+                  x ? Internal::AvxMaskComponentInt64 : 0,
+                  y ? Internal::AvxMaskComponentInt64 : 0,
+                  z ? Internal::AvxMaskComponentInt64 : 0,
+                  w ? Internal::AvxMaskComponentInt64 : 0))}
     {
     }
 
     template <>
     inline Mask<double>::Mask(bool value)
-        : Private::Mask<double>{
-              _mm256_castsi256_pd(_mm256_set1_epi64x(value ? Private::AvxMaskComponentInt64 : 0))}
+        : Internal::Mask<double>{
+              _mm256_castsi256_pd(_mm256_set1_epi64x(value ? Internal::AvxMaskComponentInt64 : 0))}
     {
     }
 }
@@ -163,7 +163,7 @@ namespace Anemone::Numerics::Simd
         double m10, double m11, double m12, double m13,
         double m20, double m21, double m22, double m23,
         double m30, double m31, double m32, double m33)
-        : Private::Matrix<double>{
+        : Internal::Matrix<double>{
               _mm256_setr_pd(m00, m01, m02, m03),
               _mm256_setr_pd(m10, m11, m12, m13),
               _mm256_setr_pd(m20, m21, m22, m23),

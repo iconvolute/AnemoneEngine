@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/Platform/Linux/LinuxDialogs.hxx"
 #include "AnemoneRuntime/System/Dialogs.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<LinuxDialogsStatics> GDialogsStatics;
 }

@@ -6,7 +6,7 @@
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<LinuxProcessorProperties> GProcessorProperties{};
 
@@ -39,56 +39,56 @@ namespace Anemone
 {
     size_t ProcessorProperties::GetPhysicalCoresCount()
     {
-        return Private::GProcessorProperties->PhysicalCores;
+        return Internal::GProcessorProperties->PhysicalCores;
     }
 
     size_t ProcessorProperties::GetLogicalCoresCount()
     {
-        return Private::GProcessorProperties->LogicalCores;
+        return Internal::GProcessorProperties->LogicalCores;
     }
 
     size_t ProcessorProperties::GetPerformanceCoresCount()
     {
-        return Private::GProcessorProperties->PerformanceCores;
+        return Internal::GProcessorProperties->PerformanceCores;
     }
 
     size_t ProcessorProperties::GetEfficiencyCoresCount()
     {
-        return Private::GProcessorProperties->EfficiencyCores;
+        return Internal::GProcessorProperties->EfficiencyCores;
     }
 
     bool ProcessorProperties::IsHyperThreadingEnabled()
     {
-        return Private::GProcessorProperties->HyperThreadingEnabled;
+        return Internal::GProcessorProperties->HyperThreadingEnabled;
     }
 
     size_t ProcessorProperties::GetCacheLineSize()
     {
-        return Private::GProcessorProperties->CacheLineSize;
+        return Internal::GProcessorProperties->CacheLineSize;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel1()
     {
-        return Private::GProcessorProperties->CacheSizeLevel1;
+        return Internal::GProcessorProperties->CacheSizeLevel1;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel2()
     {
-        return Private::GProcessorProperties->CacheSizeLevel2;
+        return Internal::GProcessorProperties->CacheSizeLevel2;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel3()
     {
-        return Private::GProcessorProperties->CacheSizeLevel3;
+        return Internal::GProcessorProperties->CacheSizeLevel3;
     }
 
     std::string_view ProcessorProperties::GetName()
     {
-        return Private::GProcessorProperties->Name;
+        return Internal::GProcessorProperties->Name;
     }
 
     std::string_view ProcessorProperties::GetVendor()
     {
-        return Private::GProcessorProperties->Vendor;
+        return Internal::GProcessorProperties->Vendor;
     }
 }

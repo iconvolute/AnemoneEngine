@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-namespace Anemone::Graphics::Private
+namespace Anemone::Graphics::Internal
 {
     // Synchronized with "Windows Kits\10\Include\10.0.22621.0\shared\dxgiformat.h"
     typedef enum DXGI_FORMAT

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Unicode.hxx"
 
-namespace Anemone::Unicode::Private
+namespace Anemone::Unicode::Internal
 {
     // https://bjoern.hoehrmann.de/utf-8/decoder/dfa/
 
@@ -50,7 +50,7 @@ namespace Anemone::Unicode::Private
     }
 }
 
-namespace Anemone::Unicode::Private
+namespace Anemone::Unicode::Internal
 {
     // https://tools.ietf.org/html/rfc3629
     inline constexpr size_t UTF16_SURROGATE_SHIFT = 10u;
@@ -93,9 +93,9 @@ namespace Anemone::Unicode
 {
     bool IsValidCodePoint(char32_t value)
     {
-        if (value <= Private::UNICODE_MAX)
+        if (value <= Internal::UNICODE_MAX)
         {
-            return not Private::UTF16IsSurrogatePair(value);
+            return not Internal::UTF16IsSurrogatePair(value);
         }
 
         return false;
@@ -103,17 +103,17 @@ namespace Anemone::Unicode
 
     char32_t SanitizeCodepoint(char32_t value)
     {
-        if (value <= Private::UNICODE_MAX)
+        if (value <= Internal::UNICODE_MAX)
         {
-            if ((Private::UTF16_SURROGATE_FIRST <= value) and (value <= Private::UTF16_SURROGATE_LAST))
+            if ((Internal::UTF16_SURROGATE_FIRST <= value) and (value <= Internal::UTF16_SURROGATE_LAST))
             {
-                return Private::UNICODE_REPLACEMENT_CHARACTER;
+                return Internal::UNICODE_REPLACEMENT_CHARACTER;
             }
 
             return value;
         }
 
-        return Private::UNICODE_REPLACEMENT_CHARACTER;
+        return Internal::UNICODE_REPLACEMENT_CHARACTER;
     }
 }
 
@@ -126,16 +126,16 @@ namespace Anemone::Unicode
 
         while (first != last)
         {
-            Private::DecodeUTF8(state, codepoint, *first++);
+            Internal::DecodeUTF8(state, codepoint, *first++);
 
             switch (state)
             {
-            case Private::UTF8_ACCEPT:
+            case Internal::UTF8_ACCEPT:
                 result = static_cast<char32_t>(codepoint);
                 return ConversionResult::Success;
 
-            case Private::UTF8_REJECT:
-                result = Private::UNICODE_REPLACEMENT_CHARACTER;
+            case Internal::UTF8_REJECT:
+                result = Internal::UNICODE_REPLACEMENT_CHARACTER;
                 return ConversionResult::SourceIllegal;
 
             default:
@@ -143,7 +143,7 @@ namespace Anemone::Unicode
             }
         }
 
-        result = Private::UNICODE_REPLACEMENT_CHARACTER;
+        result = Internal::UNICODE_REPLACEMENT_CHARACTER;
         return ConversionResult::SourceExhausted;
     }
 
@@ -216,36 +216,36 @@ namespace Anemone::Unicode
             // Consume first element.
             uint32_t const ch = (*first++);
 
-            if (Private::UTF16IsLowSurrogatePair(ch))
+            if (Internal::UTF16IsLowSurrogatePair(ch))
             {
                 // High surrogate expected here
-                result = Private::UNICODE_REPLACEMENT_CHARACTER;
+                result = Internal::UNICODE_REPLACEMENT_CHARACTER;
                 return ConversionResult::SourceIllegal;
             }
 
-            if (Private::UTF16IsHighSurrogatePair(ch))
+            if (Internal::UTF16IsHighSurrogatePair(ch))
             {
                 if (first < last)
                 {
                     uint32_t const next = *first;
 
-                    if (Private::UTF16IsLowSurrogatePair(next))
+                    if (Internal::UTF16IsLowSurrogatePair(next))
                     {
                         ++first;
-                        result = Private::UTF16CombineSurrogatePair(ch, next);
+                        result = Internal::UTF16CombineSurrogatePair(ch, next);
                         return ConversionResult::Success;
                     }
                     else
                     {
                         // Consume only high surrogate pair and emit replacement.
-                        result = Private::UNICODE_REPLACEMENT_CHARACTER;
+                        result = Internal::UNICODE_REPLACEMENT_CHARACTER;
                         return ConversionResult::SourceIllegal;
                     }
                 }
                 else
                 {
                     // Tried to decode surrogate pair, but source exhausted prematurely.
-                    result = Private::UNICODE_REPLACEMENT_CHARACTER;
+                    result = Internal::UNICODE_REPLACEMENT_CHARACTER;
                     return ConversionResult::SourceExhausted;
                 }
             }
@@ -256,20 +256,20 @@ namespace Anemone::Unicode
         }
 
         // Not enough source.
-        result = Private::UNICODE_REPLACEMENT_CHARACTER;
+        result = Internal::UNICODE_REPLACEMENT_CHARACTER;
         return ConversionResult::SourceExhausted;
     }
 
     ConversionResult Encode(char16_t*& first, char16_t* last, char32_t codepoint)
     {
-        if (codepoint <= Private::UNICODE_MAX_BMP)
+        if (codepoint <= Internal::UNICODE_MAX_BMP)
         {
             if (first < last)
             {
-                if (Private::UTF16IsSurrogatePair(codepoint))
+                if (Internal::UTF16IsSurrogatePair(codepoint))
                 {
                     // Surrogate pair range.
-                    (*first++) = Private::UNICODE_REPLACEMENT_CHARACTER;
+                    (*first++) = Internal::UNICODE_REPLACEMENT_CHARACTER;
                     return ConversionResult::SourceIllegal;
                 }
 
@@ -281,18 +281,18 @@ namespace Anemone::Unicode
             return ConversionResult::TargetExhausted;
         }
 
-        if (codepoint <= Private::UNICODE_MAX)
+        if (codepoint <= Internal::UNICODE_MAX)
         {
             if ((first + 1) < last)
             {
                 // Surrogate pair
-                codepoint -= Private::UTF16_SURROGATE_BASE;
+                codepoint -= Internal::UTF16_SURROGATE_BASE;
 
                 // High surrogate.
-                (*first++) = static_cast<char16_t>(Private::UTF16_SURROGATE_HIGH_FIRST + (codepoint >> Private::UTF16_SURROGATE_SHIFT));
+                (*first++) = static_cast<char16_t>(Internal::UTF16_SURROGATE_HIGH_FIRST + (codepoint >> Internal::UTF16_SURROGATE_SHIFT));
 
                 // Low surrogate.
-                (*first++) = static_cast<char16_t>(Private::UTF16_SURROGATE_LOW_FIRST + (codepoint & Private::UTF16_SURROGATE_MASK));
+                (*first++) = static_cast<char16_t>(Internal::UTF16_SURROGATE_LOW_FIRST + (codepoint & Internal::UTF16_SURROGATE_MASK));
                 return ConversionResult::Success;
             }
 
@@ -302,7 +302,7 @@ namespace Anemone::Unicode
         if (first < last)
         {
             // Invalid range.
-            (*first++) = Private::UNICODE_REPLACEMENT_CHARACTER;
+            (*first++) = Internal::UNICODE_REPLACEMENT_CHARACTER;
             return ConversionResult::SourceIllegal;
         }
 
@@ -315,10 +315,10 @@ namespace Anemone::Unicode
         {
             char32_t const codepoint = (*first++);
 
-            if (Private::UTF16IsSurrogatePair(codepoint))
+            if (Internal::UTF16IsSurrogatePair(codepoint))
             {
                 // Byte sequence was valid UTF8 sequence, but encoded invalid codepoint.
-                result = Private::UNICODE_REPLACEMENT_CHARACTER;
+                result = Internal::UNICODE_REPLACEMENT_CHARACTER;
                 return ConversionResult::SourceIllegal;
             }
 
@@ -326,7 +326,7 @@ namespace Anemone::Unicode
             return ConversionResult::Success;
         }
 
-        result = Private::UNICODE_REPLACEMENT_CHARACTER;
+        result = Internal::UNICODE_REPLACEMENT_CHARACTER;
         return ConversionResult::SourceExhausted;
     }
 

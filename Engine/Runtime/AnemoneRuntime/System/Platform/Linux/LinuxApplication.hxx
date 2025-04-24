@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct LinuxApplicationStatics final
     {

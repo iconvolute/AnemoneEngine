@@ -53,7 +53,7 @@ namespace Anemone::Internal
     }
 }
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<WindowsEnvironmentStatics> GEnvironmentStatics{};
 
@@ -558,17 +558,17 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return Private::GEnvironmentStatics->m_SystemVersion;
+        return Internal::GEnvironmentStatics->m_SystemVersion;
     }
 
     Uuid Environment::GetSystemId()
     {
-        return Private::GEnvironmentStatics->m_SystemId;
+        return Internal::GEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
     {
-        return Private::GEnvironmentStatics->m_SystemName;
+        return Internal::GEnvironmentStatics->m_SystemName;
     }
 
     Duration Environment::GetSystemUptime()
@@ -578,7 +578,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return Private::GEnvironmentStatics->m_StartupTime;
+        return Internal::GEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -709,72 +709,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return Private::GEnvironmentStatics->m_DeviceId;
+        return Internal::GEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return Private::GEnvironmentStatics->m_DeviceName;
+        return Internal::GEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        return Private::GEnvironmentStatics->m_DeviceModel;
+        return Internal::GEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        return Private::GEnvironmentStatics->m_DeviceType;
+        return Internal::GEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        return Private::GEnvironmentStatics->m_DeviceProperties;
+        return Internal::GEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return Private::GEnvironmentStatics->m_ComputerName;
+        return Internal::GEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return Private::GEnvironmentStatics->m_UserName;
+        return Internal::GEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return Private::GEnvironmentStatics->m_ExecutablePath;
+        return Internal::GEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return Private::GEnvironmentStatics->m_StartupPath;
+        return Internal::GEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return Private::GEnvironmentStatics->m_ProfilePath;
+        return Internal::GEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return Private::GEnvironmentStatics->m_DesktopPath;
+        return Internal::GEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return Private::GEnvironmentStatics->m_DocumentsPath;
+        return Internal::GEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return Private::GEnvironmentStatics->m_DownloadsPath;
+        return Internal::GEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return Private::GEnvironmentStatics->m_TemporaryPath;
+        return Internal::GEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()
@@ -842,7 +842,7 @@ namespace Anemone
         }
         else
         {
-            int64_t const nanosecond_conversion = Private::NanosecondsInSecond / frequency;
+            int64_t const nanosecond_conversion = Internal::NanosecondsInSecond / frequency;
             return Instant{
                 .Inner = {
                     .Seconds = value / frequency,

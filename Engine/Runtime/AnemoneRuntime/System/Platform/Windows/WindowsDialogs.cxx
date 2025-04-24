@@ -7,7 +7,7 @@
 #include <shobjidl.h>
 #include <CommCtrl.h>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     UninitializedObject<WindowsDialogsStatics> GDialogsStatics;
 
@@ -263,10 +263,10 @@ namespace Anemone
             (native != nullptr) ? native->GetNativeHandle() : nullptr,
             wmessage.data(),
             wtitle.data(),
-            Private::CombineMessageDialogFlags(type, image),
+            Internal::CombineMessageDialogFlags(type, image),
             MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US));
 
-        return Private::ConvertDialogResult(result);
+        return Internal::ConvertDialogResult(result);
     }
 
     DialogResult Dialogs::OpenFile(
@@ -285,7 +285,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = Private::SetDialogFilters(*dialog.Get(), filters);
+            hr = Internal::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -303,9 +303,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (Private::GetResult(*dialog.Get(), result))
+            if (Internal::GetResult(*dialog.Get(), result))
             {
-                return Private::DialogResultFromHRESULT(hr);
+                return Internal::DialogResultFromHRESULT(hr);
             }
         }
 
@@ -328,7 +328,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = Private::SetDialogFilters(*dialog.Get(), filters);
+            hr = Internal::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -357,9 +357,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (Private::GetResults(*dialog.Get(), result))
+            if (Internal::GetResults(*dialog.Get(), result))
             {
-                return Private::DialogResultFromHRESULT(hr);
+                return Internal::DialogResultFromHRESULT(hr);
             }
         }
 
@@ -382,7 +382,7 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            hr = Private::SetDialogFilters(*dialog.Get(), filters);
+            hr = Internal::SetDialogFilters(*dialog.Get(), filters);
         }
 
         if (SUCCEEDED(hr) and not title.empty())
@@ -400,9 +400,9 @@ namespace Anemone
 
             hr = dialog->Show(handle);
 
-            if (Private::GetResult(*dialog.Get(), result))
+            if (Internal::GetResult(*dialog.Get(), result))
             {
-                return Private::DialogResultFromHRESULT(hr);
+                return Internal::DialogResultFromHRESULT(hr);
             }
         }
 

@@ -17,7 +17,7 @@ namespace Anemone
         }
         else
         {
-            AE_ASSERT((-Private::NanosecondsInSecond < nanoseconds) and (nanoseconds < Private::NanosecondsInSecond));
+            AE_ASSERT((-Internal::NanosecondsInSecond < nanoseconds) and (nanoseconds < Internal::NanosecondsInSecond));
         }
 
         return Duration{seconds, nanoseconds};
@@ -81,7 +81,7 @@ namespace Anemone
         int32_t const microseconds = (milliseconds * 1'000) + members.Microseconds;
         int32_t const nanoseconds = (microseconds * 1'000) + members.Nanoseconds;
 
-        if (nanoseconds < Private::NanosecondsInSecond)
+        if (nanoseconds < Internal::NanosecondsInSecond)
         {
             if (members.Negative)
             {

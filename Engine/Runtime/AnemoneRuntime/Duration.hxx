@@ -7,7 +7,7 @@
 
 #include <fmt/format.h>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     static constexpr int64_t NanosecondsInSecond = 1'000'000'000;
     static constexpr int64_t MicrosecondsInSecond = 1'000'000;
@@ -43,17 +43,17 @@ namespace Anemone
     public:
         [[nodiscard]] constexpr int64_t ToNanoseconds() const
         {
-            return (this->Seconds * Private::NanosecondsInSecond) + this->Nanoseconds;
+            return (this->Seconds * Internal::NanosecondsInSecond) + this->Nanoseconds;
         }
 
         [[nodiscard]] constexpr int64_t ToMicroseconds() const
         {
-            return (this->Seconds * Private::MicrosecondsInSecond) + (this->Nanoseconds / 1'000);
+            return (this->Seconds * Internal::MicrosecondsInSecond) + (this->Nanoseconds / 1'000);
         }
 
         [[nodiscard]] constexpr int64_t ToMilliseconds() const
         {
-            return (this->Seconds * Private::MillisecondsInSecond) + (this->Nanoseconds / 1'000'000);
+            return (this->Seconds * Internal::MillisecondsInSecond) + (this->Nanoseconds / 1'000'000);
         }
 
         [[nodiscard]] constexpr int64_t ToSeconds() const
@@ -89,11 +89,11 @@ namespace Anemone
 
         constexpr void Normalize()
         {
-            this->Seconds += (this->Nanoseconds / Private::NanosecondsInSecond);
+            this->Seconds += (this->Nanoseconds / Internal::NanosecondsInSecond);
 
-            if ((this->Nanoseconds %= Private::NanosecondsInSecond) < 0)
+            if ((this->Nanoseconds %= Internal::NanosecondsInSecond) < 0)
             {
-                this->Nanoseconds += Private::NanosecondsInSecond;
+                this->Nanoseconds += Internal::NanosecondsInSecond;
                 --this->Seconds;
             }
         }

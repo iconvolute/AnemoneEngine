@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct CommandLineStatics final
     {

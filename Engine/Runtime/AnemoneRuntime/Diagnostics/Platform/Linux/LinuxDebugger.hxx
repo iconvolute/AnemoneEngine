@@ -2,11 +2,11 @@
 #include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-#include "AnemoneRuntime/Diagnostics/Private/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 
 #include <optional>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct LinuxDebuggerStatics final
     {

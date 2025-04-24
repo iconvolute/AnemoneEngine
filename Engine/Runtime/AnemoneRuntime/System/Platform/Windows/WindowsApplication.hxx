@@ -8,7 +8,7 @@
 
 #include <memory>
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct WindowsApplicationStatics final
     {

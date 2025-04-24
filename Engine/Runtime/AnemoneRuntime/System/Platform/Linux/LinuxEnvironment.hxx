@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Private
+namespace Anemone::Internal
 {
     struct LinuxEnvironmentStatics final
     {

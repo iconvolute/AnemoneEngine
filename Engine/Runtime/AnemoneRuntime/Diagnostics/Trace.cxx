@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-#include "AnemoneRuntime/Diagnostics/Private/TraceStatics.hxx"
+#include "AnemoneRuntime/Diagnostics/Internal/TraceStatics.hxx"
 
 #include <iterator>
 #include <utility>
@@ -10,29 +10,29 @@ namespace Anemone
 {
     void Trace::AddListener(TraceListener& listener)
     {
-        UniqueLock scope{Private::GTraceStatics->Lock};
+        UniqueLock scope{Internal::GTraceStatics->Lock};
 
-        Private::GTraceStatics->Listeners.PushBack(&listener);
+        Internal::GTraceStatics->Listeners.PushBack(&listener);
     }
 
     void Trace::RemoveListener(TraceListener& listener)
     {
-        UniqueLock scope{Private::GTraceStatics->Lock};
+        UniqueLock scope{Internal::GTraceStatics->Lock};
 
-        Private::GTraceStatics->Listeners.Remove(&listener);
+        Internal::GTraceStatics->Listeners.Remove(&listener);
     }
 
     void Trace::TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
     {
-        SharedLock scope{Private::GTraceStatics->Lock};
+        SharedLock scope{Internal::GTraceStatics->Lock};
 
-        if (not Private::GTraceStatics->Listeners.IsEmpty())
+        if (not Internal::GTraceStatics->Listeners.IsEmpty())
         {
             fmt::memory_buffer buffer{};
 
             auto out = std::back_inserter(buffer);
             (*out++) = '[';
-            (*out++) = Private::TraceStatics::GetCharacter(level);
+            (*out++) = Internal::TraceStatics::GetCharacter(level);
             (*out++) = ']';
             (*out++) = ' ';
             out = fmt::vformat_to(out, format, args);
@@ -43,7 +43,7 @@ namespace Anemone
             (*out) = '\0';
 
 
-            Private::GTraceStatics->Listeners.ForEach([&](TraceListener& listener)
+            Internal::GTraceStatics->Listeners.ForEach([&](TraceListener& listener)
             {
                 listener.TraceEvent(level, message, size);
             });
@@ -52,9 +52,9 @@ namespace Anemone
 
     void Trace::Flush()
     {
-        SharedLock scope{Private::GTraceStatics->Lock};
+        SharedLock scope{Internal::GTraceStatics->Lock};
 
-        Private::GTraceStatics->Listeners.ForEach([](TraceListener& listener)
+        Internal::GTraceStatics->Listeners.ForEach([](TraceListener& listener)
         {
             listener.Flush();
         });
