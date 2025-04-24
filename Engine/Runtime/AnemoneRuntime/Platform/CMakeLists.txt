@@ -11,6 +11,5 @@ target_sources(AnemoneRuntime
         "FileSystem.hxx"
         "NamedMutex.hxx"
         "StackTrace.hxx"
-        "SystemAllocator.hxx"
         "Types.hxx"
 )

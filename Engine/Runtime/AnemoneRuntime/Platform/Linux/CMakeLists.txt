@@ -8,8 +8,6 @@ target_sources(AnemoneRuntime
         "LinuxNamedMutex.hxx"
 
         "LinuxStackTrace.cxx"
-
-        "LinuxSystemAllocator.cxx"
 )
 
 endif()

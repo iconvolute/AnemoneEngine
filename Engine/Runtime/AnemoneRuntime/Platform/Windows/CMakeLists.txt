@@ -20,8 +20,6 @@ target_sources(AnemoneRuntime
         "WindowsSplashScreen.hxx"
 
         "WindowsStackTrace.cxx"
-
-        "WindowsSystemAllocator.cxx"
 )
 
 endif()

@@ -11,5 +11,6 @@ target_sources(AnemoneRuntime
         "Process.hxx"
         "ProcessorProperties.hxx"
         "Window.hxx"
+        "SystemAllocator.hxx"
         "SharedLibrary.hxx"
 )
