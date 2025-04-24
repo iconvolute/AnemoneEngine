@@ -1,3 +1,5 @@
+if (WIN32)
+
 target_sources(AnemoneRuntime
     PRIVATE
         "WindowsConditionVariable.cxx"
@@ -8,3 +10,5 @@ target_sources(AnemoneRuntime
         "WindowsThread.cxx"
         "WindowsThreading.hxx"
 )
+
+endif()

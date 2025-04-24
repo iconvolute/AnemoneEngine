@@ -1,3 +1,5 @@
+if(ANDROID OR LINUX)
+
 target_sources(AnemoneRuntime
     PRIVATE
         "UnixConditionVariable.cxx"
@@ -8,3 +10,5 @@ target_sources(AnemoneRuntime
         "UnixThread.cxx"
         "UnixThreading.hxx"
 )
+
+endif()
