@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_WINDOWS
 
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Threading/Windows/WindowsThreading.hxx"
+#include "AnemoneRuntime/Threading/Platform/Windows/WindowsThreading.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
 #include <timeapi.h>
