@@ -1,14 +1,59 @@
 #pragma once
-
-#include <compare>
 #include <concepts>
 #include <utility>
+#include <atomic>
 
 namespace Anemone
 {
     template <typename T>
+    class ReferenceTracker
+    {
+    private:
+        std::atomic_uint32_t m_ReferenceCount{0};
+
+    private:
+        ReferenceTracker() = default;
+        ReferenceTracker(ReferenceTracker const&) = delete;
+        ReferenceTracker(ReferenceTracker&&) = delete;
+        ReferenceTracker& operator=(ReferenceTracker const&) = delete;
+        ReferenceTracker& operator=(ReferenceTracker&&) = delete;
+        ~ReferenceTracker() = default;
+
+    public:
+        uint32_t AcquireReference()
+        {
+            return this->m_ReferenceCount.fetch_add(1, std::memory_order_relaxed);
+        }
+
+        uint32_t ReleaseReference()
+        {
+            uint32_t const count = this->m_ReferenceCount.fetch_sub(1, std::memory_order_acq_rel) - 1u;
+
+            if (count == 0)
+            {
+                // The last reference is being released, delete the object
+                // We use a static_cast here to avoid the need for a virtual destructor
+                // This is safe because we know that T is derived from ReferenceTracker<T>
+                // and thus has the same layout as T.
+                // Note: This assumes that T does not have a virtual destructor.
+                // If T does have a virtual destructor, this will not work correctly.
+                // In that case, you should use a smart pointer or similar mechanism.
+
+                delete static_cast<T*>(this);
+                return 0;
+            }
+
+            return count;
+        }
+
+        friend T;
+    };
+
+    template <typename T>
     class Reference
     {
+        friend class ReferenceTracker<T>;
+
     private:
         T* m_Instance{};
 
