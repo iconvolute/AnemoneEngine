@@ -38,6 +38,11 @@ namespace Anemone::Math
         return {location.X - (size.Width / 2.0f), location.Y - (size.Height / 2.0f), size.Width, size.Height};
     }
 
+    constexpr RectF RectF::FromSize(SizeF size)
+    {
+        return {0.0f, 0.0f, size.Width, size.Height};
+    }
+
     constexpr RectF RectF::Empty()
     {
         return {};
