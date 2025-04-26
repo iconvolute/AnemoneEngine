@@ -133,6 +133,38 @@ namespace Anemone::Interop
 
 namespace Anemone::Interop
 {
+    struct WindowMessageResult final
+    {
+        bool Handled;
+        LRESULT Result;
+
+        static WindowMessageResult WithResult(LRESULT result)
+        {
+            return WindowMessageResult{
+                .Handled = true,
+                .Result = result,
+            };
+        }
+
+        static WindowMessageResult Default()
+        {
+            return {
+                .Handled = false,
+                .Result = 0,
+            };
+        }
+    };
+
+    inline float win32_GetCurrentDpiScale(HWND hwnd)
+    {
+        UINT const dpi = ::GetDpiForWindow(hwnd);
+        float const scale = static_cast<float>(dpi) / static_cast<float>(USER_DEFAULT_SCREEN_DPI);
+        return scale;
+    }
+}
+
+namespace Anemone::Interop
+{
     template <size_t CapacityT>
     anemone_forceinline bool win32_QueryFullProcessImageName(string_buffer<wchar_t, CapacityT>& result) noexcept
     {
@@ -907,7 +939,7 @@ namespace Anemone::Interop
                 //  If the function succeeds, the return value is the length, in TCHARs, of the string copied to
                 //  lpBuffer, not including the terminating null character.
                 //
-                
+
 
                 if (length > buffer.size())
                 {

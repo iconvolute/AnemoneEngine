@@ -251,7 +251,7 @@ namespace Anemone
         MessageDialogType type,
         MessageDialogImage image)
     {
-        WindowsWindow const* const native = static_cast<WindowsWindow const*>(window);
+        Internal::Windows::WindowImpl const* const native = static_cast<Internal::Windows::WindowImpl const*>(window);
 
         Interop::string_buffer<wchar_t, 128> wtitle{};
         Interop::string_buffer<wchar_t, 512> wmessage{};
@@ -260,7 +260,7 @@ namespace Anemone
         Interop::win32_WidenString(wmessage, message);
 
         int const result = ::MessageBoxExW(
-            (native != nullptr) ? native->GetNativeHandle() : nullptr,
+            (native != nullptr) ? native->GetHandle() : nullptr,
             wmessage.data(),
             wtitle.data(),
             Internal::CombineMessageDialogFlags(type, image),
@@ -298,8 +298,8 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            WindowsWindow const* native = static_cast<WindowsWindow const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
-            HWND const handle = (native != nullptr) ? native->GetNativeHandle() : nullptr;
+            Internal::Windows::WindowImpl const* native = static_cast<Internal::Windows::WindowImpl const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+            HWND const handle = (native != nullptr) ? native->GetHandle() : nullptr;
 
             hr = dialog->Show(handle);
 
@@ -352,8 +352,8 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            WindowsWindow const* native = static_cast<WindowsWindow const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
-            HWND const handle = (native != nullptr) ? native->GetNativeHandle() : nullptr;
+            Internal::Windows::WindowImpl const* native = static_cast<Internal::Windows::WindowImpl const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+            HWND const handle = (native != nullptr) ? native->GetHandle() : nullptr;
 
             hr = dialog->Show(handle);
 
@@ -395,8 +395,8 @@ namespace Anemone
 
         if (SUCCEEDED(hr))
         {
-            WindowsWindow const* native = static_cast<WindowsWindow const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
-            HWND const handle = (native != nullptr) ? native->GetNativeHandle() : nullptr;
+            Internal::Windows::WindowImpl const* native = static_cast<Internal::Windows::WindowImpl const*>(window); // NOLINT(cppcoreguidelines-pro-type-static-cast-downcast)
+            HWND const handle = (native != nullptr) ? native->GetHandle() : nullptr;
 
             hr = dialog->Show(handle);
 

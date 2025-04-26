@@ -6,9 +6,6 @@ target_sources(AnemoneRuntime
 
         "WindowsHeaders.hxx"
 
-        "WindowsInput.cxx"
-        "WindowsInput.hxx"
-
         "WindowsInterop.hxx"
 
         "WindowsMemoryMappedFile.hxx"

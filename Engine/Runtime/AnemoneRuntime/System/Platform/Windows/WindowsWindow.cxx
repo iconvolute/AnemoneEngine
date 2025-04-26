@@ -1,6 +1,5 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
@@ -9,82 +8,23 @@
 
 #include <dwmapi.h>
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Windows
 {
-    struct NativeWindowStyle final
+    static const WCHAR GWindowClassName[] = L"AnemoneWindow";
+
+    WindowImpl::WindowImpl(WindowType windowType, WindowMode windowMode)
+        : m_Type{windowType}
+        , m_Mode{windowMode}
     {
-        DWORD Style;
-        DWORD ExStyle;
-    };
+        RegisterWindowClass();
 
-    constexpr NativeWindowStyle MapNativeWindowStyle(WindowType type, WindowMode mode)
-    {
-        switch (type)
-        {
-        default:
-        case WindowType::Game:
-            {
-                switch (mode)
-                {
-                default:
-                case WindowMode::Windowed:
-                    {
-                        return {
-                            .Style = WS_OVERLAPPEDWINDOW,
-                            .ExStyle = 0,
-                        };
-                    }
-
-                case WindowMode::Borderless:
-                case WindowMode::Fullscreen:
-                    {
-                        return {
-                            .Style = WS_POPUP,
-                            .ExStyle = WS_EX_TOPMOST,
-                        };
-                    }
-                }
-            }
-
-        case WindowType::Viewport:
-            {
-                return {
-                    .Style = WS_CHILD,
-                    .ExStyle = WS_EX_TRANSPARENT,
-                };
-            }
-
-        case WindowType::Form:
-            {
-                return {
-                    .Style = WS_OVERLAPPEDWINDOW,
-                    .ExStyle = WS_EX_APPWINDOW,
-                };
-            }
-
-        case WindowType::Dialog:
-            {
-                return {
-                    .Style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER,
-                    .ExStyle = WS_EX_DLGMODALFRAME,
-                };
-            }
-        }
-    }
-}
-
-namespace Anemone
-{
-    WindowsWindow::WindowsWindow(WindowType type)
-        : m_type{type}
-    {
-        auto [dwStyle, dwExStyle] = Internal::MapNativeWindowStyle(this->m_type, this->m_mode);
-
-        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
+        DWORD dwStyle = 0;
+        DWORD dwExStyle = 0;
+        MapNativeWindowStyle(dwStyle, dwExStyle, this->m_Type, this->m_Mode);
 
         HWND const handle = CreateWindowExW(
             dwExStyle,
-            MAKEINTATOM(Internal::GApplicationStatics->MainWindowClass),
+            GWindowClassName,
             L"Anemone",
             dwStyle,
             CW_USEDEFAULT,
@@ -93,9 +33,15 @@ namespace Anemone
             CW_USEDEFAULT,
             nullptr,
             nullptr,
-            hInstance,
+            GInstanceHandle,
             this);
 
+        if (not handle)
+        {
+            AE_VERIFY_WIN32(GetLastError());
+        }
+
+        // TODO: Move to interop namespace
         {
             constexpr DWORD preference = DWMWCP_DONOTROUND;
 
@@ -122,161 +68,208 @@ namespace Anemone
         ShowWindow(handle, SW_SHOWNORMAL);
         UpdateWindow(handle);
 
-        Internal::GApplicationStatics->WindowsCollection.PushBack(this);
+        GApplicationStatics->WindowsCollection.PushBack(this);
     }
 
-    WindowsWindow::~WindowsWindow()
+    WindowImpl::~WindowImpl()
     {
-        Internal::GApplicationStatics->WindowsCollection.Remove(this);
+        GApplicationStatics->WindowsCollection.Remove(this);
 
-        if (this->m_windowHandle != nullptr)
+        if (this->m_Handle)
         {
-            DestroyWindow(this->m_windowHandle);
-            this->m_windowHandle = nullptr;
+            DestroyWindow(this->m_Handle);
+            this->m_Handle = nullptr;
         }
     }
 
-    void WindowsWindow::Close()
+    void WindowImpl::Close()
     {
-        CloseWindow(this->m_windowHandle);
+        AE_ASSERT(this->ValidateState());
+
+        CloseWindow(this->m_Handle);
     }
 
-    void WindowsWindow::Minimize()
+    bool WindowImpl::IsClosed()
     {
-        if (this->m_mode == WindowMode::Windowed)
+        return this->m_IsClosed;
+    }
+
+    void WindowImpl::Minimize()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        if (this->m_Mode == WindowMode::Windowed)
         {
-            ShowWindow(this->m_windowHandle, SW_MINIMIZE);
+            ShowWindow(this->m_Handle, SW_MINIMIZE);
         }
     }
 
-    bool WindowsWindow::IsMinimized() const
+    bool WindowImpl::IsMinimized()
     {
-        return IsIconic(this->m_windowHandle) != FALSE;
+        AE_ASSERT(this->ValidateState());
+
+        return IsIconic(this->m_Handle);
     }
 
-    void WindowsWindow::Maximize()
+    void WindowImpl::Maximize()
     {
-        if (this->m_mode == WindowMode::Windowed)
-        {
-            ShowWindow(this->m_windowHandle, SW_MAXIMIZE);
-        }
-    }
-    bool WindowsWindow::IsMaximized() const
-    {
-        return IsZoomed(this->m_windowHandle) != FALSE;
-    }
+        AE_ASSERT(this->ValidateState());
 
-    void WindowsWindow::Restore()
-    {
-        if (this->m_mode == WindowMode::Windowed)
+        if (this->m_Mode == WindowMode::Windowed)
         {
-            ShowWindow(this->m_windowHandle, SW_RESTORE);
+            ShowWindow(this->m_Handle, SW_MAXIMIZE);
         }
     }
 
-    void WindowsWindow::BringToFront(bool force)
+    bool WindowImpl::IsMaximized()
     {
-        if ((this->m_mode == WindowMode::Windowed) && (this->m_type != WindowType::Viewport))
+        AE_ASSERT(this->ValidateState());
+
+        return IsZoomed(this->m_Handle);
+    }
+
+    void WindowImpl::Restore()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        if (this->m_Mode == WindowMode::Windowed)
+        {
+            ShowWindow(this->m_Handle, SW_RESTORE);
+        }
+    }
+
+    void WindowImpl::BringToFront(bool force)
+    {
+        AE_ASSERT(this->ValidateState());
+
+        if ((this->m_Mode == WindowMode::Windowed) && (this->m_Type != WindowType::Viewport))
         {
             // Only windowed, top-level windows can be brought to front
-            if (IsIconic(this->m_windowHandle) != FALSE)
+            if (IsIconic(this->m_Handle) != FALSE)
             {
                 // Restore minimized window
-                ShowWindow(this->m_windowHandle, SW_RESTORE);
+                ShowWindow(this->m_Handle, SW_RESTORE);
             }
             else
             {
                 // Activate non-minimized window
-                SetActiveWindow(this->m_windowHandle);
+                SetActiveWindow(this->m_Handle);
             }
 
             if (force)
             {
-                BringWindowToTop(this->m_windowHandle);
+                BringWindowToTop(this->m_Handle);
             }
             else
             {
-                ShowWindow(this->m_windowHandle, SW_SHOW);
+                ShowWindow(this->m_Handle, SW_SHOW);
             }
         }
     }
 
-    void WindowsWindow::Focus()
+    void WindowImpl::Focus()
     {
-        SetFocus(this->m_windowHandle);
+        AE_ASSERT(this->ValidateState());
+
+        SetFocus(this->m_Handle);
     }
 
-    bool WindowsWindow::IsFocused() const
+    bool WindowImpl::IsFocused()
     {
-        return GetFocus() == this->m_windowHandle;
+        AE_ASSERT(this->ValidateState());
+
+        return GetFocus() == this->m_Handle;
     }
 
-    void WindowsWindow::SetVisible(bool value)
+    void WindowImpl::SetVisible(bool value)
     {
-        ShowWindow(this->m_windowHandle, value ? SW_SHOW : SW_HIDE);
+        AE_ASSERT(this->ValidateState());
+
+        ShowWindow(this->m_Handle, value ? SW_SHOW : SW_HIDE);
     }
 
-    bool WindowsWindow::IsVisible() const
+    bool WindowImpl::IsVisible()
     {
-        return IsWindowVisible(this->m_windowHandle) != FALSE;
+        AE_ASSERT(this->ValidateState());
+
+        return not IsIconic(this->m_Handle) and IsWindowVisible(this->m_Handle);
     }
 
-    void WindowsWindow::SetEnabled(bool value)
+    void WindowImpl::SetEnabled(bool value)
     {
-        EnableWindow(this->m_windowHandle, value ? TRUE : FALSE);
+        AE_ASSERT(this->ValidateState());
+
+        EnableWindow(this->m_Handle, value ? TRUE : FALSE);
     }
 
-    bool WindowsWindow::IsEnabled() const
+    bool WindowImpl::IsEnabled()
     {
-        return IsWindowEnabled(this->m_windowHandle) != FALSE;
+        AE_ASSERT(this->ValidateState());
+
+        return IsWindowEnabled(this->m_Handle);
     }
 
-    void WindowsWindow::SetInputEnabled(bool value)
+    void WindowImpl::SetInputEnabled(bool value)
     {
-        this->m_inputEnabled = value;
+        AE_ASSERT(this->ValidateState());
+
+        this->m_InputEnabled = value;
     }
 
-    bool WindowsWindow::GetInputEnabled() const
+    bool WindowImpl::GetInputEnabled()
     {
-        return this->m_inputEnabled;
+        AE_ASSERT(this->ValidateState());
+
+        return this->m_InputEnabled;
     }
 
-    WindowMode WindowsWindow::GetMode() const
+    WindowMode WindowImpl::GetMode()
     {
-        return this->m_mode;
+        AE_ASSERT(this->ValidateState());
+
+        return this->m_Mode;
     }
 
-    void WindowsWindow::SetMode(WindowMode value)
+    void WindowImpl::SetMode(WindowMode value)
     {
-        if (this->m_mode != value)
+        AE_ASSERT(this->ValidateState());
+
+        if (this->m_Mode != value)
         {
-            if (this->m_type == WindowType::Game)
+            // Mode change is allowed only for game windows.
+
+            if (this->m_Type == WindowType::Game)
             {
-                if (this->m_mode == WindowMode::Windowed)
+                if (this->m_Mode == WindowMode::Windowed)
                 {
                     // Store window placement for going back to windowed mode.
-                    this->m_preFullscreenPlacement.length = sizeof(WINDOWPLACEMENT);
-                    GetWindowPlacement(this->m_windowHandle, &this->m_preFullscreenPlacement);
+                    this->m_PreFullscreenPlacement.length = sizeof(WINDOWPLACEMENT);
+                    GetWindowPlacement(this->m_Handle, &this->m_PreFullscreenPlacement);
                 }
 
-                // Adjust styles.
-                auto [dwStyle, dwExStyle] = Internal::MapNativeWindowStyle(this->m_type, value);
+                // Update mode.
+                this->m_Mode = value;
 
-                SetWindowLongW(this->m_windowHandle, GWL_STYLE, static_cast<::LONG>(dwStyle));
-                SetWindowLongW(this->m_windowHandle, GWL_EXSTYLE, static_cast<::LONG>(dwExStyle));
+                // Adjust styles.
+                DWORD dwStyle = 0;
+                DWORD dwExStyle = 0;
+                MapNativeWindowStyle(dwStyle, dwExStyle, this->m_Type, this->m_Mode);
+
+                SetWindowLongW(this->m_Handle, GWL_STYLE, static_cast<::LONG>(dwStyle));
+                SetWindowLongW(this->m_Handle, GWL_EXSTYLE, static_cast<::LONG>(dwExStyle));
 
                 if (value == WindowMode::Windowed)
                 {
                     // Restore original window placement.
                     SetWindowPlacement(
-                        this->m_windowHandle,
-                        &this->m_preFullscreenPlacement);
+                        this->m_Handle,
+                        &this->m_PreFullscreenPlacement);
                 }
                 else
                 {
                     // Maximize window.
                     SetWindowPos(
-                        this->m_windowHandle,
+                        this->m_Handle,
                         HWND_TOP,
                         0,
                         0,
@@ -285,501 +278,726 @@ namespace Anemone
                         SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_FRAMECHANGED);
 
                     ShowWindow(
-                        this->m_windowHandle,
+                        this->m_Handle,
                         SW_SHOWMAXIMIZED);
                 }
-
-                this->m_mode = value;
+            }
+            else
+            {
+                AE_TRACE(Error, "Only game window can change mode. (handle: {})", fmt::ptr(this->m_Handle));
             }
         }
     }
 
-    void WindowsWindow::SetTitle(std::string_view value)
+    void WindowImpl::SetTitle(std::string_view value)
     {
+        AE_ASSERT(this->ValidateState());
+
         Interop::string_buffer<wchar_t, 128> wTitle{};
         Interop::win32_WidenString(wTitle, value);
 
-        SetWindowTextW(this->m_windowHandle, wTitle.data());
+        SetWindowTextW(this->m_Handle, wTitle.data());
     }
 
-    Math::RectF WindowsWindow::GetPlacement() const
+    std::optional<Math::SizeF> WindowImpl::GetMinimumSize()
     {
-        WINDOWPLACEMENT wp{.length = sizeof(wp)};
-        GetWindowPlacement(this->m_windowHandle, &wp);
+        AE_ASSERT(this->ValidateState());
 
-        return Interop::win32_into_Rectangle(wp.rcNormalPosition);
+        return this->m_MinimumSize;
     }
 
-    void WindowsWindow::SetPlacement(Math::RectF value)
+    void WindowImpl::SetMinimumSize(std::optional<Math::SizeF> value)
     {
+        AE_ASSERT(this->ValidateState());
+
+        this->m_MinimumSize = value;
+
+        if (this->m_MinimumSize)
+        {
+            // Update window frame
+            SetWindowPos(
+                this->m_Handle,
+                nullptr,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
+        }
+    }
+
+    std::optional<Math::SizeF> WindowImpl::GetMaximumSize()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        return this->m_MaximumSize;
+    }
+
+    void WindowImpl::SetMaximumSize(std::optional<Math::SizeF> value)
+    {
+        AE_ASSERT(this->ValidateState());
+
+        this->m_MaximumSize = value;
+
+        if (this->m_MaximumSize)
+        {
+            // Update window frame
+            SetWindowPos(
+                this->m_Handle,
+                nullptr,
+                0,
+                0,
+                0,
+                0,
+                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
+        }
+    }
+
+    void WindowImpl::SetCursor(CursorType value)
+    {
+        AE_ASSERT(this->ValidateState());
+
+        this->m_CursorType = value;
+        this->m_CursorHandle = GApplicationStatics->GetCursor(value);
+    }
+
+    CursorType WindowImpl::GetCursor()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        return this->m_CursorType;
+    }
+
+    Math::RectF WindowImpl::GetBounds()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        if (not IsIconic(this->m_Handle))
+        {
+            // If window is not minimized, get and update cached window bounds.
+            RECT rc{};
+
+            if (not GetWindowRect(this->m_Handle, &rc))
+            {
+                AE_VERIFY_WIN32(GetLastError());
+            }
+
+            this->m_CachedWindowBounds = Interop::win32_into_Rectangle(rc);
+        }
+
+        return this->m_CachedWindowBounds;
+    }
+
+    void WindowImpl::SetBounds(Math::RectF value)
+    {
+        AE_ASSERT(this->ValidateState());
+
         SetWindowPos(
-            this->m_windowHandle,
+            this->m_Handle,
             nullptr,
             static_cast<int>(value.X),
             static_cast<int>(value.Y),
             static_cast<int>(value.Width),
             static_cast<int>(value.Height),
-            SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
+            SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     }
 
-    std::optional<Math::SizeF> WindowsWindow::GetMinimumSize() const
+    Math::RectF WindowImpl::GetClientBounds()
     {
-        return this->m_minimumSize;
-    }
+        AE_ASSERT(this->ValidateState());
 
-    void WindowsWindow::SetMinimumSize(std::optional<Math::SizeF> value)
-    {
-        this->m_minimumSize = value;
-
-        if (this->m_minimumSize)
+        if (not IsIconic(this->m_Handle))
         {
-            // Update window frame
-            SetWindowPos(
-                this->m_windowHandle,
-                nullptr,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
-        }
-    }
+            // If window is not minimized, get and update cached client bounds.
+            RECT rc{};
 
-    std::optional<Math::SizeF> WindowsWindow::GetMaximumSize() const
-    {
-        return this->m_maximumSize;
-    }
-
-    void WindowsWindow::SetMaximumSize(std::optional<Math::SizeF> value)
-    {
-        this->m_maximumSize = value;
-
-        if (this->m_minimumSize)
-        {
-            // Update window frame
-            SetWindowPos(
-                this->m_windowHandle,
-                nullptr,
-                0,
-                0,
-                0,
-                0,
-                SWP_NOZORDER | SWP_NOACTIVATE | SWP_NOSIZE | SWP_NOMOVE | SWP_FRAMECHANGED);
-        }
-    }
-
-    void WindowsWindow::SetCursor(CursorType value)
-    {
-        this->m_cursorType = value;
-        this->m_cursorHandle = Internal::GApplicationStatics->GetCursor(value);
-
-    }
-
-    CursorType WindowsWindow::GetCursor() const
-    {
-        return this->m_cursorType;
-    }
-
-    Math::RectF WindowsWindow::GetBounds() const
-    {
-        RECT rc;
-        GetWindowRect(this->m_windowHandle, &rc);
-
-        return Interop::win32_into_Rectangle(rc);
-    }
-
-    Math::RectF WindowsWindow::GetClientBounds() const
-    {
-        RECT rc;
-        GetClientRect(this->m_windowHandle, &rc);
-
-        return Interop::win32_into_Rectangle(rc);
-    }
-
-
-    LRESULT CALLBACK WindowsWindow::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
-    {
-        WindowsWindow* window = std::bit_cast<WindowsWindow*>(GetWindowLongPtrW(handle, GWLP_USERDATA));
-
-        if (window == nullptr)
-            [[unlikely]]
-        {
-            if (message == WM_NCCREATE)
+            if (not GetClientRect(this->m_Handle, &rc))
             {
-                // Associate window with the handle.
-                CREATESTRUCTW const* const params = std::bit_cast<CREATESTRUCTW const*>(lparam);
-
-                window = static_cast<WindowsWindow*>(params->lpCreateParams);
-                window->m_windowHandle = handle;
-
-                SetWindowLongPtrW(handle, GWLP_USERDATA, std::bit_cast<LONG_PTR>(window));
+                AE_VERIFY_WIN32(GetLastError());
             }
-            else
+
+            this->m_CachedClientBounds = Interop::win32_into_Rectangle(rc);
+        }
+
+        return this->m_CachedClientBounds;
+    }
+
+    bool WindowImpl::ValidateState() const
+    {
+        return (this->m_Handle != nullptr);
+    }
+
+    void WindowImpl::RegisterWindowClass()
+    {
+        //
+        // Try to register window class.
+        //
+
+        WNDCLASSEXW wndClassEx{};
+        // TODO: Verify if cbSize is needed.
+
+        if (not GetClassInfoExW(GInstanceHandle, GWindowClassName, &wndClassEx))
+        {
+            wndClassEx.cbSize = sizeof(WNDCLASSEXW);
+            wndClassEx.style = CS_HREDRAW | CS_VREDRAW;
+            wndClassEx.lpfnWndProc = WindowImpl::WndProc;
+            wndClassEx.hInstance = GInstanceHandle;
+            wndClassEx.hIcon = GApplicationStatics->ApplicationIconHandle;
+            wndClassEx.hCursor = GApplicationStatics->ArrowCursor;
+            wndClassEx.hbrBackground = GetSysColorBrush(COLOR_WINDOW);
+            wndClassEx.lpszClassName = GWindowClassName;
+            wndClassEx.hIconSm = GApplicationStatics->ApplicationIconHandle;
+
+            if (not RegisterClassExW(&wndClassEx))
             {
-                // Window still being created.
-                return DefWindowProcW(handle, message, wparam, lparam);
+                Debugger::ReportApplicationStop("Failed to register window class.");
             }
         }
+    }
 
-        AE_ASSERT(window != nullptr);
-
-        IApplicationEvents* events = IApplicationEvents::GetCurrent();
-
-        bool handled = false;
-
-        if (window->GetInputEnabled())
+    void WindowImpl::MapNativeWindowStyle(DWORD& style, DWORD& exStyle, WindowType type, WindowMode mode)
+    {
+        switch (type)
         {
-            handled = Internal::GApplicationStatics->Input.FilterMessage(*window, message, wparam, lparam);
-        }
-
-        if (not handled)
-        {
-            switch (message)
+        default:
+        case WindowType::Game:
+            switch (mode)
             {
-            case WM_CLOSE:
-                {
-                    WindowCloseEventArgs e{};
-                    events->OnWindowClose(*window, e);
-
-                    if (e.Cancel)
-                    {
-                        return 0;
-                    }
-                    break;
-                }
-
-            case WM_CHAR:
-                {
-                    if (IS_HIGH_SURROGATE(wparam))
-                    {
-                        window->m_characterHighSurrogate = static_cast<uint16_t>(wparam);
-                    }
-                    else
-                    {
-                        uint16_t const lowSurrogate = static_cast<uint16_t>(wparam);
-
-                        uint32_t character;
-
-                        if (IS_SURROGATE_PAIR(window->m_characterHighSurrogate, lowSurrogate))
-                        {
-                            character = Interop::win32_DecodeSurrogatePair(window->m_characterHighSurrogate, lowSurrogate);
-                            window->m_characterHighSurrogate = 0;
-                        }
-                        else
-                        {
-                            character = lowSurrogate;
-                        }
-
-                        uint32_t const keyFlags = HIWORD(lparam);
-
-                        CharacterReceivedEventArgs e{
-                            .Character = static_cast<char32_t>(character),
-                            .Repeat = (keyFlags & KF_REPEAT) == KF_REPEAT,
-                        };
-
-                        events->OnCharacterReceived(*window, e);
-                    }
-                    break;
-                }
-
-            case WM_DPICHANGED:
-                {
-                    DWORD const dpi = LOWORD(wparam);
-
-                    WindowDpiChangedEventArgs e{
-                        .Dpi = static_cast<float>(dpi),
-                        .Scale = static_cast<float>(dpi) / 96.0f,
-                    };
-
-                    RECT const& rc = *std::bit_cast<RECT const*>(lparam);
-
-                    SetWindowPos(
-                        handle,
-                        nullptr,
-                        rc.left,
-                        rc.top,
-                        rc.right - rc.left,
-                        rc.bottom - rc.top,
-                        SWP_NOZORDER | SWP_NOACTIVATE);
-
-                    events->OnWindowDpiChanged(*window, e);
-                    break;
-                }
-
-            case WM_POWERBROADCAST:
-                {
-                    switch (wparam)
-                    {
-                    case PBT_APMSUSPEND:
-                        {
-                            events->OnSystemSuspending();
-                            break;
-                        }
-
-                    case PBT_APMRESUMESUSPEND:
-                        {
-                            events->OnSystemResuming();
-                            break;
-                        }
-
-                    default:
-                        {
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-
-            case WM_DISPLAYCHANGE:
-                {
-                    events->OnDisplayChange();
-                    break;
-                }
-
-            case WM_MENUCHAR:
-                {
-                    // A menu is active and the user presses a key that does not correspond
-                    // to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
-                    return MAKELRESULT(0, MNC_CLOSE);
-                }
-
-            case WM_GETDLGCODE:
-                {
-                    return DLGC_WANTALLKEYS;
-                }
-
-
-            case WM_ENTERSIZEMOVE:
-                {
-                    window->m_resizing = true;
-
-                    WindowEventArgs e{};
-                    events->OnWindowResizeStarted(*window, e);
-
-                    break;
-                }
-
-            case WM_EXITSIZEMOVE:
-                {
-                    {
-                        window->m_resizing = false;
-                        WindowEventArgs e{};
-                        events->OnWindowResizeCompleted(*window, e);
-                    }
-
-                    {
-                        RECT rc;
-                        GetClientRect(handle, &rc);
-                        WindowSizeChangedEventArgs e{
-                            .Size = Interop::win32_into_Size(rc),
-                        };
-                        events->OnWindowSizeChanged(*window, e);
-                    }
-                    {
-                        RECT rc;
-                        GetWindowRect(handle, &rc);
-                        WindowLocationChangedEventArgs e{
-                            .Location = Interop::win32_into_Point(rc),
-                        };
-                        events->OnWindowLocationChanged(*window, e);
-                    }
-
-                    break;
-                }
-
-            case WM_SIZE:
-                {
-                    if (wparam != SIZE_MINIMIZED)
-                    {
-                        if (!window->m_resizing && IsIconic(handle) == FALSE)
-                        {
-                            WindowSizeChangedEventArgs e{
-                                .Size{
-                                    .Width = static_cast<float>(LOWORD(lparam)),
-                                    .Height = static_cast<float>(HIWORD(lparam)),
-                                },
-                            };
-                            events->OnWindowSizeChanged(*window, e);
-                        }
-                    }
-
-                    break;
-                }
-
-            case WM_GETMINMAXINFO:
-                {
-                    MINMAXINFO& mmi = *std::bit_cast<MINMAXINFO*>(lparam);
-
-                    if (window->m_minimumSize)
-                    {
-                        auto [width, height] = window->m_minimumSize.value();
-
-                        mmi.ptMinTrackSize.x = static_cast<LONG>(width);
-                        mmi.ptMinTrackSize.y = static_cast<LONG>(height);
-                    }
-
-                    if (window->m_maximumSize)
-                    {
-                        DWORD const dwStyle = GetWindowLongW(handle, GWL_STYLE);
-                        DWORD const dwStyleEx = GetWindowLongW(handle, GWL_EXSTYLE);
-
-                        RECT rcBorder{};
-                        AdjustWindowRectEx(&rcBorder, dwStyle, FALSE, dwStyleEx);
-
-                        auto [width, height] = window->m_maximumSize.value();
-
-                        mmi.ptMaxTrackSize.x = static_cast<LONG>(width) + (rcBorder.right - rcBorder.left);
-                        mmi.ptMaxTrackSize.y = static_cast<LONG>(height) + (rcBorder.bottom - rcBorder.top);
-                    }
-
-                    break;
-                }
-
-            case WM_NCCALCSIZE:
-                {
-                    if ((lparam != 0) && (wparam != 0) && (window->m_type == WindowType::Game) && (window->m_mode == WindowMode::Windowed) && (IsZoomed(handle) != FALSE))
-                    {
-                        // Maximized fullscreen border-less game window has visible border in multiple displays
-                        // scenario. Limit this by adjusting window placement to just fit display - we are still
-                        // render over whole area anyway.
-
-                        WINDOWINFO wi{.cbSize = sizeof(wi)};
-                        GetWindowInfo(handle, &wi);
-
-                        NCCALCSIZE_PARAMS& params = *std::bit_cast<LPNCCALCSIZE_PARAMS>(lparam);
-
-                        params.rgrc[0].left += static_cast<LONG>(wi.cxWindowBorders);
-                        params.rgrc[0].top += static_cast<LONG>(wi.cyWindowBorders);
-                        params.rgrc[0].right -= static_cast<LONG>(wi.cxWindowBorders);
-                        params.rgrc[0].bottom -= static_cast<LONG>(wi.cyWindowBorders);
-
-                        params.rgrc[1] = params.rgrc[0];
-
-                        params.lppos->x += static_cast<LONG>(wi.cxWindowBorders);
-                        params.lppos->y += static_cast<LONG>(wi.cyWindowBorders);
-                        params.lppos->cx -= 2 * static_cast<LONG>(wi.cxWindowBorders);
-                        params.lppos->cy -= 2 * static_cast<LONG>(wi.cyWindowBorders);
-
-                        return WVR_VALIDRECTS;
-                    }
-
-                    break;
-                }
-
-            case WM_ACTIVATE:
-                {
-                    WindowActivatedEventArgs e{
-                        .Activated = (wparam == WA_ACTIVE) or (wparam == WA_CLICKACTIVE),
-                    };
-
-                    if (e.Activated)
-                    {
-                        Internal::GApplicationStatics->Input.Deactivate();
-                    }
-                    else
-                    {
-                        Internal::GApplicationStatics->Input.Activate();
-                    }
-
-                    events->OnWindowActivated(*window, e);
-                    break;
-                }
-
-            case WM_ACTIVATEAPP:
-                {
-                    if (wparam == 0)
-                    {
-                        Internal::GApplicationStatics->Input.Deactivate();
-                    }
-                    else
-                    {
-                        Internal::GApplicationStatics->Input.Activate();
-                    }
-                    break;
-                }
-
-            case WM_ENDSESSION:
-                {
-                    UINT const reason = static_cast<UINT>(lparam);
-
-                    EndSessionEventArgs e{
-                        .LogOff = (reason & ENDSESSION_LOGOFF) == ENDSESSION_LOGOFF,
-                        .Shutdown = (wparam != FALSE),
-                        .Force = (reason & ENDSESSION_CRITICAL) == ENDSESSION_CRITICAL,
-                        .CloseApplication = (reason & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
-                    };
-
-                    events->OnEndSession(e);
-
-                    break;
-                }
-
-            case WM_SETCURSOR:
-                {
-                    UINT const hitTest = LOWORD(lparam);
-
-                    if (hitTest == HTCLIENT)
-                    {
-                        if (Internal::GApplicationStatics->Input.IsTracking(window->m_windowHandle))
-                        {
-                            ::SetCursor(nullptr);
-                            return TRUE;
-                        }
-
-                        if (window->m_cursorHandle)
-                        {
-                            ::SetCursor(*window->m_cursorHandle);
-                            return TRUE;
-                        }
-                    }
-                    break;
-                }
-
-            case WM_SYSCOMMAND:
-                {
-                    switch (wparam & 0xFFF0u)
-                    {
-                    case SC_SCREENSAVE:
-                    case SC_MONITORPOWER:
-                        {
-                            // Prevent screen saver and monitor power events.
-                            return 0;
-                        }
-
-                    case SC_KEYMENU:
-                        {
-                            if (window->m_type == WindowType::Game)
-                            {
-                                // Prevent ALT key from activating the menu bar.
-                                return 0;
-                            }
-
-                            break;
-                        }
-
-                    default:
-                        {
-                            break;
-                        }
-                    }
-
-                    break;
-                }
-
-            case WM_ERASEBKGND:
-                {
-                    // TODO: Do not clear the background if we are rendering over it.
-                    break;
-                }
-
             default:
+            case WindowMode::Windowed:
+                style = WS_OVERLAPPEDWINDOW;
+                exStyle = 0;
+                break;
+
+            case WindowMode::Borderless:
+            case WindowMode::Fullscreen:
+                style = WS_POPUP;
+                exStyle = WS_EX_TOPMOST;
+                break;
+            }
+            break;
+
+        case WindowType::Viewport:
+            style = WS_CHILD;
+            exStyle = WS_EX_TRANSPARENT;
+            break;
+
+        case WindowType::Form:
+            style = WS_OVERLAPPEDWINDOW;
+            exStyle = WS_EX_APPWINDOW;
+            break;
+
+        case WindowType::Dialog:
+            style = WS_OVERLAPPED | WS_SYSMENU | WS_CAPTION | WS_BORDER;
+            exStyle = WS_EX_DLGMODALFRAME;
+            break;
+        }
+    }
+
+    WindowImpl* WindowImpl::GetWindowFromHandle(HWND handle)
+    {
+        return std::bit_cast<WindowImpl*>(GetWindowLongPtrW(handle, GWLP_USERDATA));
+    }
+
+    LRESULT CALLBACK WindowImpl::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
+    {
+        AE_ASSERT(handle);
+
+        Interop::WindowMessageResult result{};
+
+        if (message == WM_NCCREATE)
+        {
+            result = WmNcCreate(handle, lparam);
+        }
+        else if (WindowImpl* window = GetWindowFromHandle(handle))
+        {
+            bool handled = false;
+
+            if (window->GetInputEnabled())
+            {
+                handled = GApplicationStatics->Input.ProcessMessage(result, *window, message, wparam, lparam);
+            }
+
+            if (not handled)
+            {
+                switch (message)
                 {
+                case WM_CLOSE:
+                    result = window->WmClose(wparam, lparam);
+                    break;
+
+                case WM_CHAR:
+                    result = window->WmChar(wparam, lparam);
+                    break;
+
+                case WM_DPICHANGED:
+                    result = window->WmDpiChanged(wparam, lparam);
+                    break;
+
+                case WM_POWERBROADCAST:
+                    result = window->WmPowerBroadcast(wparam, lparam);
+                    break;
+
+                case WM_DISPLAYCHANGE:
+                    result = window->WmDisplayChange(wparam, lparam);
+                    break;
+
+                case WM_MENUCHAR:
+                    result = window->WmMenuChar(wparam, lparam);
+
+                    break;
+
+                case WM_GETDLGCODE:
+                    result = window->WmGetDlgCode(wparam, lparam);
+                    break;
+
+                case WM_ENTERSIZEMOVE:
+                    result = window->WmEnterSizeMove(wparam, lparam);
+                    break;
+
+                case WM_EXITSIZEMOVE:
+                    result = window->WmExitSizeMove(wparam, lparam);
+                    break;
+
+                case WM_SIZE:
+                    result = window->WmSize(wparam, lparam);
+                    break;
+
+                case WM_GETMINMAXINFO:
+                    result = window->WmGetMinMaxInfo(wparam, lparam);
+                    break;
+
+                case WM_NCCALCSIZE:
+                    result = window->WmNcCalcSize(wparam, lparam);
+                    break;
+
+                case WM_ACTIVATE:
+                    result = window->WmActivate(wparam, lparam);
+                    break;
+
+                case WM_ACTIVATEAPP:
+                    result = window->WmActivateApp(wparam, lparam);
+                    break;
+
+                case WM_ENDSESSION:
+                    result = window->WmEndSession(wparam, lparam);
+                    break;
+
+                case WM_SETCURSOR:
+                    result = window->WmSetCursor(wparam, lparam);
+                    break;
+
+                case WM_SYSCOMMAND:
+                    result = window->WmSysCommand(wparam, lparam);
+                    break;
+
+                case WM_ERASEBKGND:
+                    result = window->WmEraseBackground(wparam, lparam);
+                    break;
+
+                default:
                     break;
                 }
             }
+        }
+
+        if (result.Handled)
+        {
+            return result.Result;
         }
 
         return DefWindowProcW(handle, message, wparam, lparam);
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmNcCreate(HWND window, LPARAM lparam)
+    {
+        CREATESTRUCTW* cs = std::bit_cast<CREATESTRUCTW*>(lparam);
+        WindowImpl* self = static_cast<WindowImpl*>(cs->lpCreateParams);
+        AE_ASSERT(self != nullptr);
+        AE_ASSERT(self->m_Handle == nullptr);
+        self->m_Handle = window;
+        SetWindowLongPtrW(window, GWLP_USERDATA, std::bit_cast<LONG_PTR>(self));
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmClose(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+        WindowCloseEventArgs e{};
+        IApplicationEvents::GetCurrent()->OnWindowClose(*this, e);
+
+        if (not e.Cancel)
+        {
+            // If was not canceled, destroy window and clear handle.
+            this->m_IsClosed = true;
+            DestroyWindow(this->m_Handle);
+            this->m_Handle = nullptr;
+        }
+
+        return Interop::WindowMessageResult::WithResult(0);
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmChar(WPARAM wparam, LPARAM lparam)
+    {
+        if (IS_HIGH_SURROGATE(wparam))
+        {
+            this->m_CharacterHighSurrogate = static_cast<uint16_t>(wparam);
+        }
+        else
+        {
+            uint16_t const lowSurrogate = static_cast<uint16_t>(wparam);
+
+            uint32_t character;
+
+            if (IS_SURROGATE_PAIR(this->m_CharacterHighSurrogate, lowSurrogate))
+            {
+                character = Interop::win32_DecodeSurrogatePair(this->m_CharacterHighSurrogate, lowSurrogate);
+                this->m_CharacterHighSurrogate = 0;
+            }
+            else
+            {
+                character = lowSurrogate;
+            }
+
+            uint32_t const keyFlags = HIWORD(lparam);
+
+            CharacterReceivedEventArgs e{
+                .Character = static_cast<char32_t>(character),
+                .Repeat = (keyFlags & KF_REPEAT) == KF_REPEAT,
+            };
+
+            IApplicationEvents::GetCurrent()->OnCharacterReceived(*this, e);
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmDpiChanged(WPARAM wparam, LPARAM lparam)
+    {
+        DWORD const dpi = LOWORD(wparam);
+
+        WindowDpiChangedEventArgs e{
+            .Dpi = static_cast<float>(dpi),
+            .Scale = static_cast<float>(dpi) / 96.0f,
+        };
+
+        RECT const& rc = *std::bit_cast<RECT const*>(lparam);
+
+        SetWindowPos(
+            this->m_Handle,
+            nullptr,
+            rc.left,
+            rc.top,
+            rc.right - rc.left,
+            rc.bottom - rc.top,
+            SWP_NOZORDER | SWP_NOACTIVATE);
+
+        IApplicationEvents::GetCurrent()->OnWindowDpiChanged(*this, e);
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmPowerBroadcast(WPARAM wparam, LPARAM lparam)
+    {
+        (void)lparam;
+
+        switch (wparam)
+        {
+        case PBT_APMSUSPEND:
+            {
+                IApplicationEvents::GetCurrent()->OnSystemSuspending();
+                break;
+            }
+
+        case PBT_APMRESUMESUSPEND:
+            {
+                IApplicationEvents::GetCurrent()->OnSystemResuming();
+                break;
+            }
+
+        default:
+            {
+                break;
+            }
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmDisplayChange(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+        IApplicationEvents::GetCurrent()->OnDisplayChange();
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmMenuChar(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+
+        // A menu is active and the user presses a key that does not correspond
+        // to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
+        return Interop::WindowMessageResult::WithResult(MAKELRESULT(0, MNC_CLOSE));
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmGetDlgCode(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+        return Interop::WindowMessageResult::WithResult(DLGC_WANTALLKEYS);
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmEnterSizeMove(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+        this->m_Resizing = true;
+
+        WindowEventArgs e{};
+        IApplicationEvents::GetCurrent()->OnWindowResizeStarted(*this, e);
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmExitSizeMove(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+
+        IApplicationEvents* events = IApplicationEvents::GetCurrent();
+        this->m_Resizing = false;
+
+        {
+            WindowEventArgs e{};
+            events->OnWindowResizeCompleted(*this, e);
+        }
+
+        {
+            RECT rc;
+            GetClientRect(this->m_Handle, &rc);
+            WindowSizeChangedEventArgs e{
+                .Size = Interop::win32_into_Size(rc),
+            };
+            events->OnWindowSizeChanged(*this, e);
+        }
+        {
+            RECT rc;
+            GetWindowRect(this->m_Handle, &rc);
+            WindowLocationChangedEventArgs e{
+                .Location = Interop::win32_into_Point(rc),
+            };
+            events->OnWindowLocationChanged(*this, e);
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmSize(WPARAM wparam, LPARAM lparam)
+    {
+        if ((wparam != SIZE_MINIMIZED) && (!this->m_Resizing) && !IsIconic(this->m_Handle))
+        {
+            WindowSizeChangedEventArgs e{
+                .Size{
+                    .Width = static_cast<float>(LOWORD(lparam)),
+                    .Height = static_cast<float>(HIWORD(lparam)),
+                },
+            };
+            IApplicationEvents::GetCurrent()->OnWindowSizeChanged(*this, e);
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+
+        MINMAXINFO& mmi = *std::bit_cast<MINMAXINFO*>(lparam);
+
+        if (this->m_MinimumSize)
+        {
+            auto [width, height] = this->m_MinimumSize.value();
+
+            mmi.ptMinTrackSize.x = static_cast<LONG>(width);
+            mmi.ptMinTrackSize.y = static_cast<LONG>(height);
+        }
+
+        if (this->m_MaximumSize)
+        {
+            DWORD const dwStyle = GetWindowLongW(this->m_Handle, GWL_STYLE);
+            DWORD const dwStyleEx = GetWindowLongW(this->m_Handle, GWL_EXSTYLE);
+
+            RECT rcBorder{};
+            AdjustWindowRectEx(&rcBorder, dwStyle, FALSE, dwStyleEx);
+
+            auto [width, height] = this->m_MaximumSize.value();
+
+            mmi.ptMaxTrackSize.x = static_cast<LONG>(width) + (rcBorder.right - rcBorder.left);
+            mmi.ptMaxTrackSize.y = static_cast<LONG>(height) + (rcBorder.bottom - rcBorder.top);
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmNcCalcSize(WPARAM wparam, LPARAM lparam)
+    {
+        if ((this->m_Type == WindowType::Game) and (this->m_Mode == WindowMode::Windowed) and IsZoomed(this->m_Handle))
+        {
+            // Maximized fullscreen border-less game window has visible border in multiple displays
+            // scenario. Limit this by adjusting window placement to just fit display - we are still
+            // render over whole area anyway.
+
+            if ((wparam != 0) and (lparam != 0))
+            {
+                WINDOWINFO wi{.cbSize = sizeof(wi)};
+                GetWindowInfo(this->m_Handle, &wi);
+
+                NCCALCSIZE_PARAMS& params = *std::bit_cast<LPNCCALCSIZE_PARAMS>(lparam);
+
+                params.rgrc[0].left += static_cast<LONG>(wi.cxWindowBorders);
+                params.rgrc[0].top += static_cast<LONG>(wi.cyWindowBorders);
+                params.rgrc[0].right -= static_cast<LONG>(wi.cxWindowBorders);
+                params.rgrc[0].bottom -= static_cast<LONG>(wi.cyWindowBorders);
+
+                params.rgrc[1] = params.rgrc[0];
+
+                params.lppos->x += static_cast<LONG>(wi.cxWindowBorders);
+                params.lppos->y += static_cast<LONG>(wi.cyWindowBorders);
+                params.lppos->cx -= 2 * static_cast<LONG>(wi.cxWindowBorders);
+                params.lppos->cy -= 2 * static_cast<LONG>(wi.cyWindowBorders);
+
+                return Interop::WindowMessageResult::WithResult(WVR_VALIDRECTS);
+            }
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmActivate(WPARAM wparam, LPARAM lparam)
+    {
+        (void)lparam;
+        UINT const reason = LOWORD(wparam);
+
+        WindowActivatedEventArgs e{
+            .Activated = (reason == WA_ACTIVE) or (reason == WA_CLICKACTIVE),
+        };
+
+        if (e.Activated)
+        {
+            GApplicationStatics->Input.NotifyWindowActivated(*this);
+        }
+        else
+        {
+            GApplicationStatics->Input.NotifyWindowDeactivated(*this);
+        }
+
+        IApplicationEvents::GetCurrent()->OnWindowActivated(*this, e);
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmActivateApp(WPARAM wparam, LPARAM lparam)
+    {
+        (void)lparam;
+
+        if (wparam == 0)
+        {
+            GApplicationStatics->Input.NotifyWindowActivated(*this);
+            GApplicationStatics->Input.NotifyApplicationActivated();
+        }
+        else
+        {
+            GApplicationStatics->Input.NotifyWindowDeactivated(*this);
+            GApplicationStatics->Input.NotifyApplicationDeactivated();
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmEndSession(WPARAM wparam, LPARAM lparam)
+    {
+        UINT const reason = static_cast<UINT>(lparam);
+
+        EndSessionEventArgs e{
+            .LogOff = (reason & ENDSESSION_LOGOFF) == ENDSESSION_LOGOFF,
+            .Shutdown = (wparam != FALSE),
+            .Force = (reason & ENDSESSION_CRITICAL) == ENDSESSION_CRITICAL,
+            .CloseApplication = (reason & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
+        };
+
+        IApplicationEvents::GetCurrent()->OnEndSession(e);
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmSetCursor(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        UINT const hitTest = LOWORD(lparam);
+
+        if (hitTest == HTCLIENT)
+        {
+            if (GApplicationStatics->Input.IsTracking(this->m_Handle))
+            {
+                // Hide cursor if we are tracking it.
+                ::SetCursor(nullptr);
+                return Interop::WindowMessageResult::WithResult(TRUE);
+            }
+
+            if (this->m_CursorHandle)
+            {
+                // Set the cursor to the one we are using.
+                ::SetCursor(*this->m_CursorHandle);
+                return Interop::WindowMessageResult::WithResult(TRUE);
+            }
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmSysCommand(WPARAM wparam, LPARAM lparam)
+    {
+        (void)lparam;
+
+        switch (wparam & 0xFFF0u)
+        {
+        case SC_SCREENSAVE:
+        case SC_MONITORPOWER:
+            {
+                // Prevent screen saver and monitor power events.
+                return Interop::WindowMessageResult::WithResult(0);
+            }
+
+        case SC_KEYMENU:
+            {
+                if (this->m_Type == WindowType::Game)
+                {
+                    // Prevent ALT key from activating the menu bar.
+                    return Interop::WindowMessageResult::WithResult(0);
+                }
+
+                break;
+            }
+
+        default:
+            {
+                break;
+            }
+        }
+
+        return Interop::WindowMessageResult::Default();
+    }
+
+    Interop::WindowMessageResult WindowImpl::WmEraseBackground(WPARAM wparam, LPARAM lparam)
+    {
+        (void)wparam;
+        (void)lparam;
+        // Not implemented yet.
+        return Interop::WindowMessageResult::Default();
     }
 }

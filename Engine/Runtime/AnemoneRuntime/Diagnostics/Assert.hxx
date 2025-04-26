@@ -73,7 +73,7 @@ namespace Anemone::Diagnostics
         if (!(expression)) \
             [[unlikely]] \
         { \
-            if (::Anemone::Diagnostics::ReportAssertion(std::source_location::current(), #expression __VA_OPT__(, ) __VA_ARGS__)) \
+            if (::Anemone::Diagnostics::ReportAssertion(::std::source_location::current(), #expression __VA_OPT__(, ) __VA_ARGS__)) \
             { \
                 anemone_debugbreak(); \
             } \
@@ -85,7 +85,7 @@ namespace Anemone::Diagnostics
 #define AE_PANIC(...) \
     do \
     { \
-        ::Anemone::Diagnostics::ReportPanic(std::source_location::current() __VA_OPT__(, ) __VA_ARGS__); \
+        ::Anemone::Diagnostics::ReportPanic(::std::source_location::current() __VA_OPT__(, ) __VA_ARGS__); \
         anemone_debugbreak(); \
     } while (false)
 

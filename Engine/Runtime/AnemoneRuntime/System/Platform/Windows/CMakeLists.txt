@@ -2,6 +2,10 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "Input.cxx"
+        "Input.hxx"
+        "XInput.cxx"
+        "XInput.hxx"
         "WindowsApplication.cxx"
         "WindowsApplication.hxx"
         "WindowsClipboard.cxx"

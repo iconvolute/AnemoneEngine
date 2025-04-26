@@ -357,7 +357,7 @@ namespace Anemone
         virtual void OnMouseWheel(Window& window, MouseWheelEventArgs& args) = 0;
         virtual void OnMouseButtonDown(Window& window, MouseButtonEventArgs& args) = 0;
         virtual void OnMouseButtonUp(Window& window, MouseButtonEventArgs& args) = 0;
-        virtual void OnMouseButtonDoubleClick(Window& window, MouseButtonEventArgs& args) = 0;
+        virtual void OnMouseButtonClick(Window& window, MouseButtonEventArgs& args) = 0;
 
         // Keyboard Events
         virtual void OnKeyDown(Window& window, KeyEventArgs& args) = 0;

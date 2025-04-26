@@ -2,15 +2,18 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
 #include "AnemoneRuntime/System/Application.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/Input.hxx"
+#include "AnemoneRuntime/System/Platform/Windows/XInput.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 
 #include <memory>
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Windows
 {
-    struct WindowsApplicationStatics final
+    extern HINSTANCE GInstanceHandle;
+
+    struct ApplicationStatics final
     {
         HICON ApplicationIconHandle{};
 
@@ -30,20 +33,20 @@ namespace Anemone::Internal
         HCURSOR SizeAllCursor{};
         HCURSOR CrossCursor{};
 
-        ATOM MainWindowClass{};
+        IntrusiveList<WindowImpl> WindowsCollection{};
 
-        IntrusiveList<Window> WindowsCollection{};
-
-        WindowsInput Input{};
+        InputImpl Input{};
+        XInputImpl XInput{};
 
         static constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
 
-        WindowsApplicationStatics();
-
-        ~WindowsApplicationStatics();
+        ApplicationStatics();
 
         [[nodiscard]] HCURSOR GetCursor(CursorType cursor) const;
     };
+}
 
-    extern UninitializedObject<WindowsApplicationStatics> GApplicationStatics;
+namespace Anemone::Internal
+{
+    extern UninitializedObject<Windows::ApplicationStatics> GApplicationStatics;
 }

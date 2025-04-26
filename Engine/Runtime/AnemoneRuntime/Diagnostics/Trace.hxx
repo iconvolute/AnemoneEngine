@@ -42,8 +42,8 @@ namespace Anemone
 #define AE_TRACE(level, format, ...) \
     do \
     { \
-        if constexpr (Anemone::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
+        if constexpr (::Anemone::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
         { \
-            Anemone::Trace::TraceMessage(Anemone::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+            ::Anemone::Trace::TraceMessage(::Anemone::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

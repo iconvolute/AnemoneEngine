@@ -172,7 +172,24 @@ public:
         (void)window;
         (void)args;
 
+        if (args.Key == Anemone::VirtualKey::F1)
+        {
+            window.SetMode((window.GetMode() == Anemone::WindowMode::Windowed)
+                    ? Anemone::WindowMode::Borderless
+                    : Anemone::WindowMode::Windowed);
+        }
+        else if (args.Key == Anemone::VirtualKey::F2)
+        {
+            window.SetBounds(Anemone::Math::RectF{0, 0, 1000, 1000});
+        }
+        else if (args.Key == Anemone::VirtualKey::F3)
+        {
+            window.SetBounds(Anemone::Math::RectF{1000, 1000, 1000, 1000});
+        }
+        else
+        {
         AE_ASSERT(false);
+        }
     }
 
     void OnKeyUp(Anemone::Window& window, Anemone::KeyEventArgs& args) override
@@ -471,14 +488,25 @@ int AnemoneMain(int argc, char** argv)
 
     EH eh{};
 
+    auto window1 = Anemone::Application::MakeWindow(Anemone::WindowType::Game);
+    auto window2 = Anemone::Application::MakeWindow(Anemone::WindowType::Game);
 
-    if (auto window = Anemone::Application::MakeWindow(Anemone::WindowType::Form))
+    if (window1 and window2)
     {
-        window->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
-        window->SetInputEnabled(true);
+        window1->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window1->SetInputEnabled(true);
 
-        while (window->IsVisible())
+        window2->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window2->SetInputEnabled(true);
+
+        while (not window1->IsClosed() or not window2->IsClosed())
         {
+            auto const client = window1->GetClientBounds();
+            auto const window = window1->GetBounds();
+            AE_TRACE(Error, "Client: {}, {}, {}, {}, Window: {}, {}, {}, {}",
+                client.X, client.Y, client.Width, client.Height,
+                window.X, window.Y, window.Width, window.Height);
+
             Anemone::Application::ProcessMessages();
             Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
         }

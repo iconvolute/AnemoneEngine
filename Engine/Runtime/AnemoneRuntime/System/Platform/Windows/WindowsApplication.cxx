@@ -1,20 +1,25 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInput.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal
 {
-    UninitializedObject<WindowsApplicationStatics> GApplicationStatics;
+    UninitializedObject<Windows::ApplicationStatics> GApplicationStatics;
+}
 
-    WindowsApplicationStatics::WindowsApplicationStatics()
+namespace Anemone::Internal::Windows
+{
+    HINSTANCE GInstanceHandle;
+    
+    ApplicationStatics::ApplicationStatics()
     {
         HINSTANCE const hInstance = GetModuleHandleW(nullptr);
+        GInstanceHandle = hInstance;
 
         this->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
             hInstance,
-            MAKEINTRESOURCE(WindowsApplicationStatics::IDI_MAIN_ICON),
+            MAKEINTRESOURCE(ApplicationStatics::IDI_MAIN_ICON),
             IMAGE_ICON,
             0,
             0,
@@ -36,41 +41,9 @@ namespace Anemone::Internal
         this->SizeBottomRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
         this->SizeAllCursor = Interop::win32_LoadSystemCursor(IDC_SIZEALL);
         this->CrossCursor = Interop::win32_LoadSystemCursor(IDC_CROSS);
-
-        // Register window class
-        WNDCLASSEXW wc{
-            .cbSize = sizeof(wc),
-            .style = CS_DBLCLKS | CS_HREDRAW | CS_VREDRAW,
-            .lpfnWndProc = WindowsWindow::WndProc,
-            .cbClsExtra = 0,
-            .cbWndExtra = 0,
-            .hInstance = hInstance,
-            .hIcon = this->ApplicationIconHandle,
-            .hCursor = this->ArrowCursor,
-            .hbrBackground = GetSysColorBrush(COLOR_WINDOW),
-            .lpszMenuName = nullptr,
-            .lpszClassName = L"AnemoneWindow",
-            .hIconSm = this->ApplicationIconHandle,
-        };
-
-        this->MainWindowClass = RegisterClassExW(&wc);
-
-        if (this->MainWindowClass == 0)
-        {
-            Debugger::ReportApplicationStop("Failed to register window class.");
-        }
     }
 
-    WindowsApplicationStatics::~WindowsApplicationStatics()
-    {
-        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
-
-        UnregisterClassW(
-            MAKEINTATOM(this->MainWindowClass),
-            hInstance);
-    }
-
-    HCURSOR WindowsApplicationStatics::GetCursor(CursorType cursor) const
+    HCURSOR ApplicationStatics::GetCursor(CursorType cursor) const
     {
         switch (cursor)
         {
@@ -140,11 +113,11 @@ namespace Anemone
         }
 
         // Pool input devices.
-        Internal::GApplicationStatics->Input.Poll();
+        Internal::GApplicationStatics->XInput.Poll();
     }
 
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)
     {
-        return std::make_unique<WindowsWindow>(type);
+        return std::make_unique<Internal::Windows::WindowImpl>(type, WindowMode::Windowed);
     }
 }
