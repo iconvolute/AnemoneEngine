@@ -1,9 +1,10 @@
 #include "AnemoneRuntime/System/Platform/Linux/LinuxApplication.hxx"
+#include "AnemoneRuntime/System/Application.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal
 {
-    UninitializedObject<LinuxApplicationStatics> GApplicationStatics;
+    UninitializedObject<Linux::ApplicationStatics> GApplicationStatics;
 }
 
 namespace Anemone

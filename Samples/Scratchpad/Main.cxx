@@ -158,7 +158,7 @@ public:
         (void)args;
     }
 
-    void OnMouseButtonDoubleClick(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseButtonClick(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
     {
         (void)window;
         (void)args;

@@ -1,18 +1,14 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
-#include "AnemoneRuntime/System/Application.hxx"
-#include "AnemoneRuntime/System/Platform/Linux/LinuxWindow.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
 
-#include <memory>
+namespace Anemone::Internal::Linux
+{
+    struct ApplicationStatics final
+    {
+    };
+}
 
 namespace Anemone::Internal
 {
-    struct LinuxApplicationStatics final
-    {
-        IntrusiveList<Window> LinuxCollection{};
-    };
-
-    extern UninitializedObject<LinuxApplicationStatics> GApplicationStatics;
+    extern UninitializedObject<Linux::ApplicationStatics> GApplicationStatics;
 }
