@@ -4,12 +4,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         "WindowsFileSystem.cxx"
 
-        "WindowsHeaders.hxx"
-
-        "WindowsInterop.hxx"
-
-        "WindowsMemoryMappedFile.hxx"
-
         "WindowsNamedMutex.cxx"
         "WindowsNamedMutex.hxx"
 

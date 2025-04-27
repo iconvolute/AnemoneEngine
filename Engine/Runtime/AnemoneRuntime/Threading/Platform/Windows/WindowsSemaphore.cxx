@@ -2,7 +2,7 @@
 
 #if ANEMONE_PLATFORM_WINDOWS
 
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Threading.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone
@@ -31,7 +31,7 @@ namespace Anemone
     {
         return WaitForSingleObject(
                    this->_inner.Get(),
-                   Interop::win32_ValidateTimeoutDuration(timeout)) != WAIT_TIMEOUT;
+                   Interop::Windows::ValidateTimeoutDuration(timeout)) != WAIT_TIMEOUT;
     }
 
     bool Semaphore::TryAcquire()

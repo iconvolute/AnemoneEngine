@@ -1,13 +1,13 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixHeaders.hxx"
+#include "AnemoneRuntime/Interop/SafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Linux/Headers.hxx"
 
 #include <semaphore.h>
 #include <dlfcn.h>
 
-namespace Anemone::Interop
+namespace Anemone::Interop::Linux
 {
-    struct UnixSafeFdHandleTraits final
+    struct SafeFdHandleTraits final
     {
         static int Invalid() noexcept
         {
@@ -24,9 +24,9 @@ namespace Anemone::Interop
             return close(value) == 0;
         }
     };
-    using UnixSafeFdHandle = base_SafeHandle<int, UnixSafeFdHandleTraits>;
+    using SafeFdHandle = SafeHandleT<int, SafeFdHandleTraits>;
 
-    struct UnixSafeNamedSemaphoreHandleTraits final
+    struct SafeNamedSemaphoreHandleTraits final
     {
         static sem_t* Invalid()
         {
@@ -43,9 +43,9 @@ namespace Anemone::Interop
             return sem_close(value) == 0;
         };
     };
-    using UnixSafeNamedSemaphoreHandle = base_SafeHandle<sem_t*, UnixSafeNamedSemaphoreHandleTraits>;
+    using SafeNamedSemaphoreHandle = SafeHandleT<sem_t*, SafeNamedSemaphoreHandleTraits>;
 
-    struct UnixSafePidHandleTraits final
+    struct SafePidHandleTraits final
     {
         static pid_t Invalid()
         {
@@ -63,9 +63,9 @@ namespace Anemone::Interop
             // return kill(value, SIGKILL) == 0;
         }
     };
-    using UnixSafePidHandle = base_SafeHandle<pid_t, UnixSafePidHandleTraits>;
+    using SafePidHandle = SafeHandleT<pid_t, SafePidHandleTraits>;
 
-    struct UnixSafeSharedLibraryHandleTraits
+    struct SafeSharedLibraryHandleTraits
     {
         static void* Invalid()
         {
@@ -82,9 +82,9 @@ namespace Anemone::Interop
             return dlclose(value) == 0;
         }
     };
-    using UnixSafeSharedLibraryHandle = base_SafeHandle<void*, UnixSafeSharedLibraryHandleTraits>;
+    using SafeSharedLibraryHandle = SafeHandleT<void*, SafeSharedLibraryHandleTraits>;
 
-    struct UnixPthreadThreadHandleTraits final
+    struct PthreadThreadHandleTraits final
     {
         static pthread_t Invalid()
         {
@@ -103,5 +103,5 @@ namespace Anemone::Interop
         }
     };
 
-    using UnixPthreadThreadHandle = base_SafeHandle<pthread_t, UnixPthreadThreadHandleTraits>;
+    using PthreadThreadHandle = SafeHandleT<pthread_t, PthreadThreadHandleTraits>;
 }

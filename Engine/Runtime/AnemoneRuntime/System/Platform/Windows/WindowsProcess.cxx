@@ -1,12 +1,14 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+
+#include <array>
 
 namespace Anemone::Internal
 {
     inline std::expected<void, ErrorCode> CreatePipeForRedirection(
-        Interop::Win32SafeFileHandle& hOutParent,
-        Interop::Win32SafeFileHandle& hOutChild,
+        Interop::Windows::SafeFileHandle& hOutParent,
+        Interop::Windows::SafeFileHandle& hOutChild,
         bool parentWritesToChild)
     {
         SECURITY_ATTRIBUTES sa{
@@ -50,7 +52,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {}))
+        if (Interop::Windows::SafeHandle const handle = std::exchange(this->_handle, {}))
         {
             if (WaitForSingleObject(handle.Get(), INFINITE) != WAIT_OBJECT_0)
             {
@@ -99,7 +101,7 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (Interop::Win32SafeHandle const handle = std::exchange(this->_handle, {}))
+        if (Interop::Windows::SafeHandle const handle = std::exchange(this->_handle, {}))
         {
             if (!TerminateProcess(handle.Get(), 0))
             {
@@ -172,12 +174,12 @@ namespace Anemone
             .hStdError = nullptr,
         };
 
-        Interop::Win32SafeFileHandle fhReadInput{};
-        Interop::Win32SafeFileHandle fhWriteInput{};
-        Interop::Win32SafeFileHandle fhReadOutput{};
-        Interop::Win32SafeFileHandle fhWriteOutput{};
-        Interop::Win32SafeFileHandle fhReadError{};
-        Interop::Win32SafeFileHandle fhWriteError{};
+        Interop::Windows::SafeFileHandle fhReadInput{};
+        Interop::Windows::SafeFileHandle fhWriteInput{};
+        Interop::Windows::SafeFileHandle fhReadOutput{};
+        Interop::Windows::SafeFileHandle fhWriteOutput{};
+        Interop::Windows::SafeFileHandle fhReadError{};
+        Interop::Windows::SafeFileHandle fhWriteError{};
 
         if (redirectInput or redirectOutput or redirectError)
         {
@@ -235,13 +237,13 @@ namespace Anemone
         PROCESS_INFORMATION process_information{};
 
         std::wstring wPath{};
-        Interop::win32_WidenString(wPath, path);
+        Interop::Windows::WidenString(wPath, path);
 
         std::wstring wParams{};
 
         if (params)
         {
-            Interop::win32_WidenString(wParams, *params);
+            Interop::Windows::WidenString(wParams, *params);
             wParams.insert(0, 1, L' ');
             wParams.insert(0, wPath);
         }
@@ -250,7 +252,7 @@ namespace Anemone
 
         if (workingDirectory)
         {
-            Interop::win32_WidenString(wWorkingDirectory, *workingDirectory);
+            Interop::Windows::WidenString(wWorkingDirectory, *workingDirectory);
         }
 
         BOOL bCreated = CreateProcessW(
@@ -284,7 +286,7 @@ namespace Anemone
 
             CloseHandle(process_information.hThread);
 
-            return Process{Interop::Win32SafeHandle{process_information.hProcess}};
+            return Process{Interop::Windows::SafeHandle{process_information.hProcess}};
         }
 
         return std::unexpected(ErrorCode::InvalidOperation);

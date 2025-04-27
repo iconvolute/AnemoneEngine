@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
 
 #include <sys/syscall.h>
 #include <linux/futex.h>
@@ -9,7 +9,7 @@
 namespace Anemone
 {
     using ThreadId = pid_t;
-    using ThreadHandle = Interop::UnixPthreadThreadHandle;
+    using ThreadHandle = Interop::Linux::PthreadThreadHandle;
 }
 
 namespace Anemone::Internal
@@ -21,90 +21,76 @@ namespace Anemone::Internal
     using PlatformConditionVariable = pthread_cond_t;
 }
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Futex
 {
-    struct Futex final
+    inline void Wait(std::atomic<int32_t>& futex, int32_t expected)
     {
-        static void Wait(std::atomic<int32_t>& futex, int32_t expected)
+        syscall(
+            SYS_futex,
+            /* uaddr */ &futex,
+            /* futex_op */ FUTEX_WAIT_PRIVATE,
+            /* val */ expected,
+            /* timeout */ nullptr);
+    }
+
+    inline void WaitSpurious(std::atomic<int32_t>& futex, int32_t expected)
+    {
+        while (true)
         {
-            syscall(
+            int const rc = syscall(
                 SYS_futex,
                 /* uaddr */ &futex,
                 /* futex_op */ FUTEX_WAIT_PRIVATE,
                 /* val */ expected,
                 /* timeout */ nullptr);
-        }
 
-        static void WaitSpurious(std::atomic<int32_t>& futex, int32_t expected)
-        {
-            while (true)
+            if (rc == 0)
             {
-                int const rc = syscall(
-                    SYS_futex,
-                    /* uaddr */ &futex,
-                    /* futex_op */ FUTEX_WAIT_PRIVATE,
-                    /* val */ expected,
-                    /* timeout */ nullptr);
-
-                if (rc == 0)
+                // Wait succeeded.
+                if (futex.load() != expected)
                 {
-                    // Wait succeeded.
-                    if (futex.load() != expected)
-                    {
-                        break;
-                    }
+                    break;
+                }
+            }
+            else
+            {
+                // Wait failed.
+                if (errno == EAGAIN)
+                {
+                    break;
                 }
                 else
                 {
-                    // Wait failed.
-                    if (errno == EAGAIN)
-                    {
-                        break;
-                    }
-                    else
-                    {
-                        anemone_debugbreak();
-                    }
+                    anemone_debugbreak();
                 }
             }
         }
+    }
 
-        static void WakeOne(std::atomic<int32_t>& futex)
-        {
-            syscall(
-                SYS_futex,
-                /* uaddr */ &futex,
-                /* futex_op */ FUTEX_WAKE_PRIVATE,
-                /* val */ 1);
-        }
+    inline void WakeOne(std::atomic<int32_t>& futex)
+    {
+        syscall(
+            SYS_futex,
+            /* uaddr */ &futex,
+            /* futex_op */ FUTEX_WAKE_PRIVATE,
+            /* val */ 1);
+    }
 
-        static void WakeMany(std::atomic<int32_t>& futex, int32_t count)
-        {
-#if false
-            for (; count != 0; --count)
-            {
-                syscall(
-                    SYS_futex,
-                    /* uaddr */ &futex,
-                    /* futex_op */ FUTEX_WAKE_PRIVATE,
-                    /* val */ 1);
-            }
-#else
-            syscall(
-                SYS_futex,
-                /* uaddr */ &futex,
-                /* futex_op */ FUTEX_WAKE_PRIVATE,
-                /* val */ count);
-#endif
-        }
+    inline void WakeMany(std::atomic<int32_t>& futex, int32_t count)
+    {
+        syscall(
+            SYS_futex,
+            /* uaddr */ &futex,
+            /* futex_op */ FUTEX_WAKE_PRIVATE,
+            /* val */ count);
+    }
 
-        static void WakeAll(std::atomic<int32_t>& futex)
-        {
-            syscall(
-                SYS_futex,
-                /* uaddr */ &futex,
-                /* futex_op */ FUTEX_WAKE_PRIVATE,
-                /* val */ INT32_MAX);
-        }
-    };
+    inline void WakeAll(std::atomic<int32_t>& futex)
+    {
+        syscall(
+            SYS_futex,
+            /* uaddr */ &futex,
+            /* futex_op */ FUTEX_WAKE_PRIVATE,
+            /* val */ INT32_MAX);
+    }
 }

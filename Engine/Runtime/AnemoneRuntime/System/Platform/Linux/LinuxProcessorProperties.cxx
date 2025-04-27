@@ -1,6 +1,4 @@
 #include "AnemoneRuntime/System/Platform/Linux/LinuxProcessorProperties.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"

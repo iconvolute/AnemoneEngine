@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
 
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/Threading.hxx"
 
 namespace Anemone
 {
@@ -31,7 +31,7 @@ namespace Anemone
     {
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);
-        Interop::posix_ValidateTimeout(ts, timeout);
+        Interop::Linux::ValidateTimeout(ts, timeout);
 
         // Should fail on ETIMEDOUT only.
         return pthread_cond_timedwait(&this->_inner, &cs._inner, &ts) == 0;
@@ -41,7 +41,7 @@ namespace Anemone
     {
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);
-        Interop::posix_ValidateTimeout(ts, timeout);
+        Interop::Linux::ValidateTimeout(ts, timeout);
 
         // Should fail on ETIMEDOUT only.
         return pthread_cond_timedwait(&this->_inner, &cs._inner, &ts) == 0;

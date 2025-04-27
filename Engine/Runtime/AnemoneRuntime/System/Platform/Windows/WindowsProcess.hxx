@@ -1,8 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 
 namespace Anemone::Internal
 {
-    using PlatformProcess = Interop::Win32SafeHandle;
+    using PlatformProcess = Interop::Windows::SafeHandle;
 }

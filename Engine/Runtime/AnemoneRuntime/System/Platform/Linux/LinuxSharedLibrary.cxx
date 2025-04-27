@@ -1,5 +1,6 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
 
 #include <utility>
 #include <dlfcn.h>
@@ -8,9 +9,9 @@ namespace Anemone
 {
     auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>
     {
-        Interop::unix_Path uPath{path};
+        Interop::Linux::FilePath uPath{path};
 
-        Interop::UnixSafeSharedLibraryHandle h{dlopen(uPath.c_str(), RTLD_LAZY)};
+        Interop::Linux::SafeSharedLibraryHandle h{dlopen(uPath.c_str(), RTLD_LAZY)};
 
         if (h)
         {

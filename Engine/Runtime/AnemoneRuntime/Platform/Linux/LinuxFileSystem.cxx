@@ -2,7 +2,8 @@
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
+#include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 
 #include <dirent.h>
@@ -72,9 +73,9 @@ namespace Anemone::Internal
 
     void FileInfoFromSystem(struct stat64 const& source, FileInfo& destination)
     {
-        destination.Created = Interop::posix_into_DateTime(source.st_ctim);
-        destination.Accessed = Interop::posix_into_DateTime(source.st_atim);
-        destination.Modified = Interop::posix_into_DateTime(source.st_mtim);
+        destination.Created = Interop::Linux::ToDateTime(source.st_ctim);
+        destination.Accessed = Interop::Linux::ToDateTime(source.st_atim);
+        destination.Modified = Interop::Linux::ToDateTime(source.st_mtim);
         destination.Size = static_cast<int64_t>(source.st_size);
         destination.Type = FileTypeFromSystem(source);
         destination.ReadOnly = (source.st_mode & S_IRUSR) == 0;

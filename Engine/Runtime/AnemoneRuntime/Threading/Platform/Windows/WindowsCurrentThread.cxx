@@ -2,7 +2,7 @@
 
 #if ANEMONE_PLATFORM_WINDOWS
 
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Threading.hxx"
 #include "AnemoneRuntime/Threading/Platform/Windows/WindowsThreading.hxx"
 #include "AnemoneRuntime/Duration.hxx"
 
@@ -43,12 +43,12 @@ namespace Anemone
 
     void CurrentThread::Sleep(int32_t milliseconds)
     {
-        SleepEx(Interop::win32_ValidateTimeoutDuration(milliseconds), TRUE);
+        SleepEx(Interop::Windows::ValidateTimeoutDuration(milliseconds), TRUE);
     }
 
     void CurrentThread::Sleep(Duration const& timeout)
     {
-        SleepEx(Interop::win32_ValidateTimeoutDuration(timeout), TRUE);
+        SleepEx(Interop::Windows::ValidateTimeoutDuration(timeout), TRUE);
     }
 
     void CurrentThread::Pause()

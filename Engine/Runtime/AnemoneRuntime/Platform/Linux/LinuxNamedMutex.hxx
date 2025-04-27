@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <string_view>
@@ -11,10 +11,10 @@ namespace Anemone
     class LinuxNamedMutex final
     {
     private:
-        Interop::UnixSafeNamedSemaphoreHandle _handle;
+        Interop::Linux::SafeNamedSemaphoreHandle _handle;
 
     private:
-        explicit LinuxNamedMutex(Interop::UnixSafeNamedSemaphoreHandle handle)
+        explicit LinuxNamedMutex(Interop::Linux::SafeNamedSemaphoreHandle handle)
             : _handle{std::move(handle)}
         {
         }

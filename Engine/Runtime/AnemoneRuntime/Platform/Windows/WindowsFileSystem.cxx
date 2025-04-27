@@ -1,7 +1,10 @@
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
+#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::Internal
 {
@@ -10,9 +13,9 @@ namespace Anemone::Internal
         SourceT const& source,
         FileInfo& destination)
     {
-        destination.Created = Interop::win32_into_DateTime(source.ftCreationTime);
-        destination.Accessed = Interop::win32_into_DateTime(source.ftLastAccessTime);
-        destination.Modified = Interop::win32_into_DateTime(source.ftLastWriteTime);
+        destination.Created = Interop::Windows::ToDateTime(source.ftCreationTime);
+        destination.Accessed = Interop::Windows::ToDateTime(source.ftLastAccessTime);
+        destination.Modified = Interop::Windows::ToDateTime(source.ftLastWriteTime);
 
         if (source.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
         {
@@ -52,9 +55,9 @@ namespace Anemone
         // Convert paths to wide strings.
         //
 
-        Interop::win32_FilePathW wsPath;
+        Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::win32_WidenString(wsPath, path))
+        if (not Interop::Windows::WidenString(wsPath, path))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -81,9 +84,9 @@ namespace Anemone
         // Convert paths to wide strings.
         //
 
-        Interop::win32_FilePathW wsPath;
+        Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::win32_WidenString(wsPath, path))
+        if (not Interop::Windows::WidenString(wsPath, path))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -122,16 +125,16 @@ namespace Anemone
         // Convert paths to wide strings.
         //
 
-        Interop::win32_FilePathW wsSource;
+        Interop::Windows::FilePathW wsSource;
 
-        if (not Interop::win32_WidenString(wsSource, source))
+        if (not Interop::Windows::WidenString(wsSource, source))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::win32_FilePathW wsDestination;
+        Interop::Windows::FilePathW wsDestination;
 
-        if (not Interop::win32_WidenString(wsDestination, destination))
+        if (not Interop::Windows::WidenString(wsDestination, destination))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -226,16 +229,16 @@ namespace Anemone
         // Convert paths to wide strings.
         //
 
-        Interop::win32_FilePathW wsSource;
+        Interop::Windows::FilePathW wsSource;
 
-        if (not Interop::win32_WidenString(wsSource, source))
+        if (not Interop::Windows::WidenString(wsSource, source))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::win32_FilePathW wsDestination;
+        Interop::Windows::FilePathW wsDestination;
 
-        if (not Interop::win32_WidenString(wsDestination, destination))
+        if (not Interop::Windows::WidenString(wsDestination, destination))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -309,9 +312,9 @@ namespace Anemone
 
     auto FileSystem::GetFileInfo(std::string_view path) -> std::expected<FileInfo, ErrorCode>
     {
-        Interop::win32_FilePathW wsPath;
+        Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::win32_WidenString(wsPath, path))
+        if (not Interop::Windows::WidenString(wsPath, path))
         {
             return {};
         }
@@ -352,9 +355,9 @@ namespace Anemone
         // Convert paths to wide strings.
         //
 
-        Interop::win32_FilePathW wsPath;
+        Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::win32_WidenString(wsPath, path))
+        if (not Interop::Windows::WidenString(wsPath, path))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
@@ -381,12 +384,12 @@ namespace Anemone
         //
 
         std::wstring search = root;
-        Interop::win32_PathAddDirectorySeparator(search);
+        Interop::Windows::PathAddDirectorySeparator(search);
         search.append(L"*.*");
 
         WIN32_FIND_DATAW wfd;
 
-        Interop::Win32SafeFindFileHandle hDirectory{FindFirstFileW(search.c_str(), &wfd)};
+        Interop::Windows::SafeFindFileHandle hDirectory{FindFirstFileW(search.c_str(), &wfd)};
 
         if (hDirectory)
         {
@@ -411,7 +414,7 @@ namespace Anemone
                 //
 
                 std::wstring file = root;
-                Interop::win32_PathAddDirectorySeparator(file);
+                Interop::Windows::PathAddDirectorySeparator(file);
                 file.append(wfd.cFileName);
 
 
@@ -494,7 +497,7 @@ namespace Anemone
         //
 
         std::wstring wsPath;
-        Interop::win32_WidenString(wsPath, path);
+        Interop::Windows::WidenString(wsPath, path);
 
         if (recursive)
         {
@@ -534,7 +537,7 @@ namespace Anemone
             //
 
             std::wstring parent = path;
-            Interop::win32_PathPopFragment(parent);
+            Interop::Windows::PathPopFragment(parent);
 
             if (ErrorCode const result = InternalDirectoryCreateRecursively(parent);
                 result != ErrorCode::Success)
@@ -591,7 +594,7 @@ namespace Anemone
         //
 
         std::wstring wsPath;
-        Interop::win32_WidenString(wsPath, path);
+        Interop::Windows::WidenString(wsPath, path);
 
         if (recursive)
         {
@@ -630,17 +633,17 @@ namespace Anemone
     auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>
     {
         std::wstring root;
-        if (not Interop::win32_WidenString(root, path))
+        if (not Interop::Windows::WidenString(root, path))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::win32_PathAddDirectorySeparator(root);
+        Interop::Windows::PathAddDirectorySeparator(root);
         root.push_back(L'*');
 
         WIN32_FIND_DATAW wfd;
 
-        Interop::Win32SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)};
+        Interop::Windows::SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)};
 
         if (hFind)
         {
@@ -662,7 +665,7 @@ namespace Anemone
                 std::string fullPath{path};
 
                 Interop::string_buffer<char, 128> sFileName{};
-                Interop::win32_NarrowString(sFileName, wfd.cFileName);
+                Interop::Windows::NarrowString(sFileName, wfd.cFileName);
 
                 FilePath::PushFragment(fullPath, sFileName.as_view());
                 FilePath::NormalizeDirectorySeparators(fullPath);
@@ -707,17 +710,17 @@ namespace Anemone
     auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, ErrorCode>
     {
         std::wstring root;
-        if (not Interop::win32_WidenString(root, path))
+        if (not Interop::Windows::WidenString(root, path))
         {
             return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::win32_PathAddDirectorySeparator(root);
+        Interop::Windows::PathAddDirectorySeparator(root);
         root.push_back(L'*');
 
         WIN32_FIND_DATAW wfd;
 
-        if (Interop::Win32SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)})
+        if (Interop::Windows::SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)})
         {
             do
             {
@@ -735,7 +738,7 @@ namespace Anemone
                 std::string fullPath{path};
 
                 Interop::string_buffer<char, 128> sFileName{};
-                Interop::win32_NarrowString(sFileName, wfd.cFileName);
+                Interop::Windows::NarrowString(sFileName, wfd.cFileName);
 
                 FilePath::PushFragment(fullPath, sFileName.as_view());
                 FilePath::NormalizeDirectorySeparators(fullPath);

@@ -292,7 +292,7 @@ namespace Anemone::Internal::Windows
         }
     }
 
-    bool InputImpl::ProcessMessage(Interop::WindowMessageResult& result, WindowImpl& window, UINT message, WPARAM wparam, LPARAM lparam)
+    bool InputImpl::ProcessMessage(Interop::Windows::WindowMessageResult& result, WindowImpl& window, UINT message, WPARAM wparam, LPARAM lparam)
     {
         switch (message)
         {
@@ -395,7 +395,7 @@ namespace Anemone::Internal::Windows
         return true;
     }
 
-    Interop::WindowMessageResult InputImpl::WmInput(WindowImpl& window, WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult InputImpl::WmInput(WindowImpl& window, WPARAM wparam, LPARAM lparam)
     {
         UINT const code = GET_RAWINPUT_CODE_WPARAM(wparam);
         HRAWINPUT const handle = std::bit_cast<HRAWINPUT>(lparam);
@@ -475,10 +475,10 @@ namespace Anemone::Internal::Windows
             }
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult InputImpl::WmKey(WindowImpl& window, WPARAM wparam, LPARAM lparam, BOOL pressed)
+    Interop::Windows::WindowMessageResult InputImpl::WmKey(WindowImpl& window, WPARAM wparam, LPARAM lparam, BOOL pressed)
     {
         UINT32 vk = LOWORD(wparam);
         UINT32 keyFlags = HIWORD(lparam);
@@ -556,10 +556,10 @@ namespace Anemone::Internal::Windows
             events->OnKeyUp(window, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult InputImpl::WmMouseButton(WindowImpl& window, VirtualKey virtualKey, WPARAM wparam, LPARAM lparam, BOOL pressed, BOOL click)
+    Interop::Windows::WindowMessageResult InputImpl::WmMouseButton(WindowImpl& window, VirtualKey virtualKey, WPARAM wparam, LPARAM lparam, BOOL pressed, BOOL click)
     {
         (void)wparam;
 
@@ -587,10 +587,10 @@ namespace Anemone::Internal::Windows
             IApplicationEvents::GetCurrent()->OnMouseButtonUp(window, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult InputImpl::WmMouseMove(WindowImpl& window, WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult InputImpl::WmMouseMove(WindowImpl& window, WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
 
@@ -609,10 +609,10 @@ namespace Anemone::Internal::Windows
             IApplicationEvents::GetCurrent()->OnMouseMove(window, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult InputImpl::WmMouseWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult InputImpl::WmMouseWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam)
     {
         POINT location{
             .x = static_cast<short>(LOWORD(lparam)),
@@ -622,17 +622,17 @@ namespace Anemone::Internal::Windows
         MapWindowPoints(nullptr, window.GetHandle(), &location, 1);
 
         MouseWheelEventArgs e;
-        e.Position = Interop::win32_into_Point(location);
+        e.Position = Interop::Windows::ToPointF(location);
         e.Horizontal = 0.0f;
         e.Vertical = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wparam)) / static_cast<float>(WHEEL_DELTA);
         e.Modifiers = this->m_KeyModifiers;
 
         IApplicationEvents::GetCurrent()->OnMouseWheel(window, e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult InputImpl::WmMouseHWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult InputImpl::WmMouseHWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam)
     {
         POINT location{
             .x = static_cast<short>(LOWORD(lparam)),
@@ -642,29 +642,31 @@ namespace Anemone::Internal::Windows
         MapWindowPoints(nullptr, window.GetHandle(), &location, 1);
 
         MouseWheelEventArgs e;
-        e.Position = Interop::win32_into_Point(location);
+        e.Position = Interop::Windows::ToPointF(location);
         e.Horizontal = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wparam)) / static_cast<float>(WHEEL_DELTA);
         e.Vertical = 0.0f;
         e.Modifiers = this->m_KeyModifiers;
 
         IApplicationEvents::GetCurrent()->OnMouseWheel(window, e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
     VirtualKeyModifiers InputImpl::CaptureModifiers()
     {
         VirtualKeyModifiers modifiers{};
 
-        if (GetKeyState(VK_MENU) & Interop::win32_GetKeyState_Down)
+        if (Interop::Windows::IsKeyPressed(VK_MENU))
         {
             modifiers |= VirtualKeyModifier::Alt;
         }
-        else if (GetKeyState(VK_CONTROL) & Interop::win32_GetKeyState_Down)
+
+        if (Interop::Windows::IsKeyPressed(VK_CONTROL))
         {
             modifiers |= VirtualKeyModifier::Control;
         }
-        else if (GetKeyState(VK_SHIFT) & Interop::win32_GetKeyState_Down)
+
+        if (Interop::Windows::IsKeyPressed(VK_SHIFT))
         {
             modifiers |= VirtualKeyModifier::Shift;
         }

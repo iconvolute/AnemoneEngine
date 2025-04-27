@@ -1,14 +1,16 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone
 {
     auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>
     {
-        Interop::win32_FilePathW wPath{};
-        Interop::win32_WidenString(wPath, path);
+        Interop::Windows::FilePathW wPath{};
+        Interop::Windows::WidenString(wPath, path);
 
-        Interop::Win32SafeSharedLibraryHandle h{LoadLibraryW(wPath.c_str())};
+        Interop::Windows::SafeSharedLibraryHandle h{LoadLibraryW(wPath.c_str())};
 
         if (h)
         {

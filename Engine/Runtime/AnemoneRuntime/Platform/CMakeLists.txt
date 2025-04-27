@@ -1,6 +1,4 @@
-add_subdirectory("Base")
 add_subdirectory("Linux")
-add_subdirectory("Unix")
 add_subdirectory("Windows")
 
 target_sources(AnemoneRuntime

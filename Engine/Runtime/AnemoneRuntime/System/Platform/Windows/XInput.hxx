@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/System/Application.hxx"
 
 #include <array>

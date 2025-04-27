@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/System/Window.hxx"
 #include "AnemoneRuntime/System/Application.hxx"
 
@@ -66,25 +66,25 @@ namespace Anemone::Internal::Windows
         
         static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
 
-        static Interop::WindowMessageResult WmNcCreate(HWND window, LPARAM lparam);
-        Interop::WindowMessageResult WmClose(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmChar(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmDpiChanged(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmPowerBroadcast(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmDisplayChange(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmMenuChar(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmGetDlgCode(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmEnterSizeMove(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmExitSizeMove(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmSize(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmNcCalcSize(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmActivate(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmActivateApp(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmEndSession(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmSetCursor(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmSysCommand(WPARAM wparam, LPARAM lparam);
-        Interop::WindowMessageResult WmEraseBackground(WPARAM wparam, LPARAM lparam);
+        static Interop::Windows::WindowMessageResult WmNcCreate(HWND window, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmClose(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmChar(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmDpiChanged(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmPowerBroadcast(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmDisplayChange(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmMenuChar(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmGetDlgCode(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmEnterSizeMove(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmExitSizeMove(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmSize(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmNcCalcSize(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmActivate(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmActivateApp(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmEndSession(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmSetCursor(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmSysCommand(WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmEraseBackground(WPARAM wparam, LPARAM lparam);
 
     private:
         HWND m_Handle{};

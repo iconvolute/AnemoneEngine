@@ -1,7 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 
 namespace Anemone::Internal
 {
-    using PlatformSharedLibrary = Interop::Win32SafeSharedLibraryHandle;
+    using PlatformSharedLibrary = Interop::Windows::SafeSharedLibraryHandle;
 }

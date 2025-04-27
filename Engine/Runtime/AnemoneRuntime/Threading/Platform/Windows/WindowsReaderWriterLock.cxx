@@ -2,7 +2,7 @@
 
 #if ANEMONE_PLATFORM_WINDOWS
 
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
 namespace Anemone
 {

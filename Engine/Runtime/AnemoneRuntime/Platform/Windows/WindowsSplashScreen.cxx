@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsSplashScreen.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
 
 namespace Anemone::Internal
 {

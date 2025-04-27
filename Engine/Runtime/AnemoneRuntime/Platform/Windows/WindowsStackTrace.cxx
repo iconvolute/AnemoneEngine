@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
 #include <fmt/format.h>
 

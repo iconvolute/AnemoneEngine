@@ -1,6 +1,7 @@
 // ReSharper disable CppClangTidyClangDiagnosticCoveredSwitchDefault
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
@@ -294,7 +295,7 @@ namespace Anemone::Internal::Windows
         AE_ASSERT(this->ValidateState());
 
         Interop::string_buffer<wchar_t, 128> wTitle{};
-        Interop::win32_WidenString(wTitle, value);
+        Interop::Windows::WidenString(wTitle, value);
 
         SetWindowTextW(this->m_Handle, wTitle.data());
     }
@@ -382,7 +383,7 @@ namespace Anemone::Internal::Windows
                 AE_VERIFY_WIN32(GetLastError());
             }
 
-            this->m_CachedWindowBounds = Interop::win32_into_Rectangle(rc);
+            this->m_CachedWindowBounds = Interop::Windows::ToRectF(rc);
         }
 
         return this->m_CachedWindowBounds;
@@ -416,7 +417,7 @@ namespace Anemone::Internal::Windows
                 AE_VERIFY_WIN32(GetLastError());
             }
 
-            this->m_CachedClientBounds = Interop::win32_into_Rectangle(rc);
+            this->m_CachedClientBounds = Interop::Windows::ToRectF(rc);
         }
 
         return this->m_CachedClientBounds;
@@ -503,7 +504,7 @@ namespace Anemone::Internal::Windows
     {
         AE_ASSERT(handle);
 
-        Interop::WindowMessageResult result{};
+        Interop::Windows::WindowMessageResult result{};
 
         if (message == WM_NCCREATE)
         {
@@ -609,7 +610,7 @@ namespace Anemone::Internal::Windows
         return DefWindowProcW(handle, message, wparam, lparam);
     }
 
-    Interop::WindowMessageResult WindowImpl::WmNcCreate(HWND window, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmNcCreate(HWND window, LPARAM lparam)
     {
         CREATESTRUCTW* cs = std::bit_cast<CREATESTRUCTW*>(lparam);
         WindowImpl* self = static_cast<WindowImpl*>(cs->lpCreateParams);
@@ -618,10 +619,10 @@ namespace Anemone::Internal::Windows
         self->m_Handle = window;
         SetWindowLongPtrW(window, GWLP_USERDATA, std::bit_cast<LONG_PTR>(self));
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmClose(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmClose(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
@@ -636,10 +637,10 @@ namespace Anemone::Internal::Windows
             this->m_Handle = nullptr;
         }
 
-        return Interop::WindowMessageResult::WithResult(0);
+        return Interop::Windows::WindowMessageResult::WithResult(0);
     }
 
-    Interop::WindowMessageResult WindowImpl::WmChar(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmChar(WPARAM wparam, LPARAM lparam)
     {
         if (IS_HIGH_SURROGATE(wparam))
         {
@@ -653,7 +654,7 @@ namespace Anemone::Internal::Windows
 
             if (IS_SURROGATE_PAIR(this->m_CharacterHighSurrogate, lowSurrogate))
             {
-                character = Interop::win32_DecodeSurrogatePair(this->m_CharacterHighSurrogate, lowSurrogate);
+                character = Interop::Windows::DecodeSurrogatePair(this->m_CharacterHighSurrogate, lowSurrogate);
                 this->m_CharacterHighSurrogate = 0;
             }
             else
@@ -671,10 +672,10 @@ namespace Anemone::Internal::Windows
             IApplicationEvents::GetCurrent()->OnCharacterReceived(*this, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmDpiChanged(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmDpiChanged(WPARAM wparam, LPARAM lparam)
     {
         DWORD const dpi = LOWORD(wparam);
 
@@ -696,10 +697,10 @@ namespace Anemone::Internal::Windows
 
         IApplicationEvents::GetCurrent()->OnWindowDpiChanged(*this, e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmPowerBroadcast(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmPowerBroadcast(WPARAM wparam, LPARAM lparam)
     {
         (void)lparam;
 
@@ -723,36 +724,36 @@ namespace Anemone::Internal::Windows
             }
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmDisplayChange(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmDisplayChange(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
         IApplicationEvents::GetCurrent()->OnDisplayChange();
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmMenuChar(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmMenuChar(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
 
         // A menu is active and the user presses a key that does not correspond
         // to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
-        return Interop::WindowMessageResult::WithResult(MAKELRESULT(0, MNC_CLOSE));
+        return Interop::Windows::WindowMessageResult::WithResult(MAKELRESULT(0, MNC_CLOSE));
     }
 
-    Interop::WindowMessageResult WindowImpl::WmGetDlgCode(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmGetDlgCode(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
-        return Interop::WindowMessageResult::WithResult(DLGC_WANTALLKEYS);
+        return Interop::Windows::WindowMessageResult::WithResult(DLGC_WANTALLKEYS);
     }
 
-    Interop::WindowMessageResult WindowImpl::WmEnterSizeMove(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmEnterSizeMove(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
@@ -761,10 +762,10 @@ namespace Anemone::Internal::Windows
         WindowEventArgs e{};
         IApplicationEvents::GetCurrent()->OnWindowResizeStarted(*this, e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmExitSizeMove(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmExitSizeMove(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
@@ -781,7 +782,7 @@ namespace Anemone::Internal::Windows
             RECT rc;
             GetClientRect(this->m_Handle, &rc);
             WindowSizeChangedEventArgs e{
-                .Size = Interop::win32_into_Size(rc),
+                .Size = Interop::Windows::ToSizeF(rc),
             };
             events->OnWindowSizeChanged(*this, e);
         }
@@ -789,15 +790,15 @@ namespace Anemone::Internal::Windows
             RECT rc;
             GetWindowRect(this->m_Handle, &rc);
             WindowLocationChangedEventArgs e{
-                .Location = Interop::win32_into_Point(rc),
+                .Location = Interop::Windows::ToPointF(rc),
             };
             events->OnWindowLocationChanged(*this, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmSize(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmSize(WPARAM wparam, LPARAM lparam)
     {
         if ((wparam != SIZE_MINIMIZED) && (!this->m_Resizing) && !IsIconic(this->m_Handle))
         {
@@ -810,10 +811,10 @@ namespace Anemone::Internal::Windows
             IApplicationEvents::GetCurrent()->OnWindowSizeChanged(*this, e);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
 
@@ -841,10 +842,10 @@ namespace Anemone::Internal::Windows
             mmi.ptMaxTrackSize.y = static_cast<LONG>(height) + (rcBorder.bottom - rcBorder.top);
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmNcCalcSize(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmNcCalcSize(WPARAM wparam, LPARAM lparam)
     {
         if ((this->m_Type == WindowType::Game) and (this->m_Mode == WindowMode::Windowed) and IsZoomed(this->m_Handle))
         {
@@ -871,14 +872,14 @@ namespace Anemone::Internal::Windows
                 params.lppos->cx -= 2 * static_cast<LONG>(wi.cxWindowBorders);
                 params.lppos->cy -= 2 * static_cast<LONG>(wi.cyWindowBorders);
 
-                return Interop::WindowMessageResult::WithResult(WVR_VALIDRECTS);
+                return Interop::Windows::WindowMessageResult::WithResult(WVR_VALIDRECTS);
             }
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmActivate(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmActivate(WPARAM wparam, LPARAM lparam)
     {
         (void)lparam;
         UINT const reason = LOWORD(wparam);
@@ -898,10 +899,10 @@ namespace Anemone::Internal::Windows
 
         IApplicationEvents::GetCurrent()->OnWindowActivated(*this, e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmActivateApp(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmActivateApp(WPARAM wparam, LPARAM lparam)
     {
         (void)lparam;
 
@@ -916,10 +917,10 @@ namespace Anemone::Internal::Windows
             GApplicationStatics->Input.NotifyApplicationDeactivated();
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmEndSession(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmEndSession(WPARAM wparam, LPARAM lparam)
     {
         UINT const reason = static_cast<UINT>(lparam);
 
@@ -932,10 +933,10 @@ namespace Anemone::Internal::Windows
 
         IApplicationEvents::GetCurrent()->OnEndSession(e);
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmSetCursor(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmSetCursor(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         UINT const hitTest = LOWORD(lparam);
@@ -946,21 +947,21 @@ namespace Anemone::Internal::Windows
             {
                 // Hide cursor if we are tracking it.
                 ::SetCursor(nullptr);
-                return Interop::WindowMessageResult::WithResult(TRUE);
+                return Interop::Windows::WindowMessageResult::WithResult(TRUE);
             }
 
             if (this->m_CursorHandle)
             {
                 // Set the cursor to the one we are using.
                 ::SetCursor(*this->m_CursorHandle);
-                return Interop::WindowMessageResult::WithResult(TRUE);
+                return Interop::Windows::WindowMessageResult::WithResult(TRUE);
             }
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmSysCommand(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmSysCommand(WPARAM wparam, LPARAM lparam)
     {
         (void)lparam;
 
@@ -970,7 +971,7 @@ namespace Anemone::Internal::Windows
         case SC_MONITORPOWER:
             {
                 // Prevent screen saver and monitor power events.
-                return Interop::WindowMessageResult::WithResult(0);
+                return Interop::Windows::WindowMessageResult::WithResult(0);
             }
 
         case SC_KEYMENU:
@@ -978,7 +979,7 @@ namespace Anemone::Internal::Windows
                 if (this->m_Type == WindowType::Game)
                 {
                     // Prevent ALT key from activating the menu bar.
-                    return Interop::WindowMessageResult::WithResult(0);
+                    return Interop::Windows::WindowMessageResult::WithResult(0);
                 }
 
                 break;
@@ -990,14 +991,14 @@ namespace Anemone::Internal::Windows
             }
         }
 
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::WindowMessageResult WindowImpl::WmEraseBackground(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult WindowImpl::WmEraseBackground(WPARAM wparam, LPARAM lparam)
     {
         (void)wparam;
         (void)lparam;
         // Not implemented yet.
-        return Interop::WindowMessageResult::Default();
+        return Interop::Windows::WindowMessageResult::Default();
     }
 }

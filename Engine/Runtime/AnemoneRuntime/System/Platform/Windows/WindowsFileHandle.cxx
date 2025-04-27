@@ -1,6 +1,8 @@
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone
 {
@@ -97,8 +99,8 @@ namespace Anemone
             dwFlags |= FILE_FLAG_NO_BUFFERING;
         }
 
-        Interop::win32_FilePathW wpath{};
-        if (Interop::win32_WidenString(wpath, path))
+        Interop::Windows::FilePathW wpath{};
+        if (Interop::Windows::WidenString(wpath, path))
         {
             SECURITY_ATTRIBUTES sa{
                 .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -124,7 +126,7 @@ namespace Anemone
 
             if (result != INVALID_HANDLE_VALUE)
             {
-                return FileHandle{Interop::Win32SafeFileHandle{result}};
+                return FileHandle{Interop::Windows::SafeFileHandle{result}};
             }
 
             return std::unexpected(Internal::TranslateErrorCodeWin32(GetLastError()));
@@ -146,8 +148,8 @@ namespace Anemone
 
         if (::CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            read = FileHandle{Interop::Win32SafeFileHandle{hRead}};
-            write = FileHandle{Interop::Win32SafeFileHandle{hWrite}};
+            read = FileHandle{Interop::Windows::SafeFileHandle{hRead}};
+            write = FileHandle{Interop::Windows::SafeFileHandle{hWrite}};
             return {};
         }
 
@@ -239,7 +241,7 @@ namespace Anemone
             return 0;
         }
 
-        DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
+        DWORD dwRequested = Interop::Windows::ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
         if (not ReadFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, nullptr))
@@ -269,10 +271,10 @@ namespace Anemone
             return 0;
         }
 
-        DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
+        DWORD dwRequested = Interop::Windows::ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
+        OVERLAPPED overlapped = Interop::Windows::GetOverlappedForPosition(position);
 
         if (not ReadFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {
@@ -307,7 +309,7 @@ namespace Anemone
             return 0;
         }
 
-        DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
+        DWORD dwRequested = Interop::Windows::ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
         if (not WriteFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, nullptr))
@@ -336,10 +338,10 @@ namespace Anemone
             return 0;
         }
 
-        DWORD dwRequested = Interop::win32_ValidateIoRequestLength(buffer.size());
+        DWORD dwRequested = Interop::Windows::ValidateIoRequestLength(buffer.size());
         DWORD dwProcessed = 0;
 
-        OVERLAPPED overlapped = Interop::win32_GetOverlappedForPosition(position);
+        OVERLAPPED overlapped = Interop::Windows::GetOverlappedForPosition(position);
 
         if (not WriteFile(this->_handle.Get(), buffer.data(), dwRequested, &dwProcessed, &overlapped))
         {

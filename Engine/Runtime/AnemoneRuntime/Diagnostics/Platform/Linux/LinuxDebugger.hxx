@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"

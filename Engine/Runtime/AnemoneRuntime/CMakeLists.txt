@@ -50,6 +50,7 @@ target_sources(AnemoneRuntime
 add_subdirectory("Crypto")
 add_subdirectory("Diagnostics")
 add_subdirectory("Hash")
+add_subdirectory("Interop")
 add_subdirectory("Math")
 add_subdirectory("Memory")
 add_subdirectory("Network")

@@ -1,10 +1,13 @@
 #include "AnemoneRuntime/Network/IpEndPoint.hxx"
 #include "AnemoneRuntime/Network/Detail.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #if ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
 #include <arpa/inet.h>
 #include <netinet/ip.h>
 #endif
+
+#include <utility>
 
 namespace Anemone::Network
 {

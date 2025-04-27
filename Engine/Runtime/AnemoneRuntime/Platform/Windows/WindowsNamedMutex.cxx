@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/Platform/NamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Windows/WindowsNamedMutex.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone
@@ -8,10 +9,10 @@ namespace Anemone
     std::expected<WindowsNamedMutex, ErrorCode> WindowsNamedMutex::Create(std::string_view name)
     {
         std::string sname = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
-        Interop::win32_FilePathW wname{};
-        Interop::win32_WidenString(wname, sname);
+        Interop::Windows::FilePathW wname{};
+        Interop::Windows::WidenString(wname, sname);
 
-        Interop::Win32SafeHandle handle{CreateMutexW(nullptr, FALSE, wname.data())};
+        Interop::Windows::SafeHandle handle{CreateMutexW(nullptr, FALSE, wname.data())};
 
         if (handle)
         {

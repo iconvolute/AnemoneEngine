@@ -1,10 +1,10 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseSafeHandle.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Interop/SafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
-namespace Anemone::Interop
+namespace Anemone::Interop::Windows
 {
-    struct Win32SafeRegistryHandleTraits final
+    struct SafeRegistryHandleTraits final
     {
         static HKEY Invalid()
         {
@@ -21,9 +21,9 @@ namespace Anemone::Interop
             return RegCloseKey(value) == ERROR_SUCCESS;
         }
     };
-    using Win32SafeRegistryHandle = base_SafeHandle<HKEY, Win32SafeRegistryHandleTraits>;
+    using SafeRegistryHandle = SafeHandleT<HKEY, SafeRegistryHandleTraits>;
 
-    struct Win32SafeHandleTraits final
+    struct SafeHandleTraits final
     {
         static HANDLE Invalid()
         {
@@ -40,9 +40,9 @@ namespace Anemone::Interop
             return CloseHandle(value);
         }
     };
-    using Win32SafeHandle = base_SafeHandle<HANDLE, Win32SafeHandleTraits>;
+    using SafeHandle = SafeHandleT<HANDLE, SafeHandleTraits>;
 
-    struct Win32SafeFileHandleTraits final
+    struct SafeFileHandleTraits final
     {
         static HANDLE Invalid()
         {
@@ -59,9 +59,9 @@ namespace Anemone::Interop
             return CloseHandle(value);
         }
     };
-    using Win32SafeFileHandle = base_SafeHandle<HANDLE, Win32SafeFileHandleTraits>;
+    using SafeFileHandle = SafeHandleT<HANDLE, SafeFileHandleTraits>;
 
-    struct Win32SafeSharedLibraryHandleTraits final
+    struct SafeSharedLibraryHandleTraits final
     {
         static HMODULE Invalid()
         {
@@ -78,9 +78,9 @@ namespace Anemone::Interop
             return FreeLibrary(value);
         }
     };
-    using Win32SafeSharedLibraryHandle = base_SafeHandle<HMODULE, Win32SafeSharedLibraryHandleTraits>;
+    using SafeSharedLibraryHandle = SafeHandleT<HMODULE, SafeSharedLibraryHandleTraits>;
 
-    struct Win32SafeFindFileHandleTraits final
+    struct SafeFindFileHandleTraits final
     {
         static HANDLE Invalid()
         {
@@ -97,9 +97,9 @@ namespace Anemone::Interop
             return FindClose(value);
         }
     };
-    using Win32SafeFindFileHandle = base_SafeHandle<HANDLE, Win32SafeFindFileHandleTraits>;
+    using SafeFindFileHandle = SafeHandleT<HANDLE, SafeFindFileHandleTraits>;
 
-    struct Win32SafeMemoryMappedFileHandleTraits final
+    struct SafeMemoryMappedFileHandleTraits final
     {
         static HANDLE Invalid()
         {
@@ -116,9 +116,9 @@ namespace Anemone::Interop
             return CloseHandle(value);
         }
     };
-    using Win32SafeMemoryMappedFileHandle = base_SafeHandle<HANDLE, Win32SafeMemoryMappedFileHandleTraits>;
+    using SafeMemoryMappedFileHandle = SafeHandleT<HANDLE, SafeMemoryMappedFileHandleTraits>;
 
-    struct Win32SafeMemoryMappedViewHandleTraits final
+    struct SafeMemoryMappedViewHandleTraits final
     {
         static void* Invalid()
         {
@@ -136,5 +136,5 @@ namespace Anemone::Interop
             return UnmapViewOfFile(value);
         }
     };
-    using Win32SafeMemoryMappedViewHandle = base_SafeBuffer<void, Win32SafeMemoryMappedViewHandleTraits>;
+    using SafeMemoryMappedViewHandle = SafeBufferT<void, SafeMemoryMappedViewHandleTraits>;
 }

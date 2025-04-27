@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Reference.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"

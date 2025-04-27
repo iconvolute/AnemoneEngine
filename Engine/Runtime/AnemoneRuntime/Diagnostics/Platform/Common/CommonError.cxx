@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Common/CommonError.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <cerrno>
 

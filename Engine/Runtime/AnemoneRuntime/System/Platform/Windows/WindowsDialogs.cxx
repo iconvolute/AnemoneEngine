@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsDialogs.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/System/Dialogs.hxx"
 
 #include <wrl/client.h>
@@ -108,8 +108,8 @@ namespace Anemone::Internal
         {
             auto& wfilter = wfilters.emplace_back();
 
-            Interop::win32_WidenString(wfilter.first, filter.Display);
-            Interop::win32_WidenString(wfilter.second, filter.Filter);
+            Interop::Windows::WidenString(wfilter.first, filter.Display);
+            Interop::Windows::WidenString(wfilter.second, filter.Filter);
         }
 
         std::vector<COMDLG_FILTERSPEC> dialogFilters{};
@@ -143,7 +143,7 @@ namespace Anemone::Internal
 
             if (SUCCEEDED(hr))
             {
-                Interop::win32_NarrowString(result, wpath);
+                Interop::Windows::NarrowString(result, wpath);
                 CoTaskMemFree(wpath);
 
                 return true;
@@ -184,7 +184,7 @@ namespace Anemone::Internal
 
                 if (SUCCEEDED(hr))
                 {
-                    Interop::win32_NarrowString(results.emplace_back(), wPath);
+                    Interop::Windows::NarrowString(results.emplace_back(), wPath);
                     CoTaskMemFree(wPath);
                 }
                 else
@@ -256,8 +256,8 @@ namespace Anemone
         Interop::string_buffer<wchar_t, 128> wtitle{};
         Interop::string_buffer<wchar_t, 512> wmessage{};
 
-        Interop::win32_WidenString(wtitle, title);
-        Interop::win32_WidenString(wmessage, message);
+        Interop::Windows::WidenString(wtitle, title);
+        Interop::Windows::WidenString(wmessage, message);
 
         int const result = ::MessageBoxExW(
             (native != nullptr) ? native->GetHandle() : nullptr,
@@ -291,7 +291,7 @@ namespace Anemone
         if (SUCCEEDED(hr) and not title.empty())
         {
             Interop::string_buffer<wchar_t, 128> wtitle{};
-            Interop::win32_WidenString(wtitle, title);
+            Interop::Windows::WidenString(wtitle, title);
 
             hr = dialog->SetTitle(wtitle.data());
         }
@@ -334,7 +334,7 @@ namespace Anemone
         if (SUCCEEDED(hr) and not title.empty())
         {
             Interop::string_buffer<wchar_t, 128> wtitle{};
-            Interop::win32_WidenString(wtitle, title);
+            Interop::Windows::WidenString(wtitle, title);
             hr = dialog->SetTitle(wtitle.data());
         }
 
@@ -388,7 +388,7 @@ namespace Anemone
         if (SUCCEEDED(hr) and not title.empty())
         {
             Interop::string_buffer<wchar_t, 128> wtitle{};
-            Interop::win32_WidenString(wtitle, title);
+            Interop::Windows::WidenString(wtitle, title);
 
             hr = dialog->SetTitle(wtitle.data());
         }

@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/System/Application.hxx"
 
 namespace Anemone::Internal::Windows
@@ -42,19 +42,19 @@ namespace Anemone::Internal::Windows
             return this->m_TrackMouseWindowHandle == handle;
         }
 
-        bool ProcessMessage(Interop::WindowMessageResult& result, WindowImpl& window, UINT message, WPARAM wparam, LPARAM lparam);
+        bool ProcessMessage(Interop::Windows::WindowMessageResult& result, WindowImpl& window, UINT message, WPARAM wparam, LPARAM lparam);
 
-        Interop::WindowMessageResult WmInput(WindowImpl& window, WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmInput(WindowImpl& window, WPARAM wparam, LPARAM lparam);
 
-        Interop::WindowMessageResult WmKey(WindowImpl& window, WPARAM wparam, LPARAM lparam, BOOL pressed);
+        Interop::Windows::WindowMessageResult WmKey(WindowImpl& window, WPARAM wparam, LPARAM lparam, BOOL pressed);
 
-        Interop::WindowMessageResult WmMouseButton(WindowImpl& window, VirtualKey virtualKey, WPARAM wparam, LPARAM lparam, BOOL pressed, BOOL click);
+        Interop::Windows::WindowMessageResult WmMouseButton(WindowImpl& window, VirtualKey virtualKey, WPARAM wparam, LPARAM lparam, BOOL pressed, BOOL click);
 
-        Interop::WindowMessageResult WmMouseMove(WindowImpl& window, WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmMouseMove(WindowImpl& window, WPARAM wparam, LPARAM lparam);
 
-        Interop::WindowMessageResult WmMouseWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmMouseWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam);
 
-        Interop::WindowMessageResult WmMouseHWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam);
+        Interop::Windows::WindowMessageResult WmMouseHWheel(WindowImpl& window, WPARAM wparam, LPARAM lparam);
 
     private:
         static VirtualKeyModifiers CaptureModifiers();

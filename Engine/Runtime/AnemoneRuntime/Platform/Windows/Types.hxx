@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
 // TODO: This will be replaced with proper solution
 

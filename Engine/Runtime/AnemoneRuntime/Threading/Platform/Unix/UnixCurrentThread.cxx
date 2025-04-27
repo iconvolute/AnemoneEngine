@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/Headers.hxx"
+#include "AnemoneRuntime/Interop/Linux/Process.hxx"
 
 #if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
 
@@ -62,7 +63,7 @@ namespace Anemone
 
     ThreadId CurrentThread::Id()
     {
-        return ThreadId{Interop::posix_GetThreadId()};
+        return ThreadId{Interop::Linux::GetThreadId()};
     }
 }
 

@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
 
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/Threading.hxx"
 
 namespace Anemone
 {
@@ -34,7 +34,7 @@ namespace Anemone
     {
         timespec ts{};
         clock_gettime(CLOCK_REALTIME, &ts);
-        Interop::posix_ValidateTimeout(ts, timeout);
+        Interop::Linux::ValidateTimeout(ts, timeout);
 
         int rc = 0;
 

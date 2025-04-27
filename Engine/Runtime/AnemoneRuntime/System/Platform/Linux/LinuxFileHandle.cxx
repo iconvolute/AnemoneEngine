@@ -1,5 +1,8 @@
 #include "AnemoneRuntime/System/FileHandle.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <unistd.h>
 #include <sys/file.h>
@@ -95,7 +98,7 @@ namespace Anemone
         mode_t const fmode = Internal::TranslateToOpenMode(options);
 
         Interop::string_buffer<char, 256> spath{path};
-        Interop::UnixSafeFdHandle fd{open(spath.c_str(), flags, fmode)};
+        Interop::Linux::SafeFdHandle fd{open(spath.c_str(), flags, fmode)};
 
         if (fd)
         {
@@ -138,8 +141,8 @@ namespace Anemone
             return std::unexpected(ErrorCode::InvalidOperation);
         }
 
-        read = FileHandle{Interop::UnixSafeFdHandle{fd[0]}};
-        write = FileHandle{Interop::UnixSafeFdHandle{fd[1]}};
+        read = FileHandle{Interop::Linux::SafeFdHandle{fd[0]}};
+        write = FileHandle{Interop::Linux::SafeFdHandle{fd[1]}};
 
         return {};
     }
@@ -216,7 +219,7 @@ namespace Anemone
 
         if (not buffer.empty())
         {
-            size_t const requested = Interop::unix_ValidateIoRequestLength(buffer.size());
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
 
             while (true)
             {
@@ -258,7 +261,7 @@ namespace Anemone
 
         if (not buffer.empty())
         {
-            size_t const requested = Interop::unix_ValidateIoRequestLength(buffer.size());
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
 
             while (true)
             {
@@ -300,7 +303,7 @@ namespace Anemone
 
         if (not buffer.empty())
         {
-            size_t const requested = Interop::unix_ValidateIoRequestLength(buffer.size());
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
 
             while (true)
             {
@@ -342,7 +345,7 @@ namespace Anemone
 
         if (not buffer.empty())
         {
-            size_t const requested = Interop::unix_ValidateIoRequestLength(buffer.size());
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
 
             while (true)
             {

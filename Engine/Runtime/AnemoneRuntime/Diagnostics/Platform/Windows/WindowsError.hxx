@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <string_view>

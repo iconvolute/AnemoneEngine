@@ -2,7 +2,7 @@
 #define ANEMONE_PLATFORM_WINDOWS_WINDOWSHEADERS_HXX
 #pragma once
 
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

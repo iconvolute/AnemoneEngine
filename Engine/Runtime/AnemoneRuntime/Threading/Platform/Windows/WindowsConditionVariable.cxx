@@ -3,7 +3,8 @@
 #if ANEMONE_PLATFORM_WINDOWS
 
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/Windows/Threading.hxx"
 
 namespace Anemone
 {
@@ -26,12 +27,12 @@ namespace Anemone
 
     bool ConditionVariable::TryWaitImpl(CriticalSection& cs, Duration const& timeout)
     {
-        return SleepConditionVariableSRW(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout), 0);
+        return SleepConditionVariableSRW(&this->_inner, &cs._inner, Interop::Windows::ValidateTimeoutDuration(timeout), 0);
     }
 
     bool ConditionVariable::TryWaitImpl(RecursiveCriticalSection& cs, Duration const& timeout)
     {
-        return SleepConditionVariableCS(&this->_inner, &cs._inner, Interop::win32_ValidateTimeoutDuration(timeout));
+        return SleepConditionVariableCS(&this->_inner, &cs._inner, Interop::Windows::ValidateTimeoutDuration(timeout));
     }
 
     void ConditionVariable::NotifyOne()

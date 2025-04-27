@@ -1,35 +1,33 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-
 #include <span>
 
 namespace Anemone::Interop
 {
     template <typename HandleT, typename TraitsT>
-    class base_SafeHandle final
+    class SafeHandleT final
     {
     private:
         HandleT _value = TraitsT::Invalid();
 
     public:
-        base_SafeHandle() = default;
+        SafeHandleT() = default;
 
-        explicit base_SafeHandle(HandleT value)
+        explicit SafeHandleT(HandleT value)
             : _value{value}
         {
         }
 
-        base_SafeHandle(base_SafeHandle const&) = delete;
+        SafeHandleT(SafeHandleT const&) = delete;
 
-        base_SafeHandle(base_SafeHandle&& other) noexcept
+        SafeHandleT(SafeHandleT&& other) noexcept
             : _value{other._value}
         {
             other._value = TraitsT::Invalid();
         }
 
-        base_SafeHandle& operator=(base_SafeHandle const&) = delete;
+        SafeHandleT& operator=(SafeHandleT const&) = delete;
 
-        base_SafeHandle& operator=(base_SafeHandle&& other) noexcept
+        SafeHandleT& operator=(SafeHandleT&& other) noexcept
         {
             if (this != &other)
             {
@@ -39,7 +37,7 @@ namespace Anemone::Interop
             return *this;
         }
 
-        ~base_SafeHandle()
+        ~SafeHandleT()
         {
             if (TraitsT::IsValid(this->_value))
             {
@@ -102,24 +100,24 @@ namespace Anemone::Interop
     };
 
     template <typename T, typename TraitsT>
-    class base_SafeBuffer final
+    class SafeBufferT final
     {
     private:
         T* _data = TraitsT::Invalid();
         size_t _size = 0;
 
     public:
-        base_SafeBuffer() = default;
+        SafeBufferT() = default;
 
-        base_SafeBuffer(T* data, size_t size)
+        SafeBufferT(T* data, size_t size)
             : _data{data}
             , _size{size}
         {
         }
 
-        base_SafeBuffer(base_SafeBuffer const&) = delete;
+        SafeBufferT(SafeBufferT const&) = delete;
 
-        base_SafeBuffer(base_SafeBuffer&& other) noexcept
+        SafeBufferT(SafeBufferT&& other) noexcept
             : _data{other._data}
             , _size{other._size}
         {
@@ -127,9 +125,9 @@ namespace Anemone::Interop
             other._size = 0;
         }
 
-        base_SafeBuffer& operator=(base_SafeBuffer const&) = delete;
+        SafeBufferT& operator=(SafeBufferT const&) = delete;
 
-        base_SafeBuffer& operator=(base_SafeBuffer&& other) noexcept
+        SafeBufferT& operator=(SafeBufferT&& other) noexcept
         {
             if (this != &other)
             {
@@ -147,7 +145,7 @@ namespace Anemone::Interop
             return *this;
         }
 
-        ~base_SafeBuffer()
+        ~SafeBufferT()
         {
             if (TraitsT::IsValid(this->_data))
             {

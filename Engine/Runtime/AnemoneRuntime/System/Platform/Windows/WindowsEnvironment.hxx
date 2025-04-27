@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal

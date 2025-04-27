@@ -1,7 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Unix/UnixSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
 
 namespace Anemone::Internal
 {
-    using PlatformProcess = Interop::UnixSafePidHandle;
+    using PlatformProcess = Interop::Linux::SafePidHandle;
 }

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -62,7 +62,7 @@ namespace Anemone::Internal
         }
 
         Interop::string_buffer<char, 128> szMessage;
-        Interop::win32_NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
+        Interop::Windows::NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
 
         Trace::TraceMessage(TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
             location.file_name(),

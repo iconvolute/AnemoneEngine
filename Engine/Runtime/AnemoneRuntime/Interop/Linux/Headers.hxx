@@ -1,7 +1,7 @@
 #ifndef ANEMONE_PLATFORM_POSIX_H
 #define ANEMONE_PLATFORM_POSIX_H
 
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 
 #if !(ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID)
 #error "This header should only be included on Linux platform"
@@ -32,12 +32,5 @@
 #include <linux/futex.h>
 #include <dirent.h>
 #include <sys/wait.h>
-
-
-#if ANEMONE_COMPILER_CLANG
-// #pragma clang diagnostic ignored "-Wattributes"
-#else
-// #pragma GCC diagnostic error "-Wattributes"
-#endif
 
 #endif // ANEMONE_PLATFORM_POSIX_H

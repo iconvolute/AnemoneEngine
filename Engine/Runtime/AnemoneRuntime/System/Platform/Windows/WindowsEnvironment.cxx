@@ -1,6 +1,12 @@
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsEnvironment.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Interop/Windows/Environment.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/Process.hxx"
+#include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
@@ -17,6 +23,7 @@
 #include <bcrypt.h>
 #include <wrl/client.h>
 #include <netlistmgr.h>
+#include <shellapi.h>
 
 namespace Anemone::Internal
 {
@@ -137,10 +144,10 @@ namespace Anemone::Internal
 
         Interop::string_buffer<wchar_t, 512> buffer{};
 
-        if (Interop::win32_GetSystemDirectory(buffer))
+        if (Interop::Windows::GetSystemDirectory(buffer))
         {
             std::wstring kernelPath{buffer.as_view()};
-            Interop::win32_PathPushFragment(kernelPath, L"kernel32.dll");
+            Interop::Windows::PathPushFragment(kernelPath, L"kernel32.dll");
 
             DWORD const dwSize = GetFileVersionInfoSizeW(kernelPath.c_str(), nullptr);
 
@@ -172,102 +179,102 @@ namespace Anemone::Internal
         }
 
         // Determine system ID
-        if (auto key = Interop::win32_registry_key::open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)"))
+        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)"))
         {
-            if (key.read_string(L"MachineGuid", buffer))
+            if (key.ReadString(L"MachineGuid", buffer))
             {
                 Interop::string_buffer<char, 64> utf8Buffer;
-                Interop::win32_NarrowString(utf8Buffer, buffer.as_view());
+                Interop::Windows::NarrowString(utf8Buffer, buffer.as_view());
 
                 this->m_SystemId = UuidParser::Parse(utf8Buffer.as_view()).value_or(Uuid{});
             }
         }
 
         // Executable path
-        Interop::win32_QueryFullProcessImageName(buffer);
-        Interop::win32_NarrowString(this->m_ExecutablePath, buffer.as_view());
+        Interop::Windows::QueryFullProcessImageName(buffer);
+        Interop::Windows::NarrowString(this->m_ExecutablePath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_ExecutablePath);
 
         // Startup path
-        Interop::win32_GetCurrentDirectory(buffer);
-        Interop::win32_NarrowString(this->m_StartupPath, buffer.as_view());
+        Interop::Windows::GetCurrentDirectory(buffer);
+        Interop::Windows::NarrowString(this->m_StartupPath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_StartupPath);
 
         // Computer name
-        Interop::win32_GetComputerName(buffer);
-        Interop::win32_NarrowString(this->m_ComputerName, buffer.as_view());
+        Interop::Windows::GetComputerName(buffer);
+        Interop::Windows::NarrowString(this->m_ComputerName, buffer.as_view());
 
         // User name
-        Interop::win32_GetUserName(buffer);
-        Interop::win32_NarrowString(this->m_UserName, buffer.as_view());
+        Interop::Windows::GetUserName(buffer);
+        Interop::Windows::NarrowString(this->m_UserName, buffer.as_view());
 
         // Profile path
-        Interop::win32_GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->m_ProfilePath, value);
+            Interop::Windows::NarrowString(this->m_ProfilePath, value);
         });
         FilePath::NormalizeDirectorySeparators(this->m_ProfilePath);
 
         // Desktop path
-        Interop::win32_GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->m_DesktopPath, value);
+            Interop::Windows::NarrowString(this->m_DesktopPath, value);
         });
         FilePath::NormalizeDirectorySeparators(this->m_DesktopPath);
 
         // Documents path
-        Interop::win32_GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->m_DocumentsPath, value);
+            Interop::Windows::NarrowString(this->m_DocumentsPath, value);
         });
         FilePath::NormalizeDirectorySeparators(this->m_DocumentsPath);
 
         // Downloads path
-        Interop::win32_GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
         {
-            Interop::win32_NarrowString(this->m_DownloadsPath, value);
+            Interop::Windows::NarrowString(this->m_DownloadsPath, value);
         });
         FilePath::NormalizeDirectorySeparators(this->m_DownloadsPath);
 
         // Temp path
-        Interop::win32_GetTempPath(buffer);
-        Interop::win32_NarrowString(this->m_TemporaryPath, buffer.as_view());
+        Interop::Windows::GetTempPath(buffer);
+        Interop::Windows::NarrowString(this->m_TemporaryPath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
 
-        if (auto const keySystem = Interop::win32_registry_key::open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)"))
+        if (auto const keySystem = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)"))
         {
-            if (keySystem.read_string(L"SystemBiosVersion", buffer))
+            if (keySystem.ReadString(L"SystemBiosVersion", buffer))
             {
-                Interop::win32_NarrowString(this->m_DeviceId, buffer.as_view());
+                Interop::Windows::NarrowString(this->m_DeviceId, buffer.as_view());
             }
             else
             {
                 Debugger::ReportApplicationStop("Failed to get system information");
             }
 
-            if (auto const keyBios = keySystem.open_subkey(LR"(BIOS)"))
+            if (auto const keyBios = keySystem.OpenSubKey(LR"(BIOS)"))
             {
-                if (keyBios.read_string(L"SystemManufacturer", buffer))
+                if (keyBios.ReadString(L"SystemManufacturer", buffer))
                 {
-                    Interop::win32_NarrowString(this->m_DeviceManufacturer, buffer.as_view());
+                    Interop::Windows::NarrowString(this->m_DeviceManufacturer, buffer.as_view());
                 }
                 else
                 {
                     Debugger::ReportApplicationStop("Failed to get system information");
                 }
 
-                if (keyBios.read_string(L"SystemProductName", buffer))
+                if (keyBios.ReadString(L"SystemProductName", buffer))
                 {
-                    Interop::win32_NarrowString(this->m_DeviceName, buffer.as_view());
+                    Interop::Windows::NarrowString(this->m_DeviceName, buffer.as_view());
                 }
                 else
                 {
                     Debugger::ReportApplicationStop("Failed to get system information");
                 }
 
-                if (keyBios.read_string(L"SystemVersion", buffer))
+                if (keyBios.ReadString(L"SystemVersion", buffer))
                 {
-                    Interop::win32_NarrowString(this->m_DeviceVersion, buffer.as_view());
+                    Interop::Windows::NarrowString(this->m_DeviceVersion, buffer.as_view());
                 }
                 else
                 {
@@ -298,7 +305,7 @@ namespace Anemone::Internal
 
     void WindowsEnvironmentStatics::VerifyRequirements()
     {
-        if (Interop::win32_IsProcessEmulated())
+        if (Interop::Windows::IsProcessEmulated())
         {
             // VERIFY: AVX is not supported in WoA process emulation.
             Debugger::ReportApplicationStop("Emulated process not supported.");
@@ -375,12 +382,12 @@ namespace Anemone
     {
         result.clear();
         Interop::string_buffer<wchar_t, 128> wname{};
-        Interop::win32_WidenString(wname, name);
+        Interop::Windows::WidenString(wname, name);
 
         if (Interop::string_buffer<wchar_t, 512> wresult{};
-            Interop::win32_GetEnvironmentVariable(wresult, wname))
+            Interop::Windows::GetEnvironmentVariable(wresult, wname))
         {
-            Interop::win32_NarrowString(result, wresult.as_view());
+            Interop::Windows::NarrowString(result, wresult.as_view());
             return true;
         }
 
@@ -390,10 +397,10 @@ namespace Anemone
     bool Environment::SetEnvironmentVariable(std::string name, std::string_view value)
     {
         Interop::string_buffer<wchar_t, 128> wname{};
-        Interop::win32_WidenString(wname, name);
+        Interop::Windows::WidenString(wname, name);
 
         Interop::string_buffer<wchar_t, 512> wvalue{};
-        Interop::win32_WidenString(wvalue, value);
+        Interop::Windows::WidenString(wvalue, value);
 
         return SetEnvironmentVariableW(wname, wvalue) != FALSE;
     }
@@ -401,7 +408,7 @@ namespace Anemone
     bool Environment::RemoveEnvironmentVariable(std::string_view name)
     {
         Interop::string_buffer<wchar_t, 128> wname{};
-        Interop::win32_WidenString(wname, name);
+        Interop::Windows::WidenString(wname, name);
 
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
     }
@@ -426,7 +433,7 @@ namespace Anemone
             GetMonitorInfoW(handle, &miex);
 
             Interop::string_buffer<char, 128> name{};
-            Interop::win32_NarrowString(name, miex.szDevice);
+            Interop::Windows::NarrowString(name, miex.szDevice);
 
             AE_ASSERT(!displayMetrics.Displays.empty());
 
@@ -434,8 +441,8 @@ namespace Anemone
 
             if (last.Name == name.as_view())
             {
-                last.DisplayRect = Interop::win32_into_Rectangle(miex.rcMonitor);
-                last.WorkAreaRect = Interop::win32_into_Rectangle(miex.rcWork);
+                last.DisplayRect = Interop::Windows::ToRectF(miex.rcMonitor);
+                last.WorkAreaRect = Interop::Windows::ToRectF(miex.rcWork);
             }
 
             return TRUE;
@@ -449,12 +456,7 @@ namespace Anemone
         }
 
         // Get workspace area.
-        metrics.PrimaryDisplayWorkArea = Math::RectF{
-            .X = static_cast<float>(workArea.left),
-            .Y = static_cast<float>(workArea.top),
-            .Width = static_cast<float>(workArea.right - workArea.left),
-            .Height = static_cast<float>(workArea.bottom - workArea.top),
-        };
+        metrics.PrimaryDisplayWorkArea = Interop::Windows::ToRectF(workArea);
 
         // Virtual display rect
         metrics.VirtualDisplayRect = Math::RectF{
@@ -485,8 +487,8 @@ namespace Anemone
             }
 
             DisplayInfo& display = metrics.Displays.emplace_back();
-            Interop::win32_NarrowString(display.Id, device.DeviceID);
-            Interop::win32_NarrowString(display.Name, device.DeviceName);
+            Interop::Windows::NarrowString(display.Id, device.DeviceID);
+            Interop::Windows::NarrowString(display.Name, device.DeviceName);
             display.Primary = (device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0;
 
             DEVMODEW dm{};
@@ -690,8 +692,8 @@ namespace Anemone
         }
 
         return ProcessorUsage{
-            .UserTime = Interop::win32_into_Duration(ftUser),
-            .KernelTime = Interop::win32_into_Duration(ftKernel),
+            .UserTime = Interop::Windows::ToDuration(ftUser),
+            .KernelTime = Interop::Windows::ToDuration(ftKernel),
         };
     }
 
@@ -780,8 +782,8 @@ namespace Anemone
     DateTime Environment::GetCurrentDateTime()
     {
         FILETIME ft;
-        Interop::win32_GetLocalTimeAsFileTime(ft);
-        return Interop::win32_into_DateTime(ft);
+        Interop::Windows::GetLocalTimeAsFileTime(ft);
+        return Interop::Windows::ToDateTime(ft);
     }
 
     DateTime Environment::GetCurrentDateTimeUtc()
@@ -789,7 +791,7 @@ namespace Anemone
         FILETIME ft;
         GetSystemTimePreciseAsFileTime(&ft);
 
-        return Interop::win32_into_DateTime(ft);
+        return Interop::Windows::ToDateTime(ft);
     }
 
     Duration Environment::GetCurrentTimeZoneBias()
@@ -866,7 +868,7 @@ namespace Anemone
     void Environment::LaunchUrl(std::string_view url)
     {
         Interop::string_buffer<wchar_t, 512> wUrl{};
-        Interop::win32_WidenString(wUrl, url);
+        Interop::Windows::WidenString(wUrl, url);
 
         if (reinterpret_cast<INT_PTR>(ShellExecuteW(nullptr, L"open", wUrl.data(), nullptr, nullptr, SW_SHOWNORMAL)) <= 32)
         {

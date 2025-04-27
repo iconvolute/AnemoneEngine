@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Process.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/Process.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <array>
@@ -26,7 +26,7 @@ namespace Anemone
         if (handle)
         {
             int status;
-            int rc = Interop::posix_WaitForProcess(handle.Get(), status, 0);
+            int rc = Interop::Linux::WaitForProcess(handle.Get(), status, 0);
 
             if (rc != handle.Get())
             {
@@ -58,7 +58,7 @@ namespace Anemone
         if (this->_handle)
         {
             int status;
-            int rc = Interop::posix_WaitForProcess(this->_handle.Get(), status, WNOHANG);
+            int rc = Interop::Linux::WaitForProcess(this->_handle.Get(), status, WNOHANG);
 
             if (rc == 0)
             {
@@ -103,7 +103,7 @@ namespace Anemone
 
         if (handle)
         {
-            if (Interop::posix_TerminateProcess(handle.Get()))
+            if (Interop::Linux::TerminateProcess(handle.Get()))
             {
                 return {};
             }
@@ -199,12 +199,12 @@ namespace Anemone
         spawn_flags |= POSIX_SPAWN_SETSIGDEF;
 
         // TODO: Determine if we can do this in normal FileHandle::CreatePipe() function.
-        Interop::UnixSafeFdHandle fhWriteInput{};
-        Interop::UnixSafeFdHandle fhReadInput{};
-        Interop::UnixSafeFdHandle fhWriteOutput{};
-        Interop::UnixSafeFdHandle fhReadOutput{};
-        Interop::UnixSafeFdHandle fhWriteError{};
-        Interop::UnixSafeFdHandle fhReadError{};
+        Interop::Linux::SafeFdHandle fhWriteInput{};
+        Interop::Linux::SafeFdHandle fhReadInput{};
+        Interop::Linux::SafeFdHandle fhWriteOutput{};
+        Interop::Linux::SafeFdHandle fhReadOutput{};
+        Interop::Linux::SafeFdHandle fhWriteError{};
+        Interop::Linux::SafeFdHandle fhReadError{};
 
         posix_spawn_file_actions_t files{};
         posix_spawn_file_actions_init(&files);
@@ -226,8 +226,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteInput = Interop::UnixSafeFdHandle{fd[1]};
-                fhReadInput = Interop::UnixSafeFdHandle{fd[0]};
+                fhWriteInput = Interop::Linux::SafeFdHandle{fd[1]};
+                fhReadInput = Interop::Linux::SafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[0], STDIN_FILENO);
@@ -243,8 +243,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteOutput = Interop::UnixSafeFdHandle{fd[1]};
-                fhReadOutput = Interop::UnixSafeFdHandle{fd[0]};
+                fhWriteOutput = Interop::Linux::SafeFdHandle{fd[1]};
+                fhReadOutput = Interop::Linux::SafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDOUT_FILENO);
@@ -260,8 +260,8 @@ namespace Anemone
                 }
 
                 // Create file handle for parent process.
-                fhWriteError = Interop::UnixSafeFdHandle{fd[1]};
-                fhReadError = Interop::UnixSafeFdHandle{fd[0]};
+                fhWriteError = Interop::Linux::SafeFdHandle{fd[1]};
+                fhReadError = Interop::Linux::SafeFdHandle{fd[0]};
 
                 // Prepare file actions for child process.
                 posix_spawn_file_actions_adddup2(&files, fd[1], STDERR_FILENO);

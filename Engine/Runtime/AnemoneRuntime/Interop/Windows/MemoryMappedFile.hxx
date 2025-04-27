@@ -1,9 +1,9 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 
 #include <span>
 
-namespace Anemone::Interop
+namespace Anemone::Interop::Windows
 {
     enum class MemoryMappedFileAccess : uint8_t
     {
@@ -13,7 +13,7 @@ namespace Anemone::Interop
         ReadExecute,
     };
 
-    constexpr static DWORD win32_ConvertFileMapAccess(MemoryMappedFileAccess access)
+    constexpr static DWORD ConvertFileMapAccess(MemoryMappedFileAccess access)
     {
         DWORD result = 0;
 
@@ -42,7 +42,7 @@ namespace Anemone::Interop
         return result;
     }
 
-    constexpr DWORD win32_ConvertPageAccess(MemoryMappedFileAccess access)
+    constexpr DWORD ConvertPageAccess(MemoryMappedFileAccess access)
     {
         DWORD result = 0;
         switch (access)
@@ -67,24 +67,24 @@ namespace Anemone::Interop
     }
 }
 
-namespace Anemone::Interop
+namespace Anemone::Interop::Windows
 {
-    inline auto win32_MemoryMappedFileHandle_OpenCore(
+    inline auto MemoryMappedFileHandle_OpenCore(
         const wchar_t* name,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwDesiredAccess = ConvertFileMapAccess(access);
 
-        return Win32SafeMemoryMappedFileHandle{OpenFileMappingW(dwDesiredAccess, FALSE, name)};
+        return SafeMemoryMappedFileHandle{OpenFileMappingW(dwDesiredAccess, FALSE, name)};
     }
 
-    inline auto win32_MemoryMappedFileHandle_CreateCore(
-        Win32SafeFileHandle const& handle,
+    inline auto MemoryMappedFileHandle_CreateCore(
+        Windows::SafeFileHandle const& handle,
         const wchar_t* name,
         MemoryMappedFileAccess access,
         int64_t capacity)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
         AE_ASSERT(capacity > 0);
 
@@ -94,13 +94,13 @@ namespace Anemone::Interop
             .bInheritHandle = FALSE,
         };
 
-        DWORD const dwPageAccess = win32_ConvertPageAccess(access);
+        DWORD const dwPageAccess = ConvertPageAccess(access);
         DWORD const dwCapacityHigh = static_cast<DWORD>(capacity >> 32);
         DWORD const dwCapacityLow = static_cast<DWORD>(capacity);
 
         HANDLE const hFile = handle.Get();
 
-        Interop::Win32SafeMemoryMappedFileHandle result;
+        SafeMemoryMappedFileHandle result;
         result.Attach(CreateFileMappingW(
             hFile,
             &sa,
@@ -126,12 +126,12 @@ namespace Anemone::Interop
         return result;
     }
 
-    inline auto win32_MemoryMappedFileHandle_OpenOrCreateCore(
-        Win32SafeFileHandle const& handle,
+    inline auto MemoryMappedFileHandle_OpenOrCreateCore(
+        SafeFileHandle const& handle,
         const wchar_t* name,
         MemoryMappedFileAccess access,
         int64_t capacity)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
         AE_ASSERT(capacity > 0);
 
@@ -145,12 +145,12 @@ namespace Anemone::Interop
 
         HANDLE const hFile = handle.Get();
 
-        DWORD const dwPageAccess = win32_ConvertPageAccess(access);
-        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwPageAccess = ConvertPageAccess(access);
+        DWORD const dwDesiredAccess = ConvertFileMapAccess(access);
         DWORD const dwCapacityHigh = static_cast<DWORD>(capacity >> 32);
         DWORD const dwCapacityLow = static_cast<DWORD>(capacity);
 
-        Interop::Win32SafeMemoryMappedFileHandle result;
+        SafeMemoryMappedFileHandle result;
 
         while (retries)
         {
@@ -191,25 +191,25 @@ namespace Anemone::Interop
         return result;
     }
 
-    inline auto win32_CreateMemoryMappedFile(
+    inline auto CreateMemoryMappedFile(
         int64_t capacity,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_CreateCore(
+        return MemoryMappedFileHandle_CreateCore(
             {},
             nullptr,
             access,
             capacity);
     }
 
-    inline auto win32_CreateMemoryMappedFile(
-        Win32SafeFileHandle const& fileHandle,
+    inline auto CreateMemoryMappedFile(
+        SafeFileHandle const& fileHandle,
         int64_t capacity,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_CreateCore(
+        return MemoryMappedFileHandle_CreateCore(
             fileHandle,
             nullptr,
             access,
@@ -217,51 +217,51 @@ namespace Anemone::Interop
     }
 
     // Named, create, fail if exists
-    inline auto win32_CreateMemoryMappedFile(
+    inline auto CreateMemoryMappedFile(
         const wchar_t* name,
         int64_t capacity,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_CreateCore(
+        return MemoryMappedFileHandle_CreateCore(
             {},
             name,
             access,
             capacity);
     }
 
-    inline auto win32_CreateMemoryMappedFile(
-        Win32SafeFileHandle const& fileHandle,
+    inline auto CreateMemoryMappedFile(
+        SafeFileHandle const& fileHandle,
         const wchar_t* name,
         int64_t capacity,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_CreateCore(
+        return MemoryMappedFileHandle_CreateCore(
             fileHandle,
             name,
             access,
             capacity);
     }
 
-    inline auto win32_OpenMemoryMappedFile(
+    inline auto OpenMemoryMappedFile(
         const wchar_t* name,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_OpenCore(
+        return MemoryMappedFileHandle_OpenCore(
             name,
             access);
     }
 
-    inline auto win32_OpenMemoryMappedFile(
-        Win32SafeFileHandle const& fileHandle,
+    inline auto OpenMemoryMappedFile(
+        SafeFileHandle const& fileHandle,
         const wchar_t* name,
         int64_t capacity,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedFileHandle
+        -> SafeMemoryMappedFileHandle
     {
-        return win32_MemoryMappedFileHandle_OpenOrCreateCore(
+        return MemoryMappedFileHandle_OpenOrCreateCore(
             fileHandle,
             name,
             access,
@@ -269,14 +269,14 @@ namespace Anemone::Interop
     }
 }
 
-namespace Anemone::Interop
+namespace Anemone::Interop::Windows
 {
-    inline auto win32_CreateMemoryMappedView(
-        Win32SafeMemoryMappedFileHandle const& handle,
+    inline auto CreateMemoryMappedView(
+        SafeMemoryMappedFileHandle const& handle,
         MemoryMappedFileAccess access)
-        -> Win32SafeMemoryMappedViewHandle
+        -> SafeMemoryMappedViewHandle
     {
-        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwDesiredAccess = ConvertFileMapAccess(access);
 
         LPVOID data = MapViewOfFile(
             handle.Get(),
@@ -294,20 +294,20 @@ namespace Anemone::Interop
             size = mbi.RegionSize;
         }
 
-        return Win32SafeMemoryMappedViewHandle{data, size};
+        return SafeMemoryMappedViewHandle{data, size};
     }
 
-    inline auto win32_CreateMemoryMappedView(
-        Win32SafeMemoryMappedFileHandle const& handle,
+    inline auto CreateMemoryMappedView(
+        SafeMemoryMappedFileHandle const& handle,
         MemoryMappedFileAccess access,
         int64_t offset,
         int64_t size)
-        -> Win32SafeMemoryMappedViewHandle
+        -> SafeMemoryMappedViewHandle
     {
         AE_ASSERT(size > 0);
         size_t const validSize = static_cast<size_t>(size);
 
-        DWORD const dwDesiredAccess = win32_ConvertFileMapAccess(access);
+        DWORD const dwDesiredAccess = ConvertFileMapAccess(access);
         DWORD const dwFileOffsetHigh = static_cast<DWORD>(offset >> 32);
         DWORD const dwFileOffsetLow = static_cast<DWORD>(offset);
 
@@ -318,11 +318,11 @@ namespace Anemone::Interop
             dwFileOffsetLow,
             validSize);
 
-        return Win32SafeMemoryMappedViewHandle{data, validSize};
+        return SafeMemoryMappedViewHandle{data, validSize};
     }
 
-    inline auto win32_FlushMemoryMappedView(
-        Win32SafeMemoryMappedViewHandle const& handle)
+    inline auto FlushMemoryMappedView(
+        SafeMemoryMappedViewHandle const& handle)
         -> bool
     {
         AE_ASSERT(handle);
@@ -330,8 +330,8 @@ namespace Anemone::Interop
         return FlushViewOfFile(handle.GetData(), handle.GetSize());
     }
 
-    inline auto win32_FlushMemoryMappedView(
-        Win32SafeMemoryMappedViewHandle const& handle,
+    inline auto FlushMemoryMappedView(
+        SafeMemoryMappedViewHandle const& handle,
         size_t offset,
         size_t size)
         -> bool

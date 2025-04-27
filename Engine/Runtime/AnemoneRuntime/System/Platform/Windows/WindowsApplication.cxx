@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
@@ -25,22 +25,22 @@ namespace Anemone::Internal::Windows
             0,
             LR_SHARED));
 
-        this->ArrowCursor = Interop::win32_LoadSystemCursor(IDC_ARROW);
-        this->ArrowWaitCursor = Interop::win32_LoadSystemCursor(IDC_APPSTARTING);
-        this->TextCursor = Interop::win32_LoadSystemCursor(IDC_IBEAM);
+        this->ArrowCursor = Interop::Windows::LoadSystemCursor(IDC_ARROW);
+        this->ArrowWaitCursor = Interop::Windows::LoadSystemCursor(IDC_APPSTARTING);
+        this->TextCursor = Interop::Windows::LoadSystemCursor(IDC_IBEAM);
 
-        this->SizeHorizontalCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        this->SizeVerticalCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        this->SizeLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        this->SizeTopCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        this->SizeRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZEWE);
-        this->SizeBottomCursor = Interop::win32_LoadSystemCursor(IDC_SIZENS);
-        this->SizeTopLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
-        this->SizeTopRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
-        this->SizeBottomLeftCursor = Interop::win32_LoadSystemCursor(IDC_SIZENESW);
-        this->SizeBottomRightCursor = Interop::win32_LoadSystemCursor(IDC_SIZENWSE);
-        this->SizeAllCursor = Interop::win32_LoadSystemCursor(IDC_SIZEALL);
-        this->CrossCursor = Interop::win32_LoadSystemCursor(IDC_CROSS);
+        this->SizeHorizontalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        this->SizeVerticalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        this->SizeLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        this->SizeTopCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        this->SizeRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        this->SizeBottomCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        this->SizeTopLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
+        this->SizeTopRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
+        this->SizeBottomLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
+        this->SizeBottomRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
+        this->SizeAllCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEALL);
+        this->CrossCursor = Interop::Windows::LoadSystemCursor(IDC_CROSS);
     }
 
     HCURSOR ApplicationStatics::GetCursor(CursorType cursor) const

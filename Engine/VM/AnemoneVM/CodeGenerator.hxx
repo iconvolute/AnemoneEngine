@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Base/BaseHeaders.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneVM/OpCode.hxx"
 #include "AnemoneVM/Label.hxx"
 

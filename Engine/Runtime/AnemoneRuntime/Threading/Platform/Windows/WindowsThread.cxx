@@ -3,9 +3,12 @@
 #if ANEMONE_PLATFORM_WINDOWS
 
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 
 #include <cmath>
+
+#include <objbase.h>
 
 namespace Anemone::Internal
 {
@@ -90,7 +93,7 @@ namespace Anemone
         if (start.Name)
         {
             Interop::string_buffer<wchar_t, 128> wname{};
-            Interop::win32_WidenString(wname, *start.Name);
+            Interop::Windows::WidenString(wname, *start.Name);
 
             SetThreadDescription(this->_handle.Get(), wname);
         }

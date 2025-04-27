@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/Platform/NamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxNamedMutex.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
+#include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <fcntl.h>
 #include <sys/stat.h>
@@ -13,7 +14,7 @@ namespace Anemone
     {
         std::string formatted = fmt::format("/anemone-engine-named-mutex-{}", name);
 
-        Interop::UnixSafeNamedSemaphoreHandle handle{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
+        Interop::Linux::SafeNamedSemaphoreHandle handle{sem_open(formatted.c_str(), O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO, 1)};
 
         if (handle)
         {

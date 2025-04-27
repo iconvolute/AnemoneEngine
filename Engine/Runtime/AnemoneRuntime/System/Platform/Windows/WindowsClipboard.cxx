@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsClipboard.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal
@@ -36,7 +36,7 @@ namespace Anemone
             {
                 if (wchar_t const* const data = static_cast<wchar_t const*>(GlobalLock(hUnicodeText)))
                 {
-                    Interop::win32_NarrowString(result, data);
+                    Interop::Windows::NarrowString(result, data);
                     GlobalUnlock(hUnicodeText);
                     success = true;
                 }
@@ -66,7 +66,7 @@ namespace Anemone
             EmptyClipboard();
 
             Interop::string_buffer<wchar_t, 512> buffer{};
-            Interop::win32_WidenString(buffer, value);
+            Interop::Windows::WidenString(buffer, value);
             std::wstring_view const data = buffer.as_view();
 
             size_t const size = data.size() + 1; // Include null terminator.

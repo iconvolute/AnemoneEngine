@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
 
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
+#include "AnemoneRuntime/Interop/Linux/Process.hxx"
 
 #include <cmath>
 #include <utility>
@@ -92,7 +92,7 @@ namespace Anemone
             AE_PANIC("Failed to start thread");
         }
 
-        this->_id = ThreadId{Interop::posix_GetThreadId()};
+        this->_id = ThreadId{Interop::Linux::GetThreadId()};
 
 
         //

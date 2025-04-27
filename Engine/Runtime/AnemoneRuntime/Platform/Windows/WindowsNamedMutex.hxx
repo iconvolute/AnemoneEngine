@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsSafeHandle.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 #include "AnemoneRuntime/ErrorCode.hxx"
 
 #include <string_view>
@@ -11,10 +11,10 @@ namespace Anemone
     class WindowsNamedMutex final
     {
     private:
-        Interop::Win32SafeHandle _handle;
+        Interop::Windows::SafeHandle _handle;
 
     private:
-        explicit WindowsNamedMutex(Interop::Win32SafeHandle handle)
+        explicit WindowsNamedMutex(Interop::Windows::SafeHandle handle)
             : _handle{std::move(handle)}
         {
         }

@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/System/Platform/Linux/LinuxEnvironment.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Platform/Linux/LinuxPlatform.hxx"
+#include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
+#include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
@@ -69,12 +70,12 @@ namespace Anemone::Internal
 
             std::optional<Uuid> parsed{};
 
-            if (Interop::unix_LoadFile(buffer, "/etc/machine-id"))
+            if (Interop::Linux::LoadFile(buffer, "/etc/machine-id"))
             {
                 buffer.trim(32);
                 parsed = UuidParser::Parse(buffer.as_view());
             }
-            else if (Interop::unix_LoadFile(buffer, "/var/lib/dbus/machine-id"))
+            else if (Interop::Linux::LoadFile(buffer, "/var/lib/dbus/machine-id"))
             {
                 buffer.trim(32);
                 parsed = UuidParser::Parse(buffer.as_view());
@@ -514,8 +515,8 @@ namespace Anemone
         getrusage(RUSAGE_SELF, &usage);
 
         return ProcessorUsage{
-            .UserTime = Interop::posix_into_Duration(usage.ru_utime),
-            .KernelTime = Interop::posix_into_Duration(usage.ru_stime),
+            .UserTime = Interop::Linux::ToDuration(usage.ru_utime),
+            .KernelTime = Interop::Linux::ToDuration(usage.ru_stime),
         };
     }
 
@@ -612,7 +613,7 @@ namespace Anemone
 
         return DateTime{
             .Inner = {
-                .Seconds = ts.tv_sec - bias + Interop::posix_DateAdjustOffset,
+                .Seconds = ts.tv_sec - bias + Interop::Linux::DateAdjustOffset,
                 .Nanoseconds = ts.tv_nsec,
             }};
     }
@@ -627,7 +628,7 @@ namespace Anemone
 
         return DateTime{
             .Inner = {
-                .Seconds = ts.tv_sec + Interop::posix_DateAdjustOffset,
+                .Seconds = ts.tv_sec + Interop::Linux::DateAdjustOffset,
                 .Nanoseconds = ts.tv_nsec,
             },
         };

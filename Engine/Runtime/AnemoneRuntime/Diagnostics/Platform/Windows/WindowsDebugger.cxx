@@ -3,8 +3,10 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsInterop.hxx"
-#include "AnemoneRuntime/Platform/Windows/WindowsMemoryMappedFile.hxx"
+#include "AnemoneRuntime/Interop/Windows/Process.hxx"
+#include "AnemoneRuntime/Interop/Windows/Debugger.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Interop/Windows/MemoryMappedFile.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #include <winmeta.h>
@@ -48,8 +50,8 @@ namespace Anemone::Internal
             (void)level;
 
             UniqueLock scope{this->m_lock};
-            Interop::win32_OutputDebugString(message, size + 1);
-            Interop::win32_OutputDebugString("\r\n", 3);
+            Interop::Windows::OutputDebugStringLengthA(message, size + 1);
+            Interop::Windows::OutputDebugStringLengthA("\r\n", 3);
         }
     };
 }
@@ -163,7 +165,7 @@ namespace Anemone::Internal
 
     WindowsDebuggerStatics::WindowsDebuggerStatics()
     {
-        if (Interop::win32_IsConsoleApplication(GetModuleHandleW(nullptr)))
+        if (Interop::Windows::IsConsoleApplication(GetModuleHandleW(nullptr)))
         {
             GConsoleTraceListener.Create();
             Trace::AddListener(*GConsoleTraceListener);
@@ -264,11 +266,11 @@ namespace Anemone::Internal
                 dwThreadId);
             (*nameFormatResult.out) = L'\0';
 
-            Interop::Win32SafeMemoryMappedFileHandle fhMapping = Interop::win32_OpenMemoryMappedFile(
-                Interop::Win32SafeFileHandle{},
+            Interop::Windows::SafeMemoryMappedFileHandle fhMapping = Interop::Windows::OpenMemoryMappedFile(
+                Interop::Windows::SafeFileHandle{},
                 name,
                 sizeof(Internal::CrashDetails),
-                Interop::MemoryMappedFileAccess::ReadWrite);
+                Interop::Windows::MemoryMappedFileAccess::ReadWrite);
 
             if (not fhMapping)
             {
@@ -276,9 +278,9 @@ namespace Anemone::Internal
                 return;
             }
 
-            Interop::Win32SafeMemoryMappedViewHandle fvMapping = Interop::win32_CreateMemoryMappedView(
+            Interop::Windows::SafeMemoryMappedViewHandle fvMapping = Interop::Windows::CreateMemoryMappedView(
                 fhMapping,
-                Interop::MemoryMappedFileAccess::ReadWrite);
+                Interop::Windows::MemoryMappedFileAccess::ReadWrite);
 
             if (not fvMapping)
             {
@@ -288,7 +290,7 @@ namespace Anemone::Internal
 
             CopyMemory(fvMapping.GetData(), &crashDetails, sizeof(Internal::CrashDetails));
 
-            Interop::win32_FlushMemoryMappedView(fvMapping);
+            Interop::Windows::FlushMemoryMappedView(fvMapping);
 
             wchar_t commandLine[MAX_PATH + 1];
             auto commandLineFormatResult = std::format_to_n(
@@ -444,7 +446,7 @@ namespace Anemone
     void Debugger::ReportApplicationStop(std::string_view reason)
     {
         Interop::string_buffer<wchar_t, 128> buffer{};
-        Interop::win32_WidenString(buffer, reason);
+        Interop::Windows::WidenString(buffer, reason);
 
         MessageBoxW(
             nullptr,
