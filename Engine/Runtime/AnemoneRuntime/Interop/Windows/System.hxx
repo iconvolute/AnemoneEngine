@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/SafeHandle.hxx"
 
 namespace Anemone::Interop::Windows
 {
@@ -102,4 +103,27 @@ namespace Anemone::Interop::Windows
             return this->m_data;
         }
     };
+
+    struct SafeGlobalMemoryHandleTraits final
+    {
+        static constexpr HGLOBAL Invalid() noexcept
+        {
+            return nullptr;
+        }
+
+        static constexpr bool IsValid(HGLOBAL handle) noexcept
+        {
+            return handle != nullptr;
+        }
+
+        static void Reset(HGLOBAL handle, size_t) noexcept
+        {
+            if (handle != nullptr)
+            {
+                GlobalFree(handle);
+            }
+        }
+    };
+
+    using SafeGlobalMemoryHandle = SafeHandleT<HGLOBAL, SafeGlobalMemoryHandleTraits>;
 }
