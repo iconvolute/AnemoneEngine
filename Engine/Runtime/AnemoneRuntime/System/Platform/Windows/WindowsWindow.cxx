@@ -467,7 +467,7 @@ namespace Anemone::Internal::Windows
             default:
             case WindowMode::Windowed:
                 style = WS_OVERLAPPEDWINDOW;
-                exStyle = 0;
+                exStyle = WS_EX_APPWINDOW;
                 break;
 
             case WindowMode::Borderless:
@@ -847,7 +847,7 @@ namespace Anemone::Internal::Windows
 
     Interop::Windows::WindowMessageResult WindowImpl::WmNcCalcSize(WPARAM wparam, LPARAM lparam)
     {
-        if ((this->m_Type == WindowType::Game) and (this->m_Mode == WindowMode::Windowed) and IsZoomed(this->m_Handle))
+        if ((this->m_Type == WindowType::Game) and (this->m_Mode != WindowMode::Windowed) and IsZoomed(this->m_Handle))
         {
             // Maximized fullscreen border-less game window has visible border in multiple displays
             // scenario. Limit this by adjusting window placement to just fit display - we are still
