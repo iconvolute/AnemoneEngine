@@ -96,6 +96,11 @@ namespace Anemone::Interop
             }
         }
 
+        constexpr void clear()
+        {
+            this->m_size = 0;
+        }
+
         [[nodiscard]] constexpr size_t capacity() const
         {
             return this->m_capacity;
@@ -143,4 +148,43 @@ namespace Anemone::Interop
             return this->m_data[index];
         }
     };
+
+    template <size_t StaticCapacity, typename Callback>
+    bool adapt_memory_buffer(memory_buffer<StaticCapacity>& buffer, Callback&& callback)
+    {
+        size_t requiredSize{};
+
+        if (not std::forward<Callback>(callback)(buffer.as_span(), requiredSize))
+        {
+            // Failed to adapt the buffer. Callback reported failure.
+            buffer.clear();
+            return false;
+        }
+
+        if (requiredSize <= buffer.capacity())
+        {
+            // Callback reported success and the buffer is large enough to hold the required size.
+            buffer.resize(requiredSize);
+            return true;
+        }
+
+        size_t bufferLength{};
+        do
+        {
+            bufferLength = requiredSize;
+
+            buffer.resize_for_override(bufferLength);
+
+            if (not std::forward<Callback>(callback)(buffer.as_span(), requiredSize))
+            {
+                // Failed to adapt the buffer. Callback reported failure.
+                buffer.clear();
+                return false;
+            }
+        } while (bufferLength != requiredSize);
+        
+        assert(bufferLength == requiredSize);
+        buffer.resize(bufferLength);
+        return true;
+    }
 }

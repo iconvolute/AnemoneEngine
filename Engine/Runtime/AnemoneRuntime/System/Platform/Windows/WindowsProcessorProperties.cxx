@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#include "AnemoneRuntime/Interop/Windows/Environment.hxx"
 #include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
@@ -27,143 +28,133 @@ namespace Anemone::Internal
     {
         Interop::memory_buffer<4096> buffer{};
 
+        if (Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationAll))
         {
+            std::span view = buffer.as_span();
+
             // Determine Cache properties.
-            DWORD dwSize{};
-            GetLogicalProcessorInformationEx(RelationAll, nullptr, &dwSize);
+            std::byte const* first = buffer.data();
+            std::byte const* last = buffer.data() + buffer.size();
+            std::byte const* it = first;
 
-            if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
+            uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
+
+            bool hasEfficiency = IsWindows10OrGreater();
+
+            std::vector<CoreInfoImpl> coreInfo;
+            uint8_t performanceEfficiencyClass = 0;
+
+            while (it < last)
             {
-                buffer.resize_for_override(dwSize);
+                auto const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(it);
 
-                GetLogicalProcessorInformationEx(
-                    RelationAll,
-                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.data()),
-                    &dwSize);
-
-                std::byte const* first = buffer.data();
-                std::byte const* last = buffer.data() + dwSize;
-                std::byte const* it = first;
-
-                uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
-
-                bool hasEfficiency = IsWindows10OrGreater();
-
-                std::vector<CoreInfoImpl> coreInfo;
-                uint8_t performanceEfficiencyClass = 0;
-
-                while (it < last)
+                switch (current.Relationship)
                 {
-                    auto const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(it);
-
-                    switch (current.Relationship)
+                case RelationCache:
                     {
-                    case RelationCache:
+                        // Choose the smallest cache line size as the "safest" value.
+                        cacheLineSize = std::min<uint32_t>(cacheLineSize, current.Cache.LineSize);
+
+                        switch (current.Cache.Level)
                         {
-                            // Choose the smallest cache line size as the "safest" value.
-                            cacheLineSize = std::min<uint32_t>(cacheLineSize, current.Cache.LineSize);
+                        case 1:
+                            this->CacheSizeLevel1 += current.Cache.CacheSize;
+                            break;
 
-                            switch (current.Cache.Level)
-                            {
-                            case 1:
-                                this->CacheSizeLevel1 += current.Cache.CacheSize;
-                                break;
+                        case 2:
+                            this->CacheSizeLevel2 += current.Cache.CacheSize;
+                            break;
 
-                            case 2:
-                                this->CacheSizeLevel2 += current.Cache.CacheSize;
-                                break;
+                        case 3:
+                            this->CacheSizeLevel3 += current.Cache.CacheSize;
+                            break;
 
-                            case 3:
-                                this->CacheSizeLevel3 += current.Cache.CacheSize;
-                                break;
-
-                            default:
-                                // Unknown cache line level. Are you some kind of server from the future?
-                                break;
-                            }
-
+                        default:
+                            // Unknown cache line level. Are you some kind of server from the future?
                             break;
                         }
 
-                    case RelationProcessorCore:
-                        {
-                            if (current.Processor.GroupCount == 1)
-                            {
-                                // On 64-bit windows, we count only cores on first group.
-                                // Maybe in future we enhance this to support more than 64 cores?
+                        break;
+                    }
 
-                                if (hasEfficiency)
+                case RelationProcessorCore:
+                    {
+                        if (current.Processor.GroupCount == 1)
+                        {
+                            // On 64-bit windows, we count only cores on first group.
+                            // Maybe in future we enhance this to support more than 64 cores?
+
+                            if (hasEfficiency)
+                            {
+                                performanceEfficiencyClass = std::max<uint8_t>(performanceEfficiencyClass, current.Processor.EfficiencyClass);
+
+                                if (current.Processor.Flags & LTP_PC_SMT)
                                 {
-                                    performanceEfficiencyClass = std::max<uint8_t>(performanceEfficiencyClass, current.Processor.EfficiencyClass);
-
-                                    if (current.Processor.Flags & LTP_PC_SMT)
-                                    {
-                                        // Hyper-threaded CPU.
-                                        this->HyperThreadingEnabled = true;
-                                    }
+                                    // Hyper-threaded CPU.
+                                    this->HyperThreadingEnabled = true;
                                 }
-
-                                coreInfo.emplace_back(
-                                    current.Processor.GroupMask[0].Mask,
-                                    current.Processor.GroupMask[0].Group,
-                                    hasEfficiency ? current.Processor.EfficiencyClass : uint8_t{},
-                                    (current.Processor.Flags & LTP_PC_SMT) != 0);
                             }
 
-                            break;
+                            coreInfo.emplace_back(
+                                current.Processor.GroupMask[0].Mask,
+                                current.Processor.GroupMask[0].Group,
+                                hasEfficiency ? current.Processor.EfficiencyClass : uint8_t{},
+                                (current.Processor.Flags & LTP_PC_SMT) != 0);
                         }
 
-                    default:
-                        {
-                            break;
-                        }
+                        break;
                     }
 
-                    it += current.Size;
-                }
-
-                this->CacheLineSize = cacheLineSize;
-
-                for (auto& core : coreInfo)
-                {
-                    if (core.Efficiency == performanceEfficiencyClass)
+                default:
                     {
-                        core.Performance = true;
-                    }
-                    else
-                    {
-                        core.Performance = false;
+                        break;
                     }
                 }
 
-                this->LogicalCores = 0;
-                this->PhysicalCores = 0;
-                this->PerformanceCores = 0;
-                this->EfficiencyCores = 0;
+                it += current.Size;
+            }
 
-                for (auto const& core : coreInfo)
+            this->CacheLineSize = cacheLineSize;
+
+            for (auto& core : coreInfo)
+            {
+                if (core.Efficiency == performanceEfficiencyClass)
                 {
-                    // Classify core by efficiency.
-                    if (core.Performance)
-                    {
-                        ++this->PerformanceCores;
-                    }
-                    else
-                    {
-                        ++this->EfficiencyCores;
-                    }
+                    core.Performance = true;
+                }
+                else
+                {
+                    core.Performance = false;
+                }
+            }
 
-                    // Count logical cores.
+            this->LogicalCores = 0;
+            this->PhysicalCores = 0;
+            this->PerformanceCores = 0;
+            this->EfficiencyCores = 0;
+
+            for (auto const& core : coreInfo)
+            {
+                // Classify core by efficiency.
+                if (core.Performance)
+                {
+                    ++this->PerformanceCores;
+                }
+                else
+                {
+                    ++this->EfficiencyCores;
+                }
+
+                // Count logical cores.
+                ++this->LogicalCores;
+
+                if (core.HyperThreaded)
+                {
                     ++this->LogicalCores;
-
-                    if (core.HyperThreaded)
-                    {
-                        ++this->LogicalCores;
-                    }
-
-                    // And physical cores.
-                    ++this->PhysicalCores;
                 }
+
+                // And physical cores.
+                ++this->PhysicalCores;
             }
         }
 

@@ -1,5 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
 
 #include <ShlObj.h>
 
@@ -31,7 +33,7 @@ namespace Anemone::Interop::Windows
             return false;
         });
     }
-    
+
     template <size_t CapacityT>
     anemone_forceinline bool GetEnvironmentVariable(string_buffer<wchar_t, CapacityT>& result, const wchar_t* name) noexcept
     {
@@ -225,8 +227,8 @@ namespace Anemone::Interop::Windows
         return false;
     }
 
-    template <typename CallbackT = void(std::wstring_view)>
-    anemone_forceinline bool GetKnownFolderPath(KNOWNFOLDERID const& id, CallbackT callback) noexcept
+    template <typename Callback = void(std::wstring_view)>
+    anemone_forceinline bool GetKnownFolderPath(KNOWNFOLDERID const& id, Callback&& callback) noexcept
     {
         PWSTR result{};
 
@@ -234,12 +236,49 @@ namespace Anemone::Interop::Windows
         {
             if (result != nullptr)
             {
-                callback(std::wstring_view{result});
+                std::forward<Callback>(callback)(std::wstring_view{result});
                 CoTaskMemFree(result);
                 return true;
             }
         }
 
         return false;
+    }
+
+    template <size_t Capacity>
+    anemone_forceinline bool GetLogicalProcessorInformationEx(
+        memory_buffer<Capacity>& buffer,
+        LOGICAL_PROCESSOR_RELATIONSHIP relationshipType)
+    {
+        return adapt_memory_buffer(
+            buffer,
+            [&](std::span<std::byte> view, size_t& capacity)
+        {
+            DWORD dwSize = static_cast<DWORD>(buffer.size());
+            if (::GetLogicalProcessorInformationEx(
+                    relationshipType,
+                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(view.data()),
+                    &dwSize))
+            {
+                // MSDN:
+                //  If the function succeeds, the return value is TRUE and at least one
+                //  SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX structure is written to the output buffer.
+                capacity = dwSize;
+                return true;
+            }
+
+            if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+            {
+                // MSDN:
+                //  If the buffer is not large enough to contain all of the data, the function fails, GetLastError
+                //  returns ERROR_INSUFFICIENT_BUFFER, and ReturnedLength is set to the buffer length required to
+                //  contain all of the data.
+                capacity = dwSize;
+                return true;
+            }
+
+            capacity = 0;
+            return false;
+        });
     }
 }

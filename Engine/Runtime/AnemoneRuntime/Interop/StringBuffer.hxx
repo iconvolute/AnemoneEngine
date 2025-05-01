@@ -193,11 +193,11 @@ namespace Anemone::Interop
         }
     };
 
-    template <typename StringBufferT, typename CallbackT>
-    bool adapt_string_buffer(StringBufferT& buffer, CallbackT callback)
+    template <typename StringBuffer, typename Callback>
+    bool adapt_string_buffer(StringBuffer& buffer, Callback&& callback)
     {
         size_t requiredSize{};
-        if (not callback(buffer.as_buffer_span(), requiredSize))
+        if (not std::forward<Callback>(callback)(buffer.as_buffer_span(), requiredSize))
         {
             buffer.trim(0);
             return false;
@@ -217,7 +217,7 @@ namespace Anemone::Interop
 
             buffer.resize_for_override(bufferLength);
 
-            if (not callback(buffer.as_buffer_span(), requiredSize))
+            if (not std::forward<Callback>(callback)(buffer.as_buffer_span(), requiredSize))
             {
                 buffer.trim(0);
                 return false;
