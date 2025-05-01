@@ -17,6 +17,15 @@ namespace Anemone::Interop::Linux
     {
         AddDuration(self, Duration::FromMilliseconds(milliseconds));
     }
+
+    inline void SetCurrentThreadAffinity(size_t cpu)
+    {
+        cpu_set_t set;
+        CPU_ZERO(&set);
+        CPU_SET(cpu, &set);
+
+        sched_setaffinity(0, sizeof(cpu_set_t), &set);
+    }
 }
 
 // https://www.remlab.net/op/futex-condvar.shtml

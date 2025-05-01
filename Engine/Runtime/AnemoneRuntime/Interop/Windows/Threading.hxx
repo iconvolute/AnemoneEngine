@@ -25,6 +25,16 @@ namespace Anemone::Interop::Windows
 
         return static_cast<DWORD>(milliseconds);
     }
+
+    inline void SetCurrentThreadAffinity(size_t cpu)
+    {
+        GROUP_AFFINITY affinity{
+            .Mask = uint64_t{1} << (cpu % 64),
+            .Group = static_cast<WORD>(cpu / 64),
+        };
+
+        SetThreadGroupAffinity(GetCurrentThread(), &affinity, nullptr);
+    }
 }
 
 namespace Anemone::Interop::Windows
