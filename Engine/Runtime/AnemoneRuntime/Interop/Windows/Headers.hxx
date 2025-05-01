@@ -317,7 +317,7 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 #undef OpenPrivateNamespace
 #undef CreateBoundaryDescriptor
 #undef GetCurrentHwProfile
-#undef VerifyVersionInfo
+//#undef VerifyVersionInfo
 #undef CreateJobObject
 #undef OpenJobObject
 #undef FindFirstVolumeMountPoint

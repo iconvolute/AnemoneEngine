@@ -6,85 +6,38 @@
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 
+#include <VersionHelpers.h>
+#include <algorithm>
+#include <vector>
+
 namespace Anemone::Internal
 {
     UninitializedObject<WindowsProcessorProperties> GProcessorProperties{};
+
+    struct CoreInfoImpl
+    {
+        KAFFINITY Mask{};
+        WORD Group{};
+        uint8_t Efficiency{};
+        bool HyperThreaded{};
+        bool Performance{};
+    };
 
     WindowsProcessorProperties::WindowsProcessorProperties()
     {
         Interop::memory_buffer<4096> buffer{};
 
         {
-            // Determine CPU properties.
-            HANDLE hThisProcess = GetCurrentProcess();
-            DWORD dwSize{};
-            GetSystemCpuSetInformation(nullptr, 0, &dwSize, hThisProcess, 0);
-
-            if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
-            {
-                buffer.resize_for_override(dwSize);
-
-                GetSystemCpuSetInformation(
-                    reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()),
-                    dwSize,
-                    &dwSize,
-                    hThisProcess,
-                    0);
-
-                std::byte const* first = buffer.data();
-                std::byte const* last = buffer.data() + dwSize;
-                std::byte const* it = first;
-
-                while (it < last)
-                {
-                    auto const& current = *reinterpret_cast<SYSTEM_CPU_SET_INFORMATION const*>(it);
-
-                    switch (current.Type)
-                    {
-                    case CpuSetInformation:
-                        if (current.CpuSet.CoreIndex == current.CpuSet.LogicalProcessorIndex)
-                        {
-                            if (current.CpuSet.EfficiencyClass == 0)
-                            {
-                                ++this->EfficiencyCores;
-                            }
-                            else
-                            {
-                                ++this->PerformanceCores;
-                            }
-
-                            ++this->PhysicalCores;
-                        }
-
-                        ++this->LogicalCores;
-                        break;
-                    }
-
-                    it += current.Size;
-                }
-
-                if (this->PerformanceCores == 0)
-                {
-                    // Non-hybrid CPUs report all cores as efficient cores.
-                    this->PerformanceCores = this->EfficiencyCores;
-                    this->EfficiencyCores = 0;
-                }
-
-                // Determine Hyper-Threading. CPUs with more logical cores than physical cores are considered hyper-threaded.
-                this->HyperThreadingEnabled = this->LogicalCores > this->PhysicalCores;
-            }
-        }
-        {
             // Determine Cache properties.
             DWORD dwSize{};
-            GetLogicalProcessorInformationEx(RelationCache, nullptr, &dwSize);
+            GetLogicalProcessorInformationEx(RelationAll, nullptr, &dwSize);
 
             if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
             {
                 buffer.resize_for_override(dwSize);
 
                 GetLogicalProcessorInformationEx(
-                    RelationCache,
+                    RelationAll,
                     reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.data()),
                     &dwSize);
 
@@ -94,38 +47,123 @@ namespace Anemone::Internal
 
                 uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
 
+                bool hasEfficiency = IsWindows10OrGreater();
+
+                std::vector<CoreInfoImpl> coreInfo;
+                uint8_t performanceEfficiencyClass = 0;
+
                 while (it < last)
                 {
                     auto const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(it);
 
-                    AE_ASSERT(current.Relationship == RelationCache);
-
-                    // Choose smallest cache line size as the "safest" value.
-                    cacheLineSize = std::min<uint32_t>(cacheLineSize, current.Cache.LineSize);
-
-                    switch (current.Cache.Level)
+                    switch (current.Relationship)
                     {
-                    case 1:
-                        this->CacheSizeLevel1 += current.Cache.CacheSize;
-                        break;
+                    case RelationCache:
+                        {
+                            // Choose the smallest cache line size as the "safest" value.
+                            cacheLineSize = std::min<uint32_t>(cacheLineSize, current.Cache.LineSize);
 
-                    case 2:
-                        this->CacheSizeLevel2 += current.Cache.CacheSize;
-                        break;
+                            switch (current.Cache.Level)
+                            {
+                            case 1:
+                                this->CacheSizeLevel1 += current.Cache.CacheSize;
+                                break;
 
-                    case 3:
-                        this->CacheSizeLevel3 += current.Cache.CacheSize;
-                        break;
+                            case 2:
+                                this->CacheSizeLevel2 += current.Cache.CacheSize;
+                                break;
+
+                            case 3:
+                                this->CacheSizeLevel3 += current.Cache.CacheSize;
+                                break;
+
+                            default:
+                                // Unknown cache line level. Are you some kind of server from the future?
+                                break;
+                            }
+
+                            break;
+                        }
+
+                    case RelationProcessorCore:
+                        {
+                            if (current.Processor.GroupCount == 1)
+                            {
+                                // On 64-bit windows, we count only cores on first group.
+                                // Maybe in future we enhance this to support more than 64 cores?
+
+                                if (hasEfficiency)
+                                {
+                                    performanceEfficiencyClass = std::max<uint8_t>(performanceEfficiencyClass, current.Processor.EfficiencyClass);
+
+                                    if (current.Processor.Flags & LTP_PC_SMT)
+                                    {
+                                        // Hyper-threaded CPU.
+                                        this->HyperThreadingEnabled = true;
+                                    }
+                                }
+
+                                coreInfo.emplace_back(
+                                    current.Processor.GroupMask[0].Mask,
+                                    current.Processor.GroupMask[0].Group,
+                                    hasEfficiency ? current.Processor.EfficiencyClass : uint8_t{},
+                                    (current.Processor.Flags & LTP_PC_SMT) != 0);
+                            }
+
+                            break;
+                        }
 
                     default:
-                        // Unknown cache line level. Are you some kind of server from the future?
-                        break;
+                        {
+                            break;
+                        }
                     }
 
                     it += current.Size;
                 }
 
                 this->CacheLineSize = cacheLineSize;
+
+                for (auto& core : coreInfo)
+                {
+                    if (core.Efficiency == performanceEfficiencyClass)
+                    {
+                        core.Performance = true;
+                    }
+                    else
+                    {
+                        core.Performance = false;
+                    }
+                }
+
+                this->LogicalCores = 0;
+                this->PhysicalCores = 0;
+                this->PerformanceCores = 0;
+                this->EfficiencyCores = 0;
+
+                for (auto const& core : coreInfo)
+                {
+                    // Classify core by efficiency.
+                    if (core.Performance)
+                    {
+                        ++this->PerformanceCores;
+                    }
+                    else
+                    {
+                        ++this->EfficiencyCores;
+                    }
+
+                    // Count logical cores.
+                    ++this->LogicalCores;
+
+                    if (core.HyperThreaded)
+                    {
+                        ++this->LogicalCores;
+                    }
+
+                    // And physical cores.
+                    ++this->PhysicalCores;
+                }
             }
         }
 
