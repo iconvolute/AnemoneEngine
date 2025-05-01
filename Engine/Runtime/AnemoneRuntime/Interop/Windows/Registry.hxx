@@ -226,6 +226,60 @@ namespace Anemone::Interop::Windows
             });
         }
 
+        template <size_t Capacity>
+        [[nodiscard]] bool ReadString(const char* name, string_buffer<char, Capacity>& result)
+        {
+            return adapt_string_buffer(result, [&](std::span<char> buffer, size_t& capacity)
+            {
+                DWORD dwType = 0;
+                DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz) * sizeof(char);
+
+                // REG_SZ requires a zero terminator.
+                LSTATUS const status = RegQueryValueExA(
+                    this->m_key,
+                    name,
+                    nullptr,
+                    &dwType,
+                    reinterpret_cast<LPBYTE>(buffer.data()),
+                    &dwSize);
+
+                if ((dwType != REG_SZ) and (dwType != REG_MULTI_SZ))
+                {
+                    // Invalid type
+                    capacity = 0;
+                    return false;
+                }
+
+                if ((status == ERROR_MORE_DATA) or (status == ERROR_SUCCESS))
+                {
+                    // MSDN:
+                    //  If the buffer specified by lpData parameter is not large enough to hold the data, the function
+                    //  returns ERROR_MORE_DATA and stores the required buffer size in the variable pointed to by
+                    //  lpcbData.
+                    DWORD dwCharCount = (dwSize / sizeof(char)) - 1u;
+
+                    if (dwType == REG_MULTI_SZ)
+                    {
+                        auto chars = buffer.subspan(0, dwCharCount);
+
+                        for (char& ch : chars)
+                        {
+                            if (ch == '\0')
+                            {
+                                ch = '\n';
+                            }
+                        }
+                    }
+
+                    capacity = dwCharCount;
+                    return true;
+                }
+
+                capacity = 0;
+                return false;
+            });
+        }
+
         [[nodiscard]] bool Read(const wchar_t* name, DWORD& result) const
         {
             DWORD dwSize = sizeof(DWORD);

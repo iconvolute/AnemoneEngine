@@ -9,7 +9,7 @@ namespace Anemone
     class ReferenceTracker
     {
     private:
-        std::atomic_uint32_t m_ReferenceCount{0};
+        std::atomic_uint32_t mutable m_ReferenceCount{0};
 
     private:
         ReferenceTracker() = default;
@@ -20,12 +20,12 @@ namespace Anemone
         ~ReferenceTracker() = default;
 
     public:
-        uint32_t AcquireReference()
+        uint32_t AcquireReference() const
         {
             return this->m_ReferenceCount.fetch_add(1, std::memory_order_relaxed);
         }
 
-        uint32_t ReleaseReference()
+        uint32_t ReleaseReference() const
         {
             uint32_t const count = this->m_ReferenceCount.fetch_sub(1, std::memory_order_acq_rel) - 1u;
 
@@ -39,7 +39,7 @@ namespace Anemone
                 // If T does have a virtual destructor, this will not work correctly.
                 // In that case, you should use a smart pointer or similar mechanism.
 
-                delete static_cast<T*>(this);
+                delete static_cast<const T*>(this);
                 return 0;
             }
 

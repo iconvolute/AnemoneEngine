@@ -145,39 +145,27 @@ namespace Anemone::Internal
 
         Interop::string_buffer<wchar_t, 512> buffer{};
 
-        if (Interop::Windows::GetSystemDirectory(buffer))
+        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)"))
         {
-            std::wstring kernelPath{buffer.as_view()};
-            Interop::Windows::PathPushFragment(kernelPath, L"kernel32.dll");
+            DWORD major{};
+            (void)key.Read(L"CurrentMajorVersionNumber", major);
 
-            DWORD const dwSize = GetFileVersionInfoSizeW(kernelPath.c_str(), nullptr);
+            DWORD minor{};
+            (void)key.Read(L"CurrentMinorVersionNumber", minor);
 
-            if (dwSize != 0)
-            {
-                Interop::memory_buffer<4096> versionInfo{};
-                versionInfo.resize_for_override(dwSize);
+            Interop::string_buffer<char, 64> build{};
+            (void)key.ReadString("BuildLabEx", build);
 
-                if (GetFileVersionInfoW(kernelPath.c_str(), 0, dwSize, versionInfo.data()) != FALSE)
-                {
-                    VS_FIXEDFILEINFO* pFileInfo = nullptr;
-                    UINT uLen = 0;
+            Interop::string_buffer<char, 64> product{};
+            (void)key.ReadString("ProductName", product);
 
-                    if (VerQueryValueW(versionInfo.data(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
-                    {
                         this->m_SystemVersion = fmt::format(
-                            "{}.{}.{}.{}",
-                            HIWORD(pFileInfo->dwFileVersionMS),
-                            LOWORD(pFileInfo->dwFileVersionMS),
-                            HIWORD(pFileInfo->dwFileVersionLS),
-                            LOWORD(pFileInfo->dwFileVersionLS));
-                    }
-                }
-            }
-        }
+                "{}.{}.{}",
+                major,
+                minor,
+                build.as_view());
 
-        if (this->m_SystemVersion.empty())
-        {
-            this->m_SystemVersion = "Unknown";
+            this->m_SystemName = product.as_view();
         }
 
         // Determine system ID

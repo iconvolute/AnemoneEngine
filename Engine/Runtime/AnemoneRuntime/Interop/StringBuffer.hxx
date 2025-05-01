@@ -11,9 +11,9 @@ namespace Anemone::Interop
     {
     private:
         CharT* m_Data{};
+        size_t m_Size{};
         std::unique_ptr<CharT[]> m_Dynamic{};
         size_t m_Capacity{StaticCapacityT};
-        size_t m_Size{};
         CharT m_Static[StaticCapacityT + 1];
 
     public:
