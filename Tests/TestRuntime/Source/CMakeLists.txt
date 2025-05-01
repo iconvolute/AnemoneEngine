@@ -17,6 +17,7 @@ target_sources(TestRuntime
         "String.cxx"
 )
 
+add_subdirectory("Interop")
 add_subdirectory("Numerics")
 add_subdirectory("Security")
 add_subdirectory("Threading")

@@ -1,6 +1,5 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsApplication.hxx"
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal

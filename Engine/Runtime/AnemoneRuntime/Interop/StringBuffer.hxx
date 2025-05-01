@@ -17,7 +17,7 @@ namespace Anemone::Interop
         CharT m_Static[StaticCapacityT + 1];
 
     public:
-        constexpr string_buffer() noexcept
+        constexpr string_buffer()
             : m_Data{m_Static}
         {
         }
@@ -46,10 +46,16 @@ namespace Anemone::Interop
 
         string_buffer& operator=(string_buffer&&) = delete;
 
-        ~string_buffer() noexcept = default;
+        ~string_buffer() = default;
 
         constexpr void resize_for_override(size_t size)
         {
+            if (size == this->m_Size)
+            {
+                // Do nothing.
+                return;
+            }
+
             if (size < StaticCapacityT)
             {
                 // Reset back to static buffer.
@@ -59,7 +65,8 @@ namespace Anemone::Interop
             }
             else if (size > this->m_Capacity)
             {
-                size_t const capacity = size;
+                // Choose better size.
+                size_t const capacity = std::max(size, this->m_Capacity * 2uz);
 
                 this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
                 this->m_Data = this->m_Dynamic.get();
@@ -70,100 +77,116 @@ namespace Anemone::Interop
             this->m_Data[this->m_Size] = {};
         }
 
-        constexpr void resize(size_t size)
+        constexpr void resize(size_t size, CharT fill = CharT{})
         {
-            if (size > StaticCapacityT)
-            {
-                // Copy data from static to dynamic buffer
-                size_t const capacity = size;
+            assert(this->m_Capacity >= StaticCapacityT);
+            assert(this->m_Size <= this->m_Capacity);
 
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
-                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Dynamic.get());
-                this->m_Data = this->m_Dynamic.get();
-                this->m_Capacity = capacity;
-            }
-            else if (this->m_Dynamic and (size <= StaticCapacityT))
+            if (size != this->m_Size)
             {
-                // Copy data from dynamic to static buffer
-                std::copy(this->m_Data, this->m_Data + this->m_Size, this->m_Static);
-                this->m_Dynamic = nullptr;
-                this->m_Data = this->m_Static;
-                this->m_Capacity = StaticCapacityT;
-            }
+                if (size <= this->m_Capacity)
+                {
+                    // Allocated buffer can hold the new size.
+                    if (size > this->m_Size)
+                    {
+                        // Fill rest of the buffer with fill character.
+                        std::fill(this->m_Data + this->m_Size, this->m_Data + size, fill);
+                    }
+                }
+                else
+                {
+                    // If we are here, we need to allocate a new buffer.
+                    size_t const capacity = std::max(size, this->m_Capacity * 2uz);
 
-            this->m_Size = size;
-            this->m_Data[this->m_Size] = {};
+                    std::unique_ptr<CharT[]> newBuffer = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
+                    std::copy(this->m_Data, this->m_Data + this->m_Size, newBuffer.get());
+                    std::fill(newBuffer.get() + this->m_Size, newBuffer.get() + size, fill);
+                    
+                    this->m_Data = newBuffer.get();
+                    this->m_Dynamic = std::move(newBuffer);
+                    this->m_Capacity = capacity;
+                }
+                    
+                // Trim the buffer.
+                this->m_Data[size] = CharT{};
+                this->m_Size = size;
+            }
         }
 
-        constexpr void trim(size_t size) noexcept
+        constexpr void trim(size_t size)
         {
             assert(size <= this->m_Capacity);
             this->m_Data[size] = {};
             this->m_Size = size;
         }
 
-        [[nodiscard]] constexpr size_t capacity() const noexcept
+        [[nodiscard]] constexpr size_t capacity() const
         {
             return this->m_Capacity;
         }
 
-        [[nodiscard]] constexpr size_t size() const noexcept
+        [[nodiscard]] constexpr size_t size() const
         {
             return this->m_Size;
         }
 
-        [[nodiscard]] constexpr operator const CharT*() const noexcept
+        [[nodiscard]] constexpr operator const CharT*() const
         {
             return this->m_Data;
         }
 
-        [[nodiscard]] constexpr CharT* data() noexcept
+        [[nodiscard]] constexpr CharT* data()
         {
             return this->m_Data;
         }
 
-        [[nodiscard]] constexpr const CharT* data() const noexcept
+        [[nodiscard]] constexpr const CharT* data() const
         {
             return this->m_Data;
         }
 
-        [[nodiscard]] constexpr const CharT* c_str() const noexcept
+        [[nodiscard]] constexpr const CharT* c_str() const
         {
             return this->m_Data;
         }
 
-        [[nodiscard]] constexpr std::basic_string_view<CharT> as_view() const noexcept
+        [[nodiscard]] constexpr bool is_dynamic() const
+        {
+            return this->m_Data != this->m_Static;
+        }
+
+        [[nodiscard]] constexpr std::basic_string_view<CharT> as_view() const
         {
             return std::basic_string_view<CharT>{this->m_Data, this->m_Size};
         }
 
-        [[nodiscard]] constexpr std::span<CharT> as_span() noexcept
+        [[nodiscard]] constexpr std::span<CharT> as_span()
         {
             return std::span<CharT>{this->m_Data, this->m_Size};
         }
 
-        [[nodiscard]] constexpr std::span<CharT const> as_span() const noexcept
+        [[nodiscard]] constexpr std::span<CharT const> as_span() const
         {
             return std::span<CharT const>{this->m_Data, this->m_Size};
         }
 
-        [[nodiscard]] constexpr std::span<CharT> as_buffer_span() noexcept
+        [[nodiscard]] constexpr std::span<CharT> as_buffer_span()
         {
             return std::span<CharT>{this->m_Data, this->m_Capacity};
         }
 
-        [[nodiscard]] constexpr std::span<CharT const> as_buffer_span() const noexcept
+        [[nodiscard]] constexpr std::span<CharT const> as_buffer_span() const
         {
             return std::span<CharT const>{this->m_Data, this->m_Capacity};
         }
 
-        [[nodiscard]] constexpr CharT& operator[](size_t index) noexcept
+        [[nodiscard]] constexpr CharT& operator[](size_t index)
         {
             assert(index < this->m_Size);
             return this->m_Data[index];
         }
 
-        [[nodiscard]] constexpr CharT const& operator[](size_t index) const noexcept
+        [[nodiscard]] constexpr CharT const& operator[](size_t index) const
         {
             assert(index < this->m_Size);
             return this->m_Data[index];
@@ -171,7 +194,7 @@ namespace Anemone::Interop
     };
 
     template <typename StringBufferT, typename CallbackT>
-    bool adapt_string_buffer(StringBufferT& buffer, CallbackT callback) noexcept
+    bool adapt_string_buffer(StringBufferT& buffer, CallbackT callback)
     {
         size_t requiredSize{};
         if (not callback(buffer.as_buffer_span(), requiredSize))

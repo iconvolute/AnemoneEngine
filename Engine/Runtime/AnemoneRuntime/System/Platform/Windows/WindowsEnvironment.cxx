@@ -7,6 +7,7 @@
 #include "AnemoneRuntime/Interop/Windows/Process.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
@@ -153,14 +154,15 @@ namespace Anemone::Internal
 
             if (dwSize != 0)
             {
-                std::unique_ptr<std::byte[]> versionInfo = std::make_unique_for_overwrite<std::byte[]>(dwSize);
+                Interop::memory_buffer<4096> versionInfo{};
+                versionInfo.resize_for_override(dwSize);
 
-                if (GetFileVersionInfoW(kernelPath.c_str(), 0, dwSize, versionInfo.get()) != FALSE)
+                if (GetFileVersionInfoW(kernelPath.c_str(), 0, dwSize, versionInfo.data()) != FALSE)
                 {
                     VS_FIXEDFILEINFO* pFileInfo = nullptr;
                     UINT uLen = 0;
 
-                    if (VerQueryValueW(versionInfo.get(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
+                    if (VerQueryValueW(versionInfo.data(), L"", reinterpret_cast<void**>(&pFileInfo), &uLen) != FALSE)
                     {
                         this->m_SystemVersion = fmt::format(
                             "{}.{}.{}.{}",

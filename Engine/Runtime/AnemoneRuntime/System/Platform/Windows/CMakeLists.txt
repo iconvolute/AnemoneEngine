@@ -2,6 +2,8 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
+        "GameInputImpl.cxx"
+        "GameInputImpl.hxx"
         "Input.cxx"
         "Input.hxx"
         "XInput.cxx"

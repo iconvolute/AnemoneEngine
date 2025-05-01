@@ -2,6 +2,7 @@
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 
@@ -11,6 +12,8 @@ namespace Anemone::Internal
 
     WindowsProcessorProperties::WindowsProcessorProperties()
     {
+        Interop::memory_buffer<4096> buffer{};
+
         {
             // Determine CPU properties.
             HANDLE hThisProcess = GetCurrentProcess();
@@ -19,17 +22,17 @@ namespace Anemone::Internal
 
             if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
             {
-                std::unique_ptr<std::byte[]> buffer = std::make_unique_for_overwrite<std::byte[]>(dwSize);
+                buffer.resize_for_override(dwSize);
 
                 GetSystemCpuSetInformation(
-                    reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.get()),
+                    reinterpret_cast<PSYSTEM_CPU_SET_INFORMATION>(buffer.data()),
                     dwSize,
                     &dwSize,
                     hThisProcess,
                     0);
 
-                std::byte const* first = buffer.get();
-                std::byte const* last = buffer.get() + dwSize;
+                std::byte const* first = buffer.data();
+                std::byte const* last = buffer.data() + dwSize;
                 std::byte const* it = first;
 
                 while (it < last)
@@ -78,15 +81,15 @@ namespace Anemone::Internal
 
             if ((GetLastError() == ERROR_INSUFFICIENT_BUFFER) and (dwSize != 0))
             {
-                std::unique_ptr<std::byte[]> buffer = std::make_unique_for_overwrite<std::byte[]>(dwSize);
+                buffer.resize_for_override(dwSize);
 
                 GetLogicalProcessorInformationEx(
                     RelationCache,
-                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.get()),
+                    reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX*>(buffer.data()),
                     &dwSize);
 
-                std::byte const* first = buffer.get();
-                std::byte const* last = buffer.get() + dwSize;
+                std::byte const* first = buffer.data();
+                std::byte const* last = buffer.data() + dwSize;
                 std::byte const* it = first;
 
                 uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
@@ -129,20 +132,20 @@ namespace Anemone::Internal
         if (auto const key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)"))
         {
             // Query CPU name from registry
-            Interop::string_buffer<wchar_t, 128> buffer{};
+            Interop::string_buffer<wchar_t, 128> stringBuffer{};
 
-            if (key.ReadString(LR"(ProcessorNameString)", buffer))
+            if (key.ReadString(LR"(ProcessorNameString)", stringBuffer))
             {
-                Interop::Windows::NarrowString(this->Name, buffer.as_view());
+                Interop::Windows::NarrowString(this->Name, stringBuffer.as_view());
             }
             else
             {
                 Debugger::ReportApplicationStop("Cannot obtain processor information");
             }
 
-            if (key.ReadString(LR"(VendorIdentifier)", buffer))
+            if (key.ReadString(LR"(VendorIdentifier)", stringBuffer))
             {
-                Interop::Windows::NarrowString(this->Vendor, buffer.as_view());
+                Interop::Windows::NarrowString(this->Vendor, stringBuffer.as_view());
             }
             else
             {
