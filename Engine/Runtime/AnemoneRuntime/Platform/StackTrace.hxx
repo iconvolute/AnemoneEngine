@@ -8,9 +8,7 @@ namespace Anemone
 {
     struct StackTrace final
     {
-        friend struct Runtime;
-
-    private:
+    public:
         static void Initialize();
         static void Finalize();
 

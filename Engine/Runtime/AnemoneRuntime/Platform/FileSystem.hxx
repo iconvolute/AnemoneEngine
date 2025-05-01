@@ -54,9 +54,7 @@ namespace Anemone
 
     struct FileSystem
     {
-        friend struct Runtime;
-        
-    private:
+    public:
         static void Initialize();
         static void Finalize();
 

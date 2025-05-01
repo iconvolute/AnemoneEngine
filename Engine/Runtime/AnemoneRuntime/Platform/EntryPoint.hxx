@@ -17,7 +17,8 @@ extern "C"
 #error "This header must be included from the application"
 #endif
 
-#include "AnemoneRuntime/Runtime.hxx"
+extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv);
+extern "C" RUNTIME_API void AnemoneRuntimeFinalize();
 
 int AnemoneMain(int argc, char** argv);
 
@@ -48,11 +49,11 @@ int WINAPI WinMain(
 
 int main(int argc, char** argv)
 {
-    Anemone::Runtime::Initialize(argc, argv);
+    AnemoneRuntimeInitialize(argc, argv);
 
     int const result = AnemoneMain(argc, argv);
 
-    Anemone::Runtime::Finalize();
+    AnemoneRuntimeFinalize();
 
     return result;
 }

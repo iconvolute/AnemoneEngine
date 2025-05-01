@@ -32,8 +32,6 @@ target_sources(AnemoneRuntime
         "Memory.hxx"
         "Reference.hxx"
         "Reflection.hxx"
-        "Runtime.cxx"
-        "Runtime.hxx"
         "String.cxx"
         "String.hxx"
         "Types.cxx"
