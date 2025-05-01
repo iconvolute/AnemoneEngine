@@ -20,17 +20,17 @@ namespace Anemone::Diagnostics
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        Trace::TraceMessage(TraceLevel::Fatal, "=== assertion failed ===");
-        Trace::TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
-        Trace::TraceMessage(TraceLevel::Fatal, "expression: {}", expression);
-        Trace::TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
+        TraceMessage(TraceLevel::Fatal, "=== assertion failed ===");
+        TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
+        TraceMessage(TraceLevel::Fatal, "expression: {}", expression);
+        TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
+            TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
-        Trace::Flush();
+        FlushTraceListeners();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false
@@ -58,16 +58,16 @@ namespace Anemone::Diagnostics
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        Trace::TraceMessage(TraceLevel::Fatal, "=== panic ===");
-        Trace::TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
-        Trace::TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
+        TraceMessage(TraceLevel::Fatal, "=== panic ===");
+        TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
+        TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            Trace::TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
+            TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
         });
 
-        Trace::Flush();
+        FlushTraceListeners();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false

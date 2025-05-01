@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/System/Platform/Linux/LinuxEnvironment.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneRuntime/Interop/Linux/Headers.hxx"
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
 #include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
@@ -32,15 +33,38 @@
 #include <asm/hwcap.h>
 #endif
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Linux
 {
-    UninitializedObject<LinuxEnvironmentStatics> GEnvironmentStatics{};
-
-    LinuxEnvironmentStatics::LinuxEnvironmentStatics()
+    struct EnvironmentStatics final
     {
-        VerifyRequirements();
+        DateTime m_StartupTime;
 
-        this->m_StartupTime = Environment::GetCurrentDateTime();
+        std::string m_SystemVersion;
+        Uuid m_SystemId;
+        std::string m_SystemName;
+        std::string m_DeviceId;
+        std::string m_DeviceName;
+        std::string m_DeviceModel;
+        std::string m_DeviceManufacturer;
+        std::string m_DeviceVersion;
+        DeviceType m_DeviceType;
+        DeviceProperties m_DeviceProperties;
+        std::string m_ComputerName;
+        std::string m_UserName;
+        std::string m_ExecutablePath;
+        std::string m_StartupPath;
+        std::string m_ProfilePath;
+        std::string m_DesktopPath;
+        std::string m_DocumentsPath;
+        std::string m_DownloadsPath;
+        std::string m_TemporaryPath;
+    };
+
+    static UninitializedObject<EnvironmentStatics> GEnvironmentStatics{};
+
+    static void InitializeStatics(EnvironmentStatics& statics)
+    {
+        statics.m_StartupTime = Environment::GetCurrentDateTime();
 
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
@@ -60,7 +84,7 @@ namespace Anemone::Internal
             if (struct utsname name{}; uname(&name) != -1)
             {
                 // TODO: Determine OS version from '/etc/lsb-release'?
-                this->m_SystemVersion = fmt::format("{}-{}-{}", name.sysname, name.release, name.version);
+                statics.m_SystemVersion = fmt::format("{}-{}-{}", name.sysname, name.release, name.version);
             }
         }
 
@@ -80,11 +104,11 @@ namespace Anemone::Internal
                 buffer.trim(32);
                 parsed = UuidParser::Parse(buffer.as_view());
             }
-            
-            
+
+
             if (parsed)
             {
-                this->m_SystemId = *parsed;
+                statics.m_SystemId = *parsed;
             }
             else
             {
@@ -98,7 +122,7 @@ namespace Anemone::Internal
 
             if (getcwd(procpath.data(), procpath.size()) != nullptr)
             {
-                this->m_StartupPath.assign(procpath.data());
+                statics.m_StartupPath.assign(procpath.data());
             }
         }
 
@@ -113,7 +137,7 @@ namespace Anemone::Internal
             AE_ASSERT(length >= 0);
             length = std::max<ssize_t>(0, length);
 
-            this->m_ExecutablePath.assign(execpath.data(), static_cast<size_t>(length));
+            statics.m_ExecutablePath.assign(execpath.data(), static_cast<size_t>(length));
         }
 
         // Computer name
@@ -123,15 +147,15 @@ namespace Anemone::Internal
 
             if (uname(&name) == 0)
             {
-                this->m_ComputerName.assign(name.nodename);
+                statics.m_ComputerName.assign(name.nodename);
             }
             else if (gethostname(hostname.data(), hostname.size()) == 0)
             {
-                this->m_ComputerName.assign(hostname.data());
+                statics.m_ComputerName.assign(hostname.data());
             }
             else
             {
-                this->m_ComputerName.assign("Linux Machine");
+                statics.m_ComputerName.assign("Linux Machine");
             }
         }
 
@@ -142,11 +166,11 @@ namespace Anemone::Internal
 
             if (pw != nullptr)
             {
-                this->m_UserName = pw->pw_name;
+                statics.m_UserName = pw->pw_name;
             }
             else
             {
-                this->m_UserName = "Unknown";
+                statics.m_UserName = "Unknown";
             }
         }
 
@@ -157,7 +181,7 @@ namespace Anemone::Internal
 
             if (value != nullptr)
             {
-                this->m_ProfilePath.assign(value);
+                statics.m_ProfilePath.assign(value);
             }
             else
             {
@@ -165,7 +189,7 @@ namespace Anemone::Internal
 
                 if (userinfo != nullptr && userinfo->pw_dir != nullptr)
                 {
-                    this->m_ProfilePath.assign(userinfo->pw_dir);
+                    statics.m_ProfilePath.assign(userinfo->pw_dir);
                 }
             }
 #endif
@@ -173,20 +197,20 @@ namespace Anemone::Internal
 
         // UserDesktopPath
         {
-            this->m_DesktopPath = this->m_ProfilePath;
-            FilePath::PushFragment(this->m_DesktopPath, "Desktop");
+            statics.m_DesktopPath = statics.m_ProfilePath;
+            FilePath::PushFragment(statics.m_DesktopPath, "Desktop");
         }
 
         // UserDocumentsPath
         {
-            this->m_DocumentsPath = this->m_ProfilePath;
-            FilePath::PushFragment(this->m_DocumentsPath, "Documents");
+            statics.m_DocumentsPath = statics.m_ProfilePath;
+            FilePath::PushFragment(statics.m_DocumentsPath, "Documents");
         }
 
         // UserDownloadsPath
         {
-            this->m_DownloadsPath = this->m_ProfilePath;
-            FilePath::PushFragment(this->m_DownloadsPath, "Downloads");
+            statics.m_DownloadsPath = statics.m_ProfilePath;
+            FilePath::PushFragment(statics.m_DownloadsPath, "Downloads");
         }
 
         // Temp path
@@ -214,22 +238,14 @@ namespace Anemone::Internal
                 value = "/tmp/";
             }
 
-            this->m_TemporaryPath.assign(value);
+            statics.m_TemporaryPath.assign(value);
 #endif
         }
-
-        // Startup time
-        {
-            this->m_StartupTime = DateTime::Now();
-        }
     }
 
-    LinuxEnvironmentStatics::~LinuxEnvironmentStatics()
+    static void VerifyRequirements()
     {
-    }
 
-    void LinuxEnvironmentStatics::VerifyRequirements()
-    {
 #if ANEMONE_ARCHITECTURE_X64
 
         int level0[4]{-1};
@@ -237,7 +253,7 @@ namespace Anemone::Internal
 
         if (level0[0] < 1)
         {
-            Debugger::ReportApplicationStop("Application stop: CPU Features not available\n");
+            Diagnostics::ReportApplicationStop("Application stop: CPU Features not available\n");
         }
 
         int level1[4]{-1};
@@ -245,45 +261,45 @@ namespace Anemone::Internal
 
         if (!(level1[2] & bit_CMPXCHG16B))
         {
-            Debugger::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
         }
 
         if (!(level1[2] & bit_POPCNT))
         {
-            Debugger::ReportApplicationStop("Application stop: POPCNT is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: POPCNT is not supported\n");
         }
 
 #if ANEMONE_FEATURE_AVX
         if (!(level1[2] & bit_OSXSAVE))
         {
-            Debugger::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
         }
 
         if (!(level1[2] & bit_SSE3))
         {
-            Debugger::ReportApplicationStop("Application stop: SSE3 is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: SSE3 is not supported\n");
         }
 
         if (!(level1[2] & bit_SSE4_1))
         {
-            Debugger::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
         }
 
         if (!(level1[2] & bit_AVX))
         {
-            Debugger::ReportApplicationStop("Application stop: AVX is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: AVX is not supported\n");
         }
 
 #if ANEMONE_FEATURE_AVX2
 
         if (!(level1[2] & bit_F16C))
         {
-            Debugger::ReportApplicationStop("Application stop: F16C is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: F16C is not supported\n");
         }
 
         if (!(level1[2] & bit_FMA))
         {
-            Debugger::ReportApplicationStop("Application stop: FMA is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: FMA is not supported\n");
         }
 
         int level7_0[4]{-1};
@@ -291,7 +307,7 @@ namespace Anemone::Internal
 
         if (!(level7_0[1] & bit_AVX2))
         {
-            Debugger::ReportApplicationStop("Application stop: AVX2 is not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: AVX2 is not supported\n");
         }
 
 #endif
@@ -307,20 +323,36 @@ namespace Anemone::Internal
 
         if ((cap & HWCAP_FP) != HWCAP_FP)
         {
-            Debugger::ReportApplicationStop("Application stop: NEON not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: NEON not supported\n");
         }
 
         if ((cap & HWCAP_ASIMD) != HWCAP_ASIMD)
         {
-            Debugger::ReportApplicationStop("Application stop: ASIMD not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: ASIMD not supported\n");
         }
 
         if ((cap & HWCAP_ATOMICS) != HWCAP_ATOMICS)
         {
-            Debugger::ReportApplicationStop("Application stop: ATOMICS not supported\n");
+            Diagnostics::ReportApplicationStop("Application stop: ATOMICS not supported\n");
         }
 
 #endif
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeEnvironment()
+    {
+        Linux::GEnvironmentStatics.Create();
+        Linux::InitializeStatics(*Linux::GEnvironmentStatics);
+
+        Linux::VerifyRequirements();
+    }
+
+    extern void FinalizeEnvironment()
+    {
+        Linux::GEnvironmentStatics.Destroy();
     }
 }
 
@@ -384,12 +416,12 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return Internal::GEnvironmentStatics->m_SystemVersion;
+        return Internal::Linux::GEnvironmentStatics->m_SystemVersion;
     }
 
     Uuid Environment::GetSystemId()
     {
-        return Internal::GEnvironmentStatics->m_SystemId;
+        return Internal::Linux::GEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
@@ -408,7 +440,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return Internal::GEnvironmentStatics->m_StartupTime;
+        return Internal::Linux::GEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -534,72 +566,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return Internal::GEnvironmentStatics->m_DeviceId;
+        return Internal::Linux::GEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return Internal::GEnvironmentStatics->m_DeviceName;
+        return Internal::Linux::GEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        return Internal::GEnvironmentStatics->m_DeviceModel;
+        return Internal::Linux::GEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        return Internal::GEnvironmentStatics->m_DeviceType;
+        return Internal::Linux::GEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        return Internal::GEnvironmentStatics->m_DeviceProperties;
+        return Internal::Linux::GEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return Internal::GEnvironmentStatics->m_ComputerName;
+        return Internal::Linux::GEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return Internal::GEnvironmentStatics->m_UserName;
+        return Internal::Linux::GEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return Internal::GEnvironmentStatics->m_ExecutablePath;
+        return Internal::Linux::GEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return Internal::GEnvironmentStatics->m_StartupPath;
+        return Internal::Linux::GEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return Internal::GEnvironmentStatics->m_ProfilePath;
+        return Internal::Linux::GEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return Internal::GEnvironmentStatics->m_DesktopPath;
+        return Internal::Linux::GEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return Internal::GEnvironmentStatics->m_DocumentsPath;
+        return Internal::Linux::GEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return Internal::GEnvironmentStatics->m_DownloadsPath;
+        return Internal::Linux::GEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return Internal::GEnvironmentStatics->m_TemporaryPath;
+        return Internal::Linux::GEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()

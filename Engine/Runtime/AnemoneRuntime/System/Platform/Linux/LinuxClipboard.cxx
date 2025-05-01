@@ -1,11 +1,16 @@
 #include "AnemoneRuntime/System/Clipboard.hxx"
 #include "AnemoneRuntime/Interop/Linux/Headers.hxx"
-#include "AnemoneRuntime/System/Platform/Clipboard.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 namespace Anemone::Internal
 {
-    UninitializedObject<LinuxClipboardStatics> GClipboardStatics;
+    extern void InitializeClipboard()
+    {
+    }
+
+    extern void FinalizeClipboard()
+    {
+    }
 }
 
 namespace Anemone

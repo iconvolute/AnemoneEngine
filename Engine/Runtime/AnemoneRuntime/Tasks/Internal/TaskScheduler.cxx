@@ -12,6 +12,16 @@ namespace Anemone::Internal
 
     UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics{};
 
+    extern void InitializeTaskScheduler()
+    {
+        GTaskSchedulerStatics.Create();
+    }
+
+    extern void FinalizeTaskScheduler()
+    {
+        GTaskSchedulerStatics.Destroy();
+    }
+
     uint32_t TaskSchedulerStatics::GenerateTaskId()
     {
         uint32_t result;

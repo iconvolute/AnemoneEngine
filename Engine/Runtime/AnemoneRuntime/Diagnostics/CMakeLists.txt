@@ -7,6 +7,9 @@ target_sources(AnemoneRuntime
 
         "Trace.cxx"
         "Trace.hxx"
+
+        "TraceLevel.hxx"
+        "TraceListener.hxx"
 )
 
 add_subdirectory("Platform")

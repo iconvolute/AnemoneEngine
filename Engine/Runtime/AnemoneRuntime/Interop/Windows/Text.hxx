@@ -3,6 +3,8 @@
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 #include <cassert>
+#include <string_view>
+#include <string>
 
 namespace Anemone::Interop::Windows
 {

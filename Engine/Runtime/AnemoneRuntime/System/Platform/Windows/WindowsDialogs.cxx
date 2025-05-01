@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/System/Platform/Windows/WindowsDialogs.hxx"
+#include "AnemoneRuntime/System/Dialogs.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/System/Dialogs.hxx"
@@ -9,8 +9,6 @@
 
 namespace Anemone::Internal
 {
-    UninitializedObject<WindowsDialogsStatics> GDialogsStatics;
-
     constexpr UINT CombineMessageDialogFlags(
         MessageDialogType type,
         MessageDialogImage image) noexcept

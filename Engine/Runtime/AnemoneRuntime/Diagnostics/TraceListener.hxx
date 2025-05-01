@@ -4,14 +4,12 @@
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceLevel.hxx"
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
-    class Trace;
-
     class TraceListener
-        : private IntrusiveListNode<TraceListener, Trace>
+        : private IntrusiveListNode<TraceListener>
     {
-        friend struct IntrusiveList<TraceListener, Trace>;
+        friend struct IntrusiveList<TraceListener>;
 
     public:
         TraceListener() = default;
@@ -22,7 +20,7 @@ namespace Anemone
         virtual ~TraceListener() = default;
 
     public:
-        virtual void TraceEvent(TraceLevel level, const char* message, size_t size) = 0;
+        virtual void Event(TraceLevel level, const char* message, size_t size) = 0;
         virtual void Flush() { }
     };
 }

@@ -63,7 +63,7 @@ namespace Anemone::Internal::Windows
 
         if (handle == nullptr)
         {
-            Debugger::ReportApplicationStop("Failed to create window.");
+            Diagnostics::ReportApplicationStop("Failed to create window.");
         }
 
         ShowWindow(handle, SW_SHOWNORMAL);
@@ -451,7 +451,7 @@ namespace Anemone::Internal::Windows
 
             if (not RegisterClassExW(&wndClassEx))
             {
-                Debugger::ReportApplicationStop("Failed to register window class.");
+                Diagnostics::ReportApplicationStop("Failed to register window class.");
             }
         }
     }

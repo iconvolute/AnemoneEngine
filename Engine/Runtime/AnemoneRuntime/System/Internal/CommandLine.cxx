@@ -1,10 +1,27 @@
 #include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/System/Internal/CommandLineStatics.hxx"
 
 #include <algorithm>
 #include <atomic>
 
+
+namespace Anemone::Internal
+{
+    static int GCommandLineArgC{};
+    static char** GCommandLineArgV{};
+
+    extern void InitializeCommandLine(int argc, char** argv)
+    {
+        GCommandLineArgC = argc;
+        GCommandLineArgV = argv;
+    }
+
+    extern void FinalizeCommandLine()
+    {
+        GCommandLineArgC = 0;
+        GCommandLineArgV = nullptr;
+    }
+}
 
 namespace Anemone
 {
@@ -146,9 +163,9 @@ namespace Anemone
     {
         std::optional<std::string_view> result{};
 
-        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
@@ -163,9 +180,9 @@ namespace Anemone
 
     void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
     {
-        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name))
             {
@@ -176,9 +193,9 @@ namespace Anemone
 
     void CommandLine::GetPositional(std::vector<std::string_view>& positional)
     {
-        for (int i = 1; i < Internal::GCommandLineStatics->ArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineStatics->ArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (token.starts_with('-'))
             {

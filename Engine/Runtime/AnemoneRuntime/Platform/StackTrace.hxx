@@ -9,10 +9,6 @@ namespace Anemone
     struct StackTrace final
     {
     public:
-        static void Initialize();
-        static void Finalize();
-
-    public:
         StackTrace() = delete;
 
         static RUNTIME_API void Walk(FunctionRef<void(void* address)> callback);

@@ -6,44 +6,43 @@
 #include <fmt/format.h>
 
 #if ANEMONE_BUILD_SHIPPING
-#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Error
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::Diagnostics::TraceLevel::Error
 #elif ANEMONE_CONFIG_DEBUG
-#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Debug
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::Diagnostics::TraceLevel::Debug
 #else
-#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::TraceLevel::Warning
+#define ANEMONE_DEFAULT_TRACE_LEVEL ::Anemone::Diagnostics::TraceLevel::Warning
 #endif
 
-
-namespace Anemone
+namespace Anemone::Diagnostics
 {
     class TraceListener;
 
-    class Trace final
+    inline constexpr TraceLevel DefaultTraceLevel = ANEMONE_DEFAULT_TRACE_LEVEL;
+
+    RUNTIME_API void RegisterGlobalTraceListener(TraceListener& listener);
+
+    RUNTIME_API void UnregisterGlobalTraceListener(TraceListener& listener);
+
+    RUNTIME_API TraceListener& GetGlobalTraceListener();
+
+    RUNTIME_API void FlushTraceListeners();
+
+    RUNTIME_API void TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
+
+    RUNTIME_API void TraceMessageFormatted(TraceListener& listener, TraceLevel level, std::string_view format, fmt::format_args args);
+
+    template <typename... Args>
+    void TraceMessage(TraceLevel level, std::string_view format, Args const&... args)
     {
-    public:
-        RUNTIME_API static void AddListener(TraceListener& listener);
-        RUNTIME_API static void RemoveListener(TraceListener& listener);
-
-        RUNTIME_API static void TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
-
-        template <typename... Args>
-        static void TraceMessage(TraceLevel level, std::string_view format, Args const&... args)
-        {
-            TraceMessageFormatted(level, format, fmt::make_format_args(args...));
-        }
-
-        RUNTIME_API static void Flush();
-
-    public:
-        static constexpr TraceLevel DefaultLevel = ANEMONE_DEFAULT_TRACE_LEVEL;
-    };
+        TraceMessageFormatted(level, format, fmt::make_format_args(args...));
+    }
 }
 
 #define AE_TRACE(level, format, ...) \
     do \
     { \
-        if constexpr (::Anemone::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
+        if constexpr (::Anemone::Diagnostics::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
         { \
-            ::Anemone::Trace::TraceMessage(::Anemone::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+            ::Anemone::Diagnostics::TraceMessage(::Anemone::Diagnostics::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

@@ -2,46 +2,17 @@
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Windows
 {
-    UninitializedObject<Windows::ApplicationStatics> GApplicationStatics;
+    HINSTANCE GInstanceHandle;
+
+    UninitializedObject<ApplicationStatics> GApplicationStatics{};
+
+    static constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
 }
 
 namespace Anemone::Internal::Windows
 {
-    HINSTANCE GInstanceHandle;
-    
-    ApplicationStatics::ApplicationStatics()
-    {
-        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
-        GInstanceHandle = hInstance;
-
-        this->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
-            hInstance,
-            MAKEINTRESOURCE(ApplicationStatics::IDI_MAIN_ICON),
-            IMAGE_ICON,
-            0,
-            0,
-            LR_SHARED));
-
-        this->ArrowCursor = Interop::Windows::LoadSystemCursor(IDC_ARROW);
-        this->ArrowWaitCursor = Interop::Windows::LoadSystemCursor(IDC_APPSTARTING);
-        this->TextCursor = Interop::Windows::LoadSystemCursor(IDC_IBEAM);
-
-        this->SizeHorizontalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
-        this->SizeVerticalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
-        this->SizeLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
-        this->SizeTopCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
-        this->SizeRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
-        this->SizeBottomCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
-        this->SizeTopLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
-        this->SizeTopRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
-        this->SizeBottomLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
-        this->SizeBottomRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
-        this->SizeAllCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEALL);
-        this->CrossCursor = Interop::Windows::LoadSystemCursor(IDC_CROSS);
-    }
-
     HCURSOR ApplicationStatics::GetCursor(CursorType cursor) const
     {
         switch (cursor)
@@ -96,6 +67,52 @@ namespace Anemone::Internal::Windows
             return this->CrossCursor;
         }
     }
+
+    HCURSOR GetCursorHandle(CursorType cursor)
+    {
+        return GApplicationStatics->GetCursor(cursor);
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeApplicationResources()
+    {
+        Windows::GApplicationStatics.Create();
+
+        HINSTANCE const hInstance = GetModuleHandleW(nullptr);
+        Windows::GInstanceHandle = hInstance;
+
+        Windows::GApplicationStatics->ApplicationIconHandle = static_cast<HICON>(LoadImageW(
+            hInstance,
+            MAKEINTRESOURCE(Windows::IDI_MAIN_ICON),
+            IMAGE_ICON,
+            0,
+            0,
+            LR_SHARED));
+
+        Windows::GApplicationStatics->ArrowCursor = Interop::Windows::LoadSystemCursor(IDC_ARROW);
+        Windows::GApplicationStatics->ArrowWaitCursor = Interop::Windows::LoadSystemCursor(IDC_APPSTARTING);
+        Windows::GApplicationStatics->TextCursor = Interop::Windows::LoadSystemCursor(IDC_IBEAM);
+
+        Windows::GApplicationStatics->SizeHorizontalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        Windows::GApplicationStatics->SizeVerticalCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        Windows::GApplicationStatics->SizeLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        Windows::GApplicationStatics->SizeTopCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        Windows::GApplicationStatics->SizeRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEWE);
+        Windows::GApplicationStatics->SizeBottomCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENS);
+        Windows::GApplicationStatics->SizeTopLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
+        Windows::GApplicationStatics->SizeTopRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
+        Windows::GApplicationStatics->SizeBottomLeftCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENESW);
+        Windows::GApplicationStatics->SizeBottomRightCursor = Interop::Windows::LoadSystemCursor(IDC_SIZENWSE);
+        Windows::GApplicationStatics->SizeAllCursor = Interop::Windows::LoadSystemCursor(IDC_SIZEALL);
+        Windows::GApplicationStatics->CrossCursor = Interop::Windows::LoadSystemCursor(IDC_CROSS);
+    }
+
+    extern void FinalizeApplicationResources()
+    {
+        Windows::GApplicationStatics.Destroy();
+    }
 }
 
 namespace Anemone
@@ -112,7 +129,7 @@ namespace Anemone
         }
 
         // Pool input devices.
-        Internal::GApplicationStatics->XInput.Poll();
+        Internal::Windows::GApplicationStatics->XInput.Poll();
     }
 
     std::unique_ptr<Window> Application::MakeWindow(WindowType type)

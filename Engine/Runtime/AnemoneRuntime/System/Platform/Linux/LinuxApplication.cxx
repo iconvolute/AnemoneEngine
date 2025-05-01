@@ -5,6 +5,14 @@
 namespace Anemone::Internal
 {
     UninitializedObject<Linux::ApplicationStatics> GApplicationStatics;
+
+    extern void InitializeApplicationResources()
+    {
+    }
+
+    extern void FinalizeApplicationResources()
+    {
+    }
 }
 
 namespace Anemone

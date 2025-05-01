@@ -153,4 +153,19 @@ namespace Anemone::Interop::Windows
         DWORD dwType = GetFileType(handle);
         return (dwType == FILE_TYPE_CHAR) or (dwType == FILE_TYPE_PIPE);
     }
+
+    anemone_forceinline void SetupConsoleMode(HANDLE hStream)
+    {
+        if (hStream)
+        {
+            DWORD dwMode = 0;
+
+            if (GetConsoleMode(hStream, &dwMode))
+            {
+                dwMode |= ENABLE_PROCESSED_OUTPUT;
+                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+                SetConsoleMode(hStream, dwMode);
+            }
+        }
+    }
 }

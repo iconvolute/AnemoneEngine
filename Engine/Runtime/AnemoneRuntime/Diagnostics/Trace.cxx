@@ -1,62 +1,134 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-#include "AnemoneRuntime/Diagnostics/Internal/TraceStatics.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 
 #include <iterator>
 #include <utility>
 #include <array>
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
-    void Trace::AddListener(TraceListener& listener)
+    static constexpr std::array TraceLevelMarks = []()
     {
-        UniqueLock scope{Internal::GTraceStatics->Lock};
+        return std::array{
+            'V',
+            'D',
+            'I',
+            'W',
+            'E',
+            'F',
+            'N',
+        };
+    }();
 
-        Internal::GTraceStatics->Listeners.PushBack(&listener);
-    }
-
-    void Trace::RemoveListener(TraceListener& listener)
+    static constexpr char GetCharacter(TraceLevel level)
     {
-        UniqueLock scope{Internal::GTraceStatics->Lock};
-
-        Internal::GTraceStatics->Listeners.Remove(&listener);
-    }
-
-    void Trace::TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
-    {
-        SharedLock scope{Internal::GTraceStatics->Lock};
-
-        if (not Internal::GTraceStatics->Listeners.IsEmpty())
+        auto const index = std::to_underlying(level);
+        if (index < TraceLevelMarks.size())
         {
-            fmt::memory_buffer buffer{};
+            return TraceLevelMarks[index];
+        }
 
-            auto out = std::back_inserter(buffer);
-            (*out++) = '[';
-            (*out++) = Internal::TraceStatics::GetCharacter(level);
-            (*out++) = ']';
-            (*out++) = ' ';
-            out = fmt::vformat_to(out, format, args);
+        return 'N';
+    }
 
-            const char* message = buffer.data();
-            size_t const size = buffer.size();
+    class GlobalTraceListener final : public TraceListener
+    {
+    private:
+        ReaderWriterLock _lock{};
+        IntrusiveList<TraceListener> _listeners{};
 
-            (*out) = '\0';
+    public:
+        void Event(TraceLevel level, const char* message, size_t size) override
+        {
+            SharedLock scope{this->_lock};
 
-
-            Internal::GTraceStatics->Listeners.ForEach([&](TraceListener& listener)
+            this->_listeners.ForEach([&](TraceListener& listener)
             {
-                listener.TraceEvent(level, message, size);
+                listener.Event(level, message, size);
             });
         }
+
+        void Flush() override
+        {
+            SharedLock scope{this->_lock};
+
+            this->_listeners.ForEach([](TraceListener& listener)
+            {
+                listener.Flush();
+            });
+        }
+
+        void Register(TraceListener& listener)
+        {
+            UniqueLock scope{this->_lock};
+            this->_listeners.PushBack(&listener);
+        }
+
+        void Unregister(TraceListener& listener)
+        {
+            UniqueLock scope{this->_lock};
+            this->_listeners.Remove(&listener);
+        }
+    };
+
+    static UninitializedObject<GlobalTraceListener> GTraceListener{};
+
+    RUNTIME_API void RegisterGlobalTraceListener(TraceListener& listener)
+    {
+        GTraceListener->Register(listener);
     }
 
-    void Trace::Flush()
+    RUNTIME_API void UnregisterGlobalTraceListener(TraceListener& listener)
     {
-        SharedLock scope{Internal::GTraceStatics->Lock};
+        GTraceListener->Unregister(listener);
+    }
 
-        Internal::GTraceStatics->Listeners.ForEach([](TraceListener& listener)
-        {
-            listener.Flush();
-        });
+    RUNTIME_API TraceListener& GetGlobalTraceListener()
+    {
+        return *GTraceListener;
+    }
+
+    RUNTIME_API void FlushTraceListeners()
+    {
+        GTraceListener->Flush();
+    }
+
+    RUNTIME_API void TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
+    {
+        TraceMessageFormatted(*GTraceListener, level, format, args);
+    }
+
+    RUNTIME_API void TraceMessageFormatted(TraceListener& listener, TraceLevel level, std::string_view format, fmt::format_args args)
+    {
+        fmt::memory_buffer buffer{};
+
+        auto out = std::back_inserter(buffer);
+        (*out++) = '[';
+        (*out++) = GetCharacter(level);
+        (*out++) = ']';
+        (*out++) = ' ';
+        out = fmt::vformat_to(out, format, args);
+
+        const char* message = buffer.data();
+        size_t const size = buffer.size();
+
+        (*out) = '\0';
+
+        listener.Event(level, message, size);
+    }
+
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeTrace()
+    {
+        ::Anemone::Diagnostics::GTraceListener.Create();
+    }
+
+    extern void FinalizeTrace()
+    {
+        ::Anemone::Diagnostics::GTraceListener.Destroy();
     }
 }

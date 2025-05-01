@@ -1,15 +1,18 @@
-#include "AnemoneRuntime/System/Platform/Windows/WindowsClipboard.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
 namespace Anemone::Internal
 {
-    UninitializedObject<WindowsClipboardStatics> GClipboardStatics{};
+    static UINT GBinaryClipboardFormat = 0;
 
-    WindowsClipboardStatics::WindowsClipboardStatics()
+    extern void InitializeClipboard()
     {
-        this->BinaryFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
+        GBinaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
+    }
+
+    extern void FinalizeClipboard()
+    {
     }
 }
 

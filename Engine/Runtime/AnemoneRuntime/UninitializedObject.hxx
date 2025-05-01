@@ -12,7 +12,7 @@ namespace Anemone
     {
     private:
         alignas(T) std::byte _buffer[sizeof(T)]{};
-        bool m_initialized{false};
+        T* m_instance = nullptr;
 
     public:
         UninitializedObject() = default;
@@ -23,67 +23,68 @@ namespace Anemone
         ~UninitializedObject() = default;
 
     public:
-        [[nodiscard]] explicit operator bool() const
+        [[nodiscard]] explicit constexpr operator bool() const
         {
-            return this->m_initialized;
+            return this->m_instance != nullptr;
         }
 
-        [[nodiscard]] T& Get()
-        {
-            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
-        }
-
-        [[nodiscard]] T const& Get() const
+        [[nodiscard]] constexpr T& Get()
         {
             return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
-        [[nodiscard]] T* operator->()
+        [[nodiscard]] constexpr T const& Get() const
+        {
+            return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
+        }
+
+        [[nodiscard]] constexpr T* operator->()
         {
             return std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
-        [[nodiscard]] T const* operator->() const
+        [[nodiscard]] constexpr T const* operator->() const
         {
             return std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
-        [[nodiscard]] T& operator*()
+        [[nodiscard]] constexpr T& operator*()
         {
             return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
-        [[nodiscard]] T const& operator*() const
+        [[nodiscard]] constexpr T const& operator*() const
         {
             return *std::launder<T>(reinterpret_cast<T*>(this->_buffer));
         }
 
     public:
-        [[nodiscard]] bool IsInitialized() const
+        [[nodiscard]] constexpr bool IsInitialized() const
         {
-            return this->m_initialized;
+            return this->m_instance != nullptr;
         }
 
         template <typename... Args>
-        void Create(Args&&... args)
+        constexpr void Create(Args&&... args)
         {
-            if (this->m_initialized)
+            if (this->m_instance)
             {
                 AE_PANIC("Object already initialized");
             }
 
-            this->m_initialized = true;
-            std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
+            this->m_instance = std::construct_at<T>(reinterpret_cast<T*>(this->_buffer), std::forward<Args>(args)...);
         }
 
-        void Destroy()
+        constexpr void Destroy()
         {
-            if (not this->m_initialized)
+            if (not this->m_instance)
             {
                 AE_PANIC("Object not initialized");
             }
+
             std::destroy_at(reinterpret_cast<T*>(this->_buffer));
-            this->m_initialized = false;
+
+            this->m_instance = nullptr;
         }
     };
 }

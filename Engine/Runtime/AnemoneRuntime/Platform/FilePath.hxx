@@ -1,6 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 
+#include <span>
 #include <string>
 #include <string_view>
 

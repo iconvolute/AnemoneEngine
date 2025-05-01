@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/System/Platform/Windows/WindowsProcessorProperties.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
@@ -11,42 +11,68 @@
 #include <algorithm>
 #include <vector>
 
-namespace Anemone::Internal
+namespace Anemone::Internal::Windows
 {
-    UninitializedObject<WindowsProcessorProperties> GProcessorProperties{};
-
     struct CoreInfoImpl
     {
         KAFFINITY Mask{};
         WORD Group{};
         uint8_t Efficiency{};
         bool HyperThreaded{};
-        bool Performance{};
     };
 
-    WindowsProcessorProperties::WindowsProcessorProperties()
+    struct ProcessorPropertiesStatics final
     {
+        // Number of physical cores.
+        uint32_t PhysicalCores{};
+
+        // Number of logical cores.
+        uint32_t LogicalCores{};
+
+        // Number of performance cores.
+        uint32_t PerformanceCores{};
+
+        // Number of efficiency cores.
+        uint32_t EfficiencyCores{};
+
+        bool HyperThreading{};
+
+        // Smallest cache-line size found.
+        uint32_t CacheLineSize{};
+
+        uint32_t CacheSizeLevel1{};
+        uint32_t CacheSizeLevel2{};
+        uint32_t CacheSizeLevel3{};
+
+        Interop::string_buffer<char, 64> ProcessorName{};
+        Interop::string_buffer<char, 64> ProcessorVendor{};
+    };
+
+    static UninitializedObject<ProcessorPropertiesStatics> GProcessorPropertiesStatics{};
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeProcessorProperties()
+    {
+        Windows::GProcessorPropertiesStatics.Create();
+
         Interop::memory_buffer<4096> buffer{};
 
         if (Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationAll))
         {
-            std::span view = buffer.as_span();
-
-            // Determine Cache properties.
-            std::byte const* first = buffer.data();
-            std::byte const* last = buffer.data() + buffer.size();
-            std::byte const* it = first;
-
             uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
 
             bool hasEfficiency = IsWindows10OrGreater();
 
-            std::vector<CoreInfoImpl> coreInfo;
+            std::vector<Windows::CoreInfoImpl> coreInfo;
             uint8_t performanceEfficiencyClass = 0;
 
-            while (it < last)
+            std::span view = buffer.as_span();
+
+            while (not view.empty())
             {
-                auto const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(it);
+                SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(view.data());
 
                 switch (current.Relationship)
                 {
@@ -58,15 +84,15 @@ namespace Anemone::Internal
                         switch (current.Cache.Level)
                         {
                         case 1:
-                            this->CacheSizeLevel1 += current.Cache.CacheSize;
+                            Windows::GProcessorPropertiesStatics->CacheSizeLevel1 += current.Cache.CacheSize;
                             break;
 
                         case 2:
-                            this->CacheSizeLevel2 += current.Cache.CacheSize;
+                            Windows::GProcessorPropertiesStatics->CacheSizeLevel2 += current.Cache.CacheSize;
                             break;
 
                         case 3:
-                            this->CacheSizeLevel3 += current.Cache.CacheSize;
+                            Windows::GProcessorPropertiesStatics->CacheSizeLevel3 += current.Cache.CacheSize;
                             break;
 
                         default:
@@ -91,7 +117,7 @@ namespace Anemone::Internal
                                 if (current.Processor.Flags & LTP_PC_SMT)
                                 {
                                     // Hyper-threaded CPU.
-                                    this->HyperThreadingEnabled = true;
+                                    Windows::GProcessorPropertiesStatics->HyperThreading = true;
                                 }
                             }
 
@@ -111,53 +137,42 @@ namespace Anemone::Internal
                     }
                 }
 
-                it += current.Size;
+                view = view.subspan(current.Size);
             }
 
-            this->CacheLineSize = cacheLineSize;
+            Windows::GProcessorPropertiesStatics->CacheLineSize = cacheLineSize;
 
-            for (auto& core : coreInfo)
-            {
-                if (core.Efficiency == performanceEfficiencyClass)
-                {
-                    core.Performance = true;
-                }
-                else
-                {
-                    core.Performance = false;
-                }
-            }
-
-            this->LogicalCores = 0;
-            this->PhysicalCores = 0;
-            this->PerformanceCores = 0;
-            this->EfficiencyCores = 0;
+            Windows::GProcessorPropertiesStatics->LogicalCores = 0;
+            Windows::GProcessorPropertiesStatics->PhysicalCores = 0;
+            Windows::GProcessorPropertiesStatics->PerformanceCores = 0;
+            Windows::GProcessorPropertiesStatics->EfficiencyCores = 0;
 
             for (auto const& core : coreInfo)
             {
                 // Classify core by efficiency.
-                if (core.Performance)
+                if (core.Efficiency == performanceEfficiencyClass)
                 {
-                    ++this->PerformanceCores;
+                    ++Windows::GProcessorPropertiesStatics->PerformanceCores;
                 }
                 else
                 {
-                    ++this->EfficiencyCores;
+                    ++Windows::GProcessorPropertiesStatics->EfficiencyCores;
                 }
 
                 // Count logical cores.
-                ++this->LogicalCores;
+                ++Windows::GProcessorPropertiesStatics->LogicalCores;
 
                 if (core.HyperThreaded)
                 {
-                    ++this->LogicalCores;
+                    ++Windows::GProcessorPropertiesStatics->LogicalCores;
                 }
 
                 // And physical cores.
-                ++this->PhysicalCores;
+                ++Windows::GProcessorPropertiesStatics->PhysicalCores;
             }
         }
 
+        // Get name and vendor of the CPU
         if (auto const key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)"))
         {
             // Query CPU name from registry
@@ -165,26 +180,31 @@ namespace Anemone::Internal
 
             if (key.ReadString(LR"(ProcessorNameString)", stringBuffer))
             {
-                Interop::Windows::NarrowString(this->Name, stringBuffer.as_view());
+                Interop::Windows::NarrowString(Windows::GProcessorPropertiesStatics->ProcessorName, stringBuffer.as_view());
             }
             else
             {
-                Debugger::ReportApplicationStop("Cannot obtain processor information");
+                Diagnostics::ReportApplicationStop("Cannot obtain processor information");
             }
 
             if (key.ReadString(LR"(VendorIdentifier)", stringBuffer))
             {
-                Interop::Windows::NarrowString(this->Vendor, stringBuffer.as_view());
+                Interop::Windows::NarrowString(Windows::GProcessorPropertiesStatics->ProcessorVendor, stringBuffer.as_view());
             }
             else
             {
-                Debugger::ReportApplicationStop("Cannot obtain processor information");
+                Diagnostics::ReportApplicationStop("Cannot obtain processor information");
             }
         }
         else
         {
-            Debugger::ReportApplicationStop("Cannot obtain processor information");
+            Diagnostics::ReportApplicationStop("Cannot obtain processor information");
         }
+    }
+
+    extern void FinalizeProcessorProperties()
+    {
+        Windows::GProcessorPropertiesStatics.Destroy();
     }
 }
 
@@ -192,56 +212,56 @@ namespace Anemone
 {
     size_t ProcessorProperties::GetPhysicalCoresCount()
     {
-        return Internal::GProcessorProperties->PhysicalCores;
+        return Internal::Windows::GProcessorPropertiesStatics->PhysicalCores;
     }
 
     size_t ProcessorProperties::GetLogicalCoresCount()
     {
-        return Internal::GProcessorProperties->LogicalCores;
+        return Internal::Windows::GProcessorPropertiesStatics->LogicalCores;
     }
 
     size_t ProcessorProperties::GetPerformanceCoresCount()
     {
-        return Internal::GProcessorProperties->PerformanceCores;
+        return Internal::Windows::GProcessorPropertiesStatics->PerformanceCores;
     }
 
     size_t ProcessorProperties::GetEfficiencyCoresCount()
     {
-        return Internal::GProcessorProperties->EfficiencyCores;
+        return Internal::Windows::GProcessorPropertiesStatics->EfficiencyCores;
     }
 
     bool ProcessorProperties::IsHyperThreadingEnabled()
     {
-        return Internal::GProcessorProperties->HyperThreadingEnabled;
+        return Internal::Windows::GProcessorPropertiesStatics->HyperThreading;
     }
 
     size_t ProcessorProperties::GetCacheLineSize()
     {
-        return Internal::GProcessorProperties->CacheLineSize;
+        return Internal::Windows::GProcessorPropertiesStatics->CacheLineSize;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel1()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel1;
+        return Internal::Windows::GProcessorPropertiesStatics->CacheSizeLevel1;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel2()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel2;
+        return Internal::Windows::GProcessorPropertiesStatics->CacheSizeLevel2;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel3()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel3;
+        return Internal::Windows::GProcessorPropertiesStatics->CacheSizeLevel3;
     }
 
     std::string_view ProcessorProperties::GetName()
     {
-        return Internal::GProcessorProperties->Name;
+        return Internal::Windows::GProcessorPropertiesStatics->ProcessorName.as_view();
     }
 
     std::string_view ProcessorProperties::GetVendor()
     {
-        return Internal::GProcessorProperties->Vendor;
+        return Internal::Windows::GProcessorPropertiesStatics->ProcessorVendor.as_view();
     }
 }

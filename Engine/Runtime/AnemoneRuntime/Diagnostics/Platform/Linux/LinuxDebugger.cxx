@@ -5,31 +5,29 @@
 
 namespace Anemone::Internal
 {
-    static UninitializedObject<ConsoleTraceListener> GConsoleTraceListener{};
+    static UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
 
-    UninitializedObject<LinuxDebuggerStatics> GDebuggerStatics{};
-
-    LinuxDebuggerStatics::LinuxDebuggerStatics()
+    extern void InitializeDebugger()
     {
         GConsoleTraceListener.Create();
-        Trace::AddListener(*GConsoleTraceListener);
+        Diagnostics::RegisterGlobalTraceListener(*GConsoleTraceListener);
     }
 
-    LinuxDebuggerStatics::~LinuxDebuggerStatics()
+    extern void FinalizeDebugger()
     {
-        Trace::RemoveListener(*GConsoleTraceListener);
+        Diagnostics::UnregisterGlobalTraceListener(*GConsoleTraceListener);
         GConsoleTraceListener.Destroy();
     }
 }
 
 namespace Anemone
 {
-    void Debugger::Break()
+    void Diagnostics::Break()
     {
         anemone_debugbreak();
     }
 
-    void Debugger::Crash()
+    void Diagnostics::Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -38,21 +36,21 @@ namespace Anemone
         abort();
     }
 
-    bool Debugger::IsAttached()
+    bool Diagnostics::IsDebuggerAttached()
     {
         return false;
     }
 
-    void Debugger::Wait()
+    void Diagnostics::WaitForDebugger()
     {
     }
 
-    bool Debugger::Attach()
+    bool Diagnostics::AttachDebugger()
     {
         return false;
     }
 
-    void Debugger::ReportApplicationStop(std::string_view reason)
+    void Diagnostics::ReportApplicationStop(std::string_view reason)
     {
         fwrite(reason.data(), 1, reason.size(), stderr);
         fflush(stderr);

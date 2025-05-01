@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
     class ConsoleTraceListener final
         : public TraceListener
@@ -11,7 +11,7 @@ namespace Anemone
         ReaderWriterLock _lock{};
 
     public:
-        void TraceEvent(TraceLevel level, const char* message, size_t size) override;
+        void Event(TraceLevel level, const char* message, size_t size) override;
         void Flush() override;
     };
 }

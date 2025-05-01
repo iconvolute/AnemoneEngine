@@ -38,15 +38,10 @@ namespace Anemone::Internal::Windows
         InputImpl Input{};
         XInputImpl XInput{};
 
-        static constexpr ULONG_PTR IDI_MAIN_ICON = 2137u;
-
-        ApplicationStatics();
-
         [[nodiscard]] HCURSOR GetCursor(CursorType cursor) const;
     };
-}
 
-namespace Anemone::Internal
-{
-    extern UninitializedObject<Windows::ApplicationStatics> GApplicationStatics;
+    extern HCURSOR GetCursorHandle(CursorType cursor);
+
+    extern UninitializedObject<ApplicationStatics> GApplicationStatics;
 }

@@ -1,35 +1,76 @@
-#include "AnemoneRuntime/System/Platform/Linux/LinuxProcessorProperties.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
+#include <string>
+
+namespace Anemone::Internal::Linux
+{
+    struct ProcessorPropertiesStatics final
+    {
+        // Number of physical cores.
+        uint32_t PhysicalCores{};
+
+        // Number of logical cores.
+        uint32_t LogicalCores{};
+
+        // Number of performance cores.
+        uint32_t PerformanceCores{};
+
+        // Number of efficiency cores.
+        uint32_t EfficiencyCores{};
+
+        bool HyperThreading{};
+
+        // Smallest cache-line size found.
+        uint32_t CacheLineSize{};
+
+        uint32_t CacheSizeLevel1{};
+        uint32_t CacheSizeLevel2{};
+        uint32_t CacheSizeLevel3{};
+
+        Interop::string_buffer<char, 64> ProcessorName{};
+        Interop::string_buffer<char, 64> ProcessorVendor{};
+    };
+
+    static UninitializedObject<ProcessorPropertiesStatics> GProcessorPropertiesStatics{};
+}
+
+
 namespace Anemone::Internal
 {
-    UninitializedObject<LinuxProcessorProperties> GProcessorProperties{};
-
-    LinuxProcessorProperties::LinuxProcessorProperties()
+    extern void InitializeProcessorProperties()
     {
+        Linux::GProcessorPropertiesStatics.Create();
+
         // This may not be accurate on all systems.
-        this->PhysicalCores = sysconf(_SC_NPROCESSORS_CONF);
+        Linux::GProcessorPropertiesStatics->PhysicalCores = sysconf(_SC_NPROCESSORS_CONF);
 
         cpu_set_t mask;
         CPU_ZERO(&mask);
 
         if (sched_getaffinity(0, sizeof(mask), &mask) == 0)
         {
-            this->LogicalCores = CPU_COUNT(&mask);
+            Linux::GProcessorPropertiesStatics->LogicalCores = CPU_COUNT(&mask);
         }
         else
         {
-            this->LogicalCores = this->PhysicalCores;
+            Linux::GProcessorPropertiesStatics->LogicalCores = Linux::GProcessorPropertiesStatics->PhysicalCores;
         }
 
-        if (this->PerformanceCores == 0)
+        if (Linux::GProcessorPropertiesStatics->PerformanceCores == 0)
         {
-            this->PerformanceCores = this->PhysicalCores;
-            this->EfficiencyCores = 0;
+            Linux::GProcessorPropertiesStatics->PerformanceCores = Linux::GProcessorPropertiesStatics->PhysicalCores;
+            Linux::GProcessorPropertiesStatics->EfficiencyCores = 0;
         }
+    }
+
+    extern void FinalizeProcessorProperties()
+    {
+        Linux::GProcessorPropertiesStatics.Destroy();
     }
 }
 
@@ -37,56 +78,56 @@ namespace Anemone
 {
     size_t ProcessorProperties::GetPhysicalCoresCount()
     {
-        return Internal::GProcessorProperties->PhysicalCores;
+        return Internal::Linux::GProcessorPropertiesStatics->PhysicalCores;
     }
 
     size_t ProcessorProperties::GetLogicalCoresCount()
     {
-        return Internal::GProcessorProperties->LogicalCores;
+        return Internal::Linux::GProcessorPropertiesStatics->LogicalCores;
     }
 
     size_t ProcessorProperties::GetPerformanceCoresCount()
     {
-        return Internal::GProcessorProperties->PerformanceCores;
+        return Internal::Linux::GProcessorPropertiesStatics->PerformanceCores;
     }
 
     size_t ProcessorProperties::GetEfficiencyCoresCount()
     {
-        return Internal::GProcessorProperties->EfficiencyCores;
+        return Internal::Linux::GProcessorPropertiesStatics->EfficiencyCores;
     }
 
     bool ProcessorProperties::IsHyperThreadingEnabled()
     {
-        return Internal::GProcessorProperties->HyperThreadingEnabled;
+        return Internal::Linux::GProcessorPropertiesStatics->HyperThreading;
     }
 
     size_t ProcessorProperties::GetCacheLineSize()
     {
-        return Internal::GProcessorProperties->CacheLineSize;
+        return Internal::Linux::GProcessorPropertiesStatics->CacheLineSize;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel1()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel1;
+        return Internal::Linux::GProcessorPropertiesStatics->CacheSizeLevel1;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel2()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel2;
+        return Internal::Linux::GProcessorPropertiesStatics->CacheSizeLevel2;
     }
 
     size_t ProcessorProperties::GetCacheSizeLevel3()
     {
-        return Internal::GProcessorProperties->CacheSizeLevel3;
+        return Internal::Linux::GProcessorPropertiesStatics->CacheSizeLevel3;
     }
 
     std::string_view ProcessorProperties::GetName()
     {
-        return Internal::GProcessorProperties->Name;
+        return Internal::Linux::GProcessorPropertiesStatics->ProcessorName.as_view();
     }
 
     std::string_view ProcessorProperties::GetVendor()
     {
-        return Internal::GProcessorProperties->Vendor;
+        return Internal::Linux::GProcessorPropertiesStatics->ProcessorVendor.as_view();
     }
 }

@@ -1,22 +1,19 @@
 #include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/System/Platform/Windows/WindowsEnvironment.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
 #include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
-#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
-#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Windows/Process.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
-#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
-#include "AnemoneRuntime/Platform/FilePath.hxx"
+#include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "anemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Platform/FilePath.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 
 #include <locale>
-#include <iterator>
 
 #include <Windows.h>
 #include <Psapi.h>
@@ -25,6 +22,259 @@
 #include <wrl/client.h>
 #include <netlistmgr.h>
 #include <shellapi.h>
+
+namespace Anemone::Internal::Windows
+{
+    static void VerifyRequirements()
+    {
+        if (Interop::Windows::IsProcessEmulated())
+        {
+            // VERIFY: AVX is not supported in WoA process emulation.
+            Diagnostics::ReportApplicationStop("Emulated process not supported.");
+        }
+
+        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
+        {
+            Diagnostics::ReportApplicationStop("64-bit compare-exchange not supported.");
+        }
+
+#if ANEMONE_ARCHITECTURE_X64
+        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128))
+        {
+            Diagnostics::ReportApplicationStop("128-bit compare-exchange not supported");
+        }
+#endif
+
+#if ANEMONE_FEATURE_AVX
+
+        if (not IsProcessorFeaturePresent(PF_XSAVE_ENABLED))
+        {
+            Diagnostics::ReportApplicationStop("XSAVE not enabled.");
+        }
+
+        if (not IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE))
+        {
+            Diagnostics::ReportApplicationStop("AVX not supported.");
+        }
+#endif
+
+#if ANEMONE_FEATURE_AVX2
+        if (not IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE))
+        {
+            Diagnostics::ReportApplicationStop("AVX2 not supported.");
+        }
+#endif
+
+#if ANEMONE_FEATURE_NEON
+        if (not IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE))
+        {
+            Diagnostics::ReportApplicationStop("NEON not supported.");
+        }
+#endif
+
+        // Verify Windows version
+        OSVERSIONINFOEXW osie{
+            .dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW),
+            .dwMajorVersion = static_cast<DWORD>(10),
+        };
+
+        ULONGLONG conditionMask{};
+        conditionMask = VerSetConditionMask(
+            conditionMask,
+            VER_MAJORVERSION,
+            VER_GREATER_EQUAL);
+        conditionMask = VerSetConditionMask(
+            conditionMask,
+            VER_MINORVERSION,
+            VER_GREATER_EQUAL);
+
+        if (not VerifyVersionInfoW(
+                &osie,
+                VER_MAJORVERSION | VER_MINORVERSION,
+                conditionMask))
+        {
+            Diagnostics::ReportApplicationStop("Windows 10 or newer required");
+        }
+    }
+
+    struct EnvironmentStatics final
+    {
+        DateTime m_StartupTime;
+        Uuid m_SystemId;
+        DeviceType m_DeviceType;
+        DeviceProperties m_DeviceProperties;
+        
+        std::string m_SystemVersion;
+        std::string m_SystemName;
+        std::string m_DeviceId;
+        std::string m_DeviceName;
+        std::string m_DeviceModel;
+        std::string m_DeviceManufacturer;
+        std::string m_DeviceVersion;
+        std::string m_ComputerName;
+        std::string m_UserName;
+        std::string m_ExecutablePath;
+        std::string m_StartupPath;
+        std::string m_ProfilePath;
+        std::string m_DesktopPath;
+        std::string m_DocumentsPath;
+        std::string m_DownloadsPath;
+        std::string m_TemporaryPath;
+    };
+
+    static UninitializedObject<EnvironmentStatics> GEnvironmentStatics{};
+
+    static void InitializeStatics(EnvironmentStatics& statics)
+    {
+        //
+        // Capture application startup time.
+        //
+
+        statics.m_StartupTime = Environment::GetCurrentDateTime();
+
+
+        //
+        // Determine environment properties.
+        //
+
+        Interop::string_buffer<wchar_t, 512> buffer{};
+
+        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)"))
+        {
+            DWORD major{};
+            (void)key.Read(L"CurrentMajorVersionNumber", major);
+
+            DWORD minor{};
+            (void)key.Read(L"CurrentMinorVersionNumber", minor);
+
+            Interop::string_buffer<char, 64> build{};
+            (void)key.ReadString("BuildLabEx", build);
+
+            statics.m_SystemVersion = fmt::format(
+                "{}.{}.{}",
+                major,
+                minor,
+                build.as_view());
+
+            Interop::string_buffer<char, 64> productName{};
+            (void)key.ReadString("ProductName", productName);
+            statics.m_SystemName = productName.as_view();
+        }
+
+        // Determine system ID
+        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)"))
+        {
+            if (key.ReadString(L"MachineGuid", buffer))
+            {
+                Interop::string_buffer<char, 64> utf8Buffer;
+                Interop::Windows::NarrowString(utf8Buffer, buffer.as_view());
+
+                statics.m_SystemId = UuidParser::Parse(utf8Buffer.as_view()).value_or(Uuid{});
+            }
+        }
+
+        // Executable path
+        Interop::Windows::QueryFullProcessImageName(buffer);
+        Interop::Windows::NarrowString(statics.m_ExecutablePath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(statics.m_ExecutablePath);
+
+        // Startup path
+        Interop::Windows::GetCurrentDirectory(buffer);
+        Interop::Windows::NarrowString(statics.m_StartupPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(statics.m_StartupPath);
+
+        // Computer name
+        Interop::Windows::GetComputerName(buffer);
+        Interop::Windows::NarrowString(statics.m_ComputerName, buffer.as_view());
+
+        // User name
+        Interop::Windows::GetUserName(buffer);
+        Interop::Windows::NarrowString(statics.m_UserName, buffer.as_view());
+
+        // Profile path
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
+        {
+            Interop::Windows::NarrowString(statics.m_ProfilePath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(statics.m_ProfilePath);
+
+        // Desktop path
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
+        {
+            Interop::Windows::NarrowString(statics.m_DesktopPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(statics.m_DesktopPath);
+
+        // Documents path
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
+        {
+            Interop::Windows::NarrowString(statics.m_DocumentsPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(statics.m_DocumentsPath);
+
+        // Downloads path
+        Interop::Windows::GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
+        {
+            Interop::Windows::NarrowString(statics.m_DownloadsPath, value);
+        });
+        FilePath::NormalizeDirectorySeparators(statics.m_DownloadsPath);
+
+        // Temp path
+        Interop::Windows::GetTempPath(buffer);
+        Interop::Windows::NarrowString(statics.m_TemporaryPath, buffer.as_view());
+        FilePath::NormalizeDirectorySeparators(statics.m_TemporaryPath);
+
+        if (auto const keySystem = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)"))
+        {
+            if (keySystem.ReadString(L"SystemBiosVersion", buffer))
+            {
+                Interop::Windows::NarrowString(statics.m_DeviceId, buffer.as_view());
+            }
+            else
+            {
+                Diagnostics::ReportApplicationStop("Failed to get system information");
+            }
+
+            if (auto const keyBios = keySystem.OpenSubKey(LR"(BIOS)"))
+            {
+                if (keyBios.ReadString(L"SystemManufacturer", buffer))
+                {
+                    Interop::Windows::NarrowString(statics.m_DeviceManufacturer, buffer.as_view());
+                }
+                else
+                {
+                    Diagnostics::ReportApplicationStop("Failed to get system information");
+                }
+
+                if (keyBios.ReadString(L"SystemProductName", buffer))
+                {
+                    Interop::Windows::NarrowString(statics.m_DeviceName, buffer.as_view());
+                }
+                else
+                {
+                    Diagnostics::ReportApplicationStop("Failed to get system information");
+                }
+
+                if (keyBios.ReadString(L"SystemVersion", buffer))
+                {
+                    Interop::Windows::NarrowString(statics.m_DeviceVersion, buffer.as_view());
+                }
+                else
+                {
+                    Diagnostics::ReportApplicationStop("Failed to get system information");
+                }
+            }
+            else
+            {
+                Diagnostics::ReportApplicationStop("Failed to get system information");
+            }
+        }
+        else
+        {
+            Diagnostics::ReportApplicationStop("Failed to get system information");
+        }
+    }
+}
 
 namespace Anemone::Internal
 {
@@ -63,29 +313,12 @@ namespace Anemone::Internal
 
 namespace Anemone::Internal
 {
-    UninitializedObject<WindowsEnvironmentStatics> GEnvironmentStatics{};
-
-    static void SetupConsoleMode(HANDLE hStream)
-    {
-        if (hStream)
-        {
-            DWORD dwMode = 0;
-
-            if (GetConsoleMode(hStream, &dwMode))
-            {
-                dwMode |= ENABLE_PROCESSED_OUTPUT;
-                dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
-                SetConsoleMode(hStream, dwMode);
-            }
-        }
-    }
-
-    WindowsEnvironmentStatics::WindowsEnvironmentStatics()
+    extern void InitializeEnvironment()
     {
         // Initialize COM
         if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
         {
-            Debugger::ReportApplicationStop("Failed to initialize COM.");
+            Diagnostics::ReportApplicationStop("Failed to initialize COM.");
         }
 
         // Initialize DPI awareness.
@@ -98,8 +331,8 @@ namespace Anemone::Internal
         // When process hangs, DWM will ghost the window. This is not desirable for us.
         DisableProcessWindowsGhosting();
 
-        SetupConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE));
-        SetupConsoleMode(GetStdHandle(STD_ERROR_HANDLE));
+        Interop::Windows::SetupConsoleMode(GetStdHandle(STD_OUTPUT_HANDLE));
+        Interop::Windows::SetupConsoleMode(GetStdHandle(STD_ERROR_HANDLE));
 
         SetErrorMode(SEM_NOOPENFILEERRORBOX | SEM_FAILCRITICALERRORS);
         _set_error_mode(_OUT_TO_STDERR);
@@ -107,12 +340,12 @@ namespace Anemone::Internal
         // Set locale.
         (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
 
-        VerifyRequirements();
+        Internal::Windows::VerifyRequirements();
 
         WSADATA wsaData{};
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         {
-            Debugger::ReportApplicationStop("Failed to initialize networking.");
+            Diagnostics::ReportApplicationStop("Failed to initialize networking.");
         }
 
 
@@ -132,237 +365,21 @@ namespace Anemone::Internal
         }
 #endif
 
-        //
-        // Capture application startup time.
-        //
-
-        this->m_StartupTime = Environment::GetCurrentDateTime();
-
-
-        //
-        // Determine environment properties.
-        //
-
-        Interop::string_buffer<wchar_t, 512> buffer{};
-
-        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Windows NT\CurrentVersion)"))
-        {
-            DWORD major{};
-            (void)key.Read(L"CurrentMajorVersionNumber", major);
-
-            DWORD minor{};
-            (void)key.Read(L"CurrentMinorVersionNumber", minor);
-
-            Interop::string_buffer<char, 64> build{};
-            (void)key.ReadString("BuildLabEx", build);
-
-            Interop::string_buffer<char, 64> product{};
-            (void)key.ReadString("ProductName", product);
-
-                        this->m_SystemVersion = fmt::format(
-                "{}.{}.{}",
-                major,
-                minor,
-                build.as_view());
-
-            this->m_SystemName = product.as_view();
-        }
-
-        // Determine system ID
-        if (auto key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(SOFTWARE\Microsoft\Cryptography)"))
-        {
-            if (key.ReadString(L"MachineGuid", buffer))
-            {
-                Interop::string_buffer<char, 64> utf8Buffer;
-                Interop::Windows::NarrowString(utf8Buffer, buffer.as_view());
-
-                this->m_SystemId = UuidParser::Parse(utf8Buffer.as_view()).value_or(Uuid{});
-            }
-        }
-
-        // Executable path
-        Interop::Windows::QueryFullProcessImageName(buffer);
-        Interop::Windows::NarrowString(this->m_ExecutablePath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->m_ExecutablePath);
-
-        // Startup path
-        Interop::Windows::GetCurrentDirectory(buffer);
-        Interop::Windows::NarrowString(this->m_StartupPath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->m_StartupPath);
-
-        // Computer name
-        Interop::Windows::GetComputerName(buffer);
-        Interop::Windows::NarrowString(this->m_ComputerName, buffer.as_view());
-
-        // User name
-        Interop::Windows::GetUserName(buffer);
-        Interop::Windows::NarrowString(this->m_UserName, buffer.as_view());
-
-        // Profile path
-        Interop::Windows::GetKnownFolderPath(FOLDERID_Profile, [&](std::wstring_view value)
-        {
-            Interop::Windows::NarrowString(this->m_ProfilePath, value);
-        });
-        FilePath::NormalizeDirectorySeparators(this->m_ProfilePath);
-
-        // Desktop path
-        Interop::Windows::GetKnownFolderPath(FOLDERID_Desktop, [&](std::wstring_view value)
-        {
-            Interop::Windows::NarrowString(this->m_DesktopPath, value);
-        });
-        FilePath::NormalizeDirectorySeparators(this->m_DesktopPath);
-
-        // Documents path
-        Interop::Windows::GetKnownFolderPath(FOLDERID_Documents, [&](std::wstring_view value)
-        {
-            Interop::Windows::NarrowString(this->m_DocumentsPath, value);
-        });
-        FilePath::NormalizeDirectorySeparators(this->m_DocumentsPath);
-
-        // Downloads path
-        Interop::Windows::GetKnownFolderPath(FOLDERID_Downloads, [&](std::wstring_view value)
-        {
-            Interop::Windows::NarrowString(this->m_DownloadsPath, value);
-        });
-        FilePath::NormalizeDirectorySeparators(this->m_DownloadsPath);
-
-        // Temp path
-        Interop::Windows::GetTempPath(buffer);
-        Interop::Windows::NarrowString(this->m_TemporaryPath, buffer.as_view());
-        FilePath::NormalizeDirectorySeparators(this->m_TemporaryPath);
-
-        if (auto const keySystem = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System)"))
-        {
-            if (keySystem.ReadString(L"SystemBiosVersion", buffer))
-            {
-                Interop::Windows::NarrowString(this->m_DeviceId, buffer.as_view());
-            }
-            else
-            {
-                Debugger::ReportApplicationStop("Failed to get system information");
-            }
-
-            if (auto const keyBios = keySystem.OpenSubKey(LR"(BIOS)"))
-            {
-                if (keyBios.ReadString(L"SystemManufacturer", buffer))
-                {
-                    Interop::Windows::NarrowString(this->m_DeviceManufacturer, buffer.as_view());
-                }
-                else
-                {
-                    Debugger::ReportApplicationStop("Failed to get system information");
-                }
-
-                if (keyBios.ReadString(L"SystemProductName", buffer))
-                {
-                    Interop::Windows::NarrowString(this->m_DeviceName, buffer.as_view());
-                }
-                else
-                {
-                    Debugger::ReportApplicationStop("Failed to get system information");
-                }
-
-                if (keyBios.ReadString(L"SystemVersion", buffer))
-                {
-                    Interop::Windows::NarrowString(this->m_DeviceVersion, buffer.as_view());
-                }
-                else
-                {
-                    Debugger::ReportApplicationStop("Failed to get system information");
-                }
-            }
-            else
-            {
-                Debugger::ReportApplicationStop("Failed to get system information");
-            }
-        }
-        else
-        {
-            Debugger::ReportApplicationStop("Failed to get system information");
-        }
+        Windows::GEnvironmentStatics.Create();
+        Windows::InitializeStatics(*Windows::GEnvironmentStatics);
     }
 
-    WindowsEnvironmentStatics::~WindowsEnvironmentStatics()
+    extern void FinalizeEnvironment()
     {
+        Windows::GEnvironmentStatics.Destroy();
+
         if (WSACleanup() != 0)
         {
-            Debugger::ReportApplicationStop("Failed to finalize networking.");
+            Diagnostics::ReportApplicationStop("Failed to finalize networking.");
         }
 
         // Finalize COM
         CoUninitialize();
-    }
-
-    void WindowsEnvironmentStatics::VerifyRequirements()
-    {
-        if (Interop::Windows::IsProcessEmulated())
-        {
-            // VERIFY: AVX is not supported in WoA process emulation.
-            Debugger::ReportApplicationStop("Emulated process not supported.");
-        }
-
-        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
-        {
-            Debugger::ReportApplicationStop("64-bit compare-exchange not supported.");
-        }
-
-#if ANEMONE_ARCHITECTURE_X64
-        if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128))
-        {
-            Debugger::ReportApplicationStop("128-bit compare-exchange not supported");
-        }
-#endif
-
-#if ANEMONE_FEATURE_AVX
-
-        if (not IsProcessorFeaturePresent(PF_XSAVE_ENABLED))
-        {
-            Debugger::ReportApplicationStop("XSAVE not enabled.");
-        }
-
-        if (not IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE))
-        {
-            Debugger::ReportApplicationStop("AVX not supported.");
-        }
-#endif
-
-#if ANEMONE_FEATURE_AVX2
-        if (not IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE))
-        {
-            Debugger::ReportApplicationStop("AVX2 not supported.");
-        }
-#endif
-
-#if ANEMONE_FEATURE_NEON
-        if (not IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE))
-        {
-            Debugger::ReportApplicationStop("NEON not supported.");
-        }
-#endif
-
-        // Verify Windows version
-        OSVERSIONINFOEXW osie{
-            .dwOSVersionInfoSize = sizeof(OSVERSIONINFOEXW),
-            .dwMajorVersion = static_cast<DWORD>(10),
-        };
-
-        ULONGLONG conditionMask{};
-        conditionMask = VerSetConditionMask(
-            conditionMask,
-            VER_MAJORVERSION,
-            VER_GREATER_EQUAL);
-        conditionMask = VerSetConditionMask(
-            conditionMask,
-            VER_MINORVERSION,
-            VER_GREATER_EQUAL);
-
-        if (not VerifyVersionInfoW(
-                &osie,
-                VER_MAJORVERSION | VER_MINORVERSION,
-                conditionMask))
-        {
-            Debugger::ReportApplicationStop("Windows 10 or newer required");
-        }
     }
 }
 
@@ -550,17 +567,17 @@ namespace Anemone
 
     std::string_view Environment::GetSystemVersion()
     {
-        return Internal::GEnvironmentStatics->m_SystemVersion;
+        return Internal::Windows::GEnvironmentStatics->m_SystemVersion;
     }
 
     Uuid Environment::GetSystemId()
     {
-        return Internal::GEnvironmentStatics->m_SystemId;
+        return Internal::Windows::GEnvironmentStatics->m_SystemId;
     }
 
     std::string_view Environment::GetSystemName()
     {
-        return Internal::GEnvironmentStatics->m_SystemName;
+        return Internal::Windows::GEnvironmentStatics->m_SystemName;
     }
 
     Duration Environment::GetSystemUptime()
@@ -570,7 +587,7 @@ namespace Anemone
 
     DateTime Environment::GetApplicationStartupTime()
     {
-        return Internal::GEnvironmentStatics->m_StartupTime;
+        return Internal::Windows::GEnvironmentStatics->m_StartupTime;
     }
 
     MemoryProperties Environment::GetMemoryProperties()
@@ -701,72 +718,72 @@ namespace Anemone
 
     std::string_view Environment::GetDeviceUniqueId()
     {
-        return Internal::GEnvironmentStatics->m_DeviceId;
+        return Internal::Windows::GEnvironmentStatics->m_DeviceId;
     }
 
     std::string_view Environment::GetDeviceName()
     {
-        return Internal::GEnvironmentStatics->m_DeviceName;
+        return Internal::Windows::GEnvironmentStatics->m_DeviceName;
     }
 
     std::string Environment::GetDeviceModel()
     {
-        return Internal::GEnvironmentStatics->m_DeviceModel;
+        return Internal::Windows::GEnvironmentStatics->m_DeviceModel;
     }
 
     DeviceType Environment::GetDeviceType()
     {
-        return Internal::GEnvironmentStatics->m_DeviceType;
+        return Internal::Windows::GEnvironmentStatics->m_DeviceType;
     }
 
     DeviceProperties Environment::GetDeviceProperties()
     {
-        return Internal::GEnvironmentStatics->m_DeviceProperties;
+        return Internal::Windows::GEnvironmentStatics->m_DeviceProperties;
     }
 
     std::string_view Environment::GetComputerName()
     {
-        return Internal::GEnvironmentStatics->m_ComputerName;
+        return Internal::Windows::GEnvironmentStatics->m_ComputerName;
     }
 
     std::string_view Environment::GetUserName()
     {
-        return Internal::GEnvironmentStatics->m_UserName;
+        return Internal::Windows::GEnvironmentStatics->m_UserName;
     }
 
     std::string_view Environment::GetExecutablePath()
     {
-        return Internal::GEnvironmentStatics->m_ExecutablePath;
+        return Internal::Windows::GEnvironmentStatics->m_ExecutablePath;
     }
 
     std::string_view Environment::GetStartupPath()
     {
-        return Internal::GEnvironmentStatics->m_StartupPath;
+        return Internal::Windows::GEnvironmentStatics->m_StartupPath;
     }
 
     std::string_view Environment::GetHomePath()
     {
-        return Internal::GEnvironmentStatics->m_ProfilePath;
+        return Internal::Windows::GEnvironmentStatics->m_ProfilePath;
     }
 
     std::string_view Environment::GetDesktopPath()
     {
-        return Internal::GEnvironmentStatics->m_DesktopPath;
+        return Internal::Windows::GEnvironmentStatics->m_DesktopPath;
     }
 
     std::string_view Environment::GetDocumentsPath()
     {
-        return Internal::GEnvironmentStatics->m_DocumentsPath;
+        return Internal::Windows::GEnvironmentStatics->m_DocumentsPath;
     }
 
     std::string_view Environment::GetDownloadsPath()
     {
-        return Internal::GEnvironmentStatics->m_DownloadsPath;
+        return Internal::Windows::GEnvironmentStatics->m_DownloadsPath;
     }
 
     std::string_view Environment::GetTemporaryPath()
     {
-        return Internal::GEnvironmentStatics->m_TemporaryPath;
+        return Internal::Windows::GEnvironmentStatics->m_TemporaryPath;
     }
 
     DateTime Environment::GetCurrentDateTime()

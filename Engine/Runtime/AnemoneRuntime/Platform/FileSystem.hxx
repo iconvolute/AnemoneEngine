@@ -55,10 +55,6 @@ namespace Anemone
     struct FileSystem
     {
     public:
-        static void Initialize();
-        static void Finalize();
-
-    public:
         FileSystem() = delete;
 
         RUNTIME_API static auto FileExists(std::string_view path) -> std::expected<bool, ErrorCode>;

@@ -1,6 +1,6 @@
 #pragma once
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
     enum class TraceLevel : uint8_t
     {
