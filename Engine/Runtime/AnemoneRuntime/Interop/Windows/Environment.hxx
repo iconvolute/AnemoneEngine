@@ -1,16 +1,16 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
-#include "AnemoneRuntime/Interop/StringBuffer.hxx"
-#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
+#include "AnemoneRuntime/Interop/Windows/StringBuffer.hxx"
+#include "AnemoneRuntime/Interop/Windows/MemoryBuffer.hxx"
 
 #include <ShlObj.h>
 
 namespace Anemone::Interop::Windows
 {
-    template <size_t CapacityT>
-    anemone_forceinline bool GetCurrentDirectory(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetCurrentDirectory(string_buffer<wchar_t, Capacity>& result) noexcept
     {
-        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             // MSDN:
             //  If the function succeeds, the return value specifies the number of characters that are written to the
@@ -26,18 +26,18 @@ namespace Anemone::Interop::Windows
                     --dwLength;
                 }
                 capacity = static_cast<size_t>(dwLength);
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(GetLastError());
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetEnvironmentVariable(string_buffer<wchar_t, CapacityT>& result, const wchar_t* name) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetEnvironmentVariable(string_buffer<wchar_t, Capacity>& result, const wchar_t* name) noexcept
     {
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [&](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             // MSDN:
             //  The size of the buffer pointed to by the lpBuffer parameter, including the null-terminating character,
@@ -46,12 +46,14 @@ namespace Anemone::Interop::Windows
             SetLastError(ERROR_SUCCESS);
             DWORD dwLength = GetEnvironmentVariableW(name, buffer.data(), static_cast<DWORD>(buffer.size() + 1uz));
 
-            if ((dwLength == 0) and (GetLastError() != ERROR_SUCCESS))
+            DWORD dwError = GetLastError();
+
+            if ((dwLength == 0) and (dwError != ERROR_SUCCESS))
             {
                 // MSDN:
                 //  If the function fails, the return value is zero.
                 capacity = 0;
-                return false;
+                return HRESULT_FROM_WIN32(dwError);
             }
 
             if (dwLength > buffer.size())
@@ -64,21 +66,21 @@ namespace Anemone::Interop::Windows
             }
 
             capacity = dwLength;
-            return true;
+            return S_OK;
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetSystemDirectory(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetSystemDirectory(string_buffer<wchar_t, Capacity>& result) noexcept
     {
-        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             UINT length = GetSystemDirectoryW(buffer.data(), static_cast<UINT>(buffer.size() + 1uz));
 
             if (length == 0)
             {
                 capacity = 0;
-                return false;
+                return HRESULT_FROM_WIN32(GetLastError());
             }
 
             // MSDN:
@@ -94,28 +96,28 @@ namespace Anemone::Interop::Windows
             }
 
             capacity = length;
-            return true;
+            return S_OK;
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetUserDefaultLocaleName(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetUserDefaultLocaleName(string_buffer<wchar_t, Capacity>& result) noexcept
     {
         std::span<wchar_t> writable = result.as_buffer_span();
         if (int const length = ::GetUserDefaultLocaleName(writable.data(), static_cast<int>(writable.size())); length > 0)
         {
             result.trim(static_cast<size_t>(length - 1));
-            return true;
+            return S_OK;
         }
 
         result.trim(0);
-        return false;
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetComputerName(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetComputerName(string_buffer<wchar_t, Capacity>& result) noexcept
     {
-        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             // MSDN:
             //  On input, specifies the size of the buffer, in TCHARs.
@@ -127,28 +129,29 @@ namespace Anemone::Interop::Windows
                 //  On output, the number of TCHARs copied to the destination buffer, not including the terminating null
                 //  character.
                 capacity = static_cast<size_t>(dwSize);
-                return true;
+                return S_OK;
             }
 
-            if (GetLastError() == ERROR_BUFFER_OVERFLOW)
+            DWORD dwError = GetLastError();
+            if (dwError == ERROR_BUFFER_OVERFLOW)
             {
                 // MSDN:
                 //  If the buffer is too small, the function fails and GetLastError returns ERROR_BUFFER_OVERFLOW.
                 //  The lpnSize parameter specifies the size of the buffer required, including the terminating null
                 //  character.
                 capacity = dwSize - 1u;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(dwError);
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetComputerNameEx(COMPUTER_NAME_FORMAT format, string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetComputerNameEx(COMPUTER_NAME_FORMAT format, string_buffer<wchar_t, Capacity>& result) noexcept
     {
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [&](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             // MSDN:
             //  On input, specifies the size of the buffer, in TCHARs.
@@ -160,27 +163,28 @@ namespace Anemone::Interop::Windows
                 //  On output, receives the number of TCHARs copied to the destination buffer, not including the
                 //  terminating null character.
                 capacity = static_cast<size_t>(dwSize);
-                return true;
+                return S_OK;
             }
 
-            if (GetLastError() == ERROR_MORE_DATA)
+            DWORD dwError = GetLastError();
+            if (dwError == ERROR_MORE_DATA)
             {
                 // MSDN:
                 //  If the buffer is too small, the function fails and GetLastError returns ERROR_MORE_DATA.
                 //  This parameter receives the size of the buffer required, including the terminating null character.
                 capacity = dwSize - 1uz;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(dwError);
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetUserName(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetUserName(string_buffer<wchar_t, Capacity>& result) noexcept
     {
-        return adapt_string_buffer(result, [](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [](std::span<wchar_t> buffer, size_t& capacity) -> HRESULT
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
             if (GetUserNameW(buffer.data(), &dwSize))
@@ -189,25 +193,26 @@ namespace Anemone::Interop::Windows
                 //  On output, the variable receives the number of TCHARs copied to the buffer, including the
                 //  terminating null character.
                 capacity = dwSize - 1uz;
-                return true;
+                return S_OK;
             }
 
-            if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+            DWORD dwError = GetLastError();
+            if (dwError == ERROR_INSUFFICIENT_BUFFER)
             {
                 // MSDN:
                 //  If lpBuffer is too small, the function fails and GetLastError returns ERROR_INSUFFICIENT_BUFFER.
                 //  This parameter receives the required buffer size, including the terminating null character.
                 capacity = dwSize - 1uz;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(dwError);
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetUserPreferredUILanguages(string_buffer<wchar_t, CapacityT>& result, DWORD flags, ULONG& numLanguages)
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetUserPreferredUILanguages(string_buffer<wchar_t, Capacity>& result, DWORD flags, ULONG& numLanguages)
     {
         // TODO: This API should be replaced with proper splitting as well.
         ULONG uSize = 0;
@@ -220,37 +225,38 @@ namespace Anemone::Interop::Windows
             {
                 // Trim to result.
                 result.trim(uSize - 1uz);
-                return true;
+                return S_OK;
             }
         }
 
-        return false;
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 
     template <typename Callback = void(std::wstring_view)>
-    anemone_forceinline bool GetKnownFolderPath(KNOWNFOLDERID const& id, Callback&& callback) noexcept
+    anemone_forceinline HRESULT GetKnownFolderPath(KNOWNFOLDERID const& id, Callback&& callback) noexcept
     {
         PWSTR result{};
 
-        if (HRESULT const hr = SHGetKnownFolderPath(id, 0, nullptr, &result); SUCCEEDED(hr))
+        HRESULT const hr = SHGetKnownFolderPath(id, 0, nullptr, &result);
+
+        if (SUCCEEDED(hr))
         {
             if (result != nullptr)
             {
                 std::forward<Callback>(callback)(std::wstring_view{result});
                 CoTaskMemFree(result);
-                return true;
             }
         }
 
-        return false;
+        return hr;
     }
 
     template <size_t Capacity>
-    anemone_forceinline bool GetLogicalProcessorInformationEx(
+    anemone_forceinline HRESULT GetLogicalProcessorInformationEx(
         memory_buffer<Capacity>& buffer,
         LOGICAL_PROCESSOR_RELATIONSHIP relationshipType)
     {
-        return adapt_memory_buffer(
+        return AdaptMemoryBuffer(
             buffer,
             [&](std::span<std::byte> view, size_t& capacity)
         {
@@ -264,21 +270,22 @@ namespace Anemone::Interop::Windows
                 //  If the function succeeds, the return value is TRUE and at least one
                 //  SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX structure is written to the output buffer.
                 capacity = dwSize;
-                return true;
+                return S_OK;
             }
 
-            if (GetLastError() == ERROR_INSUFFICIENT_BUFFER)
+            DWORD dwError = GetLastError();
+            if (dwError == ERROR_INSUFFICIENT_BUFFER)
             {
                 // MSDN:
                 //  If the buffer is not large enough to contain all of the data, the function fails, GetLastError
                 //  returns ERROR_INSUFFICIENT_BUFFER, and ReturnedLength is set to the buffer length required to
                 //  contain all of the data.
                 capacity = dwSize;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(dwError);
         });
     }
 }

@@ -152,9 +152,11 @@ namespace Anemone::Interop
     template <size_t StaticCapacity, typename Callback>
     bool adapt_memory_buffer(memory_buffer<StaticCapacity>& buffer, Callback&& callback)
     {
+        Callback localCallback = std::forward<Callback>(callback);
+
         size_t requiredSize{};
 
-        if (not std::forward<Callback>(callback)(buffer.as_span(), requiredSize))
+        if (not localCallback(buffer.as_span(), requiredSize))
         {
             // Failed to adapt the buffer. Callback reported failure.
             buffer.clear();
@@ -175,7 +177,7 @@ namespace Anemone::Interop
 
             buffer.resize_for_override(bufferLength);
 
-            if (not std::forward<Callback>(callback)(buffer.as_span(), requiredSize))
+            if (not localCallback(buffer.as_span(), requiredSize))
             {
                 // Failed to adapt the buffer. Callback reported failure.
                 buffer.clear();

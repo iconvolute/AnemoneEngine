@@ -46,25 +46,31 @@ namespace Anemone::Interop::Windows
         return ToFILETIME(value.Inner);
     }
     
-    inline bool LocalSystemTimeToFileTime(const SYSTEMTIME& localTime, FILETIME& fileTime)
+    inline HRESULT LocalSystemTimeToFileTime(const SYSTEMTIME& localTime, FILETIME& fileTime)
     {
         SYSTEMTIME systemTime;
 
-        BOOL result = TzSpecificLocalTimeToSystemTime(nullptr, &localTime, &systemTime);
-
-        if (result)
+        if (TzSpecificLocalTimeToSystemTime(nullptr, &localTime, &systemTime))
         {
-            result = SystemTimeToFileTime(&systemTime, &fileTime);
+            if (SystemTimeToFileTime(&systemTime, &fileTime))
+            {
+                return S_OK;
+            }
         }
 
-        return result;
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 
-    inline bool GetLocalTimeAsFileTime(FILETIME& fileTime)
+    inline HRESULT GetLocalTimeAsFileTime(FILETIME& fileTime)
     {
         SYSTEMTIME systemTime;
         GetLocalTime(&systemTime);
 
-        return SystemTimeToFileTime(&systemTime, &fileTime);
+        if (SystemTimeToFileTime(&systemTime, &fileTime))
+        {
+            return S_OK;
+        }
+
+        return HRESULT_FROM_WIN32(GetLastError());
     }
 }

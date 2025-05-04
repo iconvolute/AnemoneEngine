@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
-#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Interop/Windows/StringBuffer.hxx"
 
 namespace Anemone::Interop::Windows
 {
@@ -177,8 +177,8 @@ namespace Anemone::Interop::Windows
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetTempPath(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetTempPath(string_buffer<wchar_t, Capacity>& result) noexcept
     {
         using Fn = decltype(&::GetTempPathW);
 
@@ -191,7 +191,7 @@ namespace Anemone::Interop::Windows
             getTempPath = &::GetTempPathW;
         }
 
-        return adapt_string_buffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [getTempPath](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD length = getTempPath(static_cast<DWORD>(buffer.size() + 1uz), buffer.data());
 
@@ -212,18 +212,18 @@ namespace Anemone::Interop::Windows
                 }
 
                 capacity = static_cast<size_t>(length);
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(GetLastError());
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetLongPathName(string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetLongPathName(string_buffer<wchar_t, Capacity>& result, const wchar_t* path) noexcept
     {
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD length = GetLongPathNameW(path, buffer.data(), static_cast<DWORD>(buffer.size() + 1uz));
 
@@ -242,11 +242,11 @@ namespace Anemone::Interop::Windows
                 }
 
                 capacity = length;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(GetLastError());
         });
     }
 

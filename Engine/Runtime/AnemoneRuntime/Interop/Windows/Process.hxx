@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
-#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Interop/Windows/StringBuffer.hxx"
 
 namespace Anemone::Interop::Windows
 {
@@ -36,35 +36,36 @@ namespace Anemone::Interop::Windows
         return false;
     }
     
-    template <size_t CapacityT>
-    anemone_forceinline bool QueryFullProcessImageName(string_buffer<wchar_t, CapacityT>& result) noexcept
+    template <size_t Capacity>
+    anemone_forceinline HRESULT QueryFullProcessImageName(string_buffer<wchar_t, Capacity>& result, HANDLE const hProcess) noexcept
     {
-        HANDLE const hProcess = GetCurrentProcess();
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             DWORD dwSize = static_cast<DWORD>(buffer.size() + 1uz);
 
             if (QueryFullProcessImageNameW(hProcess, 0, buffer.data(), &dwSize))
             {
                 capacity = dwSize;
-                return true;
+                return S_OK;
             }
 
-            if (DWORD const dwError = GetLastError(); dwError == ERROR_INSUFFICIENT_BUFFER)
+            DWORD const dwError = GetLastError();
+
+            if (dwError == ERROR_INSUFFICIENT_BUFFER)
             {
                 capacity = static_cast<size_t>(dwSize) * 2uz;
-                return true;
+                return S_OK;
             }
 
             capacity = 0;
-            return false;
+            return HRESULT_FROM_WIN32(dwError);
         });
     }
 
-    template <size_t CapacityT>
-    anemone_forceinline bool GetModuleFileName(string_buffer<wchar_t, CapacityT>& result, HMODULE handle)
+    template <size_t Capacity>
+    anemone_forceinline HRESULT GetModuleFileName(string_buffer<wchar_t, Capacity>& result, HMODULE handle)
     {
-        return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
+        return AdaptStringBuffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
         {
             // MSDN:
             //  The size of the lpFilename buffer, in WCHARs.
@@ -73,15 +74,17 @@ namespace Anemone::Interop::Windows
 
             DWORD dwLength = GetModuleFileNameW(handle, buffer.data(), dwSize);
 
+            DWORD const dwError = GetLastError();
+
             if (dwLength == 0)
             {
                 // MSDN:
                 //  If the function fails, the return value is 0 (zero).
                 capacity = 0;
-                return false;
+                return HRESULT_FROM_WIN32(dwError);
             }
 
-            if (DWORD const dwError = GetLastError(); dwError == ERROR_INSUFFICIENT_BUFFER)
+            if (dwError == ERROR_INSUFFICIENT_BUFFER)
             {
                 // MSDN:
                 //  If the buffer is too small to hold the module name, the string is truncated to nSize characters
@@ -93,7 +96,7 @@ namespace Anemone::Interop::Windows
             }
 
             capacity = dwLength;
-            return true;
+            return S_OK;
         });
     }
 

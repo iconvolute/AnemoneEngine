@@ -6,6 +6,7 @@
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
+#include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
 #include "anemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
@@ -174,7 +175,7 @@ namespace Anemone::Internal::Windows
         }
 
         // Executable path
-        Interop::Windows::QueryFullProcessImageName(buffer);
+        Interop::Windows::QueryFullProcessImageName(buffer, GetCurrentProcess());
         Interop::Windows::NarrowString(statics.m_ExecutablePath, buffer.as_view());
         FilePath::NormalizeDirectorySeparators(statics.m_ExecutablePath);
 
@@ -392,7 +393,7 @@ namespace Anemone
         Interop::Windows::WidenString(wname, name);
 
         if (Interop::string_buffer<wchar_t, 512> wresult{};
-            Interop::Windows::GetEnvironmentVariable(wresult, wname))
+            SUCCEEDED(Interop::Windows::GetEnvironmentVariable(wresult, wname)))
         {
             Interop::Windows::NarrowString(result, wresult.as_view());
             return true;
@@ -428,31 +429,6 @@ namespace Anemone
         metrics.PrimaryDisplaySize = Math::SizeF{
             .Width = static_cast<float>(GetSystemMetrics(SM_CXSCREEN)),
             .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
-        };
-
-        MONITORENUMPROC fillDisplayDevicesInformation = [](HMONITOR handle, HDC, LPRECT, LPARAM context) -> BOOL
-        {
-            DisplayMetrics& displayMetrics = *reinterpret_cast<DisplayMetrics*>(context); // NOLINT(performance-no-int-to-ptr)
-
-            MONITORINFOEXW miex{};
-            miex.cbSize = sizeof(miex);
-
-            GetMonitorInfoW(handle, &miex);
-
-            Interop::string_buffer<char, 128> name{};
-            Interop::Windows::NarrowString(name, miex.szDevice);
-
-            AE_ASSERT(!displayMetrics.Displays.empty());
-
-            DisplayInfo& last = displayMetrics.Displays.back();
-
-            if (last.Name == name.as_view())
-            {
-                last.DisplayRect = Interop::Windows::ToRectF(miex.rcMonitor);
-                last.WorkAreaRect = Interop::Windows::ToRectF(miex.rcWork);
-            }
-
-            return TRUE;
         };
 
         RECT workArea = {-1, -1, -1, -1};
@@ -539,11 +515,34 @@ namespace Anemone
             }
 
             // Find detailed properties.
-            EnumDisplayMonitors(
+            (void)Interop::Windows::EnumDisplayMonitors(
                 nullptr,
                 nullptr,
-                fillDisplayDevicesInformation,
-                reinterpret_cast<LPARAM>(&metrics));
+                [&](HMONITOR handle, HDC dc, LPRECT rect) -> bool
+            {
+                (void)rect;
+                (void)dc;
+
+                MONITORINFOEXW miex{};
+                miex.cbSize = sizeof(miex);
+
+                GetMonitorInfoW(handle, &miex);
+
+                Interop::string_buffer<char, 128> name{};
+                Interop::Windows::NarrowString(name, miex.szDevice);
+
+                AE_ASSERT(!metrics.Displays.empty());
+
+                DisplayInfo& last = metrics.Displays.back();
+
+                if (last.Name == name.as_view())
+                {
+                    last.DisplayRect = Interop::Windows::ToRectF(miex.rcMonitor);
+                    last.WorkAreaRect = Interop::Windows::ToRectF(miex.rcWork);
+                }
+
+                return true;
+            });
         }
     }
 

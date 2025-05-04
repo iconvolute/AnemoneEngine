@@ -65,16 +65,23 @@ namespace Anemone::Interop
             }
             else if (size > this->m_Capacity)
             {
-                // Choose better size.
-                size_t const capacity = std::max(size, this->m_Capacity * 2uz);
+                size_t const capacity = size;
 
-                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
+                this->m_Dynamic = std::make_unique_for_overwrite<CharT[]>(capacity + 1uz);
                 this->m_Data = this->m_Dynamic.get();
                 this->m_Capacity = capacity;
             }
 
             this->m_Size = size;
             this->m_Data[this->m_Size] = {};
+        }
+
+        template <typename Callback = size_t(CharT* data, size_t size)>
+        constexpr void resize_and_override(size_t size, Callback&& callback)
+        {
+            this->resize_for_override(size);
+            size_t const result = std::forward<Callback>(callback)(this->m_Data, this->m_Size);
+            this->trim(result);
         }
 
         constexpr void resize(size_t size, CharT fill = CharT{})
@@ -96,17 +103,17 @@ namespace Anemone::Interop
                 else
                 {
                     // If we are here, we need to allocate a new buffer.
-                    size_t const capacity = std::max(size, this->m_Capacity * 2uz);
+                    size_t const capacity = size;
 
-                    std::unique_ptr<CharT[]> newBuffer = std::make_unique_for_overwrite<CharT[]>(capacity + 1);
+                    std::unique_ptr<CharT[]> newBuffer = std::make_unique_for_overwrite<CharT[]>(capacity + 1uz);
                     std::copy(this->m_Data, this->m_Data + this->m_Size, newBuffer.get());
                     std::fill(newBuffer.get() + this->m_Size, newBuffer.get() + size, fill);
-                    
+
                     this->m_Data = newBuffer.get();
                     this->m_Dynamic = std::move(newBuffer);
                     this->m_Capacity = capacity;
                 }
-                    
+
                 // Trim the buffer.
                 this->m_Data[size] = CharT{};
                 this->m_Size = size;
@@ -118,6 +125,12 @@ namespace Anemone::Interop
             assert(size <= this->m_Capacity);
             this->m_Data[size] = {};
             this->m_Size = size;
+        }
+
+        constexpr void clear()
+        {
+            this->m_Data[0uz] = CharT{};
+            this->m_Size = 0uz;
         }
 
         [[nodiscard]] constexpr size_t capacity() const
@@ -196,8 +209,10 @@ namespace Anemone::Interop
     template <typename StringBuffer, typename Callback>
     bool adapt_string_buffer(StringBuffer& buffer, Callback&& callback)
     {
+        Callback localCallback = std::forward<Callback>(callback);
+
         size_t requiredSize{};
-        if (not std::forward<Callback>(callback)(buffer.as_buffer_span(), requiredSize))
+        if (not localCallback(buffer.as_buffer_span(), requiredSize))
         {
             buffer.trim(0);
             return false;
@@ -217,7 +232,7 @@ namespace Anemone::Interop
 
             buffer.resize_for_override(bufferLength);
 
-            if (not std::forward<Callback>(callback)(buffer.as_buffer_span(), requiredSize))
+            if (not localCallback(buffer.as_buffer_span(), requiredSize))
             {
                 buffer.trim(0);
                 return false;

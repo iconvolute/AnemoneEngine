@@ -100,7 +100,7 @@ namespace Anemone
         }
 
         Interop::Windows::FilePathW wpath{};
-        if (Interop::Windows::WidenString(wpath, path))
+        if (SUCCEEDED(Interop::Windows::WidenString(wpath, path)))
         {
             SECURITY_ATTRIBUTES sa{
                 .nLength = sizeof(SECURITY_ATTRIBUTES),

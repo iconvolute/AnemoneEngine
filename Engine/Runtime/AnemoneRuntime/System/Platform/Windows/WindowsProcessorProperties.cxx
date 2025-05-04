@@ -59,7 +59,7 @@ namespace Anemone::Internal
 
         Interop::memory_buffer<4096> buffer{};
 
-        if (Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationAll))
+        if (SUCCEEDED(Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationAll)))
         {
             uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
 

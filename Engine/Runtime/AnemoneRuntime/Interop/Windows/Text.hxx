@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
-#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Interop/Windows/StringBuffer.hxx"
 
 #include <cassert>
 #include <string_view>
@@ -10,188 +10,226 @@ namespace Anemone::Interop::Windows
 {
     constexpr UINT32 DecodeSurrogatePair(UINT16 high, UINT16 low)
     {
+        assert(IS_SURROGATE_PAIR(high, low));
         UINT32 code = 0x10000u;
         code += (high & 0x03FFu) << 10u;
         code += (low & 0x03FFu);
         return code;
     }
 
-    anemone_forceinline bool WidenString(std::wstring& result, std::string_view value) noexcept
+    template <size_t Capacity>
+    HRESULT WidenString(string_buffer<wchar_t, Capacity>& destination, std::string_view source)
     {
-        int const length = static_cast<int>(value.size());
+        destination.clear();
 
-        if (length > 0)
+        if (source.size() > static_cast<size_t>(INT_MAX))
         {
-            int const required = MultiByteToWideChar(
-                CP_UTF8,
-                0,
-                value.data(),
-                length,
-                nullptr,
-                0);
-
-            if (required == 0)
-            {
-                result.clear();
-                return false;
-            }
-
-            result.resize_and_overwrite(static_cast<size_t>(required), [&](wchar_t* ptr, size_t size) -> size_t
-            {
-                int const processed = MultiByteToWideChar(
-                    CP_UTF8,
-                    0,
-                    value.data(),
-                    static_cast<int>(value.size()),
-                    ptr,
-                    static_cast<int>(size));
-
-                assert(required == processed);
-                return static_cast<size_t>(processed);
-            });
-            return true;
+            return E_INVALIDARG;
         }
 
-        result.clear();
-        return true;
-    }
-
-    template <size_t CapacityT>
-    anemone_forceinline bool WidenString(string_buffer<wchar_t, CapacityT>& result, std::string_view value) noexcept
-    {
-        int const length = static_cast<int>(value.length());
-
-        if (length > 0)
+        if (source.empty())
         {
-            int const required = MultiByteToWideChar(
-                CP_UTF8,
-                0,
-                value.data(),
-                length,
-                nullptr,
-                0);
-
-            if (required == 0)
-            {
-                result.trim(0);
-                return false;
-            }
-
-            result.resize_for_override(static_cast<size_t>(required) + 1);
-
-            std::span<wchar_t> const writable = result.as_buffer_span();
-
-            int const processed = MultiByteToWideChar(
-                CP_UTF8,
-                0,
-                value.data(),
-                length,
-                writable.data(),
-                static_cast<int>(writable.size()));
-
-            if (processed == required)
-            {
-                result.trim(static_cast<size_t>(processed));
-                return true;
-            }
-
-            return false;
+            return S_OK;
         }
 
-        result.trim(0);
-        return true;
+        const char* const sourceData = source.data();
+        int const sourceSize = static_cast<int>(source.length());
+
+        int const required = ::MultiByteToWideChar(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            nullptr,
+            0);
+
+        if (required == 0)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        destination.resize_for_override(static_cast<size_t>(required));
+
+        int const processed = ::MultiByteToWideChar(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            destination.data(),
+            required);
+
+        if (processed != required)
+        {
+            destination.clear();
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        return S_OK;
     }
 
-    anemone_forceinline bool NarrowString(std::string& result, std::wstring_view value) noexcept
+    inline HRESULT WidenString(std::wstring& destination, std::string_view source)
     {
-        if (not value.empty())
+        destination.clear();
+
+        if (source.size() > static_cast<size_t>(INT_MAX))
         {
-            int const required = WideCharToMultiByte(
+            return E_INVALIDARG;
+        }
+
+        if (source.empty())
+        {
+            return S_OK;
+        }
+
+        const char* const sourceData = source.data();
+        int const sourceSize = static_cast<int>(source.size());
+
+        int const required = ::MultiByteToWideChar(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            nullptr,
+            0);
+
+        if (required == 0)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        HRESULT hr = S_OK;
+
+        destination.resize_and_overwrite(static_cast<size_t>(required), [&](wchar_t* destinationData, size_t destinationSize) -> size_t
+        {
+            int const processed = ::MultiByteToWideChar(
                 CP_UTF8,
                 0,
-                value.data(),
-                static_cast<int>(value.size()),
-                nullptr,
+                sourceData,
+                sourceSize,
+                destinationData,
+                static_cast<int>(destinationSize));
+
+            if (processed != required)
+            {
+                hr = HRESULT_FROM_WIN32(GetLastError());
+                return 0uz;
+            }
+
+            return destinationSize;
+        });
+
+        return hr;
+    }
+
+    template <size_t Capacity>
+    HRESULT NarrowString(string_buffer<char, Capacity>& destination, std::wstring_view source)
+    {
+        destination.clear();
+
+        if (source.size() > static_cast<size_t>(INT_MAX))
+        {
+            return E_INVALIDARG;
+        }
+
+        if (source.empty())
+        {
+            return S_OK;
+        }
+
+        const wchar_t* const sourceData = source.data();
+        int const sourceSize = static_cast<int>(source.size());
+
+        int const required = ::WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            nullptr,
+            0,
+            nullptr,
+            nullptr);
+
+        if (required == 0)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        destination.resize_for_override(static_cast<size_t>(required));
+
+        int const processed = ::WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            destination.data(),
+            required,
+            nullptr,
+            nullptr);
+
+        if (processed != required)
+        {
+            destination.clear();
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        return S_OK;
+    }
+
+    inline HRESULT NarrowString(std::string& destination, std::wstring_view source)
+    {
+        destination.clear();
+
+        if (source.size() > static_cast<size_t>(INT_MAX))
+        {
+            return E_INVALIDARG;
+        }
+
+        if (source.empty())
+        {
+            return S_OK;
+        }
+
+        const wchar_t* const sourceData = source.data();
+        int const sourceSize = static_cast<int>(source.size());
+
+        int const required = ::WideCharToMultiByte(
+            CP_UTF8,
+            0,
+            sourceData,
+            sourceSize,
+            nullptr,
+            0,
+            nullptr,
+            nullptr);
+
+        if (required == 0)
+        {
+            return HRESULT_FROM_WIN32(GetLastError());
+        }
+
+        HRESULT hr = S_OK;
+
+        destination.resize_and_overwrite(static_cast<size_t>(required), [&](char* destinationData, size_t destinationSize) -> size_t
+        {
+            int const processed = ::WideCharToMultiByte(
+                CP_UTF8,
                 0,
+                sourceData,
+                sourceSize,
+                destinationData,
+                static_cast<int>(destinationSize),
                 nullptr,
                 nullptr);
 
-            if (required == 0)
+            if (processed != required)
             {
-                result.clear();
-                return false;
+                hr = HRESULT_FROM_WIN32(GetLastError());
+                return 0uz;
             }
 
-            result.resize_and_overwrite(static_cast<size_t>(required), [&](char* ptr, size_t size) -> size_t
-            {
-                int const processed = WideCharToMultiByte(
-                    CP_UTF8,
-                    0,
-                    value.data(),
-                    static_cast<int>(value.size()),
-                    ptr,
-                    static_cast<int>(size),
-                    nullptr,
-                    nullptr);
+            return destinationSize;
+        });
 
-                assert(required == processed);
-                return static_cast<size_t>(processed);
-            });
-            return true;
-        }
-
-        result.clear();
-        return true;
+        return hr;
     }
-
-    template <size_t CapacityT>
-    anemone_forceinline bool NarrowString(string_buffer<char, CapacityT>& result, std::wstring_view value) noexcept
-    {
-        int const length = static_cast<int>(value.length());
-
-        if (length > 0)
-        {
-            int const required = WideCharToMultiByte(
-                CP_UTF8,
-                0,
-                value.data(),
-                length,
-                nullptr,
-                0,
-                nullptr,
-                nullptr);
-
-            if (required == 0)
-            {
-                result.trim(0);
-                return false;
-            }
-
-            result.resize_for_override(static_cast<size_t>(required) + 1);
-
-            std::span<char> const writable = result.as_buffer_span();
-
-            int const processed = WideCharToMultiByte(
-                CP_UTF8,
-                0,
-                value.data(),
-                length,
-                writable.data(),
-                static_cast<int>(writable.size()),
-                nullptr,
-                nullptr);
-
-            if (processed == required)
-            {
-                result.trim(static_cast<size_t>(processed));
-                return true;
-            }
-
-            return false;
-        }
-
-        result.trim(0);
-        return true;
-    }
-
 }
