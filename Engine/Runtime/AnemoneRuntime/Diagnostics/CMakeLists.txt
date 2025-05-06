@@ -9,6 +9,8 @@ target_sources(AnemoneRuntime
         "Trace.hxx"
 
         "TraceLevel.hxx"
+
+        "TraceListener.cxx"
         "TraceListener.hxx"
 )
 

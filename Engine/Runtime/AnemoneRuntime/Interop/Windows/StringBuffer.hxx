@@ -5,7 +5,7 @@
 namespace Anemone::Interop::Windows
 {
     template <typename StringBuffer, typename Callback>
-    HRESULT AdaptStringBuffer(StringBuffer& buffer, Callback&& callback)
+    anemone_forceinline HRESULT AdaptStringBuffer(StringBuffer& buffer, Callback&& callback)
     {
         Callback localCallback = std::forward<Callback>(callback);
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceLevel.hxx"
+#include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 
 #include <string_view>
 #include <fmt/format.h>
@@ -15,27 +16,25 @@
 
 namespace Anemone::Diagnostics
 {
-    class TraceListener;
-
     inline constexpr TraceLevel DefaultTraceLevel = ANEMONE_DEFAULT_TRACE_LEVEL;
 
-    RUNTIME_API void RegisterGlobalTraceListener(TraceListener& listener);
-
-    RUNTIME_API void UnregisterGlobalTraceListener(TraceListener& listener);
-
-    RUNTIME_API TraceListener& GetGlobalTraceListener();
-
-    RUNTIME_API void FlushTraceListeners();
-
-    RUNTIME_API void TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
-
-    RUNTIME_API void TraceMessageFormatted(TraceListener& listener, TraceLevel level, std::string_view format, fmt::format_args args);
-
-    template <typename... Args>
-    void TraceMessage(TraceLevel level, std::string_view format, Args const&... args)
+    class RUNTIME_API TraceDispatcher final : public TraceListener
     {
-        TraceMessageFormatted(level, format, fmt::make_format_args(args...));
-    }
+    private:
+        ReaderWriterLock _lock{};
+        IntrusiveList<TraceListener> _listeners{};
+
+    public:
+        void Event(TraceLevel level, const char* message, size_t size) override;
+
+        void Flush() override;
+
+        void Register(TraceListener& listener);
+
+        void Unregister(TraceListener& listener);
+    };
+
+    RUNTIME_API TraceDispatcher& GetTraceDispatcher();
 }
 
 #define AE_TRACE(level, format, ...) \
@@ -43,6 +42,6 @@ namespace Anemone::Diagnostics
     { \
         if constexpr (::Anemone::Diagnostics::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
         { \
-            ::Anemone::Diagnostics::TraceMessage(::Anemone::Diagnostics::TraceLevel::level, format __VA_OPT__(, ) __VA_ARGS__); \
+            ::Anemone::Diagnostics::GetTraceDispatcher().Log##level(format __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

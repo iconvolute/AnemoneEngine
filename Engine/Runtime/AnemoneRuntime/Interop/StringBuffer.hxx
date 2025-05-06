@@ -1,4 +1,6 @@
 #pragma once
+#include "AnemoneRuntime/Interop/Headers.hxx"
+
 #include <memory>
 #include <span>
 #include <string_view>
@@ -207,7 +209,7 @@ namespace Anemone::Interop
     };
 
     template <typename StringBuffer, typename Callback>
-    bool adapt_string_buffer(StringBuffer& buffer, Callback&& callback)
+    anemone_forceinline bool adapt_string_buffer(StringBuffer& buffer, Callback&& callback)
     {
         Callback localCallback = std::forward<Callback>(callback);
 

@@ -15,22 +15,22 @@ namespace Anemone::Diagnostics
         fmt::format_args args)
     {
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
-
+        TraceDispatcher& dispatcher = GetTraceDispatcher();
 
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        TraceMessage(TraceLevel::Fatal, "=== assertion failed ===");
-        TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
-        TraceMessage(TraceLevel::Fatal, "expression: {}", expression);
-        TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
+        dispatcher.LogFatal("=== assertion failed ===");
+        dispatcher.LogFatal("location: {}:{}", location.file_name(), location.line());
+        dispatcher.LogFatal("expression: {}", expression);
+        dispatcher.LogFatal("message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
+            dispatcher.LogFatal("{} {}", address, name);
         });
 
-        FlushTraceListeners();
+        dispatcher.Flush();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false
@@ -55,19 +55,21 @@ namespace Anemone::Diagnostics
         std::string_view format,
         fmt::format_args args)
     {
+        TraceDispatcher& dispatcher = GetTraceDispatcher();
+
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        TraceMessage(TraceLevel::Fatal, "=== panic ===");
-        TraceMessage(TraceLevel::Fatal, "location: {}:{}", location.file_name(), location.line());
-        TraceMessage(TraceLevel::Fatal, "message: {}", std::string_view{message.data(), message.size()});
+        dispatcher.LogFatal("=== panic ===");
+        dispatcher.LogFatal("location: {}:{}", location.file_name(), location.line());
+        dispatcher.LogFatal("message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            TraceMessage(TraceLevel::Fatal, "{} {}", address, name);
+            dispatcher.LogFatal("{} {}", address, name);
         });
 
-        FlushTraceListeners();
+        dispatcher.Flush();
 
         // TODO: Re-enable once we will be sure that it also works on linux
 #if false

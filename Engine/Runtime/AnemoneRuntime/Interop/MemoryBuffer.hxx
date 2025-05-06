@@ -1,4 +1,6 @@
 #pragma once
+#include "AnemoneRuntime/Interop/Headers.hxx"
+
 #include <memory>
 #include <span>
 #include <cassert>
@@ -150,7 +152,7 @@ namespace Anemone::Interop
     };
 
     template <size_t StaticCapacity, typename Callback>
-    bool adapt_memory_buffer(memory_buffer<StaticCapacity>& buffer, Callback&& callback)
+    anemone_forceinline bool adapt_memory_buffer(memory_buffer<StaticCapacity>& buffer, Callback&& callback)
     {
         Callback localCallback = std::forward<Callback>(callback);
 

@@ -2,133 +2,62 @@
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/UninitializedObject.hxx"
 
-#include <iterator>
 #include <utility>
-#include <array>
 
 namespace Anemone::Diagnostics
 {
-    static constexpr std::array TraceLevelMarks = []()
+    void TraceDispatcher::Event(TraceLevel level, const char* message, size_t size)
     {
-        return std::array{
-            'V',
-            'D',
-            'I',
-            'W',
-            'E',
-            'F',
-            'N',
-        };
-    }();
+        SharedLock scope{this->_lock};
 
-    static constexpr char GetCharacter(TraceLevel level)
-    {
-        auto const index = std::to_underlying(level);
-        if (index < TraceLevelMarks.size())
+        this->_listeners.ForEach([&](TraceListener& listener)
         {
-            return TraceLevelMarks[index];
-        }
-
-        return 'N';
+            listener.Event(level, message, size);
+        });
     }
 
-    class GlobalTraceListener final : public TraceListener
+    void TraceDispatcher::Flush()
     {
-    private:
-        ReaderWriterLock _lock{};
-        IntrusiveList<TraceListener> _listeners{};
+        SharedLock scope{this->_lock};
 
-    public:
-        void Event(TraceLevel level, const char* message, size_t size) override
+        this->_listeners.ForEach([](TraceListener& listener)
         {
-            SharedLock scope{this->_lock};
-
-            this->_listeners.ForEach([&](TraceListener& listener)
-            {
-                listener.Event(level, message, size);
-            });
-        }
-
-        void Flush() override
-        {
-            SharedLock scope{this->_lock};
-
-            this->_listeners.ForEach([](TraceListener& listener)
-            {
-                listener.Flush();
-            });
-        }
-
-        void Register(TraceListener& listener)
-        {
-            UniqueLock scope{this->_lock};
-            this->_listeners.PushBack(&listener);
-        }
-
-        void Unregister(TraceListener& listener)
-        {
-            UniqueLock scope{this->_lock};
-            this->_listeners.Remove(&listener);
-        }
-    };
-
-    static UninitializedObject<GlobalTraceListener> GTraceListener{};
-
-    RUNTIME_API void RegisterGlobalTraceListener(TraceListener& listener)
-    {
-        GTraceListener->Register(listener);
+            listener.Flush();
+        });
     }
 
-    RUNTIME_API void UnregisterGlobalTraceListener(TraceListener& listener)
+    void TraceDispatcher::Register(TraceListener& listener)
     {
-        GTraceListener->Unregister(listener);
+        UniqueLock scope{this->_lock};
+        this->_listeners.PushBack(&listener);
     }
 
-    RUNTIME_API TraceListener& GetGlobalTraceListener()
+    void TraceDispatcher::Unregister(TraceListener& listener)
     {
-        return *GTraceListener;
+        UniqueLock scope{this->_lock};
+        this->_listeners.Remove(&listener);
     }
+}
 
-    RUNTIME_API void FlushTraceListeners()
+namespace Anemone::Diagnostics
+{
+    static UninitializedObject<TraceDispatcher> GTraceDispatcher{};
+
+    TraceDispatcher& GetTraceDispatcher()
     {
-        GTraceListener->Flush();
+        return *GTraceDispatcher;
     }
-
-    RUNTIME_API void TraceMessageFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
-    {
-        TraceMessageFormatted(*GTraceListener, level, format, args);
-    }
-
-    RUNTIME_API void TraceMessageFormatted(TraceListener& listener, TraceLevel level, std::string_view format, fmt::format_args args)
-    {
-        fmt::memory_buffer buffer{};
-
-        auto out = std::back_inserter(buffer);
-        (*out++) = '[';
-        (*out++) = GetCharacter(level);
-        (*out++) = ']';
-        (*out++) = ' ';
-        out = fmt::vformat_to(out, format, args);
-
-        const char* message = buffer.data();
-        size_t const size = buffer.size();
-
-        (*out) = '\0';
-
-        listener.Event(level, message, size);
-    }
-
 }
 
 namespace Anemone::Internal
 {
     extern void InitializeTrace()
     {
-        ::Anemone::Diagnostics::GTraceListener.Create();
+        ::Anemone::Diagnostics::GTraceDispatcher.Create();
     }
 
     extern void FinalizeTrace()
     {
-        ::Anemone::Diagnostics::GTraceListener.Destroy();
+        ::Anemone::Diagnostics::GTraceDispatcher.Destroy();
     }
 }

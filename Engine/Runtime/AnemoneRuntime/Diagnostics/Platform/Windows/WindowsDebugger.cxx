@@ -177,7 +177,7 @@ namespace Anemone::Internal
         if (Interop::Windows::IsConsoleApplication(GetModuleHandleW(nullptr)))
         {
             GConsoleTraceListener.Create();
-            Diagnostics::RegisterGlobalTraceListener(*GConsoleTraceListener);
+            Diagnostics::GetTraceDispatcher().Register(*GConsoleTraceListener);
         }
 
 #if !ANEMONE_BUILD_SHIPPING
@@ -186,30 +186,30 @@ namespace Anemone::Internal
         //
 
         GWindowsDebugTraceListener.Create();
-        Diagnostics::RegisterGlobalTraceListener(*GWindowsDebugTraceListener);
+        Diagnostics::GetTraceDispatcher().Register(*GWindowsDebugTraceListener);
 #endif
 
         GWindowsEtwTraceListener.Create();
-        Diagnostics::RegisterGlobalTraceListener(*GWindowsEtwTraceListener);
+        Diagnostics::GetTraceDispatcher().Register(*GWindowsEtwTraceListener);
     }
 
     extern void FinalizeDebugger()
     {
         if (GWindowsEtwTraceListener)
         {
-            Diagnostics::UnregisterGlobalTraceListener(*GWindowsEtwTraceListener);
+            Diagnostics::GetTraceDispatcher().Unregister(*GWindowsEtwTraceListener);
             GWindowsEtwTraceListener.Destroy();
         }
 
         if (GWindowsDebugTraceListener)
         {
-            Diagnostics::UnregisterGlobalTraceListener(*GWindowsDebugTraceListener);
+            Diagnostics::GetTraceDispatcher().Unregister(*GWindowsDebugTraceListener);
             GWindowsDebugTraceListener.Destroy();
         }
 
         if (GConsoleTraceListener)
         {
-            Diagnostics::UnregisterGlobalTraceListener(*GConsoleTraceListener);
+            Diagnostics::GetTraceDispatcher().Unregister(*GConsoleTraceListener);
             GConsoleTraceListener.Destroy();
         }
 
