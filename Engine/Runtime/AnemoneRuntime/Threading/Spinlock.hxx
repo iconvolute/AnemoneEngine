@@ -63,6 +63,52 @@ namespace Anemone
 
 namespace Anemone
 {
+    class FastSpinLock final
+    {
+    private:
+        alignas(64) std::atomic_bool _lock{};
+
+    public:
+        FastSpinLock() = default;
+        FastSpinLock(FastSpinLock const&) = delete;
+        FastSpinLock(FastSpinLock&&) = delete;
+        FastSpinLock& operator=(FastSpinLock const&) = delete;
+        FastSpinLock& operator=(FastSpinLock&&) = delete;
+        ~FastSpinLock() = default;
+
+    public:
+        void Enter()
+        {
+            while (true)
+            {
+                while (this->_lock.load(std::memory_order::acquire))
+                {
+                    CurrentThread::Pause();
+                }
+
+                if (not this->_lock.exchange(true, std::memory_order::acquire))
+                {
+                    break;
+                }
+            }
+        }
+
+        void Leave()
+        {
+            this->_lock.store(false, std::memory_order::release);
+        }
+
+        template <typename F>
+        auto With(F&& f) -> std::invoke_result_t<F&&>
+        {
+            UniqueLock scope{*this};
+            return std::forward<F>(f)();
+        }
+    };
+}
+
+namespace Anemone
+{
     class RecursiveSpinlock final
     {
     private:
