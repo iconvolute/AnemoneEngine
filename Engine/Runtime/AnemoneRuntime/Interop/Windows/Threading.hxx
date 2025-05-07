@@ -149,3 +149,90 @@ namespace Anemone::Interop::Windows
         }
     }
 }
+
+namespace Anemone::Interop::Windows
+{
+    class CriticalSectionLock final
+    {
+    private:
+        CRITICAL_SECTION& _lock;
+
+    public:
+        CriticalSectionLock() = delete;
+
+        CriticalSectionLock(CRITICAL_SECTION& lock)
+            : _lock{lock}
+        {
+            EnterCriticalSection(&this->_lock);
+        }
+
+        CriticalSectionLock(CriticalSectionLock const&) = delete;
+
+        CriticalSectionLock(CriticalSectionLock&&) = delete;
+
+        CriticalSectionLock& operator=(CriticalSectionLock const&) = delete;
+
+        CriticalSectionLock& operator=(CriticalSectionLock&&) = delete;
+
+        ~CriticalSectionLock()
+        {
+            LeaveCriticalSection(&this->_lock);
+        }
+    };
+
+    class SrwLockSharedLock final
+    {
+    private:
+        SRWLOCK& _lock;
+
+    public:
+        SrwLockSharedLock() = delete;
+
+        SrwLockSharedLock(SRWLOCK& lock)
+            : _lock{lock}
+        {
+            AcquireSRWLockShared(&this->_lock);
+        }
+
+        SrwLockSharedLock(SrwLockSharedLock const&) = delete;
+
+        SrwLockSharedLock(SrwLockSharedLock&&) = delete;
+
+        SrwLockSharedLock& operator=(SrwLockSharedLock const&) = delete;
+
+        SrwLockSharedLock& operator=(SrwLockSharedLock&&) = delete;
+
+        ~SrwLockSharedLock()
+        {
+            ReleaseSRWLockShared(&this->_lock);
+        }
+    };
+
+    class SrwLockExclusiveLock final
+    {
+    private:
+        SRWLOCK& _lock;
+
+    public:
+        SrwLockExclusiveLock() = delete;
+
+        SrwLockExclusiveLock(SRWLOCK& lock)
+            : _lock{lock}
+        {
+            AcquireSRWLockExclusive(&this->_lock);
+        }
+
+        SrwLockExclusiveLock(SrwLockExclusiveLock const&) = delete;
+
+        SrwLockExclusiveLock(SrwLockExclusiveLock&&) = delete;
+
+        SrwLockExclusiveLock& operator=(SrwLockExclusiveLock const&) = delete;
+
+        SrwLockExclusiveLock& operator=(SrwLockExclusiveLock&&) = delete;
+
+        ~SrwLockExclusiveLock()
+        {
+            ReleaseSRWLockExclusive(&this->_lock);
+        }
+    };
+}
