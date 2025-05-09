@@ -25,7 +25,7 @@ namespace Anemone::Diagnostics
         IntrusiveList<TraceListener> _listeners{};
 
     public:
-        void Event(TraceLevel level, const char* message, size_t size) override;
+        void TraceEvent(TraceLevel level, const char* message, size_t size) override;
 
         void Flush() override;
 
@@ -42,6 +42,6 @@ namespace Anemone::Diagnostics
     { \
         if constexpr (::Anemone::Diagnostics::TraceLevel::level >= ANEMONE_DEFAULT_TRACE_LEVEL) \
         { \
-            ::Anemone::Diagnostics::GetTraceDispatcher().Log##level(format __VA_OPT__(, ) __VA_ARGS__); \
+            ::Anemone::Diagnostics::GetTraceDispatcher().Trace##level(format __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

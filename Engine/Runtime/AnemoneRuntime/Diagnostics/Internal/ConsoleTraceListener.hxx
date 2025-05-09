@@ -11,7 +11,7 @@ namespace Anemone::Diagnostics
         ReaderWriterLock _lock{};
 
     public:
-        void Event(TraceLevel level, const char* message, size_t size) override;
+        void TraceEvent(TraceLevel level, const char* message, size_t size) override;
         void Flush() override;
     };
 }

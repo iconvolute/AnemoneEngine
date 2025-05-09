@@ -24,7 +24,7 @@ int AnemoneMain(int argc, char** argv);
 
 #if ANEMONE_PLATFORM_WINDOWS && defined(ANEMONE_APPLICATION_UI)
 
-#include "AnemoneRuntime/Platform/Windows/WindowsHeaders.hxx"
+#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
 // ReSharper disable once CppNonInlineFunctionDefinitionInHeaderFile
 int WINAPI WinMain(
@@ -36,11 +36,11 @@ int WINAPI WinMain(
     int argc = __argc;
     char** argv = __argv;
 
-    Anemone::Runtime::Initialize(argc, argv);
+    AnemoneRuntimeInitialize(argc, argv);
 
     int const result = AnemoneMain(argc, argv);
 
-    Anemone::Runtime::Finalize();
+    AnemoneRuntimeFinalize();
 
     return result;
 }

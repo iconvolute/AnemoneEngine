@@ -20,14 +20,14 @@ namespace Anemone::Diagnostics
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        dispatcher.LogFatal("=== assertion failed ===");
-        dispatcher.LogFatal("location: {}:{}", location.file_name(), location.line());
-        dispatcher.LogFatal("expression: {}", expression);
-        dispatcher.LogFatal("message: {}", std::string_view{message.data(), message.size()});
+        dispatcher.TraceFatal("=== assertion failed ===");
+        dispatcher.TraceFatal("location: {}:{}", location.file_name(), location.line());
+        dispatcher.TraceFatal("expression: {}", expression);
+        dispatcher.TraceFatal("message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            dispatcher.LogFatal("{} {}", address, name);
+            dispatcher.TraceFatal("{} {}", address, name);
         });
 
         dispatcher.Flush();
@@ -60,13 +60,13 @@ namespace Anemone::Diagnostics
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
 
-        dispatcher.LogFatal("=== panic ===");
-        dispatcher.LogFatal("location: {}:{}", location.file_name(), location.line());
-        dispatcher.LogFatal("message: {}", std::string_view{message.data(), message.size()});
+        dispatcher.TraceFatal("=== panic ===");
+        dispatcher.TraceFatal("location: {}:{}", location.file_name(), location.line());
+        dispatcher.TraceFatal("message: {}", std::string_view{message.data(), message.size()});
 
         StackTrace::Walk([&](void* address, std::string_view name)
         {
-            dispatcher.LogFatal("{} {}", address, name);
+            dispatcher.TraceFatal("{} {}", address, name);
         });
 
         dispatcher.Flush();

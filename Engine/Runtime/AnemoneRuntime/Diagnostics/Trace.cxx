@@ -6,13 +6,13 @@
 
 namespace Anemone::Diagnostics
 {
-    void TraceDispatcher::Event(TraceLevel level, const char* message, size_t size)
+    void TraceDispatcher::TraceEvent(TraceLevel level, const char* message, size_t size)
     {
         SharedLock scope{this->_lock};
 
         this->_listeners.ForEach([&](TraceListener& listener)
         {
-            listener.Event(level, message, size);
+            listener.TraceEvent(level, message, size);
         });
     }
 

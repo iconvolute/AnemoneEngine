@@ -64,7 +64,7 @@ namespace Anemone::Internal
         Interop::string_buffer<char, 128> szMessage;
         Interop::Windows::NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
 
-        Diagnostics::GetTraceDispatcher().LogEvent(Diagnostics::TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
+        Diagnostics::GetTraceDispatcher().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
             location.file_name(),
             location.line(),
             location.function_name(),

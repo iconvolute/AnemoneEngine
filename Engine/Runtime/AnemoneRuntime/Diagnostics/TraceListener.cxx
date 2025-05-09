@@ -28,7 +28,7 @@ namespace Anemone::Diagnostics
 
         return 'N';
     }
-    void TraceListener::LogEventFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
+    void TraceListener::TraceFormatted(TraceLevel level, std::string_view format, fmt::format_args args)
     {
         fmt::memory_buffer buffer{};
 
@@ -44,6 +44,6 @@ namespace Anemone::Diagnostics
 
         (*out) = '\0';
 
-        this->Event(level, message, size);
+        this->TraceEvent(level, message, size);
     }
 }

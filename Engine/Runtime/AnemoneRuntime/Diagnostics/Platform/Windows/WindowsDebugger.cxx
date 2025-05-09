@@ -46,7 +46,7 @@ namespace Anemone::Internal
     private:
         CriticalSection m_lock{};
     public:
-        void Event(Diagnostics::TraceLevel level, const char* message, size_t size) override
+        void TraceEvent(Diagnostics::TraceLevel level, const char* message, size_t size) override
         {
             (void)level;
 
@@ -80,7 +80,7 @@ namespace Anemone::Internal
             TraceLoggingUnregister(GWindowsEtwTraceProvider);
         }
 
-        void Event(Diagnostics::TraceLevel level, const char* message, size_t size) override
+        void TraceEvent(Diagnostics::TraceLevel level, const char* message, size_t size) override
         {
             switch (level)
             {

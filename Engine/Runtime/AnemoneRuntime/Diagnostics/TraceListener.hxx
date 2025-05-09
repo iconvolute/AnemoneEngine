@@ -20,52 +20,52 @@ namespace Anemone::Diagnostics
         virtual ~TraceListener() = default;
 
     public:
-        virtual void Event(TraceLevel level, const char* message, size_t size) = 0;
+        virtual void TraceEvent(TraceLevel level, const char* message, size_t size) = 0;
         virtual void Flush() { }
 
-        void LogEventFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
+        void TraceFormatted(TraceLevel level, std::string_view format, fmt::format_args args);
 
         template <typename... Args>
-        void LogEvent(TraceLevel level, const char* format, Args const&... args)
+        void Trace(TraceLevel level, const char* format, Args const&... args)
         {
-            this->LogEventFormatted(level, format, fmt::make_format_args(args...));
+            this->TraceFormatted(level, format, fmt::make_format_args(args...));
         }
 
 
         template <typename... Args>
-        void LogVerbose(const char* format, Args const&... args)
+        void TraceVerbose(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Verbose, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Verbose, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void LogDebug(const char* format, Args const&... args)
+        void TraceDebug(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Debug, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Debug, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void LogInformation(const char* format, Args const&... args)
+        void TraceInformation(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Information, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Information, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void LogWarning(const char* format, Args const&... args)
+        void TraceWarning(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Warning, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Warning, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void LogError(const char* format, Args const&... args)
+        void TraceError(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Error, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Error, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void LogFatal(const char* format, Args const&... args)
+        void TraceFatal(const char* format, Args const&... args)
         {
-            this->LogEventFormatted(TraceLevel::Fatal, format, fmt::make_format_args(args...));
+            this->TraceFormatted(TraceLevel::Fatal, format, fmt::make_format_args(args...));
         }
     };
 }

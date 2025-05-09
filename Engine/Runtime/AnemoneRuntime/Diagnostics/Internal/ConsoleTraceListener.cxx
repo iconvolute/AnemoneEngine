@@ -2,7 +2,7 @@
 
 namespace Anemone::Diagnostics
 {
-    void ConsoleTraceListener::Event(TraceLevel level, const char* message, size_t size)
+    void ConsoleTraceListener::TraceEvent(TraceLevel level, const char* message, size_t size)
     {
         (void)level;
 
