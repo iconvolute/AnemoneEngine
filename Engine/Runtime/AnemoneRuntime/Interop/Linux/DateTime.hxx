@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Linux/Headers.hxx"
-#include "AnemoneRuntime/Duration.hxx"
-#include "AnemoneRuntime/DateTime.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
+#include "AnemoneRuntime/Base/DateTime.hxx"
 
 namespace Anemone::Interop::Linux
 {

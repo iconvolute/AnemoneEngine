@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 namespace Anemone::Interop::Windows
 {
@@ -102,8 +103,8 @@ namespace Anemone::Interop::Windows
             return this->m_key != nullptr;
         }
 
-        template <size_t CapacityT, typename Callback = void(std::wstring_view value)>
-        [[nodiscard]] bool ReadStrings(const wchar_t* name, string_buffer<wchar_t, CapacityT>& storage, Callback&& callback) const
+        template <size_t Capacity, typename Callback = void(std::wstring_view value)>
+        [[nodiscard]] bool ReadStrings(const wchar_t* name, string_buffer<wchar_t, Capacity>& storage, Callback&& callback) const
         {
             if (adapt_string_buffer(storage, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
@@ -172,8 +173,8 @@ namespace Anemone::Interop::Windows
             return false;
         }
 
-        template <size_t CapacityT>
-        [[nodiscard]] bool ReadString(const wchar_t* name, string_buffer<wchar_t, CapacityT>& result) const
+        template <size_t Capacity>
+        [[nodiscard]] bool ReadString(const wchar_t* name, string_buffer<wchar_t, Capacity>& result) const
         {
             return adapt_string_buffer(result, [&](std::span<wchar_t> buffer, size_t& capacity)
             {
@@ -227,7 +228,7 @@ namespace Anemone::Interop::Windows
         }
 
         template <size_t Capacity>
-        [[nodiscard]] bool ReadString(const char* name, string_buffer<char, Capacity>& result)
+        [[nodiscard]] bool ReadString(const char* name, string_buffer<char, Capacity>& result) const
         {
             return adapt_string_buffer(result, [&](std::span<char> buffer, size_t& capacity)
             {

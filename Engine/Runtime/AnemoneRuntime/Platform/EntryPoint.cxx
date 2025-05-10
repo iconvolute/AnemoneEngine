@@ -1,68 +1,76 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
 
-extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv);
-extern "C" RUNTIME_API void AnemoneRuntimeFinalize();
-
-namespace Anemone::Internal
+namespace Anemone::Environment
 {
-    extern void InitializeCommandLine(int argc, char** argv);
-    extern void FinalizeCommandLine();
+    extern void Initialize();
+    extern void Finalize();
+}
 
+namespace Anemone::Clipboard
+{
+    extern void Initialize();
+    extern void Finalize();
+}
+
+namespace Anemone::CommandLine
+{
+    extern void Initialize(int argc, char** argv);
+    extern void Finalize();
+}
+
+namespace Anemone::Diagnostics
+{
     extern void InitializeTrace();
     extern void FinalizeTrace();
 
     extern void InitializeDebugger();
     extern void FinalizeDebugger();
+}
 
-    extern void InitializeEnvironment();
-    extern void FinalizeEnvironment();
+namespace Anemone::Input
+{
+    extern void Initialize();
+    extern void Finalize();
+}
 
-    extern void InitializeProcessorProperties();
-    extern void FinalizeProcessorProperties();
-
-    extern void InitializeClipboard();
-    extern void FinalizeClipboard();
-
-    extern void InitializeApplicationResources();
-    extern void FinalizeApplicationResources();
-
+namespace Anemone::Threading
+{
     extern void InitializeTaskScheduler();
     extern void FinalizeTaskScheduler();
-
 }
+
+extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv);
+extern "C" RUNTIME_API void AnemoneRuntimeFinalize();
 
 void AnemoneRuntimeInitialize(int argc, char** argv)
 {
-    using namespace Anemone::Internal;
+    Anemone::CommandLine::Initialize(argc, argv);
+    Anemone::Diagnostics::InitializeTrace();
+    Anemone::Diagnostics::InitializeDebugger();
 
-    InitializeCommandLine(argc, argv);
-    InitializeTrace();
-    InitializeDebugger();
-    InitializeEnvironment();
-    InitializeProcessorProperties();
-    InitializeClipboard();
-    InitializeApplicationResources();
+    Anemone::Environment::Initialize();
+    Anemone::Input::Initialize();
+    Anemone::Clipboard::Initialize();
 
 #if ANEMONE_BUILD_PROFILING
     Anemone::Profiler::Initialize();
 #endif
 
-    InitializeTaskScheduler();
+    Anemone::Threading::InitializeTaskScheduler();
 }
 
 void AnemoneRuntimeFinalize()
 {
-    using namespace Anemone::Internal;
-
 #if ANEMONE_BUILD_PROFILING
     Anemone::Profiler::Finalize();
 #endif
 
-    FinalizeApplicationResources();
-    FinalizeClipboard();
-    FinalizeProcessorProperties();
-    FinalizeEnvironment();
-    FinalizeDebugger();
-    FinalizeTrace();
-    FinalizeCommandLine();
+    Anemone::Threading::FinalizeTaskScheduler();
+    Anemone::Clipboard::Finalize();
+    Anemone::Input::Finalize();
+    Anemone::Environment::Finalize();
+    Anemone::Diagnostics::FinalizeDebugger();
+    Anemone::Diagnostics::FinalizeTrace();
+    Anemone::CommandLine::Finalize();
 }

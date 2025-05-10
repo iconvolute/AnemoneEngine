@@ -1,6 +1,5 @@
 #include "AnemoneRuntime/Platform/EntryPoint.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 
 
 #include <string>
@@ -76,12 +75,13 @@ namespace Anemone::inline FileSystemX
     };
 }
 
-#include "AnemoneRuntime/System/Application.hxx"
+#include "AnemoneRuntime/App/IApplication.hxx"
+#include "AnemoneRuntime/App/IApplicationEvents.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
 
-#include "AnemoneRuntime/System/Dialogs.hxx"
+#include "AnemoneRuntime/App/Dialogs.hxx"
 
 #include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
@@ -92,30 +92,30 @@ public:
     EH() = default;
     ~EH() override = default;
 
-    void OnMouseEnter(Anemone::Window& window, Anemone::MouseEventArgs& args) override
+    void OnMouseEnter(Anemone::IWindow& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseLeave(Anemone::Window& window, Anemone::MouseEventArgs& args) override
+    void OnMouseLeave(Anemone::IWindow& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
-    void OnMouseMove(Anemone::Window& window, Anemone::MouseMoveEventArgs& args) override
-    {
-        (void)window;
-        (void)args;
-    }
-
-    void OnMouseWheel(Anemone::Window& window, Anemone::MouseWheelEventArgs& args) override
+    void OnMouseMove(Anemone::IWindow& window, Anemone::MouseMoveEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonDown(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseWheel(Anemone::IWindow& window, Anemone::MouseWheelEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonDown(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         AE_TRACE(Error, "mouse button down: {}", std::to_underlying(args.Key));
         (void)window;
@@ -151,14 +151,14 @@ public:
         }
     }
 
-    void OnMouseButtonUp(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseButtonUp(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         AE_TRACE(Error, "mouse button up: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonClick(Anemone::Window& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseButtonClick(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -166,7 +166,7 @@ public:
         *(volatile void**)0x42069 = nullptr;
     }
 
-    void OnKeyDown(Anemone::Window& window, Anemone::KeyEventArgs& args) override
+    void OnKeyDown(Anemone::IWindow& window, Anemone::KeyEventArgs& args) override
     {
         AE_TRACE(Error, "Key down: {}", std::to_underlying(args.Key));
         (void)window;
@@ -192,13 +192,13 @@ public:
         }
     }
 
-    void OnKeyUp(Anemone::Window& window, Anemone::KeyEventArgs& args) override
+    void OnKeyUp(Anemone::IWindow& window, Anemone::KeyEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnCharacterReceived(Anemone::Window& window, Anemone::CharacterReceivedEventArgs& args) override
+    void OnCharacterReceived(Anemone::IWindow& window, Anemone::CharacterReceivedEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -222,43 +222,43 @@ public:
         (void)args;
     }
 
-    void OnWindowClose(Anemone::Window& window, Anemone::WindowCloseEventArgs& args) override
+    void OnWindowClose(Anemone::IWindow& window, Anemone::WindowCloseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowActivated(Anemone::Window& window, Anemone::WindowActivatedEventArgs& args) override
+    void OnWindowActivated(Anemone::IWindow& window, Anemone::WindowActivatedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowSizeChanged(Anemone::Window& window, Anemone::WindowSizeChangedEventArgs& args) override
+    void OnWindowSizeChanged(Anemone::IWindow& window, Anemone::WindowSizeChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowLocationChanged(Anemone::Window& window, Anemone::WindowLocationChangedEventArgs& args) override
+    void OnWindowLocationChanged(Anemone::IWindow& window, Anemone::WindowLocationChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeStarted(Anemone::Window& window, Anemone::WindowEventArgs& args) override
+    void OnWindowResizeStarted(Anemone::IWindow& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeCompleted(Anemone::Window& window, Anemone::WindowEventArgs& args) override
+    void OnWindowResizeCompleted(Anemone::IWindow& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowDpiChanged(Anemone::Window& window, Anemone::WindowDpiChangedEventArgs& args) override
+    void OnWindowDpiChanged(Anemone::IWindow& window, Anemone::WindowDpiChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -283,12 +283,11 @@ public:
 };
 
 #include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 
 anemone_noinline void test()
 {
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetName());
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetVendor());
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorVendor());
 }
 
 #include "AnemoneRuntime/System/FileHandle.hxx"
@@ -297,10 +296,6 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 
 #include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
-
-#if ANEMONE_PLATFORM_LINUX
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#endif
 
 struct V2 : Anemone::DirectoryVisitor
 {
@@ -474,22 +469,23 @@ int AnemoneMain(int argc, char** argv)
     }
     test();
     AE_TRACE(Error, "Hello, World!");
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetName());
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetVendor());
-    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::ProcessorProperties::GetEfficiencyCoresCount());
-    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::ProcessorProperties::GetPerformanceCoresCount());
-    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::ProcessorProperties::GetPhysicalCoresCount());
-    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::ProcessorProperties::GetLogicalCoresCount());
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorVendor());
+    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetEfficiencyCoresCount());
+    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::Environment::GetPerformanceCoresCount());
+    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::Environment::GetPhysicalCoresCount());
+    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::Environment::GetLogicalCoresCount());
 
-    fmt::println("cpu-name:    '{}'", Anemone::ProcessorProperties::GetName());
-    fmt::println("cpu-vendor:  '{}'", Anemone::ProcessorProperties::GetVendor());
+    fmt::println("cpu-name:    '{}'", Anemone::Environment::GetProcessorName());
+    fmt::println("cpu-vendor:  '{}'", Anemone::Environment::GetProcessorVendor());
     /*fmt::println("device-name: '{}'", Anemone::Environment::GetDeviceName());
     fmt::println("device-id:   '{}'", Anemone::Environment::GetDeviceUniqueId());*/
 
     EH eh{};
 
-    auto window1 = Anemone::Application::MakeWindow(Anemone::WindowType::Game);
-    auto window2 = Anemone::Application::MakeWindow(Anemone::WindowType::Game);
+    Anemone::IApplication::Initialize(&eh);
+    auto window1 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
+    auto window2 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
 
     if (window1 and window2)
     {
@@ -507,7 +503,7 @@ int AnemoneMain(int argc, char** argv)
                 client.X, client.Y, client.Width, client.Height,
                 window.X, window.Y, window.Width, window.Height);
 
-            Anemone::Application::ProcessMessages();
+            Anemone::IApplication::Get().ProcessMessages();
             Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
         }
     }

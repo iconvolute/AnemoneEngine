@@ -1,16 +1,13 @@
 add_subdirectory("Platform")
-add_subdirectory("Internal")
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Application.cxx"
-        "Application.hxx"
         "Clipboard.hxx"
-        "Dialogs.hxx"
+        "CommandLine.cxx"
+        "CommandLine.hxx"
         "Environment.hxx"
+        "FileHandle.hxx"
         "Process.hxx"
-        "ProcessorProperties.hxx"
-        "Window.hxx"
-        "SystemAllocator.hxx"
         "SharedLibrary.hxx"
+        "SystemAllocator.hxx"
 )

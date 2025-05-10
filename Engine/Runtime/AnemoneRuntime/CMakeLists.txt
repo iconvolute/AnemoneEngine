@@ -1,6 +1,8 @@
+add_subdirectory("App")
 add_subdirectory("Base")
 add_subdirectory("Diagnostics")
 add_subdirectory("Hash")
+add_subdirectory("Input")
 add_subdirectory("Interop")
 add_subdirectory("Math")
 add_subdirectory("Memory")

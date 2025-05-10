@@ -15,6 +15,12 @@ namespace Anemone::Interop::Windows
     inline constexpr UINT GetKeyState_Down = 0x8000u;
     inline constexpr UINT GetKeyState_Locked = 0x0001u;
 
+    struct WindowStyle final
+    {
+        DWORD Style;
+        DWORD ExStyle;
+    };
+
     anemone_forceinline bool IsKeyPressed(UINT key)
     {
         return (GetKeyState(key) & GetKeyState_Down) != 0;

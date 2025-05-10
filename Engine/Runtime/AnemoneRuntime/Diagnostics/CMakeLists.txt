@@ -3,6 +3,7 @@ target_sources(AnemoneRuntime
         "Assert.cxx"
         "Assert.hxx"
 
+        "Debugger.cxx"
         "Debugger.hxx"
 
         "Trace.cxx"

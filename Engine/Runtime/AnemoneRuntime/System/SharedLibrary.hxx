@@ -1,9 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/System/Platform/SharedLibrary.hxx"
+#include "AnemoneRuntime/System/Platform/Platform.hxx"
 #include "AnemoneRuntime/Base/ErrorCode.hxx"
 
 #include <expected>
-#include<generator>
 
 namespace Anemone
 {
@@ -24,7 +23,7 @@ namespace Anemone
         SharedLibrary& operator=(SharedLibrary&&) = default;
         ~SharedLibrary() = default;
 
-        
+
     public:
         [[nodiscard]] explicit operator bool() const
         {

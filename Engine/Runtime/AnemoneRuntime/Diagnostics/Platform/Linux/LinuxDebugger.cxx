@@ -1,33 +1,36 @@
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxDebugger.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
-    static UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
-
-    extern void InitializeDebugger()
+    namespace
     {
-        GConsoleTraceListener.Create();
-        Diagnostics::RegisterGlobalTraceListener(*GConsoleTraceListener);
+        UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
     }
 
-    extern void FinalizeDebugger()
+    extern void PlatformInitializeDebugger()
     {
-        Diagnostics::UnregisterGlobalTraceListener(*GConsoleTraceListener);
+        GConsoleTraceListener.Create();
+        GetTraceDispatcher().Register(*GConsoleTraceListener);
+    }
+
+    extern void PlatformFinalizeDebugger()
+    {
+        GetTraceDispatcher().Unregister(*GConsoleTraceListener);
         GConsoleTraceListener.Destroy();
     }
 }
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
-    void Diagnostics::Break()
+    void Break()
     {
         anemone_debugbreak();
     }
 
-    void Diagnostics::Crash()
+    void Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -36,24 +39,24 @@ namespace Anemone
         abort();
     }
 
-    bool Diagnostics::IsDebuggerAttached()
+    bool IsDebuggerAttached()
     {
         return false;
     }
 
-    void Diagnostics::WaitForDebugger()
+    void WaitForDebugger()
     {
     }
 
-    bool Diagnostics::AttachDebugger()
+    bool AttachDebugger()
     {
         return false;
     }
 
-    void Diagnostics::ReportApplicationStop(std::string_view reason)
+    void ReportApplicationStop(std::string_view reason)
     {
-        fwrite(reason.data(), 1, reason.size(), stderr);
-        fflush(stderr);
+        (void)fwrite(reason.data(), 1, reason.size(), stderr);
+        (void)fflush(stderr);
         abort();
     }
 }

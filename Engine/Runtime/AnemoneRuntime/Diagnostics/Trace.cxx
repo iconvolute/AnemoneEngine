@@ -6,23 +6,23 @@
 
 namespace Anemone::Diagnostics
 {
-    static UninitializedObject<TraceDispatcher> GTraceDispatcher{};
-
-    TraceDispatcher& GetTraceDispatcher()
+    namespace
     {
-        return *GTraceDispatcher;
+        UninitializedObject<TraceDispatcher> GTraceDispatcher{};
     }
-}
 
-namespace Anemone::Internal
-{
     extern void InitializeTrace()
     {
-        ::Anemone::Diagnostics::GTraceDispatcher.Create();
+        GTraceDispatcher.Create();
     }
 
     extern void FinalizeTrace()
     {
-        ::Anemone::Diagnostics::GTraceDispatcher.Destroy();
+        GTraceDispatcher.Destroy();
+    }
+
+    TraceDispatcher& GetTraceDispatcher()
+    {
+        return *GTraceDispatcher;
     }
 }

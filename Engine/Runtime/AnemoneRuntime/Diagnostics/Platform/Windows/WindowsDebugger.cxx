@@ -16,7 +16,7 @@
 #include <iterator>
 #include <format>
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
     struct CrashDetails
     {
@@ -39,12 +39,13 @@ namespace Anemone::Internal
 
 #define ENABLE_HEAP_CORRUPTION_CRASHES false
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
     class WindowsDebugTraceListener final : public Diagnostics::TraceListener
     {
     private:
         CriticalSection m_lock{};
+
     public:
         void TraceEvent(Diagnostics::TraceLevel level, const char* message, size_t size) override
         {
@@ -57,7 +58,7 @@ namespace Anemone::Internal
     };
 }
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
     // C0B8BB2A-7E1E-5A0B-0ACD-3EE6187895ED
     // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
@@ -133,38 +134,41 @@ namespace Anemone::Internal
 
 }
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
-    static PTOP_LEVEL_EXCEPTION_FILTER GPreviousExceptionFilter{};
-
-    static UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
-    static UninitializedObject<WindowsDebugTraceListener> GWindowsDebugTraceListener{};
-    static UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener{};
-
-    static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+    namespace
     {
-        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
-        {
-            return EXCEPTION_CONTINUE_EXECUTION;
-        }
+        PTOP_LEVEL_EXCEPTION_FILTER GPreviousExceptionFilter{};
 
-        Windows::HandleCrash(lpExceptionPointers);
-        return EXCEPTION_CONTINUE_SEARCH;
-    }
+        UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
+        UninitializedObject<WindowsDebugTraceListener> GWindowsDebugTraceListener{};
+        UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener{};
+
+        static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
+        {
+            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == DBG_PRINTEXCEPTION_C)
+            {
+                return EXCEPTION_CONTINUE_EXECUTION;
+            }
+
+            HandleCrash(lpExceptionPointers);
+            return EXCEPTION_CONTINUE_SEARCH;
+        }
 
 #if ENABLE_HEAP_CORRUPTION_CRASHES
-    static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
-    {
-        if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+        static LONG CALLBACK OnUnhandledExceptionVEH(LPEXCEPTION_POINTERS lpExceptionPointers)
         {
-            Windows::HandleCrash::HandleCrash(lpExceptionPointers);
+            if (lpExceptionPointers->ExceptionRecord->ExceptionCode == STATUS_HEAP_CORRUPTION)
+            {
+                HandleCrash(lpExceptionPointers);
+            }
+
+            return EXCEPTION_EXECUTE_HANDLER;
         }
-
-        return EXCEPTION_EXECUTE_HANDLER;
-    }
 #endif
+    }
 
-    extern void InitializeDebugger()
+    extern void PlatformInitializeDebugger()
     {
         // Initialize exception handlers
         GPreviousExceptionFilter = SetUnhandledExceptionFilter(OnUnhandledExceptionFilter);
@@ -193,7 +197,7 @@ namespace Anemone::Internal
         Diagnostics::GetTraceDispatcher().Register(*GWindowsEtwTraceListener);
     }
 
-    extern void FinalizeDebugger()
+    extern void PlatformFinalizeDebugger()
     {
         if (GWindowsEtwTraceListener)
         {
@@ -222,14 +226,14 @@ namespace Anemone::Internal
     }
 }
 
-namespace Anemone
+namespace Anemone::Diagnostics
 {
-    void Diagnostics::Break()
+    void Break()
     {
         anemone_debugbreak();
     }
 
-    void Diagnostics::Crash()
+    void Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -238,7 +242,7 @@ namespace Anemone
         __fastfail(FAST_FAIL_FATAL_APP_EXIT);
     }
 
-    bool Diagnostics::IsDebuggerAttached()
+    bool IsDebuggerAttached()
     {
 #if ANEMONE_BUILD_SHIPPING
         return false;
@@ -247,7 +251,7 @@ namespace Anemone
 #endif
     }
 
-    void Diagnostics::WaitForDebugger()
+    void WaitForDebugger()
     {
         while (not IsDebuggerPresent())
         {
@@ -255,7 +259,7 @@ namespace Anemone
         }
     }
 
-    bool Diagnostics::AttachDebugger()
+    bool AttachDebugger()
     {
 #if ANEMONE_BUILD_SHIPPING
         return false;
@@ -322,7 +326,7 @@ namespace Anemone
 #endif
     }
 
-    void Diagnostics::ReportApplicationStop(std::string_view reason)
+    void ReportApplicationStop(std::string_view reason)
     {
         Interop::string_buffer<wchar_t, 128> buffer{};
         Interop::Windows::WidenString(buffer, reason);
@@ -337,7 +341,7 @@ namespace Anemone
     }
 }
 
-namespace Anemone::Internal::Windows
+namespace Anemone::Diagnostics
 {
     void HandleCrash(PEXCEPTION_POINTERS pExceptionPointers)
     {
@@ -358,7 +362,7 @@ namespace Anemone::Internal::Windows
         DWORD const dwProcessId = GetProcessId(hProcess);
         DWORD const dwThreadId = GetThreadId(hThread);
 
-        Internal::CrashDetails crashDetails{};
+        CrashDetails crashDetails{};
         std::string_view{ANEMONE_ENGINE_BUILD_ID}.copy(crashDetails.BuildId, sizeof(crashDetails.BuildId) - 1);
 
         crashDetails.ProcessId = dwProcessId;
@@ -390,7 +394,7 @@ namespace Anemone::Internal::Windows
             Interop::Windows::SafeMemoryMappedFileHandle fhMapping = Interop::Windows::OpenMemoryMappedFile(
                 Interop::Windows::SafeFileHandle{},
                 name,
-                sizeof(Internal::CrashDetails),
+                sizeof(CrashDetails),
                 Interop::Windows::MemoryMappedFileAccess::ReadWrite);
 
             if (not fhMapping)
@@ -409,7 +413,7 @@ namespace Anemone::Internal::Windows
                 return;
             }
 
-            CopyMemory(fvMapping.GetData(), &crashDetails, sizeof(Internal::CrashDetails));
+            CopyMemory(fvMapping.GetData(), &crashDetails, sizeof(CrashDetails));
 
             Interop::Windows::FlushMemoryMappedView(fvMapping);
 

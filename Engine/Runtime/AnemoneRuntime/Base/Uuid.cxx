@@ -38,10 +38,10 @@ namespace Anemone
         std::array elements{lo, hi};
 
         Uuid result = std::bit_cast<Uuid>(elements);
-        
+
         // Copy 48 bits of the big-endian representation of the milliseconds since Unix epoch. It should work for year 10889 with ease
         std::memcpy(result.Elements, &bytes_bigendian, 6);
-        
+
         return result;
     }
 

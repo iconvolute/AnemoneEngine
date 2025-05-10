@@ -2,25 +2,32 @@
 #include "AnemoneRuntime/Base/Instant.hxx"
 #include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/System/ProcessorProperties.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
+
+namespace Anemone::Internal
+{
+    UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics{};
+}
+
+namespace Anemone::Threading
+{
+    extern void InitializeTaskScheduler()
+    {
+        Internal::GTaskSchedulerStatics.Create();
+    }
+
+    extern void FinalizeTaskScheduler()
+    {
+        Internal::GTaskSchedulerStatics.Destroy();
+    }
+}
+
 
 namespace Anemone::Internal
 {
     AE_DECLARE_PROFILE(TaskWorkerWait);
     AE_DECLARE_PROFILE(TaskWorkerProcess);
-
-    UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics{};
-
-    extern void InitializeTaskScheduler()
-    {
-        GTaskSchedulerStatics.Create();
-    }
-
-    extern void FinalizeTaskScheduler()
-    {
-        GTaskSchedulerStatics.Destroy();
-    }
 
     uint32_t TaskSchedulerStatics::GenerateTaskId()
     {
@@ -40,7 +47,7 @@ namespace Anemone::Internal
         // Assume that main thread will contribute as well.
         //
 
-        size_t const workerCount = ProcessorProperties::GetLogicalCoresCount() - 1uz;
+        size_t const workerCount = Environment::GetLogicalCoresCount() - 1uz;
 
         this->m_Workers.resize(workerCount);
         this->m_Threads.resize(workerCount);

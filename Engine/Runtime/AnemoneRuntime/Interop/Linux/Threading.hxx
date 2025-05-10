@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Interop/Linux/Headers.hxx"
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 
 #include <atomic>
 

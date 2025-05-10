@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
 
 #include <string_view>
 #include <expected>
