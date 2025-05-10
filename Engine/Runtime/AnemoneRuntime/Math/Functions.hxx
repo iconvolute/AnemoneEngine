@@ -8,6 +8,8 @@
 #include <cmath>
 #include <concepts>
 
+#include "Packed.hxx"
+
 #if ANEMONE_FEATURE_AVX
 #include <immintrin.h>
 #endif
@@ -502,7 +504,7 @@ namespace Anemone::Math
 
 namespace Anemone::Math
 {
-    inline Float3 CartesianToSpherical(Float3 const& value) noexcept
+    inline Packed::Vector3F CartesianToSpherical(Packed::Vector3F const& value) noexcept
     {
         const auto radius = Sqrt(
             value.X * value.X +
@@ -518,7 +520,7 @@ namespace Anemone::Math
         return {radius, theta, phi};
     }
 
-    inline Float3 SphericalToCartesian(Float3 const& value) noexcept
+    inline Packed::Vector3F SphericalToCartesian(Packed::Vector3F const& value) noexcept
     {
         auto const [sinTheta, cosTheta] = SinCos(value.Y);
 
@@ -531,7 +533,7 @@ namespace Anemone::Math
         return {partial * cosPhi, partial * sinPhi, radius * cosTheta};
     }
 
-    inline Float3 CartesianToCylindrical(Float3 const& value) noexcept
+    inline Packed::Vector3F CartesianToCylindrical(Packed::Vector3F const& value) noexcept
     {
         auto const radius = Sqrt(
             value.X * value.X +
@@ -545,7 +547,7 @@ namespace Anemone::Math
         return {radius, angle, elevation};
     }
 
-    inline Float3 CylindricalToCartesian(Float3 const& value) noexcept
+    inline Packed::Vector3F CylindricalToCartesian(Packed::Vector3F const& value) noexcept
     {
         auto const radius = value.X;
         auto const angle = value.Y;
@@ -556,7 +558,7 @@ namespace Anemone::Math
         return {radius * cosAngle, radius * sinAngle, elevation};
     }
 
-    inline Float2 PolarToCartesian(Float2 const& value) noexcept
+    inline Packed::Vector2F PolarToCartesian(Packed::Vector2F const& value) noexcept
     {
         auto const radius = value.X;
         auto const angle = value.Y;
@@ -569,7 +571,7 @@ namespace Anemone::Math
         return {x, y};
     }
 
-    inline Float2 CartesianToPolar(Float2 const& value) noexcept
+    inline Packed::Vector2F CartesianToPolar(Packed::Vector2F const& value) noexcept
     {
         auto const radius = Sqrt(
             value.X * value.X +

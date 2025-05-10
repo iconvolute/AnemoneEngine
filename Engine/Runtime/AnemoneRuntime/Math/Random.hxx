@@ -1,9 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Types.hxx"
-
 #include "AnemoneRuntime/Math/Types.hxx"
-
 #include "AnemoneRuntime/Math/Numbers.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
 
@@ -90,23 +87,23 @@ namespace Anemone::Math
         return result;
     }
 
-    [[nodiscard]] RUNTIME_API Float2 NextFloat2(Random& generator);
+    [[nodiscard]] RUNTIME_API Packed::Vector2F NextFloat2(Random& generator);
 
-    [[nodiscard]] RUNTIME_API Float3 InsideUnitSphere(Random& generator);
-    [[nodiscard]] RUNTIME_API Float3 OnUnitSphere(Random& generator);
+    [[nodiscard]] RUNTIME_API Packed::Vector3F InsideUnitSphere(Random& generator);
+    [[nodiscard]] RUNTIME_API Packed::Vector3F OnUnitSphere(Random& generator);
 
-    [[nodiscard]] RUNTIME_API Float2 InsideUnitCircle(Random& generator);
-    [[nodiscard]] RUNTIME_API Float2 OnUnitCircle(Random& generator);
+    [[nodiscard]] RUNTIME_API Packed::Vector2F InsideUnitCircle(Random& generator);
+    [[nodiscard]] RUNTIME_API Packed::Vector2F OnUnitCircle(Random& generator);
 
-    [[nodiscard]] inline Math::Vector3F NextVector3F(Random& generator)
+    [[nodiscard]] inline Vector3F NextVector3F(Random& generator)
     {
         float const x = generator.NextFloat();
         float const y = generator.NextFloat();
         float const z = generator.NextFloat();
-        return Math::Vector3F::Create(x, y, z);
+        return Vector3F::Create(x, y, z);
     }
 
-    [[nodiscard]] inline Math::Vector3F NextInsideUnitSphere(Random& generator)
+    [[nodiscard]] inline Vector3F NextInsideUnitSphere(Random& generator)
     {
         float const theta = generator.NextFloat(Pi2<float>);
         float const v = generator.NextFloat(-1.0f, 1.0f);
@@ -116,7 +113,7 @@ namespace Anemone::Math
         auto [sin_phi, cos_phi] = SinCos(phi);
         auto [sin_theta, cos_theta] = SinCos(theta);
 
-        return Math::Vector3F::Create(
+        return Vector3F::Create(
             r * sin_phi * cos_theta,
             r * sin_phi * sin_theta,
             r * cos_phi);
@@ -126,19 +123,19 @@ namespace Anemone::Math
     [[nodiscard]] T Next(Random& generator) = delete;
 
     template <>
-    [[nodiscard]] inline Math::Packed::Vector2F Next<Math::Packed::Vector2F>(Random& generator)
+    [[nodiscard]] inline Packed::Vector2F Next<Packed::Vector2F>(Random& generator)
     {
         float const x = generator.NextFloat();
         float const y = generator.NextFloat();
 
-        return Math::Packed::Vector2F{x, y};
+        return Packed::Vector2F{x, y};
     }
 
-    inline Math::Vector3F RandomBarycentric(Random& generator)
+    inline Vector3F RandomBarycentric(Random& generator)
     {
-        float const r1 = Math::Sqrt(generator.NextFloat());
+        float const r1 = Sqrt(generator.NextFloat());
         float const r2 = generator.NextFloat();
-        return Math::Vector3F::Create(1.0f - r1, r1 * (1.0f - r2), r1 * r2);
+        return Vector3F::Create(1.0f - r1, r1 * (1.0f - r2), r1 * r2);
     }
 }
 

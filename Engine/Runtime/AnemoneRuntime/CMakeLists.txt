@@ -34,8 +34,6 @@ target_sources(AnemoneRuntime
         "Reflection.hxx"
         "String.cxx"
         "String.hxx"
-        "Types.cxx"
-        "Types.hxx"
         "Unicode.cxx"
         "Unicode.hxx"
         "UninitializedObject.hxx"

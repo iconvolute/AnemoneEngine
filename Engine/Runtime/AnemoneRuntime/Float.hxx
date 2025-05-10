@@ -1,6 +1,5 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Types.hxx"
 
 #include <cstddef>
 #include <cstdint>
@@ -12,6 +11,11 @@
 
 namespace Anemone
 {
+    struct Half final
+    {
+        uint16_t Inner;
+    };
+
     struct Float16
     {
         static constexpr uint16_t SignMask = 0x8000;

@@ -487,7 +487,7 @@ namespace Anemone::Math
         }
     }
 
-    Float2 NextFloat2(Random& generator)
+    Packed::Vector2F NextFloat2(Random& generator)
     {
         std::array<uint32_t, 2> const sample = std::bit_cast<std::array<uint32_t, 2>>(generator.NextUInt64());
 
@@ -497,7 +497,7 @@ namespace Anemone::Math
         return {x, y};
     }
 
-    Float3 InsideUnitSphere(Random& generator)
+    Packed::Vector3F InsideUnitSphere(Random& generator)
     {
         float const theta = generator.NextFloat(Pi2<float>);
         float const v = generator.NextFloat(-1.0f, 1.0f);
@@ -514,7 +514,7 @@ namespace Anemone::Math
         };
     }
 
-    Float3 OnUnitSphere(Random& generator)
+    Packed::Vector3F OnUnitSphere(Random& generator)
     {
         float const x = generator.NextNormal();
         float const y = generator.NextNormal();
@@ -529,7 +529,7 @@ namespace Anemone::Math
         };
     }
 
-    Float2 InsideUnitCircle(Random& generator)
+    Packed::Vector2F InsideUnitCircle(Random& generator)
     {
         auto [r, t] = NextFloat2(generator);
 
@@ -544,7 +544,7 @@ namespace Anemone::Math
         };
     }
 
-    Float2 OnUnitCircle(Random& generator)
+    Packed::Vector2F OnUnitCircle(Random& generator)
     {
         float const theta = generator.NextFloat(Pi2<float>);
 

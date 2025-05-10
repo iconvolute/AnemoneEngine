@@ -94,6 +94,46 @@ namespace Anemone::Math::Packed
         double D;
     };
 
+    struct SphericalCoordinateF final
+    {
+        float Radius;
+        float Theta;
+        float Phi;
+    };
+
+    struct SphericalCoordinateD final
+    {
+        double Radius;
+        double Theta;
+        double Phi;
+    };
+
+    struct CylindricalCoordinateF final
+    {
+        float Radius;
+        float Angle;
+        float Elevation;
+    };
+
+    struct CylindricalCoordinateD final
+    {
+        double Radius;
+        double Angle;
+        double Elevation;
+    };
+
+    struct PolarCoordinateF final
+    {
+        float Radius;
+        float Angle;
+    };
+
+    struct PolarCoordinateD final
+    {
+        double Radius;
+        double Angle;
+    };
+
     struct Ray2F
     {
         Vector2F Origin;

@@ -94,6 +94,46 @@ namespace Anemone::Math::Aligned
         double D;
     };
 
+    struct alignas(16) SphericalCoordinateF final
+    {
+        float Radius;
+        float Theta;
+        float Phi;
+    };
+
+    struct alignas(32) SphericalCoordinateD final
+    {
+        double Radius;
+        double Theta;
+        double Phi;
+    };
+
+    struct alignas(16) CylindricalCoordinateF final
+    {
+        float Radius;
+        float Angle;
+        float Elevation;
+    };
+
+    struct alignas(32) CylindricalCoordinateD final
+    {
+        double Radius;
+        double Angle;
+        double Elevation;
+    };
+
+    struct alignas(16) PolarCoordinateF final
+    {
+        float Radius;
+        float Angle;
+    };
+
+    struct alignas(16) PolarCoordinateD final
+    {
+        double Radius;
+        double Angle;
+    };
+
     struct alignas(16) Ray2F
     {
         Vector2F Origin;
