@@ -1,9 +1,16 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "HashAlgorithm.hxx"
-        "SecureMemory.hxx"
-        "SHA256.hxx"
-        "SHA512.hxx"
-)
+        "AES.cxx"
+        "AES.hxx"
 
-add_subdirectory("Internal")
+        "HashAlgorithm.cxx"
+        "HashAlgorithm.hxx"
+
+        "SHA256.cxx"
+        "SHA256.hxx"
+
+        "SHA512.cxx"
+        "SHA512.hxx"
+
+        "SecureMemory.hxx"
+)

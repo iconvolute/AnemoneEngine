@@ -1,5 +1,4 @@
 add_subdirectory("Base")
-add_subdirectory("Crypto")
 add_subdirectory("Diagnostics")
 add_subdirectory("Hash")
 add_subdirectory("Interop")
