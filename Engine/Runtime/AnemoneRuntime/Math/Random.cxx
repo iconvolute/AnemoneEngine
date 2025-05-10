@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Math/Random.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/Float.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Float.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 

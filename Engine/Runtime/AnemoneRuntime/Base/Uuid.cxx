@@ -1,8 +1,8 @@
-#include "AnemoneRuntime/Uuid.hxx"
+#include "AnemoneRuntime/Base/Uuid.hxx"
 #include "AnemoneRuntime/Math/Random.hxx"
-#include "AnemoneRuntime/DateTime.hxx"
+#include "AnemoneRuntime/Base/DateTime.hxx"
 #include "AnemoneRuntime/Security/SHA256.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 
 namespace Anemone
 {

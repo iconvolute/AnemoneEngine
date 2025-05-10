@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 
 #include <compare>
 #include <array>

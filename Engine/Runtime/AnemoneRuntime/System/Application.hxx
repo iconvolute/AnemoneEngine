@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/System/Window.hxx"
-#include "AnemoneRuntime/Flags.hxx"
+#include "AnemoneRuntime/Base/Flags.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Point.hxx"
 

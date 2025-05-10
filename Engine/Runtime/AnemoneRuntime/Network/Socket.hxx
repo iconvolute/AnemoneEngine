@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Platform/Types.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
 
 #include <expected>
 #include <span>

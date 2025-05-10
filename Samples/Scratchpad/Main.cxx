@@ -6,8 +6,8 @@
 #include <string>
 #include <string_view>
 
-#include "AnemoneRuntime/ErrorCode.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <expected>
 
@@ -62,7 +62,7 @@ namespace anemone
     inline constexpr auto BitPack = bit_pack<T>{};
 }
 
-#include "AnemoneRuntime/Uuid.hxx"
+#include "AnemoneRuntime/Base/Uuid.hxx"
 
 namespace Anemone::inline FileSystemX
 {

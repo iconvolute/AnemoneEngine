@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #if ANEMONE_BUILD_PROFILING

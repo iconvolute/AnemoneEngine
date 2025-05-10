@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 
 namespace Anemone
 {

@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/String.hxx"
+#include "AnemoneRuntime/Base/String.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <iterator>

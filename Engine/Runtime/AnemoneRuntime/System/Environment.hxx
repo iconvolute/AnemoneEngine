@@ -1,10 +1,10 @@
 #pragma once
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
-#include "AnemoneRuntime/Duration.hxx"
-#include "AnemoneRuntime/DateTime.hxx"
-#include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Uuid.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
+#include "AnemoneRuntime/Base/DateTime.hxx"
+#include "AnemoneRuntime/Base/Instant.hxx"
+#include "AnemoneRuntime/Base/Uuid.hxx"
 
 #include <span>
 #include <cstdint>
@@ -125,6 +125,8 @@ namespace Anemone
 {
     struct Environment final
     {
+        Environment() = delete;
+
         RUNTIME_API static bool GetEnvironmentVariable(std::string& result, std::string_view name);
         RUNTIME_API static bool SetEnvironmentVariable(std::string name, std::string_view value);
         RUNTIME_API static bool RemoveEnvironmentVariable(std::string_view name);

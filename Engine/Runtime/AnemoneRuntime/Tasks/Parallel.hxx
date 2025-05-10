@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/FunctionRef.hxx"
+#include "AnemoneRuntime/Base/FunctionRef.hxx"
 
 namespace Anemone
 {

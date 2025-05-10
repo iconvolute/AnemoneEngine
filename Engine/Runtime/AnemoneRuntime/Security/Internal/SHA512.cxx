@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Security/SHA512.hxx"
 #include "AnemoneRuntime/Security/SecureMemory.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 
 namespace Anemone::Internal
 {

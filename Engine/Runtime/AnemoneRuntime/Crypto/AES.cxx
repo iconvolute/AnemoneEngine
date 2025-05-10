@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Crypto/AES.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 
 namespace Anemone::Crypto
 {

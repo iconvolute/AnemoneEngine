@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneRuntime/Checked.hxx"
+#include "AnemoneRuntime/Base/Checked.hxx"
 
 TEST_CASE("Checked Add Overflow")
 {

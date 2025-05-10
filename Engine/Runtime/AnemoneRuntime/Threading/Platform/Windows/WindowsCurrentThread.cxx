@@ -4,7 +4,7 @@
 
 #include "AnemoneRuntime/Interop/Windows/Threading.hxx"
 #include "AnemoneRuntime/Threading/Platform/Windows/WindowsThreading.hxx"
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 
 #include <timeapi.h>
 

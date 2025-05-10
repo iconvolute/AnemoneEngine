@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Memory/SystemAllocator.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 

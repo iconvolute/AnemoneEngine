@@ -1,9 +1,9 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/FunctionRef.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
+#include "AnemoneRuntime/Base/FunctionRef.hxx"
 
 #include <expected>
 #include <cstdint>

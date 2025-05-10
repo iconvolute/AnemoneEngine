@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/Internal/TaskQueue.hxx"
 

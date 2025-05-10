@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
 #include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 
 #include <VersionHelpers.h>

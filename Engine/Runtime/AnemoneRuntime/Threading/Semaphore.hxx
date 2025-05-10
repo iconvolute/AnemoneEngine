@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Threading/Platform/Windows/WindowsThreading.hxx"

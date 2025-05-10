@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/FunctionRef.hxx"
+#include "AnemoneRuntime/Base/FunctionRef.hxx"
 
 #include <string_view>
 

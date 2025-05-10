@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/ConsoleFunction.hxx"
+#include "AnemoneRuntime/Base/ConsoleFunction.hxx"
 
 namespace Anemone
 {

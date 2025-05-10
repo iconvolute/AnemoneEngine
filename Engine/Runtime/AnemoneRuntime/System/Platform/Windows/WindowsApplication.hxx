@@ -4,8 +4,8 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsWindow.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/Input.hxx"
 #include "AnemoneRuntime/System/Platform/Windows/XInput.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 
 #include <memory>
 

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Clipboard.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 namespace Anemone::Internal
 {

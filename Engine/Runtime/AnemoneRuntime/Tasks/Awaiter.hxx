@@ -1,8 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Reference.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 
 #include <atomic>
 

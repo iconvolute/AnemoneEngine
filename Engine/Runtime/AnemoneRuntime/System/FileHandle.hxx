@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/System/Platform/FileHandle.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
-#include "AnemoneRuntime/Flags.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/Flags.hxx"
 
 #include <utility>
 #include <string_view>

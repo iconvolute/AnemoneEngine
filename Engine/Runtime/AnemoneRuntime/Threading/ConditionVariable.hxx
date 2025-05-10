@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS

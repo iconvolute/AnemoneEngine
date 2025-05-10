@@ -1,7 +1,7 @@
 #pragma once
-#include "AnemoneRuntime/Flags.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/Reference.hxx"
+#include "AnemoneRuntime/Base/Flags.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneRuntime/Tasks/Awaiter.hxx"
 
 namespace Anemone

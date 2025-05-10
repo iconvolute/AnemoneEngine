@@ -1,8 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
-#include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
+#include "AnemoneRuntime/Base/ErrorCode.hxx"
 #include "AnemoneRuntime/Storage/DataWriter.hxx"
 #include "AnemoneRuntime/Storage/DataReader.hxx"
 

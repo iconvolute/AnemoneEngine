@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/HandleTable.hxx"
+#include "AnemoneRuntime/Base/HandleTable.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 
 #include <bit>

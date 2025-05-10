@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Uuid.hxx"
+#include "AnemoneRuntime/Base/Uuid.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 

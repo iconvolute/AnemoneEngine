@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/FunctionRef.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Base/FunctionRef.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 namespace Anemone

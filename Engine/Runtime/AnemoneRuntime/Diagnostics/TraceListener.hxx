@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 
 #include <string_view>

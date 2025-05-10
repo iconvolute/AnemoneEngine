@@ -8,7 +8,7 @@
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
 #include "anemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"

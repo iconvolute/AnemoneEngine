@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Intrusive.hxx"
-#include "AnemoneRuntime/FunctionRef.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
+#include "AnemoneRuntime/Base/FunctionRef.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 

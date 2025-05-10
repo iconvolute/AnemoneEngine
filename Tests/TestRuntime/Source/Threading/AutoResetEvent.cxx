@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Threading/UserAutoResetEvent.hxx"
 #include "AnemoneRuntime/Threading/AutoResetEvent.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
-#include "AnemoneRuntime/Duration.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
 
 #include <catch_amalgamated.hpp>
 

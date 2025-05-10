@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Compression.hxx"
+#include "AnemoneRuntime/Base/Compression.hxx"
 
 #include <lz4.h>
 #include <lz4hc.h>

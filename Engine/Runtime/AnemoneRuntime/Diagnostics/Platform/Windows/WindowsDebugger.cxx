@@ -8,7 +8,7 @@
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/MemoryMappedFile.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/UninitializedObject.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <winmeta.h>
 #include <TraceLoggingProvider.h>
