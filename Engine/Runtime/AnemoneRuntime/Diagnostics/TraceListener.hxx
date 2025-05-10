@@ -2,10 +2,31 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Intrusive.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
-#include "AnemoneRuntime/Diagnostics/TraceLevel.hxx"
+
+#include <string_view>
+#include <fmt/format.h>
 
 namespace Anemone::Diagnostics
 {
+    enum class TraceLevel : uint8_t
+    {
+        Verbose,
+        Debug,
+        Information,
+        Warning,
+        Error,
+        Fatal,
+        None,
+
+#if ANEMONE_BUILD_SHIPPING
+        Default = Error,
+#elif ANEMONE_CONFIG_DEBUG
+        Default = Debug,
+#else
+        Default = Warning,
+#endif
+    };
+
     class RUNTIME_API TraceListener
         : private IntrusiveListNode<TraceListener>
     {

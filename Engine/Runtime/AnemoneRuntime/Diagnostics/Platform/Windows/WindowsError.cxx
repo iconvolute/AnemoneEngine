@@ -73,7 +73,7 @@ namespace Anemone::Internal
             szMessage.c_str());
 #else
 
-        Diagnostics::GetTraceDispatcher().LogEvent(Diagnostics::TraceLevel::Error, "{}:({}): caller: {}, tid: {}, error: {:#08x}",
+        Diagnostics::GetTraceDispatcher().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}",
             location.file_name(),
             location.line(),
             location.function_name(),
