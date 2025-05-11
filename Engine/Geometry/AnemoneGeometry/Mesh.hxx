@@ -242,3 +242,76 @@ namespace Anemone::Geometry::v2
         }
     };
 }
+
+namespace Anemone::Geometry
+{
+    template <typename Vertex>
+    Vertex Interpolate(Vertex const& v0, Vertex const& v1, float t) = delete;
+
+    template <typename Vertex, typename Index>
+    void Subdivide(
+        std::vector<Vertex>& outVertices,
+        std::vector<Index>& outIndices,
+        std::span<Vertex const> inVertices,
+        std::span<Index const> inIndices)
+    {
+        size_t const trianglesCount = inIndices.size() / 3;
+
+        // Subdivide each triangle into 4 smaller triangles.
+        //
+        //                v1
+        //                *
+        //               /|
+        //              / |
+        //             /  |
+        //            /   |
+        //           /    |
+        //       s0 *-----* s1
+        //         /|    /|
+        //        / |   / |
+        //       /  |  /  |
+        //      /   | /   |
+        //     /    |/    |
+        // v0 *-----*-----* v2
+        //          s2
+
+        for (size_t i = 0; i < trianglesCount; ++i)
+        {
+            Vertex const& v0 = inVertices[inIndices[i * 3 + 0]];
+            Vertex const& v1 = inVertices[inIndices[i * 3 + 1]];
+            Vertex const& v2 = inVertices[inIndices[i * 3 + 2]];
+
+            Vertex const s0 = Interpolate(v0, v1, 0.5f);
+            Vertex const s1 = Interpolate(v1, v2, 0.5f);
+            Vertex const s2 = Interpolate(v0, v2, 0.5f);
+
+            outVertices.emplace_back(v0);
+            outVertices.emplace_back(v1);
+            outVertices.emplace_back(v2);
+
+            outVertices.emplace_back(s0);
+            outVertices.emplace_back(s1);
+            outVertices.emplace_back(s2);
+
+            // triangle: v0, s0, s2
+            outIndices.emplace_back(i * 6 + 0);
+            outIndices.emplace_back(i * 6 + 3);
+            outIndices.emplace_back(i * 6 + 5);
+
+            // triangle: s0, v1, s1
+            outIndices.emplace_back(i * 6 + 3);
+            outIndices.emplace_back(i * 6 + 1);
+            outIndices.emplace_back(i * 6 + 4);
+
+            // triangle: s2, s1, v2
+            outIndices.emplace_back(i * 6 + 5);
+            outIndices.emplace_back(i * 6 + 4);
+            outIndices.emplace_back(i * 6 + 2);
+
+            // triangle: s0, s1, s2
+            outIndices.emplace_back(i * 6 + 3);
+            outIndices.emplace_back(i * 6 + 4);
+            outIndices.emplace_back(i * 6 + 5);
+        }
+    }
+}
