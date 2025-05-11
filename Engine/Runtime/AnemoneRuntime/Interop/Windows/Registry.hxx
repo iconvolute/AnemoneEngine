@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 namespace Anemone::Interop::Windows
@@ -311,6 +312,39 @@ namespace Anemone::Interop::Windows
                 &dwSize);
 
             return (dwType == REG_QWORD) and (status == ERROR_SUCCESS);
+        }
+
+        template <size_t Capacity>
+        [[nodiscard]] bool ReadBinary(const wchar_t* name, memory_buffer<Capacity>& result) const
+        {
+            DWORD dwType{};
+            DWORD dwSize{};
+
+            if (RegQueryValueExW(
+                    this->m_key,
+                    name,
+                    nullptr,
+                    &dwType,
+                    nullptr,
+                    &dwSize) == ERROR_SUCCESS)
+            {
+                if (dwType == REG_BINARY)
+                {
+                    result.resize_for_override(dwSize);
+
+                    LSTATUS const status = RegQueryValueExW(
+                        this->m_key,
+                        name,
+                        nullptr,
+                        nullptr,
+                        reinterpret_cast<LPBYTE>(result.data()),
+                        &dwSize);
+
+                    return (status == ERROR_SUCCESS);
+                }
+            }
+
+            return false;
         }
 
         [[nodiscard]] bool DeleteValue(const wchar_t* name) const
