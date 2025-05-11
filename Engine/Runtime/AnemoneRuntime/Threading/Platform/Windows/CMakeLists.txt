@@ -9,6 +9,7 @@ target_sources(AnemoneRuntime
         "WindowsSemaphore.cxx"
         "WindowsThread.cxx"
         "WindowsThreading.hxx"
+        "WindowsMonitor.cxx"
 )
 
 endif()

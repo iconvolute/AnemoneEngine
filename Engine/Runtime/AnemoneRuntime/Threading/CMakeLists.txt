@@ -9,6 +9,7 @@ target_sources(AnemoneRuntime
         "CurrentThread.hxx"
         "Lock.hxx"
         "ManualResetEvent.hxx"
+        "Monitor.hxx"
         "MpmcQueue.hxx"
         "MpscQueue.hxx"
         "ReaderWriterLock.hxx"

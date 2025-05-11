@@ -19,6 +19,12 @@ namespace Anemone::Internal
     using PlatformCriticalSection = pthread_mutex_t;
     using PlatformRecursiveCriticalSection = pthread_mutex_t;
     using PlatformConditionVariable = pthread_cond_t;
+
+    struct PlatformMonitor
+    {
+        pthread_mutex_t _lock;
+        pthread_cond_t _condition;
+    };
 }
 
 namespace Anemone::Internal::Futex

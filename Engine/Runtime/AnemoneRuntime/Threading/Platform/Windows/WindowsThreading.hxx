@@ -16,6 +16,12 @@ namespace Anemone::Internal
     using PlatformCriticalSection = SRWLOCK;
     using PlatformRecursiveCriticalSection = CRITICAL_SECTION;
     using PlatformConditionVariable = CONDITION_VARIABLE;
+
+    struct PlatformMonitor
+    {
+        SRWLOCK _lock;
+        CONDITION_VARIABLE _condition;
+    };
 }
 
 namespace Anemone::Internal::Futex
