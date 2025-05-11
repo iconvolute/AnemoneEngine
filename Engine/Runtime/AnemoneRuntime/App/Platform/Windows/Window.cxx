@@ -1,14 +1,12 @@
 #include "AnemoneRuntime/App/Platform/Windows/Window.hxx"
 #include "AnemoneRuntime/App/Platform/Windows/Application.hxx"
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Input/Platform/Windows/WindowsInput.hxx"
-
-#include <dwmapi.h>
-
 
 namespace Anemone
 {
@@ -79,24 +77,26 @@ namespace Anemone
             AE_VERIFY_WIN32(GetLastError());
         }
 
-        // TODO: Move to interop namespace
+        if (HRESULT const hr = Interop::Windows::SetWindowCornerPreference(handle, DWMWCP_DONOTROUND); FAILED(hr))
         {
-            constexpr DWORD preference = DWMWCP_DONOTROUND;
-
-            if (HRESULT const hr = DwmSetWindowAttribute(handle, DWMWA_WINDOW_CORNER_PREFERENCE, &preference, sizeof(DWORD)); FAILED(hr))
-            {
-                AE_VERIFY_HRESULT(hr);
-            }
+            AE_VERIFY_HRESULT(hr);
         }
 
+        if (HRESULT const hr = Interop::Windows::SetWindowUseImmersiveDarkMode(handle, TRUE); FAILED(hr))
         {
-            constexpr BOOL enable = TRUE;
-
-            if (HRESULT const hr = DwmSetWindowAttribute(handle, DWMWA_USE_IMMERSIVE_DARK_MODE, &enable, sizeof(BOOL)); FAILED(hr))
-            {
-                AE_VERIFY_HRESULT(hr);
-            }
+            AE_VERIFY_HRESULT(hr);
         }
+
+        // NOTE: This is useful when changing the window style to borderless.
+        // if (HRESULT const hr = Interop::Windows::SetWindowNcRenderingPolicy(handle, DWMNCRP_DISABLED); FAILED(hr))
+        // {
+        //     AE_VERIFY_HRESULT(hr);
+        // }
+
+        // if (HRESULT const hr = Interop::Windows::SetWindowAllowNcPaint(handle, FALSE); FAILED(hr))
+        // {
+        //     AE_VERIFY_HRESULT(hr);
+        // }
 
         if (handle == nullptr)
         {
