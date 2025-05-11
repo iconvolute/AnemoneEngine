@@ -28,6 +28,19 @@ namespace Anemone
         uint64_t AddressLimitHigh;
     };
 
+    struct ProcessMemoryUsage final
+    {
+        uint64_t PageFaultCount;
+        uint64_t PeakWorkingSetSize;
+        uint64_t WorkingSetSize;
+        uint64_t QuotaPeakPagedPoolUsage;
+        uint64_t QuotaPagedPoolUsage;
+        uint64_t QuotaPeakNonPagedPoolUsage;
+        uint64_t QuotaNonPagedPoolUsage;
+        uint64_t PageFileUsage;
+        uint64_t PeakPageFileUsage;        
+    };
+
     enum class PowerState : uint8_t
     {
         Unknown,

@@ -603,6 +603,13 @@ namespace Anemone::Environment
         };
     }
 
+    auto GetProcessMemoryUsage() -> ProcessMemoryUsage
+    {
+        AE_PANIC("Not implemented");
+        return {};
+    }
+
+
     void Terminate(bool force)
     {
         if (force)

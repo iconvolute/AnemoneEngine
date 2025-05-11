@@ -870,6 +870,26 @@ namespace Anemone::Environment
         };
     }
 
+    auto GetProcessMemoryUsage() -> ProcessMemoryUsage
+    {
+        PROCESS_MEMORY_COUNTERS process_memory_counters{};
+        process_memory_counters.cb = sizeof(process_memory_counters);
+
+        GetProcessMemoryInfo(GetCurrentProcess(), &process_memory_counters, sizeof(process_memory_counters));
+
+        return ProcessMemoryUsage {
+            .PageFaultCount = process_memory_counters.PageFaultCount,
+            .PeakWorkingSetSize = process_memory_counters.PeakWorkingSetSize,
+            .WorkingSetSize = process_memory_counters.WorkingSetSize,
+            .QuotaPeakPagedPoolUsage = process_memory_counters.QuotaPeakPagedPoolUsage,
+            .QuotaPagedPoolUsage = process_memory_counters.QuotaPagedPoolUsage,
+            .QuotaPeakNonPagedPoolUsage = process_memory_counters.QuotaPeakNonPagedPoolUsage,
+            .QuotaNonPagedPoolUsage = process_memory_counters.QuotaNonPagedPoolUsage,
+            .PageFileUsage = process_memory_counters.PagefileUsage,
+            .PeakPageFileUsage = process_memory_counters.PeakPagefileUsage,
+        };
+    }
+
     void Terminate(bool force)
     {
         if (force)
