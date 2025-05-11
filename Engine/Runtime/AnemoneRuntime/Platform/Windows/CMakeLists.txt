@@ -7,9 +7,6 @@ target_sources(AnemoneRuntime
         "WindowsNamedMutex.cxx"
         "WindowsNamedMutex.hxx"
 
-        "WindowsSplashScreen.cxx"
-        "WindowsSplashScreen.hxx"
-
         "WindowsStackTrace.cxx"
 )
 

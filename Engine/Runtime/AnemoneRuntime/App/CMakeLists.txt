@@ -4,6 +4,8 @@ target_sources(AnemoneRuntime
         "IApplication.hxx"
         "IApplicationEvents.cxx"
         "IApplicationEvents.hxx"
+        "ISplashScreen.cxx"
+        "ISplashScreen.hxx"
         "IWindow.cxx"
         "IWindow.hxx"
 )

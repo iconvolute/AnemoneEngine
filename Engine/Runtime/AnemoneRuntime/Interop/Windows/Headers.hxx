@@ -22,7 +22,7 @@ ANEMONE_EXTERNAL_HEADERS_BEGIN
 // #define NOCTLMGR 1
 #define NODEFERWINDOWPOS 1
 #define NODBCS 1
-#define NODRAWTEXT 1
+// #define NODRAWTEXT 1
 // #define NOGDI 1
 // #define NOLFILEIO 1
 // #define NOLOGERROR 1

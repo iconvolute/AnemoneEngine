@@ -5,6 +5,8 @@ target_sources(AnemoneRuntime
         "Application.cxx"
         "Application.hxx"
         "Dialogs.cxx"
+        "SplashScreen.cxx"
+        "SplashScreen.hxx"
         "Window.cxx"
         "Window.hxx"
 )
