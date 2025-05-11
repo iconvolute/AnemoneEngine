@@ -6,6 +6,8 @@ target_sources(AnemoneRuntime
         "Debugger.cxx"
         "Debugger.hxx"
 
+        "Status.hxx"
+
         "Trace.cxx"
         "Trace.hxx"
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <cstddef>
 #include <expected>
@@ -19,11 +19,11 @@ namespace Anemone::Storage
         virtual ~DataReader() = default;
 
     public:
-        virtual std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer) = 0;
+        virtual std::expected<size_t, Status> Read(std::span<std::byte> buffer) = 0;
 
-        virtual std::expected<void, ErrorCode> SetPosition(int64_t position) = 0;
+        virtual std::expected<void, Status> SetPosition(int64_t position) = 0;
 
-        virtual std::expected<int64_t, ErrorCode> GetPosition() const = 0;
+        virtual std::expected<int64_t, Status> GetPosition() const = 0;
     };
 }
 

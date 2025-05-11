@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
 #include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
@@ -36,15 +36,15 @@ namespace Anemone
     public:
         virtual ~ICompressionFormat() = default;
 
-        virtual std::expected<size_t, ErrorCode> Compress(
+        virtual std::expected<size_t, Status> Compress(
             std::span<std::byte> output,
             std::span<std::byte const> input) const = 0;
 
-        virtual std::expected<size_t, ErrorCode> Decompress(
+        virtual std::expected<size_t, Status> Decompress(
             std::span<std::byte> output,
             std::span<std::byte const> input) const = 0;
 
-        virtual std::expected<size_t, ErrorCode> MemoryBound(size_t size) const = 0;
+        virtual std::expected<size_t, Status> MemoryBound(size_t size) const = 0;
 
         virtual CompressionFormatId GetFormatId() const = 0;
 
@@ -86,16 +86,16 @@ namespace Anemone
         Default = LZ4,
     };
 
-    RUNTIME_API std::expected<size_t, ErrorCode> CompressionMemoryBound(
+    RUNTIME_API std::expected<size_t, Status> CompressionMemoryBound(
         CompressionMethod compressionMethod,
         size_t size);
 
-    RUNTIME_API std::expected<size_t, ErrorCode> CompressBlock(
+    RUNTIME_API std::expected<size_t, Status> CompressBlock(
         CompressionMethod compressionMethod,
         std::span<std::byte> output,
         std::span<std::byte const> input);
 
-    RUNTIME_API std::expected<size_t, ErrorCode> DecompressBlock(
+    RUNTIME_API std::expected<size_t, Status> DecompressBlock(
         CompressionMethod compressionMethod,
         std::span<std::byte> output,
         std::span<std::byte const> input);

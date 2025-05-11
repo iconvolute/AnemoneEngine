@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/System/Platform/Platform.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <string_view>
 #include <expected>
@@ -45,18 +45,18 @@ namespace Anemone
         }
 
     public:
-        std::expected<int32_t, ErrorCode> Wait();
+        std::expected<int32_t, Status> Wait();
 
-        std::expected<int32_t, ErrorCode> TryWait();
+        std::expected<int32_t, Status> TryWait();
 
-        std::expected<void, ErrorCode> Terminate();
+        std::expected<void, Status> Terminate();
 
     public:
         static auto Start(
             std::string_view path,
             std::optional<std::string_view> const& params,
             std::optional<std::string_view> const& workingDirectory)
-            -> std::expected<Process, ErrorCode>;
+            -> std::expected<Process, Status>;
 
         static auto Start(
             std::string_view path,
@@ -65,13 +65,13 @@ namespace Anemone
             FileHandle* input,
             FileHandle* output,
             FileHandle* error)
-            -> std::expected<Process, ErrorCode>;
+            -> std::expected<Process, Status>;
 
         static auto Execute(
             std::string_view path,
             std::optional<std::string_view> const& params,
             std::optional<std::string_view> const& workingDirectory)
-            -> std::expected<int32_t, ErrorCode>;
+            -> std::expected<int32_t, Status>;
 
         static auto Execute(
             std::string_view path,
@@ -79,6 +79,6 @@ namespace Anemone
             std::optional<std::string_view> const& workingDirectory,
             FunctionRef<void(std::string_view)> output,
             FunctionRef<void(std::string_view)> error)
-            -> std::expected<int32_t, ErrorCode>;
+            -> std::expected<int32_t, Status>;
     };
 }

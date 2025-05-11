@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/System/Platform/Platform.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <expected>
 
@@ -41,9 +41,9 @@ namespace Anemone
         }
 
     public:
-        static auto Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>;
+        static auto Load(std::string_view path) -> std::expected<SharedLibrary, Status>;
 
     public:
-        auto GetSymbol(const char* name) const -> std::expected<void*, ErrorCode>;
+        auto GetSymbol(const char* name) const -> std::expected<void*, Status>;
     };
 }

@@ -19,7 +19,7 @@ namespace Anemone::Storage
 
         static constexpr size_t DefaultBufferCapacity = 8u << 10u;
 
-        std::expected<size_t, ErrorCode> ReadCore(std::span<std::byte> buffer, int64_t position);
+        std::expected<size_t, Status> ReadCore(std::span<std::byte> buffer, int64_t position);
 
     public:
         FileHandleReader(FileHandle handle, size_t buffer_capacity = DefaultBufferCapacity);
@@ -30,12 +30,12 @@ namespace Anemone::Storage
         FileHandleReader& operator=(FileHandleReader&&) = delete;
         ~FileHandleReader() override = default;
 
-        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer) override;
+        std::expected<size_t, Status> Read(std::span<std::byte> buffer) override;
 
-        std::expected<void, ErrorCode> Skip(size_t count);
+        std::expected<void, Status> Skip(size_t count);
 
-        std::expected<void, ErrorCode> SetPosition(int64_t position) override;
+        std::expected<void, Status> SetPosition(int64_t position) override;
 
-        std::expected<int64_t, ErrorCode> GetPosition() const override;
+        std::expected<int64_t, Status> GetPosition() const override;
     };
 }

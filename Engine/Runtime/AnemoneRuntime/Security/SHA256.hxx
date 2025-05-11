@@ -26,11 +26,11 @@ namespace Anemone
         static constexpr size_t BlockSize = 64;
 
     public:
-        std::expected<void, ErrorCode> Initialize() override;
+        std::expected<void, Status> Initialize() override;
 
-        std::expected<void, ErrorCode> Update(std::span<std::byte const> buffer) override;
+        std::expected<void, Status> Update(std::span<std::byte const> buffer) override;
 
-        std::expected<void, ErrorCode> Finalize(std::span<std::byte> hash) override;
+        std::expected<void, Status> Finalize(std::span<std::byte> hash) override;
 
         size_t GetHashSize() const override;
 

@@ -84,21 +84,21 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, ErrorCode>
+    auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, Status>
     {
         (void)path;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::FileDelete(std::string_view path) -> std::expected<void, ErrorCode>
+    auto FileSystem::FileDelete(std::string_view path) -> std::expected<void, Status>
     {
         (void)path;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::FileCreate(std::string_view path) -> std::expected<FileHandle, ErrorCode>
+    auto FileSystem::FileCreate(std::string_view path) -> std::expected<FileHandle, Status>
     {
         return FileHandle::Create(path, FileMode::CreateAlways);
     }
@@ -106,65 +106,65 @@ namespace Anemone
     auto FileSystem::FileCopy(
         std::string_view source,
         std::string_view destination,
-        NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>
+        NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>
     {
         (void)source;
         (void)destination;
         (void)nameCollisionResolve;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
     auto FileSystem::FileMove(
         std::string_view source,
         std::string_view destination,
-        NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>
+        NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>
     {
         (void)source;
         (void)destination;
         (void)nameCollisionResolve;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::GetFileInfo(std::string_view path) -> std::expected<FileInfo, ErrorCode>
+    auto FileSystem::GetFileInfo(std::string_view path) -> std::expected<FileInfo, Status>
     {
         (void)path;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, ErrorCode>
+    auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>
     {
         (void)handle;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::DirectoryExists(std::string_view path) -> std::expected<bool, ErrorCode>
+    auto FileSystem::DirectoryExists(std::string_view path) -> std::expected<bool, Status>
     {
         (void)path;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>
-    {
-        (void)path;
-        (void)recursive;
-        AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
-    }
-
-    auto FileSystem::DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, Status>
     {
         (void)path;
         (void)recursive;
         AE_PANIC("Not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
     }
 
-    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, Status>
+    {
+        (void)path;
+        (void)recursive;
+        AE_PANIC("Not implemented");
+        return std::unexpected(Status::NotImplemented);
+    }
+
+    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>
     {
         std::string root{path};
 
@@ -224,7 +224,7 @@ namespace Anemone
         return {};
     }
 
-    auto FileSystem::DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>
     {
         class RecursiveVisitor final : public DirectoryVisitor
         {

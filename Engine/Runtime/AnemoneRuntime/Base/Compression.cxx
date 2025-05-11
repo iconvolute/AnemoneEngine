@@ -5,7 +5,7 @@
 
 namespace Anemone
 {
-    std::expected<size_t, ErrorCode> CompressionMemoryBound(
+    std::expected<size_t, Status> CompressionMemoryBound(
         CompressionMethod compressionMethod,
         size_t size)
     {
@@ -17,7 +17,7 @@ namespace Anemone
                 if (size > LZ4_MAX_INPUT_SIZE)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::InvalidArgument);
+                    return std::unexpected(Status::InvalidArgument);
                 }
 
                 size_t const required = LZ4_compressBound(static_cast<int>(size));
@@ -25,7 +25,7 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::InvalidBuffer);
+                    return std::unexpected(Status::InvalidBuffer);
                 }
 
                 return required;
@@ -36,10 +36,10 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::NotSupported);
+        return std::unexpected(Status::NotSupported);
     }
 
-    std::expected<size_t, ErrorCode> CompressBlock(
+    std::expected<size_t, Status> CompressBlock(
         CompressionMethod compressionMethod,
         std::span<std::byte> output,
         std::span<std::byte const> input)
@@ -52,7 +52,7 @@ namespace Anemone
                 if (input.size() > LZ4_MAX_INPUT_SIZE)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::InvalidArgument);
+                    return std::unexpected(Status::InvalidArgument);
                 }
 
                 size_t const required = LZ4_compressBound(static_cast<int>(input.size()));
@@ -60,13 +60,13 @@ namespace Anemone
                 if (required == 0)
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::InvalidBuffer);
+                    return std::unexpected(Status::InvalidBuffer);
                 }
 
                 if (output.size() < required)
                 {
                     // Output buffer is too small.
-                    return std::unexpected(ErrorCode::InvalidBuffer);
+                    return std::unexpected(Status::InvalidBuffer);
                 }
 
                 int processed;
@@ -95,7 +95,7 @@ namespace Anemone
                 }
                 else
                 {
-                    return std::unexpected(ErrorCode::InvalidArgument);
+                    return std::unexpected(Status::InvalidArgument);
                 }
             }
 
@@ -104,10 +104,10 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::NotSupported);
+        return std::unexpected(Status::NotSupported);
     }
 
-    std::expected<size_t, ErrorCode> DecompressBlock(
+    std::expected<size_t, Status> DecompressBlock(
         CompressionMethod compressionMethod,
         std::span<std::byte> output,
         std::span<std::byte const> input)
@@ -120,7 +120,7 @@ namespace Anemone
                 if ((input.size() > LZ4_MAX_INPUT_SIZE) or (output.size() > LZ4_MAX_INPUT_SIZE))
                 {
                     // Input buffer is too large.
-                    return std::unexpected(ErrorCode::InvalidArgument);
+                    return std::unexpected(Status::InvalidArgument);
                 }
 
                 int processed = LZ4_decompress_safe(
@@ -131,7 +131,7 @@ namespace Anemone
 
                 if (processed < 0)
                 {
-                    return std::unexpected(ErrorCode::InvalidArgument);
+                    return std::unexpected(Status::InvalidArgument);
                 }
 
                 return static_cast<size_t>(processed);
@@ -142,6 +142,6 @@ namespace Anemone
             break;
         }
 
-        return std::unexpected(ErrorCode::NotSupported);
+        return std::unexpected(Status::NotSupported);
     }
 }

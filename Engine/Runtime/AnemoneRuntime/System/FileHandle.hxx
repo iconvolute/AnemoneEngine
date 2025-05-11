@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/System/Platform/Platform.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Base/Flags.hxx"
 
 #include <utility>
@@ -84,13 +84,13 @@ namespace Anemone
         }
 
     public:
-        static std::expected<FileHandle, ErrorCode> Create(
+        static std::expected<FileHandle, Status> Create(
             std::string_view path,
             FileMode mode,
             Flags<FileAccess> access,
             Flags<FileOption> options);
 
-        static std::expected<FileHandle, ErrorCode> Create(
+        static std::expected<FileHandle, Status> Create(
             std::string_view path,
             FileMode mode,
             Flags<FileAccess> access)
@@ -98,32 +98,32 @@ namespace Anemone
             return Create(path, mode, access, FileOption::None);
         }
 
-        static std::expected<FileHandle, ErrorCode> Create(
+        static std::expected<FileHandle, Status> Create(
             std::string_view path,
             FileMode mode)
         {
             return Create(path, mode, FileAccess::ReadWrite, FileOption::None);
         }
 
-        static std::expected<void, ErrorCode> CreatePipe(FileHandle& read, FileHandle& write);
+        static std::expected<void, Status> CreatePipe(FileHandle& read, FileHandle& write);
 
     public:
-        std::expected<void, ErrorCode> Flush();
+        std::expected<void, Status> Flush();
 
-        std::expected<int64_t, ErrorCode> GetLength() const;
+        std::expected<int64_t, Status> GetLength() const;
 
-        std::expected<void, ErrorCode> Truncate(int64_t length);
+        std::expected<void, Status> Truncate(int64_t length);
 
-        std::expected<int64_t, ErrorCode> GetPosition() const;
+        std::expected<int64_t, Status> GetPosition() const;
 
-        std::expected<void, ErrorCode> SetPosition(int64_t position);
+        std::expected<void, Status> SetPosition(int64_t position);
 
-        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer);
+        std::expected<size_t, Status> Read(std::span<std::byte> buffer);
 
-        std::expected<size_t, ErrorCode> ReadAt(std::span<std::byte> buffer, int64_t position);
+        std::expected<size_t, Status> ReadAt(std::span<std::byte> buffer, int64_t position);
 
-        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> buffer);
+        std::expected<size_t, Status> Write(std::span<std::byte const> buffer);
 
-        std::expected<size_t, ErrorCode> WriteAt(std::span<std::byte const> buffer, int64_t position);
+        std::expected<size_t, Status> WriteAt(std::span<std::byte const> buffer, int64_t position);
     };
 }

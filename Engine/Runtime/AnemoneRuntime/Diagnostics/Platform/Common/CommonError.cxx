@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Common/CommonError.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
@@ -38,19 +38,19 @@ namespace Anemone::Internal
 #endif
     }
 
-    ErrorCode TranslateErrorCodeErrno(int error)
+    Status TranslateErrorCodeErrno(int error)
     {
         switch (error)
         {
         case 0:
-            return ErrorCode::Success;
+            return Status::Success;
 
         case ENOENT:
         case ESRCH:
         case ENXIO:
         case ECHILD:
         case ENODEV:
-            return ErrorCode::NotFound;
+            return Status::NotFound;
 
         case EBADF:
         case EINVAL:
@@ -59,90 +59,90 @@ namespace Anemone::Internal
         case EILSEQ:
         case EOVERFLOW:
         case EDESTADDRREQ:
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
 
         case E2BIG:
         case EFBIG:
         case EMSGSIZE:
         case ENAMETOOLONG:
-            return ErrorCode::InvalidRange;
+            return Status::InvalidRange;
 
         case EPERM:
         case EACCES:
-            return ErrorCode::AccessDenied;
+            return Status::AccessDenied;
 
         case EADDRINUSE:
         case EADDRNOTAVAIL:
         case EMFILE:
         case EMLINK:
         case ENFILE:
-            return ErrorCode::NotEnoughResources;
+            return Status::NotEnoughResources;
 
         case ENOMEM:
-            return ErrorCode::NotEnoughMemory;
+            return Status::NotEnoughMemory;
 
         case EEXIST:
         case EISCONN:
-            return ErrorCode::AlreadyExists;
+            return Status::AlreadyExists;
 
         case ETXTBSY:
         case ETIME:
         case ETIMEDOUT:
-            return ErrorCode::OperationTimeout;
+            return Status::OperationTimeout;
 
         case EINTR:
         case EAGAIN:
         case EDEADLOCK:
-            return ErrorCode::OperationInterrupted;
+            return Status::OperationInterrupted;
 
         case EAFNOSUPPORT:
         case ENOEXEC:
 #if defined(ENOTBLK)
         case ENOTBLK:
 #endif
-            return ErrorCode::NotSupported;
+            return Status::NotSupported;
 
         case EALREADY:
         case EBUSY:
         case EINPROGRESS:
-            return ErrorCode::OperationInProgress;
+            return Status::OperationInProgress;
 
         case ECONNABORTED:
-            return ErrorCode::OperationAborted;
+            return Status::OperationAborted;
 
         case ECONNREFUSED:
-            return ErrorCode::OperationRefused;
+            return Status::OperationRefused;
 
         case EFAULT:
         case EHOSTUNREACH:
         case ELOOP:
-            return ErrorCode::InvalidOperation;
+            return Status::InvalidOperation;
 
         case EBADMSG:
-            return ErrorCode::InvalidData;
+            return Status::InvalidData;
 
         case EIDRM:
         case ENETDOWN:
-            return ErrorCode::InvalidRequest;
+            return Status::InvalidRequest;
 
         case ECANCELED:
         case ECONNRESET:
         case ENETRESET:
-            return ErrorCode::OperationCanceled;
+            return Status::OperationCanceled;
 
         case EISDIR:
-            return ErrorCode::DirectoryExists;
+            return Status::DirectoryExists;
 
         case EIO:
-            return ErrorCode::IoError;
+            return Status::IoError;
 
         case ENETUNREACH:
-            return ErrorCode::NotConnected;
+            return Status::NotConnected;
 
         default:
             break;
         }
 
-        return ErrorCode::Unknown;
+        return Status::Unknown;
     }
 }

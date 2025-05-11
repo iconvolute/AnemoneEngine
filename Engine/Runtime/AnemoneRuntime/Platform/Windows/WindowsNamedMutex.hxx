@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <string_view>
 #include <expected>
@@ -23,7 +23,7 @@ namespace Anemone
         WindowsNamedMutex() = default;
 
     public:
-        static std::expected<WindowsNamedMutex, ErrorCode> Create(std::string_view name);
+        static std::expected<WindowsNamedMutex, Status> Create(std::string_view name);
 
     public:
         void Lock();

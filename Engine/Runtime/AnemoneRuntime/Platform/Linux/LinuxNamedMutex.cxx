@@ -10,7 +10,7 @@
 
 namespace Anemone
 {
-    std::expected<LinuxNamedMutex, ErrorCode> LinuxNamedMutex::Create(std::string_view name)
+    std::expected<LinuxNamedMutex, Status> LinuxNamedMutex::Create(std::string_view name)
     {
         std::string formatted = fmt::format("/anemone-engine-named-mutex-{}", name);
 
@@ -21,7 +21,7 @@ namespace Anemone
             return LinuxNamedMutex{std::move(handle)};
         }
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
     void LinuxNamedMutex::Lock()

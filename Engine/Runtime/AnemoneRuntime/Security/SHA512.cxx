@@ -145,7 +145,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    std::expected<void, ErrorCode> SHA512::Initialize()
+    std::expected<void, Status> SHA512::Initialize()
     {
         this->_count = {};
         this->_buffer = {};
@@ -163,7 +163,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, ErrorCode> SHA512::Update(std::span<std::byte const> buffer)
+    std::expected<void, Status> SHA512::Update(std::span<std::byte const> buffer)
     {
         if (not buffer.empty())
         {
@@ -198,11 +198,11 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, ErrorCode> SHA512::Finalize(std::span<std::byte> hash)
+    std::expected<void, Status> SHA512::Finalize(std::span<std::byte> hash)
     {
         if (hash.size() < 64)
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         size_t used = this->_count & 0x7Fu;

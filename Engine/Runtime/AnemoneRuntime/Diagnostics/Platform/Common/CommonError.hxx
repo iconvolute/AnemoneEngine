@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <string_view>
 #include <source_location>
@@ -9,7 +9,7 @@ namespace Anemone::Internal
 {
     RUNTIME_API void ReportErrorErrno(int error, std::source_location const& location);
 
-    RUNTIME_API ErrorCode TranslateErrorCodeErrno(int error);
+    RUNTIME_API Status TranslateErrorCodeErrno(int error);
 }
 
 #if ANEMONE_FEATURE_ASSERTIONS

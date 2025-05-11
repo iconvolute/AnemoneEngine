@@ -3,7 +3,7 @@
 
 namespace Anemone::Storage
 {
-    std::expected<size_t, ErrorCode> FileHandleReader::ReadCore(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, Status> FileHandleReader::ReadCore(std::span<std::byte> buffer, int64_t position)
     {
         size_t processed = 0;
 
@@ -38,7 +38,7 @@ namespace Anemone::Storage
         this->_file_size = this->_handle.GetLength().value_or(0);
     }
 
-    std::expected<size_t, ErrorCode> FileHandleReader::Read(std::span<std::byte> buffer)
+    std::expected<size_t, Status> FileHandleReader::Read(std::span<std::byte> buffer)
     {
         if (buffer.size() > this->_buffer_capacity)
         {
@@ -115,7 +115,7 @@ namespace Anemone::Storage
         return processed;
     }
 
-    std::expected<void, ErrorCode> FileHandleReader::Skip(size_t count)
+    std::expected<void, Status> FileHandleReader::Skip(size_t count)
     {
         if (count != 0)
         {
@@ -139,7 +139,7 @@ namespace Anemone::Storage
         return {};
     }
 
-    std::expected<void, ErrorCode> FileHandleReader::SetPosition(int64_t position)
+    std::expected<void, Status> FileHandleReader::SetPosition(int64_t position)
     {
         int64_t const mappedBufferStart = this->_file_position - static_cast<int64_t>(this->_buffer_position);
         int64_t const mappedBufferEnd = mappedBufferStart + static_cast<int64_t>(this->_buffer_size);
@@ -164,7 +164,7 @@ namespace Anemone::Storage
         }
         else
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         // Update file position.
@@ -173,7 +173,7 @@ namespace Anemone::Storage
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandleReader::GetPosition() const
+    std::expected<int64_t, Status> FileHandleReader::GetPosition() const
     {
         return this->_file_position;
     }

@@ -12,13 +12,13 @@
 
 namespace Anemone
 {
-    std::expected<int32_t, ErrorCode> Process::Wait()
+    std::expected<int32_t, Status> Process::Wait()
     {
         AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Wait not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
 #else
 
         Internal::PlatformProcess const handle = std::exchange(this->_handle, {});
@@ -30,7 +30,7 @@ namespace Anemone
 
             if (rc != handle.Get())
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             if (WIFEXITED(status))
@@ -41,18 +41,18 @@ namespace Anemone
             return WTERMSIG(status) + 256;
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
 
 #endif
     }
 
-    std::expected<int32_t, ErrorCode> Process::TryWait()
+    std::expected<int32_t, Status> Process::TryWait()
     {
         AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::TryWait not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
 #else
 
         if (this->_handle)
@@ -63,7 +63,7 @@ namespace Anemone
             if (rc == 0)
             {
                 // Child process still running.
-                return std::unexpected(ErrorCode::OperationInProgress);
+                return std::unexpected(Status::OperationInProgress);
             }
 
             if (rc != this->_handle.Get())
@@ -71,7 +71,7 @@ namespace Anemone
                 this->_handle = {};
 
                 // Failed to wait for child process.
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             // Clear handle.
@@ -86,17 +86,17 @@ namespace Anemone
             return WTERMSIG(status) + 256;
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
 #endif
     }
 
-    std::expected<void, ErrorCode> Process::Terminate()
+    std::expected<void, Status> Process::Terminate()
     {
         AE_ASSERT(this->_handle);
 
 #if !ANEMONE_PLATFORM_LINUX
         AE_TRACE(Critical, "Process::Terminate not implemented");
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
 #else
 
         Internal::PlatformProcess const handle = std::exchange(this->_handle, {});
@@ -108,10 +108,10 @@ namespace Anemone
                 return {};
             }
 
-            return std::unexpected(ErrorCode::InvalidOperation);
+            return std::unexpected(Status::InvalidOperation);
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
 #endif
     }
 
@@ -119,7 +119,7 @@ namespace Anemone
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory)
-        -> std::expected<Process, ErrorCode>
+        -> std::expected<Process, Status>
     {
         return Process::Start(
             path,
@@ -137,7 +137,7 @@ namespace Anemone
         FileHandle* input,
         FileHandle* output,
         FileHandle* error)
-        -> std::expected<Process, ErrorCode>
+        -> std::expected<Process, Status>
     {
 #if !ANEMONE_PLATFORM_LINUX
         (void)path;
@@ -147,7 +147,7 @@ namespace Anemone
         (void)output;
         (void)error;
         return {};
-        return std::unexpected(ErrorCode::NotImplemented);
+        return std::unexpected(Status::NotImplemented);
 #else
 
         bool const redirectInput = input != nullptr;
@@ -170,7 +170,7 @@ namespace Anemone
 
         if (exp_result != 0)
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         pid_t process_id{};
@@ -222,7 +222,7 @@ namespace Anemone
 
                 if (pipe2(fd, O_CLOEXEC | O_NONBLOCK) != 0)
                 {
-                    return std::unexpected(ErrorCode::InvalidOperation);
+                    return std::unexpected(Status::InvalidOperation);
                 }
 
                 // Create file handle for parent process.
@@ -239,7 +239,7 @@ namespace Anemone
 
                 if (pipe2(fd, O_CLOEXEC | O_NONBLOCK) != 0)
                 {
-                    return std::unexpected(ErrorCode::InvalidOperation);
+                    return std::unexpected(Status::InvalidOperation);
                 }
 
                 // Create file handle for parent process.
@@ -256,7 +256,7 @@ namespace Anemone
 
                 if (pipe2(fd, O_CLOEXEC | O_NONBLOCK) != 0)
                 {
-                    return std::unexpected(ErrorCode::InvalidOperation);
+                    return std::unexpected(Status::InvalidOperation);
                 }
 
                 // Create file handle for parent process.
@@ -301,7 +301,7 @@ namespace Anemone
         }
         else
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            return std::unexpected(Status::InvalidOperation);
         }
 #endif
     }
@@ -310,7 +310,7 @@ namespace Anemone
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory)
-        -> std::expected<int32_t, ErrorCode>
+        -> std::expected<int32_t, Status>
     {
         return Process::Start(path, params, workingDirectory, nullptr, nullptr, nullptr)
             .and_then([](Process process)
@@ -325,7 +325,7 @@ namespace Anemone
         std::optional<std::string_view> const& workingDirectory,
         FunctionRef<void(std::string_view)> output,
         FunctionRef<void(std::string_view)> error)
-        -> std::expected<int32_t, ErrorCode>
+        -> std::expected<int32_t, Status>
     {
         FileHandle pipeOutput{};
         FileHandle pipeError{};
@@ -364,7 +364,7 @@ namespace Anemone
                     return *rc;
                 }
 
-                if (rc.error() != ErrorCode::OperationInProgress)
+                if (rc.error() != Status::OperationInProgress)
                 {
                     return std::unexpected(rc.error());
                 }

@@ -39,7 +39,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, ErrorCode>
+    auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, Status>
     {
         //
         // Convert paths to wide strings.
@@ -49,7 +49,7 @@ namespace Anemone
 
         if (not Interop::Windows::WidenString(wsPath, path))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
 
@@ -65,10 +65,10 @@ namespace Anemone
             return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
         }
 
-        return std::unexpected(ErrorCode::InvalidPath);
+        return std::unexpected(Status::InvalidPath);
     }
 
-    auto FileSystem::FileDelete(std::string_view path) -> std::expected<void, ErrorCode>
+    auto FileSystem::FileDelete(std::string_view path) -> std::expected<void, Status>
     {
         //
         // Convert paths to wide strings.
@@ -78,7 +78,7 @@ namespace Anemone
 
         if (not Interop::Windows::WidenString(wsPath, path))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         //
@@ -98,10 +98,10 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
-    auto FileSystem::FileCreate(std::string_view path) -> std::expected<FileHandle, ErrorCode>
+    auto FileSystem::FileCreate(std::string_view path) -> std::expected<FileHandle, Status>
     {
         return FileHandle::Create(path, FileMode::CreateAlways);
     }
@@ -109,7 +109,7 @@ namespace Anemone
     auto FileSystem::FileCopy(
         std::string_view source,
         std::string_view destination,
-        NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>
+        NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>
     {
         //
         // Convert paths to wide strings.
@@ -119,14 +119,14 @@ namespace Anemone
 
         if (not Interop::Windows::WidenString(wsSource, source))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::FilePathW wsDestination;
 
         if (not Interop::Windows::WidenString(wsDestination, destination))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
 
@@ -147,7 +147,7 @@ namespace Anemone
             }
             else
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
         }
         else
@@ -167,7 +167,7 @@ namespace Anemone
             switch (nameCollisionResolve)
             {
             case NameCollisionResolve::Fail:
-                return std::unexpected(ErrorCode::FileExists);
+                return std::unexpected(Status::FileExists);
 
             case NameCollisionResolve::Overwrite:
                 failIfExists = false;
@@ -176,10 +176,10 @@ namespace Anemone
             case NameCollisionResolve::GenerateUnique:
                 // TODO: Generate unique name. Maybe try to append system time?
                 // failIfExists = false;
-                return std::unexpected(ErrorCode::NotImplemented);
+                return std::unexpected(Status::NotImplemented);
 
             default:
-                return std::unexpected(ErrorCode::InvalidArgument);
+                return std::unexpected(Status::InvalidArgument);
             }
         }
         else
@@ -204,16 +204,16 @@ namespace Anemone
 
         if (FAILED(CopyFile2(wsSource.c_str(), wsDestination.c_str(), &params)))
         {
-            return std::unexpected(ErrorCode::AlreadyExists);
+            return std::unexpected(Status::AlreadyExists);
         }
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
     auto FileSystem::FileMove(
         std::string_view source,
         std::string_view destination,
-        NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>
+        NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>
     {
         //
         // Convert paths to wide strings.
@@ -223,14 +223,14 @@ namespace Anemone
 
         if (not Interop::Windows::WidenString(wsSource, source))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::FilePathW wsDestination;
 
         if (not Interop::Windows::WidenString(wsDestination, destination))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
 
@@ -251,7 +251,7 @@ namespace Anemone
             }
             else
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
         }
         else
@@ -271,7 +271,7 @@ namespace Anemone
             switch (nameCollisionResolve)
             {
             case NameCollisionResolve::Fail:
-                return std::unexpected(ErrorCode::FileExists);
+                return std::unexpected(Status::FileExists);
 
             case NameCollisionResolve::Overwrite:
                 dwFlags |= MOVEFILE_REPLACE_EXISTING;
@@ -280,10 +280,10 @@ namespace Anemone
             case NameCollisionResolve::GenerateUnique:
                 // TODO: Generate unique name. Maybe try to append system time?
                 // dwFlags |= MOVEFILE_REPLACE_EXISTING;
-                return std::unexpected(ErrorCode::NotImplemented);
+                return std::unexpected(Status::NotImplemented);
 
             default:
-                return std::unexpected(ErrorCode::InvalidArgument);
+                return std::unexpected(Status::InvalidArgument);
             }
         }
 
@@ -297,10 +297,10 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
-    auto FileSystem::GetFileInfo(std::string_view path) -> std::expected<FileInfo, ErrorCode>
+    auto FileSystem::GetFileInfo(std::string_view path) -> std::expected<FileInfo, Status>
     {
         Interop::Windows::FilePathW wsPath;
 
@@ -313,7 +313,7 @@ namespace Anemone
 
         if (not GetFileAttributesExW(wsPath.c_str(), GetFileExInfoStandard, &wfad))
         {
-            return std::unexpected(ErrorCode::InvalidPath);
+            return std::unexpected(Status::InvalidPath);
         }
 
         FileInfo result;
@@ -323,13 +323,13 @@ namespace Anemone
         return result;
     }
 
-    auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, ErrorCode>
+    auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>
     {
         BY_HANDLE_FILE_INFORMATION bhfi;
 
         if (not GetFileInformationByHandle(handle.GetNativeHandle().Get(), &bhfi))
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         FileInfo result;
@@ -339,7 +339,7 @@ namespace Anemone
         return result;
     }
 
-    auto FileSystem::DirectoryExists(std::string_view path) -> std::expected<bool, ErrorCode>
+    auto FileSystem::DirectoryExists(std::string_view path) -> std::expected<bool, Status>
     {
         //
         // Convert paths to wide strings.
@@ -349,7 +349,7 @@ namespace Anemone
 
         if (not Interop::Windows::WidenString(wsPath, path))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         //
@@ -364,10 +364,10 @@ namespace Anemone
             return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
         }
 
-        return std::unexpected(ErrorCode::InvalidPath);
+        return std::unexpected(Status::InvalidPath);
     }
 
-    static auto InternalDeleteDirectoryRecursive(const std::wstring& root) -> ErrorCode
+    static auto InternalDeleteDirectoryRecursive(const std::wstring& root) -> Status
     {
         //
         // Create search path pattern.
@@ -424,7 +424,7 @@ namespace Anemone
 
                         if (not RemoveDirectoryW(file.c_str()))
                         {
-                            return ErrorCode::InvalidOperation;
+                            return Status::InvalidOperation;
                         }
                     }
                     else
@@ -433,9 +433,9 @@ namespace Anemone
                         // Recursively delete the directory.
                         //
 
-                        ErrorCode const error = InternalDeleteDirectoryRecursive(file);
+                        Status const error = InternalDeleteDirectoryRecursive(file);
 
-                        if (error != ErrorCode::Success)
+                        if (error != Status::Success)
                         {
                             return error;
                         }
@@ -449,7 +449,7 @@ namespace Anemone
 
                     if (not SetFileAttributesW(file.c_str(), 0))
                     {
-                        return ErrorCode::InvalidOperation;
+                        return Status::InvalidOperation;
                     }
 
 
@@ -460,7 +460,7 @@ namespace Anemone
                     if (not DeleteFileW(file.c_str()))
                     {
                         AE_ASSERT(false, "Failed to delete file"); // Something went wrong.
-                        // return ErrorCode::InvalidOperation;
+                        // return Status::InvalidOperation;
                     }
                 }
             } while (FindNextFileW(hDirectory.Get(), &wfd));
@@ -471,16 +471,16 @@ namespace Anemone
 
             if (not RemoveDirectoryW(root.c_str()))
             {
-                return ErrorCode::InvalidOperation;
+                return Status::InvalidOperation;
             }
 
-            return ErrorCode::Success;
+            return Status::Success;
         }
 
-        return ErrorCode::InvalidPath;
+        return Status::InvalidPath;
     }
 
-    auto FileSystem::DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, Status>
     {
         //
         // Convert paths to wide strings.
@@ -491,9 +491,9 @@ namespace Anemone
 
         if (recursive)
         {
-            ErrorCode const error = InternalDeleteDirectoryRecursive(wsPath);
+            Status const error = InternalDeleteDirectoryRecursive(wsPath);
 
-            if (error == ErrorCode::Success)
+            if (error == Status::Success)
             {
                 return {};
             }
@@ -512,11 +512,11 @@ namespace Anemone
             {
                 return {};
             }
-            return std::unexpected(ErrorCode::DirectoryNotEmpty);
+            return std::unexpected(Status::DirectoryNotEmpty);
         }
     }
 
-    static ErrorCode InternalDirectoryCreateRecursively(const std::wstring& path)
+    static Status InternalDirectoryCreateRecursively(const std::wstring& path)
     {
         DWORD const dwAttributes = GetFileAttributesW(path.c_str());
 
@@ -529,8 +529,8 @@ namespace Anemone
             std::wstring parent = path;
             Interop::Windows::PathPopFragment(parent);
 
-            if (ErrorCode const result = InternalDirectoryCreateRecursively(parent);
-                result != ErrorCode::Success)
+            if (Status const result = InternalDirectoryCreateRecursively(parent);
+                result != Status::Success)
             {
                 //
                 // Failed to create parent directory. Propagate error.
@@ -546,7 +546,7 @@ namespace Anemone
 
             if (CreateDirectoryW(path.c_str(), nullptr))
             {
-                return ErrorCode::Success;
+                return Status::Success;
             }
 
             DWORD const dwError = GetLastError();
@@ -554,14 +554,14 @@ namespace Anemone
             if (dwError == ERROR_ALREADY_EXISTS)
             {
                 // Directory already exists.
-                return ErrorCode::Success;
+                return Status::Success;
             }
 
             //
             // Cannot create directory.
             //
 
-            return ErrorCode::PathNotFound;
+            return Status::PathNotFound;
         }
         else
         {
@@ -570,14 +570,14 @@ namespace Anemone
                 //
                 // Directory exists.
                 //
-                return ErrorCode::Success;
+                return Status::Success;
             }
 
-            return ErrorCode::FileExists;
+            return Status::FileExists;
         }
     }
 
-    auto FileSystem::DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, Status>
     {
         //
         // Convert paths to wide strings.
@@ -588,9 +588,9 @@ namespace Anemone
 
         if (recursive)
         {
-            ErrorCode const error = InternalDirectoryCreateRecursively(wsPath);
+            Status const error = InternalDirectoryCreateRecursively(wsPath);
 
-            if (error == ErrorCode::Success)
+            if (error == Status::Success)
             {
                 return {};
             }
@@ -613,19 +613,19 @@ namespace Anemone
             if (dwError == ERROR_ALREADY_EXISTS)
             {
                 // Directory already exists.
-                return std::unexpected(ErrorCode::Success);
+                return std::unexpected(Status::Success);
             }
 
-            return std::unexpected(ErrorCode::PathNotFound);
+            return std::unexpected(Status::PathNotFound);
         }
     }
 
-    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>
     {
         std::wstring root;
         if (not Interop::Windows::WidenString(root, path))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::PathAddDirectorySeparator(root);
@@ -666,10 +666,10 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(ErrorCode::PathNotFound);
+        return std::unexpected(Status::PathNotFound);
     }
 
-    auto FileSystem::DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>
     {
         class RecursiveVisitor final : public DirectoryVisitor
         {
@@ -697,12 +697,12 @@ namespace Anemone
         return FileSystem::DirectoryEnumerate(path, recursiveVisitor);
     }
 
-    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, ErrorCode>
+    auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, Status>
     {
         std::wstring root;
         if (not Interop::Windows::WidenString(root, path))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::PathAddDirectorySeparator(root);
@@ -739,6 +739,6 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(ErrorCode::PathNotFound);
+        return std::unexpected(Status::PathNotFound);
     }
 }

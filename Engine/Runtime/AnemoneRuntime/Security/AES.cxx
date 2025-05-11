@@ -124,7 +124,7 @@ namespace Anemone
     }
 
     
-    ErrorCode AES::Initialize(std::span<std::byte const> key)
+    Status AES::Initialize(std::span<std::byte const> key)
     {
         switch (key.size())
         {
@@ -141,7 +141,7 @@ namespace Anemone
             break;
 
         default:
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
         }
 
         size_t const keyWords = key.size() / 4;
@@ -195,19 +195,19 @@ namespace Anemone
             }
         }
 
-        return ErrorCode::Success;
+        return Status::Success;
     }
 
-    ErrorCode AES::Encrypt(std::span<std::byte const> input, std::span<std::byte> output)
+    Status AES::Encrypt(std::span<std::byte const> input, std::span<std::byte> output)
     {
         if (input.size() != 16)
         {
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
         }
 
         if (output.size() != 16)
         {
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
         }
 
         uint32_t s0 = Bitwise::LoadUnalignedLittleEndian<uint32_t>(input.data() + 0);
@@ -283,19 +283,19 @@ namespace Anemone
         Bitwise::StoreUnalignedLittleEndian<uint32_t>(output.data() + 8, s2);
         Bitwise::StoreUnalignedLittleEndian<uint32_t>(output.data() + 12, s3);
 
-        return ErrorCode::Success;
+        return Status::Success;
     }
 
-    ErrorCode AES::Decrypt(std::span<std::byte const> input, std::span<std::byte> output)
+    Status AES::Decrypt(std::span<std::byte const> input, std::span<std::byte> output)
     {
         if (input.size() != 16)
         {
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
         }
 
         if (output.size() != 16)
         {
-            return ErrorCode::InvalidArgument;
+            return Status::InvalidArgument;
         }
 
         uint32_t s0 = Bitwise::LoadUnalignedLittleEndian<uint32_t>(input.data() + 0);
@@ -371,6 +371,6 @@ namespace Anemone
         Bitwise::StoreUnalignedLittleEndian(output.data() + 8, s2);
         Bitwise::StoreUnalignedLittleEndian(output.data() + 12, s3);
 
-        return ErrorCode::Success;
+        return Status::Success;
     }
 }

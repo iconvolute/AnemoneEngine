@@ -93,68 +93,68 @@ namespace Anemone::Internal
         ReportErrorWin32(static_cast<DWORD>(hresult), location);
     }
 
-    ErrorCode TranslateErrorCodeHRESULT(HRESULT hr)
+    Status TranslateErrorCodeHRESULT(HRESULT hr)
     {
         if (SUCCEEDED(hr))
         {
-            return ErrorCode::Success;
+            return Status::Success;
         }
         else
         {
             switch (hr)
             {
             case __HRESULT_FROM_WIN32(ERROR_SUCCESS):
-                return ErrorCode::Success;
+                return Status::Success;
 
             case E_INVALIDARG:
             case E_POINTER:
                 // case __HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER):
-                return ErrorCode::InvalidArgument;
+                return Status::InvalidArgument;
 
             case E_ILLEGAL_METHOD_CALL:
             case E_FAIL:
             case E_ABORT:
-                return ErrorCode::InvalidOperation;
+                return Status::InvalidOperation;
 
             case E_NOTIMPL:
-                return ErrorCode::NotImplemented;
+                return Status::NotImplemented;
 
             case __HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY):
             case E_OUTOFMEMORY:
                 // case __HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY):
-                return ErrorCode::NotEnoughMemory;
+                return Status::NotEnoughMemory;
 
             case E_PENDING:
-                return ErrorCode::OperationInProgress;
+                return Status::OperationInProgress;
 
             case __HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE):
             case __HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME):
             case __HRESULT_FROM_WIN32(ERROR_INVALID_NAME):
             case __HRESULT_FROM_WIN32(ERROR_HANDLE_DISK_FULL):
             case __HRESULT_FROM_WIN32(ERROR_FILE_READ_ONLY):
-                return ErrorCode::InvalidArgument;
+                return Status::InvalidArgument;
 
             case __HRESULT_FROM_WIN32(ERROR_INVALID_DATA):
             case __HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE):
-                return ErrorCode::InvalidData;
+                return Status::InvalidData;
 
             case __HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
-                return ErrorCode::FileNotFound;
+                return Status::FileNotFound;
 
             case __HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND):
             case __HRESULT_FROM_WIN32(ERROR_NOT_FOUND):
             case __HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND):
-                return ErrorCode::NotFound;
+                return Status::NotFound;
 
             case __HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS):
-                return ErrorCode::AlreadyExists;
+                return Status::AlreadyExists;
 
             case STG_E_FILEALREADYEXISTS:
             case __HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
-                return ErrorCode::FileExists;
+                return Status::FileExists;
 
             case __HRESULT_FROM_WIN32(ERROR_HANDLE_EOF):
-                return ErrorCode::EndOfFile;
+                return Status::EndOfFile;
 
             case E_ACCESSDENIED:
             case __HRESULT_FROM_WIN32(ERROR_LOCK_VIOLATION):
@@ -162,33 +162,33 @@ namespace Anemone::Internal
             case __HRESULT_FROM_WIN32(ERROR_WRITE_PROTECT):
             case __HRESULT_FROM_WIN32(ERROR_INVALID_ACCESS):
                 // case __HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED): // E_ACCESSDENIED
-                return ErrorCode::AccessDenied;
+                return Status::AccessDenied;
 
             case __HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE):
-                return ErrorCode::InvalidHandle;
+                return Status::InvalidHandle;
 
             case __HRESULT_FROM_WIN32(ERROR_DIRECTORY):
-                return ErrorCode::InvalidDirectory;
+                return Status::InvalidDirectory;
 
             case __HRESULT_FROM_WIN32(ERROR_READ_FAULT):
             case __HRESULT_FROM_WIN32(ERROR_WRITE_FAULT):
-                return ErrorCode::IoError;
+                return Status::IoError;
 
             case __HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION):
-                return ErrorCode::SharingViolation;
+                return Status::SharingViolation;
 
             case __HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED):
-                return ErrorCode::NotSupported;
+                return Status::NotSupported;
 
             case __HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND):
             case __HRESULT_FROM_WIN32(ERROR_BAD_NETPATH):
-                return ErrorCode::InvalidPath;
+                return Status::InvalidPath;
 
             case __HRESULT_FROM_WIN32(ERROR_TIMEOUT):
-                return ErrorCode::OperationTimeout;
+                return Status::OperationTimeout;
 
             case __HRESULT_FROM_WIN32(ERROR_DIR_NOT_EMPTY):
-                return ErrorCode::DirectoryNotEmpty;
+                return Status::DirectoryNotEmpty;
 
             default:
                 AE_TRACE(Error, "Unhandled HRESULT 0x{:08X}", static_cast<DWORD>(hr));
@@ -196,10 +196,10 @@ namespace Anemone::Internal
             }
         }
 
-        return ErrorCode::Unknown;
+        return Status::Unknown;
     }
 
-    ErrorCode TranslateErrorCodeWin32(DWORD error)
+    Status TranslateErrorCodeWin32(DWORD error)
     {
         return TranslateErrorCodeHRESULT(__HRESULT_FROM_WIN32(error));
     }

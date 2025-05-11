@@ -5,7 +5,7 @@
 
 namespace Anemone
 {
-    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, ErrorCode>
+    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, Status>
     {
         Interop::Windows::FilePathW wPath{};
         Interop::Windows::WidenString(wPath, path);
@@ -17,10 +17,10 @@ namespace Anemone
             return SharedLibrary{std::move(h)};
         }
 
-        return std::unexpected(ErrorCode::InvalidArgument);
+        return std::unexpected(Status::InvalidArgument);
     }
 
-    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, ErrorCode>
+    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, Status>
     {
         AE_ASSERT(this->_handle);
 
@@ -31,9 +31,9 @@ namespace Anemone
                 return symbol;
             }
 
-            return std::unexpected(ErrorCode::NotFound);
+            return std::unexpected(Status::NotFound);
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
     }
 }

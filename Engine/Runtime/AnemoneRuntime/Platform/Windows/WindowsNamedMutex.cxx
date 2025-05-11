@@ -6,7 +6,7 @@
 
 namespace Anemone
 {
-    std::expected<WindowsNamedMutex, ErrorCode> WindowsNamedMutex::Create(std::string_view name)
+    std::expected<WindowsNamedMutex, Status> WindowsNamedMutex::Create(std::string_view name)
     {
         std::string sname = fmt::format("Global\\anemone-engine-named-mutex-{}", name);
         Interop::Windows::FilePathW wname{};
@@ -20,7 +20,7 @@ namespace Anemone
         }
 
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
     void WindowsNamedMutex::Lock()

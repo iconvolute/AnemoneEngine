@@ -99,6 +99,7 @@ function(_anemone_target_add_options target_name)
                 $<$<CONFIG:RELEASE>:/sdl- /GS->             # Disable additional security features
                 $<$<CONFIG:RELEASE>:/Gy>                    # Enable COMDAT folding
                 $<$<CONFIG:RELEASE>:/Gw>                    # Optimize Global Data
+                $<$<CONFIG:RELEASE>:/Ob3>                   # Enable inline function expansion
                 /ZH:SHA_256                                 # Use SHA-256 hash for PDB
                 /fp:fast                                    # Fast floating-point optimizations
                 /permissive-                                # Enable strict conformance mode

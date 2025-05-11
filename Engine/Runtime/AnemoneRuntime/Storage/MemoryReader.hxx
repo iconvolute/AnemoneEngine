@@ -18,8 +18,8 @@ namespace Anemone::Storage
         ~MemoryReader() override;
 
     public:
-        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer) override;
-        std::expected<void, ErrorCode> SetPosition(int64_t position) override;
-        std::expected<int64_t, ErrorCode> GetPosition() const override;
+        std::expected<size_t, Status> Read(std::span<std::byte> buffer) override;
+        std::expected<void, Status> SetPosition(int64_t position) override;
+        std::expected<int64_t, Status> GetPosition() const override;
     };
 }

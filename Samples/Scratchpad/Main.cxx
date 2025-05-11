@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <expected>
@@ -67,11 +67,11 @@ namespace Anemone::inline FileSystemX
 {
     struct Base64
     {
-        static std::expected<size_t, ErrorCode> GetEncodedSize(size_t size);
-        static std::expected<size_t, ErrorCode> GetDecodedSize(std::string_view encoded);
+        static std::expected<size_t, Status> GetEncodedSize(size_t size);
+        static std::expected<size_t, Status> GetDecodedSize(std::string_view encoded);
 
-        static std::expected<void, ErrorCode> Encode(std::span<std::byte const> data, std::span<char> encoded);
-        static std::expected<void, ErrorCode> Decode(std::string_view encoded, std::span<std::byte> data);
+        static std::expected<void, Status> Encode(std::span<std::byte const> data, std::span<char> encoded);
+        static std::expected<void, Status> Decode(std::string_view encoded, std::span<std::byte> data);
     };
 }
 
@@ -230,6 +230,7 @@ public:
 
     void OnWindowActivated(Anemone::IWindow& window, Anemone::WindowActivatedEventArgs& args) override
     {
+        window.SetTitle(fmt::format("Window: {}, Active: {}", fmt::ptr(&window), window.IsActive()));
         (void)window;
         (void)args;
     }
@@ -483,6 +484,7 @@ int AnemoneMain(int argc, char** argv)
 
     EH eh{};
 
+    AE_TRACE(Error, "Error: {}", Anemone::Internal::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
     Anemone::IApplication::Initialize(&eh);
     auto window1 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
     auto window2 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
@@ -497,11 +499,14 @@ int AnemoneMain(int argc, char** argv)
 
         while (not window1->IsClosed() or not window2->IsClosed())
         {
-            auto const client = window1->GetClientBounds();
-            auto const window = window1->GetBounds();
-            AE_TRACE(Error, "Client: {}, {}, {}, {}, Window: {}, {}, {}, {}",
-                client.X, client.Y, client.Width, client.Height,
-                window.X, window.Y, window.Width, window.Height);
+            if (not window1->IsClosed())
+            {
+                auto const client = window1->GetClientBounds();
+                auto const window = window1->GetBounds();
+                AE_TRACE(Error, "Client: {}, {}, {}, {}, Window: {}, {}, {}, {}",
+                    client.X, client.Y, client.Width, client.Height,
+                    window.X, window.Y, window.Width, window.Height);
+            }
 
             Anemone::IApplication::Get().ProcessMessages();
             Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
@@ -636,7 +641,7 @@ int AnemoneMain(int argc, char** argv)
 #include <atomic>
 
 #include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/ErrorCode.hxx"
+#include "AnemoneRuntime/Status.hxx"
 #include "AnemoneRuntime/Unicode.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
 
@@ -813,7 +818,7 @@ public:
         this->Close();
     }
 
-    static std::expected<UnixSocket, Anemone::ErrorCode> Create()
+    static std::expected<UnixSocket, Anemone::Status> Create()
     {
         UnixSocket h{socket(AF_UNIX, SOCK_STREAM, 0)};
         return h;
@@ -851,7 +856,7 @@ public:
         return result;
     }
 
-    std::expected<void, Anemone::ErrorCode> Bind(std::string_view path)
+    std::expected<void, Anemone::Status> Bind(std::string_view path)
     {
         AE_TRACE(Info, "Binding socket to '{}'", path);
         sockaddr_un addr = CreateSocketAddress(path);
@@ -866,7 +871,7 @@ public:
         return {};
     }
 
-    std::expected<void, Anemone::ErrorCode> Connect(std::string_view path)
+    std::expected<void, Anemone::Status> Connect(std::string_view path)
     {
         AE_TRACE(Info, "Connecting socket to '{}'", path);
         sockaddr_un addr = CreateSocketAddress(path);
@@ -880,7 +885,7 @@ public:
         return {};
     }
 
-    std::expected<void, Anemone::ErrorCode> Listen(int backlog)
+    std::expected<void, Anemone::Status> Listen(int backlog)
     {
         AE_TRACE(Info, "Listening on socket with backlog '{}'", backlog);
         if (listen(this->m_handle, backlog) != 0)
@@ -891,7 +896,7 @@ public:
         return {};
     }
 
-    std::expected<UnixSocket, Anemone::ErrorCode> Accept()
+    std::expected<UnixSocket, Anemone::Status> Accept()
     {
         AE_TRACE(Info, "Accepting connection on socket");
         sockaddr_un addr{};
@@ -908,7 +913,7 @@ public:
         return UnixSocket{client};
     }
 
-    std::expected<size_t, Anemone::ErrorCode> Send(std::span<std::byte const> data)
+    std::expected<size_t, Anemone::Status> Send(std::span<std::byte const> data)
     {
         AE_TRACE(Info, "Sending data of size '{}'", data.size());
         int const result = send(this->m_handle, reinterpret_cast<char const*>(data.data()), static_cast<int>(data.size()), 0);
@@ -922,7 +927,7 @@ public:
         return static_cast<size_t>(result);
     }
 
-    std::expected<size_t, Anemone::ErrorCode> Receive(std::span<std::byte> data)
+    std::expected<size_t, Anemone::Status> Receive(std::span<std::byte> data)
     {
         AE_TRACE(Info, "Receiving data of size '{}'", data.size());
         int const result = recv(this->m_handle, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), 0);
@@ -937,7 +942,7 @@ public:
     }
 
     // gets local address
-    std::expected<sockaddr_storage, Anemone::ErrorCode> GetLocalAddress()
+    std::expected<sockaddr_storage, Anemone::Status> GetLocalAddress()
     {
         sockaddr_storage addr{};
         int len = sizeof(addr);
@@ -951,7 +956,7 @@ public:
     }
 
     // gets remote address
-    std::expected<sockaddr_storage, Anemone::ErrorCode> GetRemoteAddress()
+    std::expected<sockaddr_storage, Anemone::Status> GetRemoteAddress()
     {
         sockaddr_storage addr{};
         int len = sizeof(addr);

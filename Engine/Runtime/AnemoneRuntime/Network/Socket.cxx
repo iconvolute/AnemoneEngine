@@ -13,7 +13,7 @@
 
 namespace Anemone::Network::Detail
 {
-    static ErrorCode GetLastSocketError()
+    static Status GetLastSocketError()
     {
 #if ANEMONE_PLATFORM_WINDOWS
         return Internal::TranslateErrorCodeWin32(WSAGetLastError());
@@ -129,7 +129,7 @@ namespace Anemone::Network
         }
     }
 
-    std::expected<Socket, ErrorCode> Socket::Create(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
+    std::expected<Socket, Status> Socket::Create(AddressFamily addressFamily, SocketType socketType, ProtocolType protocolType)
     {
         auto nativeAddressFamily = Detail::ConvertAddressFamily(addressFamily);
         auto nativeSocketType = Detail::ConvertSocketType(socketType);
@@ -137,7 +137,7 @@ namespace Anemone::Network
 
         if (not nativeAddressFamily or not nativeSocketType or not nativeProtocolType)
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         auto handle = socket(
@@ -160,7 +160,7 @@ namespace Anemone::Network
         return Socket{Interop::NativeSocket{handle}};
     }
 
-    std::expected<void, ErrorCode> Socket::Close()
+    std::expected<void, Status> Socket::Close()
     {
         if (this->m_native.Inner != 0)
         {
@@ -182,7 +182,7 @@ namespace Anemone::Network
         return {};
     }
 
-    std::expected<void, ErrorCode> Socket::Bind(SocketEndPoint const& endPoint)
+    std::expected<void, Status> Socket::Bind(SocketEndPoint const& endPoint)
     {
         if (bind(this->m_native.Inner, reinterpret_cast<sockaddr const*>(endPoint.Buffer), sizeof(sockaddr)) < 0)
         {
@@ -192,7 +192,7 @@ namespace Anemone::Network
         return {};
     }
 
-    std::expected<void, ErrorCode> Socket::Listen(int backlog)
+    std::expected<void, Status> Socket::Listen(int backlog)
     {
         if (listen(this->m_native.Inner, backlog) < 0)
         {
@@ -202,7 +202,7 @@ namespace Anemone::Network
         return {};
     }
 
-    std::expected<Socket, ErrorCode> Socket::Accept()
+    std::expected<Socket, Status> Socket::Accept()
     {
         auto handle = accept(this->m_native.Inner, nullptr, nullptr);
 
@@ -218,7 +218,7 @@ namespace Anemone::Network
         return Socket{Interop::NativeSocket{handle}};
     }
 
-    std::expected<void, ErrorCode> Socket::Connect(SocketEndPoint const& endPoint)
+    std::expected<void, Status> Socket::Connect(SocketEndPoint const& endPoint)
     {
         if (connect(this->m_native.Inner, reinterpret_cast<sockaddr const*>(endPoint.Buffer), sizeof(sockaddr)) < 0)
         {
@@ -228,7 +228,7 @@ namespace Anemone::Network
         return {};
     }
 
-    std::expected<size_t, ErrorCode> Socket::Receive(std::span<std::byte> buffer)
+    std::expected<size_t, Status> Socket::Receive(std::span<std::byte> buffer)
     {
         auto result = recv(this->m_native.Inner, reinterpret_cast<char*>(buffer.data()), static_cast<int>(buffer.size()), 0);
 
@@ -240,7 +240,7 @@ namespace Anemone::Network
         return static_cast<size_t>(result);
     }
 
-    std::expected<size_t, ErrorCode> Socket::Send(std::span<std::byte const> buffer)
+    std::expected<size_t, Status> Socket::Send(std::span<std::byte const> buffer)
     {
         auto result = send(this->m_native.Inner, reinterpret_cast<char const*>(buffer.data()), static_cast<int>(buffer.size()), 0);
 
@@ -252,7 +252,7 @@ namespace Anemone::Network
         return static_cast<size_t>(result);
     }
 
-    std::expected<size_t, ErrorCode> Socket::ReceiveFrom(std::span<std::byte> buffer, SocketEndPoint& endPoint)
+    std::expected<size_t, Status> Socket::ReceiveFrom(std::span<std::byte> buffer, SocketEndPoint& endPoint)
     {
         socklen_t addressSize = sizeof(sockaddr);
 
@@ -266,7 +266,7 @@ namespace Anemone::Network
         return static_cast<size_t>(result);
     }
 
-    std::expected<size_t, ErrorCode> Socket::SendTo(std::span<std::byte const> buffer, SocketEndPoint const& endPoint)
+    std::expected<size_t, Status> Socket::SendTo(std::span<std::byte const> buffer, SocketEndPoint const& endPoint)
     {
         auto result = sendto(this->m_native.Inner, reinterpret_cast<char const*>(buffer.data()), static_cast<int>(buffer.size()), 0, reinterpret_cast<sockaddr const*>(endPoint.Buffer), sizeof(sockaddr));
 
@@ -278,7 +278,7 @@ namespace Anemone::Network
         return static_cast<size_t>(result);
     }
 
-    std::expected<SocketEndPoint, ErrorCode> Socket::GetLocalEndPoint() const
+    std::expected<SocketEndPoint, Status> Socket::GetLocalEndPoint() const
     {
         SocketEndPoint result;
         socklen_t addressSize = sizeof(result.Buffer);
@@ -291,7 +291,7 @@ namespace Anemone::Network
         return result;
     }
 
-    std::expected<SocketEndPoint, ErrorCode> Socket::GetRemoteEndPoint() const
+    std::expected<SocketEndPoint, Status> Socket::GetRemoteEndPoint() const
     {
         SocketEndPoint result;
         socklen_t addressSize = sizeof(result.Buffer);

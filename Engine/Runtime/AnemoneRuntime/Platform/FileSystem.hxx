@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Base/DateTime.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
@@ -57,31 +57,31 @@ namespace Anemone
     public:
         FileSystem() = delete;
 
-        RUNTIME_API static auto FileExists(std::string_view path) -> std::expected<bool, ErrorCode>;
+        RUNTIME_API static auto FileExists(std::string_view path) -> std::expected<bool, Status>;
 
-        RUNTIME_API static auto FileDelete(std::string_view path) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto FileDelete(std::string_view path) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto FileCreate(std::string_view path) -> std::expected<FileHandle, ErrorCode>;
+        RUNTIME_API static auto FileCreate(std::string_view path) -> std::expected<FileHandle, Status>;
 
-        RUNTIME_API static auto FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto GetFileInfo(std::string_view path) -> std::expected<FileInfo, ErrorCode>;
+        RUNTIME_API static auto GetFileInfo(std::string_view path) -> std::expected<FileInfo, Status>;
 
-        RUNTIME_API static auto GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, ErrorCode>;
+        RUNTIME_API static auto GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>;
 
-        RUNTIME_API static auto DirectoryExists(std::string_view path) -> std::expected<bool, ErrorCode>;
+        RUNTIME_API static auto DirectoryExists(std::string_view path) -> std::expected<bool, Status>;
 
-        RUNTIME_API static auto DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto DirectoryDelete(std::string_view path, bool recursive) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto DirectoryCreate(std::string_view path, bool recursive) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto DirectoryEnumerateRecursive(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, ErrorCode>;
+        RUNTIME_API static auto DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, Status>;
     };
 
     //

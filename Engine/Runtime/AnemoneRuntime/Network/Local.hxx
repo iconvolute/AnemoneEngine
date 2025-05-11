@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <expected>
 #include <span>
@@ -21,12 +21,12 @@ namespace Anemone::Network
         ~LocalServer();
 
     public:
-        static std::expected<LocalServer, ErrorCode> Create(std::string_view path);
+        static std::expected<LocalServer, Status> Create(std::string_view path);
 
     public:
-        std::expected<void, ErrorCode> Close();
+        std::expected<void, Status> Close();
 
-        std::expected<LocalClient, ErrorCode> Accept();
+        std::expected<LocalClient, Status> Accept();
     };
 
     class LocalClient final
@@ -40,13 +40,13 @@ namespace Anemone::Network
         ~LocalClient();
 
     public:
-        static std::expected<LocalClient, ErrorCode> Connect(std::string_view path);
+        static std::expected<LocalClient, Status> Connect(std::string_view path);
 
     public:
-        std::expected<void, ErrorCode> Close();
+        std::expected<void, Status> Close();
 
-        std::expected<size_t, ErrorCode> Read(std::span<std::byte> buffer);
+        std::expected<size_t, Status> Read(std::span<std::byte> buffer);
 
-        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> buffer);
+        std::expected<size_t, Status> Write(std::span<std::byte const> buffer);
     };
 }

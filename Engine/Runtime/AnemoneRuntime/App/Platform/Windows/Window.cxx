@@ -219,6 +219,20 @@ namespace Anemone
         return GetFocus() == this->_handle;
     }
 
+    bool Window::IsActive()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        return this->_active;
+    }
+
+    void Window::Activate()
+    {
+        AE_ASSERT(this->ValidateState());
+
+        SetForegroundWindow(this->_handle);
+    }
+
     void Window::SetVisible(bool value)
     {
         AE_ASSERT(this->ValidateState());
@@ -887,13 +901,11 @@ namespace Anemone
         (void)lparam;
         UINT const reason = LOWORD(wparam);
 
-        WindowActivatedEventArgs e{
-            .Activated = (reason == WA_ACTIVE) or (reason == WA_CLICKACTIVE),
-        };
+        this->_active = (reason == WA_ACTIVE) or (reason == WA_CLICKACTIVE);
 
         WindowsInput& windowsInput = WindowsInput::Get();
 
-        if (e.Activated)
+        if (this->_active)
         {
             windowsInput.NotifyWindowActivated(*this);
         }
@@ -901,6 +913,10 @@ namespace Anemone
         {
             windowsInput.NotifyWindowDeactivated(*this);
         }
+
+        WindowActivatedEventArgs e{
+            .Activated = this->_active,
+        };
 
         this->_events->OnWindowActivated(*this, e);
 

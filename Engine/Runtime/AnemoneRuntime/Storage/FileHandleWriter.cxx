@@ -3,7 +3,7 @@
 
 namespace Anemone::Storage
 {
-    std::expected<void, ErrorCode> FileHandleWriter::FlushBuffer()
+    std::expected<void, Status> FileHandleWriter::FlushBuffer()
     {
         if (this->_buffer_position != 0)
         {
@@ -40,7 +40,7 @@ namespace Anemone::Storage
         (void)this->Flush();
     }
 
-    std::expected<size_t, ErrorCode> FileHandleWriter::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, Status> FileHandleWriter::Write(std::span<std::byte const> buffer)
     {
         if (buffer.size() >= this->_buffer_capacity)
         {
@@ -97,7 +97,7 @@ namespace Anemone::Storage
         return buffer.size();
     }
 
-    std::expected<void, ErrorCode> FileHandleWriter::Flush()
+    std::expected<void, Status> FileHandleWriter::Flush()
     {
         if (auto processed = this->FlushBuffer())
         {
@@ -110,7 +110,7 @@ namespace Anemone::Storage
         }
     }
 
-    std::expected<void, ErrorCode> FileHandleWriter::SetPosition(int64_t position)
+    std::expected<void, Status> FileHandleWriter::SetPosition(int64_t position)
     {
         AE_ASSERT(position >= 0, "Negative file position is not allowed");
 
@@ -129,10 +129,10 @@ namespace Anemone::Storage
             }
         }
 
-        return std::unexpected(ErrorCode::InvalidArgument);
+        return std::unexpected(Status::InvalidArgument);
     }
 
-    std::expected<int64_t, ErrorCode> FileHandleWriter::GetPosition() const
+    std::expected<int64_t, Status> FileHandleWriter::GetPosition() const
     {
         return this->_file_position;
     }

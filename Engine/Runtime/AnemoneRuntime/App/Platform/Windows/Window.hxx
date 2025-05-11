@@ -35,6 +35,8 @@ namespace Anemone
         void BringToFront(bool force) override;
         void Focus() override;
         bool IsFocused() override;
+        bool IsActive() override;
+        void Activate() override;
         void SetVisible(bool value) override;
         bool IsVisible() override;
         void SetEnabled(bool value) override;
@@ -105,6 +107,7 @@ namespace Anemone
         bool _inputEnabled{false};
         bool _resizing{false};
         bool _closed{false};
+        bool _active{false};
         uint16_t _characterHighSurrogate{};
         WindowType _type{WindowType::Game};
         WindowMode _mode{WindowMode::Windowed};

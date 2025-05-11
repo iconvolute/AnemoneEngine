@@ -2,7 +2,7 @@
 
 namespace Anemone
 {
-    std::expected<void, ErrorCode> HashAlgorithm::ComputeCore(
+    std::expected<void, Status> HashAlgorithm::ComputeCore(
         HashAlgorithm& algorithm,
         std::span<std::byte const> buffer,
         std::span<std::byte> hash)

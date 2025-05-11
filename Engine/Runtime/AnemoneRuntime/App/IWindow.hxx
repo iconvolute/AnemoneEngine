@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Thickness.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Base/Intrusive.hxx"
 
 #include <expected>
@@ -71,6 +71,9 @@ namespace Anemone
 
         virtual void Focus() = 0;
         virtual bool IsFocused() = 0;
+
+        virtual bool IsActive() = 0;
+        virtual void Activate() = 0;
 
         virtual void SetVisible(bool value) = 0;
         virtual bool IsVisible() = 0;

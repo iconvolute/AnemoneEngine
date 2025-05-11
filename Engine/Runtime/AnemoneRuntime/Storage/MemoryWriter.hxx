@@ -21,12 +21,12 @@ namespace Anemone::Storage
         ~MemoryWriter() override;
 
     public:
-        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> data) override;
+        std::expected<size_t, Status> Write(std::span<std::byte const> data) override;
 
-        std::expected<void, ErrorCode> Flush() override;
+        std::expected<void, Status> Flush() override;
 
-        std::expected<void, ErrorCode> SetPosition(int64_t position) override;
+        std::expected<void, Status> SetPosition(int64_t position) override;
 
-        std::expected<int64_t, ErrorCode> GetPosition() const override;
+        std::expected<int64_t, Status> GetPosition() const override;
     };
 }

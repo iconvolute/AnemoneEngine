@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Platform/Types.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <expected>
 #include <span>
@@ -46,32 +46,32 @@ namespace Anemone::Network
         Socket& operator=(Socket&& other) noexcept;
         ~Socket();
 
-        static std::expected<Socket, ErrorCode> Create(
+        static std::expected<Socket, Status> Create(
             AddressFamily addressFamily,
             SocketType socketType,
             ProtocolType protocolType);
 
     public:
-        std::expected<void, ErrorCode> Close();
+        std::expected<void, Status> Close();
 
-        std::expected<void, ErrorCode> Bind(SocketEndPoint const& endPoint);
+        std::expected<void, Status> Bind(SocketEndPoint const& endPoint);
 
-        std::expected<void, ErrorCode> Listen(int backlog);
+        std::expected<void, Status> Listen(int backlog);
 
-        std::expected<Socket, ErrorCode> Accept();
+        std::expected<Socket, Status> Accept();
 
-        std::expected<void, ErrorCode> Connect(SocketEndPoint const& endPoint);
+        std::expected<void, Status> Connect(SocketEndPoint const& endPoint);
 
-        std::expected<size_t, ErrorCode> Receive(std::span<std::byte> buffer);
+        std::expected<size_t, Status> Receive(std::span<std::byte> buffer);
 
-        std::expected<size_t, ErrorCode> Send(std::span<std::byte const> buffer);
+        std::expected<size_t, Status> Send(std::span<std::byte const> buffer);
 
-        std::expected<size_t, ErrorCode> ReceiveFrom(std::span<std::byte> buffer, SocketEndPoint& endPoint);
+        std::expected<size_t, Status> ReceiveFrom(std::span<std::byte> buffer, SocketEndPoint& endPoint);
 
-        std::expected<size_t, ErrorCode> SendTo(std::span<std::byte const> buffer, SocketEndPoint const& endPoint);
+        std::expected<size_t, Status> SendTo(std::span<std::byte const> buffer, SocketEndPoint const& endPoint);
 
-        std::expected<SocketEndPoint, ErrorCode> GetLocalEndPoint() const;
+        std::expected<SocketEndPoint, Status> GetLocalEndPoint() const;
 
-        std::expected<SocketEndPoint, ErrorCode> GetRemoteEndPoint() const;
+        std::expected<SocketEndPoint, Status> GetRemoteEndPoint() const;
     };
 }

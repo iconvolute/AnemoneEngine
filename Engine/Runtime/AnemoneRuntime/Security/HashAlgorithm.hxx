@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <span>
 #include <expected>
@@ -20,18 +20,18 @@ namespace Anemone
         virtual ~HashAlgorithm() = default;
 
     public:
-        virtual std::expected<void, ErrorCode> Initialize() = 0;
+        virtual std::expected<void, Status> Initialize() = 0;
 
-        virtual std::expected<void, ErrorCode> Update(std::span<std::byte const> buffer) = 0;
+        virtual std::expected<void, Status> Update(std::span<std::byte const> buffer) = 0;
 
-        virtual std::expected<void, ErrorCode> Finalize(std::span<std::byte> hash) = 0;
+        virtual std::expected<void, Status> Finalize(std::span<std::byte> hash) = 0;
 
         virtual size_t GetHashSize() const = 0;
 
         virtual size_t GetBlockSize() const = 0;
 
     private:
-        anemone_noinline static std::expected<void, ErrorCode> ComputeCore(
+        static std::expected<void, Status> ComputeCore(
             HashAlgorithm& algorithm,
             std::span<std::byte const> buffer,
             std::span<std::byte> hash);
@@ -39,7 +39,7 @@ namespace Anemone
     public:
         template <typename HashAlgorithmT>
             requires(std::is_base_of_v<HashAlgorithm, HashAlgorithmT>)
-        static std::expected<void, ErrorCode> Compute(
+        static std::expected<void, Status> Compute(
             std::span<std::byte const> buffer,
             std::span<std::byte> hash)
         {

@@ -6,7 +6,7 @@
 
 namespace Anemone::Internal
 {
-    inline std::expected<void, ErrorCode> CreatePipeForRedirection(
+    inline std::expected<void, Status> CreatePipeForRedirection(
         Interop::Windows::SafeFileHandle& hOutParent,
         Interop::Windows::SafeFileHandle& hOutChild,
         bool parentWritesToChild)
@@ -22,7 +22,7 @@ namespace Anemone::Internal
 
         if (!CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            return std::unexpected(Status::InvalidOperation);
         }
 
         HANDLE hChild = parentWritesToChild ? hRead : hWrite;
@@ -35,7 +35,7 @@ namespace Anemone::Internal
         {
             CloseHandle(hParent);
             CloseHandle(hChild);
-            return std::unexpected(ErrorCode::InvalidOperation);
+            return std::unexpected(Status::InvalidOperation);
         }
 
         CloseHandle(hParent);
@@ -48,7 +48,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    std::expected<int32_t, ErrorCode> Process::Wait()
+    std::expected<int32_t, Status> Process::Wait()
     {
         AE_ASSERT(this->_handle);
 
@@ -56,23 +56,23 @@ namespace Anemone
         {
             if (WaitForSingleObject(handle.Get(), INFINITE) != WAIT_OBJECT_0)
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             DWORD dwExitCode;
 
             if (not GetExitCodeProcess(handle.Get(), &dwExitCode))
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             return static_cast<int32_t>(dwExitCode);
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
     }
 
-    std::expected<int32_t, ErrorCode> Process::TryWait()
+    std::expected<int32_t, Status> Process::TryWait()
     {
         AE_ASSERT(this->_handle);
 
@@ -82,22 +82,22 @@ namespace Anemone
 
             if (not GetExitCodeProcess(this->_handle.Get(), &dwExitCode))
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             if (dwExitCode == STILL_ACTIVE)
             {
-                return std::unexpected(ErrorCode::OperationInProgress);
+                return std::unexpected(Status::OperationInProgress);
             }
 
             this->_handle = {};
             return static_cast<int32_t>(dwExitCode);
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
     }
 
-    std::expected<void, ErrorCode> Process::Terminate()
+    std::expected<void, Status> Process::Terminate()
     {
         AE_ASSERT(this->_handle);
 
@@ -105,25 +105,25 @@ namespace Anemone
         {
             if (!TerminateProcess(handle.Get(), 0))
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             if (WaitForSingleObject(handle.Get(), INFINITE) == WAIT_FAILED)
             {
-                return std::unexpected(ErrorCode::InvalidOperation);
+                return std::unexpected(Status::InvalidOperation);
             }
 
             return {};
         }
 
-        return std::unexpected(ErrorCode::InvalidHandle);
+        return std::unexpected(Status::InvalidHandle);
     }
 
     auto Process::Start(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory)
-        -> std::expected<Process, ErrorCode>
+        -> std::expected<Process, Status>
     {
         return Process::Start(
             path,
@@ -141,7 +141,7 @@ namespace Anemone
         FileHandle* input,
         FileHandle* output,
         FileHandle* error)
-        -> std::expected<Process, ErrorCode>
+        -> std::expected<Process, Status>
     {
         bool const redirectInput = input != nullptr;
         bool const redirectOutput = output != nullptr;
@@ -289,14 +289,14 @@ namespace Anemone
             return Process{Interop::Windows::SafeHandle{process_information.hProcess}};
         }
 
-        return std::unexpected(ErrorCode::InvalidOperation);
+        return std::unexpected(Status::InvalidOperation);
     }
 
     auto Process::Execute(
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory)
-        -> std::expected<int32_t, ErrorCode>
+        -> std::expected<int32_t, Status>
     {
         return Process::Start(path, params, workingDirectory, nullptr, nullptr, nullptr)
             .and_then([](Process process)
@@ -311,7 +311,7 @@ namespace Anemone
         std::optional<std::string_view> const& workingDirectory,
         FunctionRef<void(std::string_view)> output,
         FunctionRef<void(std::string_view)> error)
-        -> std::expected<int32_t, ErrorCode>
+        -> std::expected<int32_t, Status>
     {
         FileHandle pipeOutput{};
         FileHandle pipeError{};
@@ -350,7 +350,7 @@ namespace Anemone
                     return *rc;
                 }
 
-                if (rc.error() != ErrorCode::OperationInProgress)
+                if (rc.error() != Status::OperationInProgress)
                 {
                     return std::unexpected(rc.error());
                 }

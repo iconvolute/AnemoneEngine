@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Base/ErrorCode.hxx"
+#include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <cstddef>
 #include <expected>
@@ -20,13 +20,13 @@ namespace Anemone::Storage
         virtual ~DataWriter() = default;
 
     public:
-        [[nodiscard]] virtual std::expected<size_t, ErrorCode> Write(std::span<std::byte const> data) = 0;
+        [[nodiscard]] virtual std::expected<size_t, Status> Write(std::span<std::byte const> data) = 0;
 
-        [[nodiscard]] virtual std::expected<void, ErrorCode> Flush() = 0;
+        [[nodiscard]] virtual std::expected<void, Status> Flush() = 0;
 
-        [[nodiscard]] virtual std::expected<void, ErrorCode> SetPosition(int64_t position) = 0;
+        [[nodiscard]] virtual std::expected<void, Status> SetPosition(int64_t position) = 0;
 
-        [[nodiscard]] virtual std::expected<int64_t, ErrorCode> GetPosition() const = 0;
+        [[nodiscard]] virtual std::expected<int64_t, Status> GetPosition() const = 0;
     };
 }
 

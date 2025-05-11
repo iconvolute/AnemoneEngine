@@ -88,7 +88,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    std::expected<FileHandle, ErrorCode> FileHandle::Create(
+    std::expected<FileHandle, Status> FileHandle::Create(
         std::string_view path,
         FileMode mode,
         Flags<FileAccess> access,
@@ -114,7 +114,7 @@ namespace Anemone
 
                 if (failed)
                 {
-                    return std::unexpected(ErrorCode::InvalidOperation);
+                    return std::unexpected(Status::InvalidOperation);
                 }
             }
 
@@ -122,23 +122,23 @@ namespace Anemone
             {
                 if (ftruncate64(fd.Get(), 0))
                 {
-                    return std::unexpected(ErrorCode::InvalidOperation);
+                    return std::unexpected(Status::InvalidOperation);
                 }
             }
 
             return FileHandle{std::move(fd)};
         }
 
-        return std::unexpected(ErrorCode::InvalidArgument);
+        return std::unexpected(Status::InvalidArgument);
     }
 
-    std::expected<void, ErrorCode> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
+    std::expected<void, Status> FileHandle::CreatePipe(FileHandle& read, FileHandle& write)
     {
         int fd[2];
 
         if (pipe2(fd, O_CLOEXEC | O_NONBLOCK))
         {
-            return std::unexpected(ErrorCode::InvalidOperation);
+            return std::unexpected(Status::InvalidOperation);
         }
 
         read = FileHandle{Interop::Linux::SafeFdHandle{fd[0]}};
@@ -147,19 +147,19 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, ErrorCode> FileHandle::Flush()
+    std::expected<void, Status> FileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
 
         if (fsync(this->_handle.Get()))
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetLength() const
+    std::expected<int64_t, Status> FileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
@@ -167,25 +167,25 @@ namespace Anemone
 
         if (fstat64(this->_handle.Get(), &st))
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         return st.st_size;
     }
 
-    std::expected<void, ErrorCode> FileHandle::Truncate(int64_t length)
+    std::expected<void, Status> FileHandle::Truncate(int64_t length)
     {
         AE_ASSERT(this->_handle);
 
         if (ftruncate64(this->_handle.Get(), length))
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> FileHandle::GetPosition() const
+    std::expected<int64_t, Status> FileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
 
@@ -193,25 +193,25 @@ namespace Anemone
 
         if (position < 0)
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         return position;
     }
 
-    std::expected<void, ErrorCode> FileHandle::SetPosition(int64_t position)
+    std::expected<void, Status> FileHandle::SetPosition(int64_t position)
     {
         AE_ASSERT(this->_handle);
 
         if (lseek64(this->_handle.Get(), position, SEEK_SET) < 0)
         {
-            return std::unexpected(ErrorCode::InvalidHandle);
+            return std::unexpected(Status::InvalidHandle);
         }
 
         return {};
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Read(std::span<std::byte> buffer)
+    std::expected<size_t, Status> FileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -242,7 +242,7 @@ namespace Anemone
                         break;
                     }
 
-                    return std::unexpected(ErrorCode::IoError);
+                    return std::unexpected(Status::IoError);
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
@@ -253,7 +253,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, Status> FileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -284,7 +284,7 @@ namespace Anemone
                         break;
                     }
 
-                    return std::unexpected(ErrorCode::IoError);
+                    return std::unexpected(Status::IoError);
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
@@ -295,7 +295,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::Write(std::span<std::byte const> buffer)
+    std::expected<size_t, Status> FileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -326,7 +326,7 @@ namespace Anemone
                         break;
                     }
 
-                    return std::unexpected(ErrorCode::IoError);
+                    return std::unexpected(Status::IoError);
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));
@@ -337,7 +337,7 @@ namespace Anemone
         return static_cast<size_t>(processed);
     }
 
-    std::expected<size_t, ErrorCode> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    std::expected<size_t, Status> FileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -366,7 +366,7 @@ namespace Anemone
                         break;
                     }
 
-                    return std::unexpected(ErrorCode::IoError);
+                    return std::unexpected(Status::IoError);
                 }
 
                 AE_ASSERT((0 <= processed) and (processed <= static_cast<ssize_t>(requested)));

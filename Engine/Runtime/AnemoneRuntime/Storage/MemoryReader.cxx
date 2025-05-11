@@ -13,7 +13,7 @@ namespace Anemone::Storage
 
     MemoryReader::~MemoryReader() = default;
 
-    std::expected<size_t, ErrorCode> MemoryReader::Read(std::span<std::byte> buffer)
+    std::expected<size_t, Status> MemoryReader::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_buffer_position <= this->_buffer.size());
 
@@ -30,11 +30,11 @@ namespace Anemone::Storage
         return requested;
     }
 
-    std::expected<void, ErrorCode> MemoryReader::SetPosition(int64_t position)
+    std::expected<void, Status> MemoryReader::SetPosition(int64_t position)
     {
         if ((position < 0) or (static_cast<size_t>(position) > this->_buffer.size()))
         {
-            return std::unexpected(ErrorCode::InvalidArgument);
+            return std::unexpected(Status::InvalidArgument);
         }
 
         this->_buffer_position = static_cast<size_t>(position);
@@ -42,7 +42,7 @@ namespace Anemone::Storage
         return {};
     }
 
-    std::expected<int64_t, ErrorCode> MemoryReader::GetPosition() const
+    std::expected<int64_t, Status> MemoryReader::GetPosition() const
     {
         return static_cast<int64_t>(this->_buffer_position);
     }

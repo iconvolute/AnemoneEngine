@@ -6,7 +6,7 @@
 
 namespace Anemone
 {
-    enum class ErrorCode : uint32_t
+    enum class Status : uint32_t
     {
         Success,
 
@@ -57,19 +57,36 @@ namespace Anemone
         AlreadyExists,
         CircularReference,
         DirectoryNotEmpty,
+        OperationUnsafe,
+        Recursion,
+        InvalidValue,
+        InvalidPointer,
+        DifferentThread,
+        AlreadyInitialized,
+        NotRegistered,
+        NotSigned,
+        NotAllowed,
+        NotResumable,
+        Unexpected,
+        InvalidMetadata,
+        InvalidSignature,
+        InvalidHeader,
+        InvalidId,
+        InvalidDigest,
+        
         Unknown,
     };
 }
 
 template <>
-struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint32_t>
+struct fmt::formatter<Anemone::Status> : fmt::formatter<uint32_t>
 {
     constexpr auto parse(auto& context)
     {
         return context.begin();
     }
 
-    constexpr auto format(Anemone::ErrorCode const& value, auto& context) const
+    constexpr auto format(Anemone::Status const& value, auto& context) const
     {
         return fmt::format_to(context.out(), "{:08x}", static_cast<uint32_t>(value));
     }

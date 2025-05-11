@@ -15,7 +15,6 @@ target_sources(AnemoneRuntime
         "Delegate.hxx"
         "Duration.cxx"
         "Duration.hxx"
-        "ErrorCode.hxx"
         "Flags.cxx"
         "Flags.hxx"
         "Float.cxx"

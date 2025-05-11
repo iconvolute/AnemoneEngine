@@ -18,7 +18,7 @@ namespace Anemone::Storage
         static constexpr size_t DefaultBufferCapacity = 8u << 10u;
 
     private:
-        std::expected<void, ErrorCode> FlushBuffer();
+        std::expected<void, Status> FlushBuffer();
 
     public:
         FileHandleWriter(FileHandle handle, size_t buffer_capacity = DefaultBufferCapacity);
@@ -30,12 +30,12 @@ namespace Anemone::Storage
 
         ~FileHandleWriter() override;
 
-        std::expected<size_t, ErrorCode> Write(std::span<std::byte const> buffer) override;
+        std::expected<size_t, Status> Write(std::span<std::byte const> buffer) override;
 
-        std::expected<void, ErrorCode> Flush() override;
+        std::expected<void, Status> Flush() override;
 
-        std::expected<void, ErrorCode> SetPosition(int64_t position) override;
+        std::expected<void, Status> SetPosition(int64_t position) override;
 
-        std::expected<int64_t, ErrorCode> GetPosition() const override;
+        std::expected<int64_t, Status> GetPosition() const override;
     };
 }
