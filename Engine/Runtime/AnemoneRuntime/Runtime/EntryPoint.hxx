@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Runtime/RuntimeContext.hxx"
 
 // GPU power management markers.
 extern "C"
@@ -17,9 +18,6 @@ extern "C"
 #error "This header must be included from the application"
 #endif
 
-extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv);
-extern "C" RUNTIME_API void AnemoneRuntimeFinalize();
-
 int AnemoneMain(int argc, char** argv);
 
 #if ANEMONE_PLATFORM_WINDOWS && defined(ANEMONE_APPLICATION_UI)
@@ -36,7 +34,7 @@ int WINAPI WinMain(
     int argc = __argc;
     char** argv = __argv;
 
-    AnemoneRuntimeInitialize(argc, argv);
+    AnemoneRuntimeInitialize(argc, argv, true);
 
     int const result = AnemoneMain(argc, argv);
 
@@ -49,7 +47,17 @@ int WINAPI WinMain(
 
 int main(int argc, char** argv)
 {
-    AnemoneRuntimeInitialize(argc, argv);
+    AnemoneRuntimeInitializationContext const context{
+        .argc = argc,
+        .argv = argv,
+#if defined(ANEMONE_APPLICATION_CONSOLE)
+        .console = true,
+#else
+        .console = false,
+#endif
+    };
+
+    AnemoneRuntimeInitialize(context);
 
     int const result = AnemoneMain(argc, argv);
 

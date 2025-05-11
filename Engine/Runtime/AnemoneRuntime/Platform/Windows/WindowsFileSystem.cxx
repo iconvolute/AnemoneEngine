@@ -47,7 +47,7 @@ namespace Anemone
 
         Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::Windows::WidenString(wsPath, path))
+        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -76,7 +76,7 @@ namespace Anemone
 
         Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::Windows::WidenString(wsPath, path))
+        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -117,14 +117,14 @@ namespace Anemone
 
         Interop::Windows::FilePathW wsSource;
 
-        if (not Interop::Windows::WidenString(wsSource, source))
+        if (FAILED(Interop::Windows::WidenString(wsSource, source)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::FilePathW wsDestination;
 
-        if (not Interop::Windows::WidenString(wsDestination, destination))
+        if (FAILED(Interop::Windows::WidenString(wsDestination, destination)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -221,14 +221,14 @@ namespace Anemone
 
         Interop::Windows::FilePathW wsSource;
 
-        if (not Interop::Windows::WidenString(wsSource, source))
+        if (FAILED(Interop::Windows::WidenString(wsSource, source)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
 
         Interop::Windows::FilePathW wsDestination;
 
-        if (not Interop::Windows::WidenString(wsDestination, destination))
+        if (FAILED(Interop::Windows::WidenString(wsDestination, destination)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -304,7 +304,7 @@ namespace Anemone
     {
         Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::Windows::WidenString(wsPath, path))
+        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
         {
             return {};
         }
@@ -347,7 +347,7 @@ namespace Anemone
 
         Interop::Windows::FilePathW wsPath;
 
-        if (not Interop::Windows::WidenString(wsPath, path))
+        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -623,7 +623,7 @@ namespace Anemone
     auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryVisitor& visitor) -> std::expected<void, Status>
     {
         std::wstring root;
-        if (not Interop::Windows::WidenString(root, path))
+        if (FAILED(Interop::Windows::WidenString(root, path)))
         {
             return std::unexpected(Status::InvalidArgument);
         }
@@ -700,7 +700,7 @@ namespace Anemone
     auto FileSystem::DirectoryEnumerate(std::string_view path, DirectoryEnumerateFn fn) -> std::expected<void, Status>
     {
         std::wstring root;
-        if (not Interop::Windows::WidenString(root, path))
+        if (FAILED(Interop::Windows::WidenString(root, path)))
         {
             return std::unexpected(Status::InvalidArgument);
         }

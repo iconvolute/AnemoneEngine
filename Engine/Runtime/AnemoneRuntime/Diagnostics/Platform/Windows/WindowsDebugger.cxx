@@ -2,7 +2,6 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 #include "AnemoneRuntime/Interop/Windows/Process.hxx"
 #include "AnemoneRuntime/Interop/Windows/Debugger.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
@@ -41,96 +40,105 @@ namespace Anemone::Diagnostics
 
 namespace Anemone::Diagnostics
 {
-    class WindowsDebugTraceListener final : public Diagnostics::TraceListener
+    namespace
     {
-    private:
-        CriticalSection m_lock{};
-
-    public:
-        void TraceEvent(Diagnostics::TraceLevel level, const char* message, size_t size) override
+        class DebugTraceListener final : public TraceListener
         {
-            (void)level;
+        private:
+            CriticalSection m_lock{};
 
-            UniqueLock scope{this->m_lock};
-            Interop::Windows::OutputDebugStringLengthA(message, size + 1);
-            Interop::Windows::OutputDebugStringLengthA("\r\n", 3);
-        }
-    };
+        public:
+            void TraceEvent(TraceLevel level, const char* message, size_t size) override
+            {
+                (void)level;
+
+                UniqueLock scope{this->m_lock};
+                Interop::Windows::OutputDebugStringLengthA(message, size + 1);
+                Interop::Windows::OutputDebugStringLengthA("\r\n", 3);
+            }
+        };
+
+        UninitializedObject<DebugTraceListener> GDebugTraceListener{};
+    }
 }
 
 namespace Anemone::Diagnostics
 {
-    // C0B8BB2A-7E1E-5A0B-0ACD-3EE6187895ED
-    // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
-    TRACELOGGING_DEFINE_PROVIDER(
-        GWindowsEtwTraceProvider,
-        "AnemoneEngine.Runtime",
-        (0xC0B8BB2A, 0x7E1E, 0x5A0B, 0x0A, 0xCD, 0x3E, 0xE6, 0x18, 0x78, 0x95, 0xED));
-
-
-    class WindowsEtwTraceListener final : public Diagnostics::TraceListener
+    namespace
     {
-    public:
-        WindowsEtwTraceListener()
-        {
-            TraceLoggingRegister(GWindowsEtwTraceProvider);
-        }
+        // C0B8BB2A-7E1E-5A0B-0ACD-3EE6187895ED
+        // https://learn.microsoft.com/en-us/windows/win32/api/traceloggingprovider/
+        TRACELOGGING_DEFINE_PROVIDER(
+            GWindowsEtwTraceProvider,
+            "AnemoneEngine.Runtime",
+            (0xC0B8BB2A, 0x7E1E, 0x5A0B, 0x0A, 0xCD, 0x3E, 0xE6, 0x18, 0x78, 0x95, 0xED));
 
-        ~WindowsEtwTraceListener() override
+        class EtwTraceListener final : public TraceListener
         {
-            TraceLoggingUnregister(GWindowsEtwTraceProvider);
-        }
-
-        void TraceEvent(Diagnostics::TraceLevel level, const char* message, size_t size) override
-        {
-            switch (level)
+        public:
+            EtwTraceListener()
             {
-            case Diagnostics::TraceLevel::Verbose:
-            case Diagnostics::TraceLevel::Debug:
-                TraceLoggingWrite(
-                    GWindowsEtwTraceProvider,
-                    "Log",
-                    TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
-                    TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
-                break;
-
-            case Diagnostics::TraceLevel::Information:
-                TraceLoggingWrite(
-                    GWindowsEtwTraceProvider,
-                    "Log",
-                    TraceLoggingLevel(WINEVENT_LEVEL_INFO),
-                    TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
-                break;
-
-            case Diagnostics::TraceLevel::Warning:
-                TraceLoggingWrite(
-                    GWindowsEtwTraceProvider,
-                    "Log",
-                    TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
-                    TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
-
-                break;
-            case Diagnostics::TraceLevel::Error:
-                TraceLoggingWrite(
-                    GWindowsEtwTraceProvider,
-                    "Log",
-                    TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
-                    TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
-                break;
-
-            case Diagnostics::TraceLevel::Fatal:
-                TraceLoggingWrite(
-                    GWindowsEtwTraceProvider,
-                    "Log",
-                    TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL),
-                    TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
-                break;
-
-            case Diagnostics::TraceLevel::None:
-                break;
+                TraceLoggingRegister(GWindowsEtwTraceProvider);
             }
-        }
-    };
+
+            ~EtwTraceListener() override
+            {
+                TraceLoggingUnregister(GWindowsEtwTraceProvider);
+            }
+
+            void TraceEvent(TraceLevel level, const char* message, size_t size) override
+            {
+                switch (level)
+                {
+                case TraceLevel::Verbose:
+                case TraceLevel::Debug:
+                    TraceLoggingWrite(
+                        GWindowsEtwTraceProvider,
+                        "Log",
+                        TraceLoggingLevel(WINEVENT_LEVEL_VERBOSE),
+                        TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
+                    break;
+
+                case TraceLevel::Information:
+                    TraceLoggingWrite(
+                        GWindowsEtwTraceProvider,
+                        "Log",
+                        TraceLoggingLevel(WINEVENT_LEVEL_INFO),
+                        TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
+                    break;
+
+                case TraceLevel::Warning:
+                    TraceLoggingWrite(
+                        GWindowsEtwTraceProvider,
+                        "Log",
+                        TraceLoggingLevel(WINEVENT_LEVEL_WARNING),
+                        TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
+
+                    break;
+                case TraceLevel::Error:
+                    TraceLoggingWrite(
+                        GWindowsEtwTraceProvider,
+                        "Log",
+                        TraceLoggingLevel(WINEVENT_LEVEL_ERROR),
+                        TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
+                    break;
+
+                case TraceLevel::Fatal:
+                    TraceLoggingWrite(
+                        GWindowsEtwTraceProvider,
+                        "Log",
+                        TraceLoggingLevel(WINEVENT_LEVEL_CRITICAL),
+                        TraceLoggingCountedUtf8String(message, static_cast<ULONG>(size), "Message"));
+                    break;
+
+                case TraceLevel::None:
+                    break;
+                }
+            }
+        };
+
+        UninitializedObject<EtwTraceListener> GEtwTraceListener{};
+    }
 
 }
 
@@ -139,10 +147,6 @@ namespace Anemone::Diagnostics
     namespace
     {
         PTOP_LEVEL_EXCEPTION_FILTER GPreviousExceptionFilter{};
-
-        UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
-        UninitializedObject<WindowsDebugTraceListener> GWindowsDebugTraceListener{};
-        UninitializedObject<WindowsEtwTraceListener> GWindowsEtwTraceListener{};
 
         static LONG CALLBACK OnUnhandledExceptionFilter(LPEXCEPTION_POINTERS lpExceptionPointers)
         {
@@ -167,7 +171,10 @@ namespace Anemone::Diagnostics
         }
 #endif
     }
+}
 
+namespace Anemone::Diagnostics
+{
     extern void PlatformInitializeDebugger()
     {
         // Initialize exception handlers
@@ -177,44 +184,31 @@ namespace Anemone::Diagnostics
         AddVectoredExceptionHandler(0, OnUnhandledExceptionVEH);
 #endif
 
-        // Register console trace listener.
-        if (Interop::Windows::IsConsoleApplication(GetModuleHandleW(nullptr)))
-        {
-            GConsoleTraceListener.Create();
-            Diagnostics::GetTraceDispatcher().Register(*GConsoleTraceListener);
-        }
-
 #if !ANEMONE_BUILD_SHIPPING
         //
         // Debug trace listener is available only on non-shipping builds.
         //
 
-        GWindowsDebugTraceListener.Create();
-        Diagnostics::GetTraceDispatcher().Register(*GWindowsDebugTraceListener);
+        GDebugTraceListener.Create();
+        GetTraceDispatcher().Register(*GDebugTraceListener);
 #endif
 
-        GWindowsEtwTraceListener.Create();
-        Diagnostics::GetTraceDispatcher().Register(*GWindowsEtwTraceListener);
+        GEtwTraceListener.Create();
+        GetTraceDispatcher().Register(*GEtwTraceListener);
     }
 
     extern void PlatformFinalizeDebugger()
     {
-        if (GWindowsEtwTraceListener)
+        if (GEtwTraceListener)
         {
-            Diagnostics::GetTraceDispatcher().Unregister(*GWindowsEtwTraceListener);
-            GWindowsEtwTraceListener.Destroy();
+            GetTraceDispatcher().Unregister(*GEtwTraceListener);
+            GEtwTraceListener.Destroy();
         }
 
-        if (GWindowsDebugTraceListener)
+        if (GDebugTraceListener)
         {
-            Diagnostics::GetTraceDispatcher().Unregister(*GWindowsDebugTraceListener);
-            GWindowsDebugTraceListener.Destroy();
-        }
-
-        if (GConsoleTraceListener)
-        {
-            Diagnostics::GetTraceDispatcher().Unregister(*GConsoleTraceListener);
-            GConsoleTraceListener.Destroy();
+            GetTraceDispatcher().Unregister(*GDebugTraceListener);
+            GDebugTraceListener.Destroy();
         }
 
         // Restore exception handlers.

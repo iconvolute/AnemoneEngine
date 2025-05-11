@@ -173,6 +173,7 @@ namespace Anemone::Environment
     RUNTIME_API auto GetMemoryUsage() -> MemoryUsage;
     RUNTIME_API auto GetPowerUsage() -> PowerUsage;
     RUNTIME_API auto GetProcessorUsage() -> ProcessorUsage;
+    RUNTIME_API auto GetProcessMemoryUsage() -> ProcessMemoryUsage;
     RUNTIME_API void Terminate(bool force);
     RUNTIME_API auto GetDeviceUniqueId() -> std::string_view;
     RUNTIME_API auto GetDeviceName() -> std::string_view;

@@ -5,21 +5,12 @@
 
 namespace Anemone::Diagnostics
 {
-    namespace
-    {
-        UninitializedObject<Diagnostics::ConsoleTraceListener> GConsoleTraceListener{};
-    }
-
     extern void PlatformInitializeDebugger()
     {
-        GConsoleTraceListener.Create();
-        GetTraceDispatcher().Register(*GConsoleTraceListener);
     }
 
     extern void PlatformFinalizeDebugger()
     {
-        GetTraceDispatcher().Unregister(*GConsoleTraceListener);
-        GConsoleTraceListener.Destroy();
     }
 }
 

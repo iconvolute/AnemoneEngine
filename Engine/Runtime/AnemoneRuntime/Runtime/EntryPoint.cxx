@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Runtime/RuntimeContext.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone::Environment
@@ -24,7 +24,7 @@ namespace Anemone::Diagnostics
     extern void InitializeTrace();
     extern void FinalizeTrace();
 
-    extern void InitializeDebugger();
+    extern void InitializeDebugger(bool console);
     extern void FinalizeDebugger();
 }
 
@@ -40,14 +40,11 @@ namespace Anemone::Threading
     extern void FinalizeTaskScheduler();
 }
 
-extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv);
-extern "C" RUNTIME_API void AnemoneRuntimeFinalize();
-
-void AnemoneRuntimeInitialize(int argc, char** argv)
+void AnemoneRuntimeInitialize(AnemoneRuntimeInitializationContext const& context)
 {
-    Anemone::CommandLine::Initialize(argc, argv);
+    Anemone::CommandLine::Initialize(context.argc, context.argv);
     Anemone::Diagnostics::InitializeTrace();
-    Anemone::Diagnostics::InitializeDebugger();
+    Anemone::Diagnostics::InitializeDebugger(context.console);
 
     Anemone::Environment::Initialize();
     Anemone::Input::Initialize();
