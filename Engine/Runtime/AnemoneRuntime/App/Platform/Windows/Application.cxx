@@ -73,7 +73,7 @@ namespace Anemone
 
         // Pool input devices.
         XInput::Get().Poll(*this->_events);
-        GameInput::Get().Poll(*this->_events);
+        //GameInput::Get().Poll(*this->_events);
     }
 
     std::unique_ptr<IWindow> Application::CreateWindow(WindowType type, WindowMode mode)

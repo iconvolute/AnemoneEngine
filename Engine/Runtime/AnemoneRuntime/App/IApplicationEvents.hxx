@@ -87,6 +87,11 @@ namespace Anemone
         float Scale;
     };
 
+    struct WindowVisibilityChangedEventArgs : WindowEventArgs
+    {
+        bool Visible;
+    };
+
     struct EndSessionEventArgs
     {
         bool LogOff;
@@ -132,6 +137,7 @@ namespace Anemone
         virtual void OnWindowResizeStarted(IWindow& window, WindowEventArgs& args) = 0;
         virtual void OnWindowResizeCompleted(IWindow& window, WindowEventArgs& args) = 0;
         virtual void OnWindowDpiChanged(IWindow& window, WindowDpiChangedEventArgs& args) = 0;
+        virtual void OnWindowVisibilityChanged(IWindow& window, WindowVisibilityChangedEventArgs& args) = 0;
 
         // virtual void OnWindowFocusChanged(Window& window, WindowEventArgs& args) = 0; ?
         // virtual void OnWindowStateChanged(Window& window, WindowEventArgs& args) = 0; ?

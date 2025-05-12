@@ -321,126 +321,155 @@ namespace Anemone
         }
     }
 
-    bool WindowsInput::ProcessMessage(
-        IApplicationEvents& events,
-        Interop::Windows::WindowMessageResult& result,
+    Interop::Windows::WindowMessageResult WindowsInput::ProcessMessage(
         Window& window,
-        UINT message,
-        WPARAM wparam,
-        LPARAM lparam)
+        Interop::Windows::WindowMessage const& message)
     {
-        switch (message)
+        switch (message.Message)
         {
         case WM_KEYUP:
         case WM_SYSKEYUP:
-            result = this->WmKey(events, window, wparam, lparam, FALSE);
-            break;
+            return this->WmKey(
+                window,
+                message,
+                FALSE);
 
         case WM_KEYDOWN:
         case WM_SYSKEYDOWN:
-            result = this->WmKey(events, window, wparam, lparam, TRUE);
-            break;
+            return this->WmKey(
+                window,
+                message,
+                TRUE);
 
         case WM_INPUT:
-            result = this->WmInput(events, window, wparam, lparam);
-            break;
+            return this->WmInput(
+                window,
+                message);
 
         case WM_LBUTTONDOWN:
-            result = this->WmMouseButton(events, window, VirtualKey::LeftButton, wparam, lparam, TRUE, FALSE);
-            break;
-
-        case WM_RBUTTONDOWN:
-            result = this->WmMouseButton(events, window, VirtualKey::RightButton, wparam, lparam, TRUE, FALSE);
-            break;
-
-        case WM_MBUTTONDOWN:
-            result = this->WmMouseButton(events, window, VirtualKey::MiddleButton, wparam, lparam, TRUE, FALSE);
-            break;
-
-        case WM_XBUTTONDOWN:
-            result = this->WmMouseButton(
-                events,
+            return this->WmMouseButton(
                 window,
-                GET_XBUTTON_WPARAM(wparam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
-                wparam,
-                lparam,
+                message,
+                VirtualKey::LeftButton,
                 TRUE,
                 FALSE);
-            break;
+
+        case WM_RBUTTONDOWN:
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::RightButton,
+                TRUE,
+                FALSE);
+
+        case WM_MBUTTONDOWN:
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::MiddleButton,
+                TRUE,
+                FALSE);
+
+        case WM_XBUTTONDOWN:
+            return this->WmMouseButton(
+                window,
+                message,
+                GET_XBUTTON_WPARAM(message.WParam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
+                TRUE,
+                FALSE);
 
         case WM_LBUTTONUP:
-            result = this->WmMouseButton(events, window, VirtualKey::LeftButton, wparam, lparam, FALSE, FALSE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::LeftButton,
+                FALSE,
+                FALSE);
 
         case WM_RBUTTONUP:
-            result = this->WmMouseButton(events, window, VirtualKey::RightButton, wparam, lparam, FALSE, FALSE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::RightButton,
+                FALSE,
+                FALSE);
 
         case WM_MBUTTONUP:
-            result = this->WmMouseButton(events, window, VirtualKey::MiddleButton, wparam, lparam, FALSE, FALSE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::MiddleButton,
+                FALSE,
+                FALSE);
 
         case WM_XBUTTONUP:
-            result = this->WmMouseButton(
-                events,
+            return this->WmMouseButton(
                 window,
-                GET_XBUTTON_WPARAM(wparam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
-                wparam,
-                lparam,
+                message,
+                GET_XBUTTON_WPARAM(message.WParam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
                 FALSE,
                 FALSE);
-            break;
 
         case WM_LBUTTONDBLCLK:
-            result = this->WmMouseButton(events, window, VirtualKey::LeftButton, wparam, lparam, FALSE, TRUE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::LeftButton,
+                FALSE,
+                TRUE);
 
         case WM_RBUTTONDBLCLK:
-            result = this->WmMouseButton(events, window, VirtualKey::RightButton, wparam, lparam, FALSE, TRUE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::RightButton,
+                FALSE,
+                TRUE);
 
         case WM_MBUTTONDBLCLK:
-            result = this->WmMouseButton(events, window, VirtualKey::MiddleButton, wparam, lparam, FALSE, TRUE);
-            break;
+            return this->WmMouseButton(
+                window,
+                message,
+                VirtualKey::MiddleButton,
+                FALSE,
+                TRUE);
 
         case WM_XBUTTONDBLCLK:
-            result = this->WmMouseButton(
-                events,
+            return this->WmMouseButton(
                 window,
-                GET_XBUTTON_WPARAM(wparam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
-                wparam,
-                lparam,
+                message,
+                GET_XBUTTON_WPARAM(message.WParam) == XBUTTON1 ? VirtualKey::XButton1 : VirtualKey::XButton2,
                 FALSE,
                 FALSE);
-            break;
 
         case WM_MOUSEMOVE:
-            result = this->WmMouseMove(events, window, wparam, lparam);
-            break;
+            return this->WmMouseMove(
+                window,
+                message);
 
         case WM_MOUSEWHEEL:
-            result = this->WmMouseWheel(events, window, wparam, lparam);
-            break;
+            return this->WmMouseWheel(
+                window,
+                message);
 
         case WM_MOUSEHWHEEL:
-            result = this->WmMouseHWheel(events, window, wparam, lparam);
-            break;
+            return this->WmMouseHWheel(
+            window,
+                message);
 
         default:
-            return false;
+            break;
         }
 
-        return true;
+        return Interop::Windows::WindowMessageResult::Default();
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmInput(
-        IApplicationEvents& events,
         Window& window,
-        WPARAM wparam,
-        LPARAM lparam)
+        Interop::Windows::WindowMessage const& message)
     {
-        UINT const code = GET_RAWINPUT_CODE_WPARAM(wparam);
-        HRAWINPUT const handle = std::bit_cast<HRAWINPUT>(lparam);
+        UINT const code = GET_RAWINPUT_CODE_WPARAM(message.WParam);
+        HRAWINPUT const handle = std::bit_cast<HRAWINPUT>(message.LParam);
 
         if (code == RIM_INPUT)
         {
@@ -454,9 +483,9 @@ namespace Anemone
                 RAWMOUSE const& mouse = ri.data.mouse;
                 POINT& last = this->_rawInputLastCursorPosition;
 
-                bool const isAbsolute = (mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE;
+                bool const absolute = (mouse.usFlags & MOUSE_MOVE_ABSOLUTE) == MOUSE_MOVE_ABSOLUTE;
 
-                if (isAbsolute)
+                if (absolute)
                 {
                     bool const isVirtualDesktop = (mouse.usFlags & MOUSE_VIRTUAL_DESKTOP) == MOUSE_VIRTUAL_DESKTOP;
 
@@ -492,7 +521,7 @@ namespace Anemone
                         };
                         e.Absolute = true;
 
-                        events.OnMouseMove(window, e);
+                        window.GetEvents().OnMouseMove(window, e);
                     }
                 }
                 else if ((mouse.lLastX != 0) || (mouse.lLastY != 0))
@@ -512,7 +541,7 @@ namespace Anemone
                     };
                     e.Absolute = true;
 
-                    events.OnMouseMove(window, e);
+                    window.GetEvents().OnMouseMove(window, e);
                 }
             }
         }
@@ -521,14 +550,12 @@ namespace Anemone
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmKey(
-        IApplicationEvents& events,
         Window& window,
-        WPARAM wparam,
-        LPARAM lparam,
+        Interop::Windows::WindowMessage const& message,
         BOOL pressed)
     {
-        UINT32 vk = LOWORD(wparam);
-        UINT32 keyFlags = HIWORD(lparam);
+        UINT32 vk = LOWORD(message.WParam);
+        UINT32 keyFlags = HIWORD(message.LParam);
 
         switch (vk)
         {
@@ -567,7 +594,7 @@ namespace Anemone
                             this->_keyModifiers,
                             false,
                         };
-                        events.OnKeyDown(window, e);
+                        window.GetEvents().OnKeyDown(window, e);
                     }
                     {
                         KeyEventArgs e{
@@ -575,7 +602,7 @@ namespace Anemone
                             this->_keyModifiers,
                             false,
                         };
-                        events.OnKeyDown(window, e);
+                        window.GetEvents().OnKeyDown(window, e);
                     }
                 }
 
@@ -594,31 +621,27 @@ namespace Anemone
 
         if (pressed)
         {
-            events.OnKeyDown(window, e);
+            window.GetEvents().OnKeyDown(window, e);
         }
         else
         {
-            events.OnKeyUp(window, e);
+            window.GetEvents().OnKeyUp(window, e);
         }
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmMouseButton(
-        IApplicationEvents& events,
         Window& window,
+        Interop::Windows::WindowMessage const& message,
         VirtualKey virtualKey,
-        WPARAM wparam,
-        LPARAM lparam,
         BOOL pressed,
         BOOL click)
     {
-        (void)wparam;
-
         MouseButtonEventArgs e;
         e.Position = Math::PointF{
-            static_cast<float>(static_cast<short>(LOWORD(lparam))),
-            static_cast<float>(static_cast<short>(HIWORD(lparam))),
+            static_cast<float>(static_cast<short>(LOWORD(message.LParam))),
+            static_cast<float>(static_cast<short>(HIWORD(message.LParam))),
         };
         e.Key = virtualKey;
         e.Modifiers = this->_keyModifiers;
@@ -627,56 +650,50 @@ namespace Anemone
         {
             if (click)
             {
-                events.OnMouseButtonClick(window, e);
+                window.GetEvents().OnMouseButtonClick(window, e);
             }
             else
             {
-                events.OnMouseButtonDown(window, e);
+                window.GetEvents().OnMouseButtonDown(window, e);
             }
         }
         else
         {
-            events.OnMouseButtonUp(window, e);
+            window.GetEvents().OnMouseButtonUp(window, e);
         }
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmMouseMove(
-        IApplicationEvents& events,
         Window& window,
-        WPARAM wparam,
-        LPARAM lparam)
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-
         // Report mouse move events only if raw input is not enabled for that window.
         if (not this->IsTracking(window.GetHandle()))
         {
             MouseMoveEventArgs e;
             e.Position = Math::PointF{
-                static_cast<float>(static_cast<short>(LOWORD(lparam))),
-                static_cast<float>(static_cast<short>(HIWORD(lparam))),
+                static_cast<float>(static_cast<short>(LOWORD(message.LParam))),
+                static_cast<float>(static_cast<short>(HIWORD(message.LParam))),
             };
             e.Modifiers = this->_keyModifiers;
             e.Delta = Math::PointF{};
             e.Absolute = true;
 
-            events.OnMouseMove(window, e);
+            window.GetEvents().OnMouseMove(window, e);
         }
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmMouseWheel(
-        IApplicationEvents& events,
         Window& window,
-        WPARAM wparam,
-        LPARAM lparam)
+        Interop::Windows::WindowMessage const& message)
     {
         POINT location{
-            .x = static_cast<short>(LOWORD(lparam)),
-            .y = static_cast<short>(HIWORD(lparam)),
+            .x = static_cast<short>(LOWORD(message.LParam)),
+            .y = static_cast<short>(HIWORD(message.LParam)),
         };
 
         MapWindowPoints(nullptr, window.GetHandle(), &location, 1);
@@ -684,34 +701,32 @@ namespace Anemone
         MouseWheelEventArgs e;
         e.Position = Interop::Windows::ToPointF(location);
         e.Horizontal = 0.0f;
-        e.Vertical = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wparam)) / static_cast<float>(WHEEL_DELTA);
+        e.Vertical = static_cast<float>(GET_WHEEL_DELTA_WPARAM(message.WParam)) / static_cast<float>(WHEEL_DELTA);
         e.Modifiers = this->_keyModifiers;
 
-        events.OnMouseWheel(window, e);
+        window.GetEvents().OnMouseWheel(window, e);
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
     Interop::Windows::WindowMessageResult WindowsInput::WmMouseHWheel(
-        IApplicationEvents& events,
         Window& window,
-        WPARAM wparam,
-        LPARAM lparam)
+        Interop::Windows::WindowMessage const& message)
     {
         POINT location{
-            .x = static_cast<short>(LOWORD(lparam)),
-            .y = static_cast<short>(HIWORD(lparam)),
+            .x = static_cast<short>(LOWORD(message.LParam)),
+            .y = static_cast<short>(HIWORD(message.LParam)),
         };
 
         MapWindowPoints(nullptr, window.GetHandle(), &location, 1);
 
         MouseWheelEventArgs e;
         e.Position = Interop::Windows::ToPointF(location);
-        e.Horizontal = static_cast<float>(GET_WHEEL_DELTA_WPARAM(wparam)) / static_cast<float>(WHEEL_DELTA);
+        e.Horizontal = static_cast<float>(GET_WHEEL_DELTA_WPARAM(message.WParam)) / static_cast<float>(WHEEL_DELTA);
         e.Vertical = 0.0f;
         e.Modifiers = this->_keyModifiers;
 
-        events.OnMouseWheel(window, e);
+        window.GetEvents().OnMouseWheel(window, e);
 
         return Interop::Windows::WindowMessageResult::Default();
     }

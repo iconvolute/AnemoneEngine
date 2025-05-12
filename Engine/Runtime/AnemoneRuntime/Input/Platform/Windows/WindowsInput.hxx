@@ -49,53 +49,37 @@ namespace Anemone
             return this->_trackMouseWindowHandle == handle;
         }
 
-        bool ProcessMessage(
-            IApplicationEvents& events,
-            Interop::Windows::WindowMessageResult& result,
+        Interop::Windows::WindowMessageResult ProcessMessage(
             Window& window,
-            UINT message,
-            WPARAM wparam,
-            LPARAM lparam);
+            Interop::Windows::WindowMessage const& message);
 
         Interop::Windows::WindowMessageResult WmInput(
-            IApplicationEvents& events,
             Window& window,
-            WPARAM wparam,
-            LPARAM lparam);
+            Interop::Windows::WindowMessage const& message);
 
         Interop::Windows::WindowMessageResult WmKey(
-            IApplicationEvents& events,
             Window& window,
-            WPARAM wparam,
-            LPARAM lparam,
+            Interop::Windows::WindowMessage const& message,
             BOOL pressed);
 
         Interop::Windows::WindowMessageResult WmMouseButton(
-            IApplicationEvents& events,
             Window& window,
+            Interop::Windows::WindowMessage const& message,
             VirtualKey virtualKey,
-            WPARAM wparam,
-            LPARAM lparam,
             BOOL pressed,
             BOOL click);
 
         Interop::Windows::WindowMessageResult WmMouseMove(
-            IApplicationEvents& events,
             Window& window,
-            WPARAM wparam,
-            LPARAM lparam);
+            Interop::Windows::WindowMessage const& message);
 
         Interop::Windows::WindowMessageResult WmMouseWheel(
-            IApplicationEvents& events,
             Window& window,
-            WPARAM wparam,
-            LPARAM lparam);
+            Interop::Windows::WindowMessage const& message);
 
         Interop::Windows::WindowMessageResult WmMouseHWheel(
-            IApplicationEvents& events,
             Window& window,
-            WPARAM wparam,
-            LPARAM lparam);
+            Interop::Windows::WindowMessage const& message);
 
     private:
         static VirtualKeyModifiers CaptureModifiers();

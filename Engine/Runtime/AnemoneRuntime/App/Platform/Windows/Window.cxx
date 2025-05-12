@@ -87,17 +87,6 @@ namespace Anemone
             AE_VERIFY_HRESULT(hr);
         }
 
-        // NOTE: This is useful when changing the window style to borderless.
-        // if (HRESULT const hr = Interop::Windows::SetWindowNcRenderingPolicy(handle, DWMNCRP_DISABLED); FAILED(hr))
-        // {
-        //     AE_VERIFY_HRESULT(hr);
-        // }
-
-        // if (HRESULT const hr = Interop::Windows::SetWindowAllowNcPaint(handle, FALSE); FAILED(hr))
-        // {
-        //     AE_VERIFY_HRESULT(hr);
-        // }
-
         if (handle == nullptr)
         {
             Diagnostics::ReportApplicationStop("Failed to create window.");
@@ -118,6 +107,11 @@ namespace Anemone
             DestroyWindow(this->_handle);
             this->_handle = nullptr;
         }
+    }
+
+    void* Window::GetNativeHandle() const
+    {
+        return this->_handle;
     }
 
     void Window::Close()
@@ -385,7 +379,6 @@ namespace Anemone
 
     void Window::SetMaximumSize(std::optional<Math::SizeF> value)
     {
-
         AE_ASSERT(this->ValidateState());
 
         this->_maximumSize = value;
@@ -508,106 +501,109 @@ namespace Anemone
         return std::bit_cast<Window*>(GetWindowLongPtrW(handle, GWLP_USERDATA));
     }
 
-    LRESULT CALLBACK Window::WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam)
+    LRESULT CALLBACK Window::WndProc(
+        HWND handle,
+        UINT message,
+        WPARAM wparam,
+        LPARAM lparam)
     {
         AE_ASSERT(handle);
+
+        Interop::Windows::WindowMessage msg{
+            .HWnd = handle,
+            .Message = message,
+            .WParam = wparam,
+            .LParam = lparam,
+        };
 
         Interop::Windows::WindowMessageResult result{};
 
         if (message == WM_NCCREATE)
         {
-            result = WmNcCreate(handle, lparam);
+            result = WmNcCreate(msg);
         }
         else if (Window* window = GetWindowFromHandle(handle))
         {
-            bool handled = false;
-
             if (window->GetInputEnabled())
             {
-                handled = WindowsInput::Get().ProcessMessage(
-                    *window->_events,
-                    result,
-                    *window,
-                    message,
-                    wparam,
-                    lparam);
+                result = WindowsInput::Get().ProcessMessage(*window, msg);
             }
 
-            if (not handled)
+            if (not result.Handled)
             {
                 switch (message)
                 {
                 case WM_CLOSE:
-                    result = window->WmClose(wparam, lparam);
+                    result = window->WmClose(msg);
                     break;
 
                 case WM_CHAR:
-                    result = window->WmChar(wparam, lparam);
+                    result = window->WmChar(msg);
                     break;
 
                 case WM_DPICHANGED:
-                    result = window->WmDpiChanged(wparam, lparam);
+                    result = window->WmDpiChanged(msg);
                     break;
 
                 case WM_POWERBROADCAST:
-                    result = window->WmPowerBroadcast(wparam, lparam);
+                    result = window->WmPowerBroadcast(msg);
                     break;
 
                 case WM_DISPLAYCHANGE:
-                    result = window->WmDisplayChange(wparam, lparam);
+                    result = window->WmDisplayChange(msg);
                     break;
 
                 case WM_MENUCHAR:
-                    result = window->WmMenuChar(wparam, lparam);
+                    result = window->WmMenuChar(msg);
 
                     break;
 
                 case WM_GETDLGCODE:
-                    result = window->WmGetDlgCode(wparam, lparam);
+                    result = window->WmGetDlgCode(msg);
                     break;
 
                 case WM_ENTERSIZEMOVE:
-                    result = window->WmEnterSizeMove(wparam, lparam);
+                    result = window->WmEnterSizeMove(msg);
                     break;
 
                 case WM_EXITSIZEMOVE:
-                    result = window->WmExitSizeMove(wparam, lparam);
+                    result = window->WmExitSizeMove(msg);
                     break;
 
                 case WM_SIZE:
-                    result = window->WmSize(wparam, lparam);
+                    result = window->WmSize(msg);
                     break;
 
                 case WM_GETMINMAXINFO:
-                    result = window->WmGetMinMaxInfo(wparam, lparam);
+                    result = window->WmGetMinMaxInfo(msg);
                     break;
 
                 case WM_NCCALCSIZE:
-                    result = window->WmNcCalcSize(wparam, lparam);
+                    result = window->WmNcCalcSize(msg);
                     break;
 
                 case WM_ACTIVATE:
-                    result = window->WmActivate(wparam, lparam);
+                    result = window->WmActivate(msg);
                     break;
 
                 case WM_ACTIVATEAPP:
-                    result = window->WmActivateApp(wparam, lparam);
+                    result = window->WmActivateApp(msg);
                     break;
 
                 case WM_ENDSESSION:
-                    result = window->WmEndSession(wparam, lparam);
+                    result = window->WmEndSession(msg);
                     break;
 
                 case WM_SETCURSOR:
-                    result = window->WmSetCursor(wparam, lparam);
+                    result = window->WmSetCursor(msg);
                     break;
 
                 case WM_SYSCOMMAND:
-                    result = window->WmSysCommand(wparam, lparam);
+                    result = window->WmSysCommand(msg);
                     break;
 
                 case WM_ERASEBKGND:
-                    result = window->WmEraseBackground(wparam, lparam);
+                    result = window->WmEraseBackground(msg);
                     break;
 
                 default:
@@ -616,32 +612,34 @@ namespace Anemone
             }
         }
 
-        if (result.Handled)
+        if (not result.Handled)
         {
-            return result.Result;
+            return DefWindowProcW(handle, message, wparam, lparam);
         }
 
-        return DefWindowProcW(handle, message, wparam, lparam);
+        return result.Result;
     }
 
-    Interop::Windows::WindowMessageResult Window::WmNcCreate(HWND window, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmNcCreate(
+        Interop::Windows::WindowMessage const& message)
     {
-        CREATESTRUCTW* cs = std::bit_cast<CREATESTRUCTW*>(lparam);
+        CREATESTRUCTW* cs = std::bit_cast<CREATESTRUCTW*>(message.LParam);
         Window* self = static_cast<Window*>(cs->lpCreateParams);
 
         AE_ASSERT(self != nullptr);
         AE_ASSERT(self->_handle == nullptr);
 
-        self->_handle = window;
-        SetWindowLongPtrW(window, GWLP_USERDATA, std::bit_cast<LONG_PTR>(self));
+        self->_handle = message.HWnd;
+        SetWindowLongPtrW(message.HWnd, GWLP_USERDATA, std::bit_cast<LONG_PTR>(self));
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmClose(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmClose(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
+
         WindowCloseEventArgs e{};
 
         this->_events->OnWindowClose(*this, e);
@@ -657,15 +655,16 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::WithResult(0);
     }
 
-    Interop::Windows::WindowMessageResult Window::WmChar(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmChar(
+        Interop::Windows::WindowMessage const& message)
     {
-        if (IS_HIGH_SURROGATE(wparam))
+        if (IS_HIGH_SURROGATE(message.WParam))
         {
-            this->_characterHighSurrogate = static_cast<uint16_t>(wparam);
+            this->_characterHighSurrogate = static_cast<uint16_t>(message.WParam);
         }
         else
         {
-            uint16_t const lowSurrogate = static_cast<uint16_t>(wparam);
+            uint16_t const lowSurrogate = static_cast<uint16_t>(message.WParam);
 
             uint32_t character;
 
@@ -679,7 +678,7 @@ namespace Anemone
                 character = lowSurrogate;
             }
 
-            uint32_t const keyFlags = HIWORD(lparam);
+            uint32_t const keyFlags = HIWORD(message.LParam);
 
             CharacterReceivedEventArgs e{
                 .Character = static_cast<char32_t>(character),
@@ -692,16 +691,17 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmDpiChanged(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmDpiChanged(
+        Interop::Windows::WindowMessage const& message)
     {
-        DWORD const dpi = LOWORD(wparam);
+        DWORD const dpi = LOWORD(message.WParam);
 
         WindowDpiChangedEventArgs e{
             .Dpi = static_cast<float>(dpi),
             .Scale = static_cast<float>(dpi) / 96.0f,
         };
 
-        RECT const& rc = *std::bit_cast<RECT const*>(lparam);
+        RECT const& rc = *std::bit_cast<RECT const*>(message.LParam);
 
         SetWindowPos(
             this->_handle,
@@ -717,11 +717,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmPowerBroadcast(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmPowerBroadcast(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)lparam;
-
-        switch (wparam)
+        switch (message.WParam)
         {
         case PBT_APMSUSPEND:
             {
@@ -744,36 +743,36 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmDisplayChange(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmDisplayChange(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
         this->_events->OnDisplayChange();
 
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmMenuChar(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmMenuChar(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
 
         // A menu is active and the user presses a key that does not correspond
         // to any mnemonic or accelerator key. Ignore so we don't produce an error beep.
         return Interop::Windows::WindowMessageResult::WithResult(MAKELRESULT(0, MNC_CLOSE));
     }
 
-    Interop::Windows::WindowMessageResult Window::WmGetDlgCode(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmGetDlgCode(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
         return Interop::Windows::WindowMessageResult::WithResult(DLGC_WANTALLKEYS);
     }
 
-    Interop::Windows::WindowMessageResult Window::WmEnterSizeMove(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmEnterSizeMove(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
         this->_resizing = true;
 
         WindowEventArgs e{};
@@ -782,10 +781,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmExitSizeMove(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmExitSizeMove(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
 
         this->_resizing = false;
 
@@ -814,14 +813,15 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmSize(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmSize(
+        Interop::Windows::WindowMessage const& message)
     {
-        if ((wparam != SIZE_MINIMIZED) && (!this->_resizing) && !IsIconic(this->_handle))
+        if ((message.WParam != SIZE_MINIMIZED) && (!this->_resizing) && !IsIconic(this->_handle))
         {
             WindowSizeChangedEventArgs e{
                 .Size{
-                    .Width = static_cast<float>(LOWORD(lparam)),
-                    .Height = static_cast<float>(HIWORD(lparam)),
+                    .Width = static_cast<float>(LOWORD(message.LParam)),
+                    .Height = static_cast<float>(HIWORD(message.LParam)),
                 },
             };
 
@@ -831,11 +831,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmGetMinMaxInfo(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-
-        MINMAXINFO& mmi = *std::bit_cast<MINMAXINFO*>(lparam);
+        MINMAXINFO& mmi = *std::bit_cast<MINMAXINFO*>(message.LParam);
 
         if (this->_minimumSize)
         {
@@ -862,7 +861,8 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmNcCalcSize(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmNcCalcSize(
+        Interop::Windows::WindowMessage const& message)
     {
         if ((this->_type == WindowType::Game) and (this->_mode != WindowMode::Windowed) and IsZoomed(this->_handle))
         {
@@ -870,12 +870,12 @@ namespace Anemone
             // scenario. Limit this by adjusting window placement to just fit display - we are still
             // render over whole area anyway.
 
-            if ((wparam != 0) and (lparam != 0))
+            if ((message.WParam != 0) and (message.LParam != 0))
             {
                 WINDOWINFO wi{.cbSize = sizeof(wi)};
                 GetWindowInfo(this->_handle, &wi);
 
-                NCCALCSIZE_PARAMS& params = *std::bit_cast<LPNCCALCSIZE_PARAMS>(lparam);
+                NCCALCSIZE_PARAMS& params = *std::bit_cast<LPNCCALCSIZE_PARAMS>(message.LParam);
 
                 params.rgrc[0].left += static_cast<LONG>(wi.cxWindowBorders);
                 params.rgrc[0].top += static_cast<LONG>(wi.cyWindowBorders);
@@ -896,10 +896,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmActivate(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmActivate(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)lparam;
-        UINT const reason = LOWORD(wparam);
+        UINT const reason = LOWORD(message.WParam);
 
         this->_active = (reason == WA_ACTIVE) or (reason == WA_CLICKACTIVE);
 
@@ -923,13 +923,12 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmActivateApp(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmActivateApp(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)lparam;
-
         WindowsInput& windowsInput = WindowsInput::Get();
 
-        if (wparam == 0)
+        if (message.WParam == 0)
         {
             windowsInput.NotifyWindowActivated(*this);
             windowsInput.NotifyApplicationActivated();
@@ -943,13 +942,14 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmEndSession(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmEndSession(
+        Interop::Windows::WindowMessage const& message)
     {
-        UINT const reason = static_cast<UINT>(lparam);
+        UINT const reason = static_cast<UINT>(message.LParam);
 
         EndSessionEventArgs e{
             .LogOff = (reason & ENDSESSION_LOGOFF) == ENDSESSION_LOGOFF,
-            .Shutdown = (wparam != FALSE),
+            .Shutdown = (message.WParam != FALSE),
             .Force = (reason & ENDSESSION_CRITICAL) == ENDSESSION_CRITICAL,
             .CloseApplication = (reason & ENDSESSION_CLOSEAPP) == ENDSESSION_CLOSEAPP,
         };
@@ -959,10 +959,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmSetCursor(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmSetCursor(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        UINT const hitTest = LOWORD(lparam);
+        UINT const hitTest = LOWORD(message.LParam);
 
         if (hitTest == HTCLIENT)
         {
@@ -984,11 +984,10 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmSysCommand(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmSysCommand(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)lparam;
-
-        switch (wparam & 0xFFF0u)
+        switch (message.WParam & 0xFFF0u)
         {
         case SC_SCREENSAVE:
         case SC_MONITORPOWER:
@@ -1017,11 +1016,23 @@ namespace Anemone
         return Interop::Windows::WindowMessageResult::Default();
     }
 
-    Interop::Windows::WindowMessageResult Window::WmEraseBackground(WPARAM wparam, LPARAM lparam)
+    Interop::Windows::WindowMessageResult Window::WmEraseBackground(
+        Interop::Windows::WindowMessage const& message)
     {
-        (void)wparam;
-        (void)lparam;
+        (void)message;
         // Not implemented yet.
+        return Interop::Windows::WindowMessageResult::Default();
+    }
+
+    Interop::Windows::WindowMessageResult Window::WmShowWindow(
+        Interop::Windows::WindowMessage const& message)
+    {
+        WindowVisibilityChangedEventArgs e{
+            .Visible = message.WParam != FALSE,
+        };
+
+        this->_events->OnWindowVisibilityChanged(*this, e);
+
         return Interop::Windows::WindowMessageResult::Default();
     }
 }

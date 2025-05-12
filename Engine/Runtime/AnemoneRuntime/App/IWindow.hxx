@@ -57,6 +57,8 @@ namespace Anemone
         virtual ~IWindow() = default;
 
     public:
+        virtual void* GetNativeHandle() const = 0;
+
         virtual void Close() = 0;
         virtual bool IsClosed() = 0;
 

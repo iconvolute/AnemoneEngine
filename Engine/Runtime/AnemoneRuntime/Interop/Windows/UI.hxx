@@ -53,15 +53,23 @@ namespace Anemone::Interop::Windows
         ClipCursor(nullptr);
     }
 
-    struct WindowMessageResult final
+    struct WindowMessage final
     {
-        bool Handled;
+        HWND HWnd{};
+        UINT Message{};
+        WPARAM WParam{};
+        LPARAM LParam{};
+    };
+
+    struct [[nodiscard]] WindowMessageResult final
+    {
+        BOOL Handled;
         LRESULT Result;
 
         static WindowMessageResult WithResult(LRESULT result)
         {
             return WindowMessageResult{
-                .Handled = true,
+                .Handled = TRUE,
                 .Result = result,
             };
         }
@@ -69,7 +77,7 @@ namespace Anemone::Interop::Windows
         static WindowMessageResult Default()
         {
             return {
-                .Handled = false,
+                .Handled = FALSE,
                 .Result = 0,
             };
         }
@@ -89,7 +97,7 @@ namespace Anemone::Interop::Windows
             .Y = static_cast<float>(value.y),
         };
     }
-    
+
     constexpr POINT ToPOINT(Math::PointF const& value)
     {
         return {
@@ -185,7 +193,7 @@ namespace Anemone::Interop::Windows
             .bottom = static_cast<LONG>(value.Y),
         };
     }
-    
+
     constexpr Math::RectF ToRectF(SIZE const& value)
     {
         return {

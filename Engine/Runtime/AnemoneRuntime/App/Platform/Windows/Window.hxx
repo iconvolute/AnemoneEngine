@@ -19,48 +19,87 @@ namespace Anemone
             WindowMode mode);
 
         Window(Window const&) = delete;
+
         Window(Window&&) = delete;
+
         Window& operator=(Window const&) = delete;
+
         Window& operator=(Window&&) = delete;
+
         ~Window() override;
 
     public:
+        void* GetNativeHandle() const override;
+
         void Close() override;
+
         bool IsClosed() override;
+
         void Minimize() override;
+
         bool IsMinimized() override;
+
         void Maximize() override;
+
         bool IsMaximized() override;
+
         void Restore() override;
+
         void BringToFront(bool force) override;
+
         void Focus() override;
+
         bool IsFocused() override;
+
         bool IsActive() override;
+
         void Activate() override;
+
         void SetVisible(bool value) override;
+
         bool IsVisible() override;
+
         void SetEnabled(bool value) override;
+
         bool IsEnabled() override;
+
         void SetInputEnabled(bool value) override;
+
         bool GetInputEnabled() override;
+
         WindowMode GetMode() override;
+
         void SetMode(WindowMode value) override;
+
         void SetTitle(std::string_view value) override;
+
         std::optional<Math::SizeF> GetMinimumSize() override;
+
         void SetMinimumSize(std::optional<Math::SizeF> value) override;
+
         std::optional<Math::SizeF> GetMaximumSize() override;
+
         void SetMaximumSize(std::optional<Math::SizeF> value) override;
+
         void SetCursor(CursorType value) override;
+
         CursorType GetCursor() override;
 
         Math::RectF GetBounds() override;
+
         void SetBounds(Math::RectF value) override;
+        
         Math::RectF GetClientBounds() override;
 
     public:
         HWND GetHandle() const
         {
             return this->_handle;
+        }
+
+        IApplicationEvents& GetEvents() const
+        {
+            return *this->_events;
         }
 
     private:
@@ -74,27 +113,71 @@ namespace Anemone
 
         static Window* GetWindowFromHandle(HWND handle);
 
-        static LRESULT CALLBACK WndProc(HWND handle, UINT message, WPARAM wparam, LPARAM lparam);
+        static LRESULT CALLBACK WndProc(
+            HWND handle,
+            UINT message,
+            WPARAM wparam,
+            LPARAM lparam);
 
-        static Interop::Windows::WindowMessageResult WmNcCreate(HWND window, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmClose(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmChar(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmDpiChanged(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmPowerBroadcast(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmDisplayChange(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmMenuChar(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmGetDlgCode(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmEnterSizeMove(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmExitSizeMove(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmSize(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmGetMinMaxInfo(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmNcCalcSize(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmActivate(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmActivateApp(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmEndSession(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmSetCursor(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmSysCommand(WPARAM wparam, LPARAM lparam);
-        Interop::Windows::WindowMessageResult WmEraseBackground(WPARAM wparam, LPARAM lparam);
+        static Interop::Windows::WindowMessageResult WmNcCreate(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmClose(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmChar(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmDpiChanged(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmPowerBroadcast(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmDisplayChange(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmMenuChar(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmGetDlgCode(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmEnterSizeMove(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmExitSizeMove(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmSize(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmGetMinMaxInfo(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmNcCalcSize(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmActivate(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmActivateApp(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmEndSession(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmSetCursor(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmSysCommand(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmEraseBackground(
+            Interop::Windows::WindowMessage const& message);
+
+        Interop::Windows::WindowMessageResult WmShowWindow(
+            Interop::Windows::WindowMessage const& message);
 
     private:
         Application* _application{};
