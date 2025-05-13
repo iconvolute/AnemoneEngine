@@ -1,8 +1,8 @@
 #include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 #include <algorithm>
-#include <atomic>
 
 namespace Anemone::CommandLine
 {
@@ -262,5 +262,119 @@ namespace Anemone::CommandLine
                 }
             }
         }
+    }
+
+    void Build(const char* const* argv, std::string& result)
+    {
+        Interop::string_buffer<char, 256> buffer{};
+
+        size_t const estimatedLength = [&]() -> size_t
+        {
+            size_t length = 0;
+
+            for (const char* const* it = argv; *it; ++it)
+            {
+                // Escaping may require more space than the original string. In worst case, every character needs to be escaped.
+                // This is why we need to double the size of the buffer.
+                size_t const argumentLength = std::char_traits<char>::length(*it);
+
+                // Every argument is quoted.
+                size_t constexpr quoteLength = 2uz;
+
+                // For spacing between arguments.
+                size_t constexpr spaceLength = 1uz;
+                length += argumentLength + quoteLength + spaceLength;
+            }
+
+            return length;
+        }();
+
+        // Reserve space for the command line. It's okay to overallocate.
+        buffer.resize_for_override(estimatedLength);
+
+        // Write to the buffer.
+        char* out = buffer.data();
+
+        for (const char* const* it = argv; *it; ++it)
+        {
+            if (it != argv)
+            {
+                (*out++) = ' ';
+            }
+
+            std::string_view arg = *it;
+            bool quoted = false;
+
+            if (arg.empty() or (arg.find_first_of(" \f\n\r\t\v") != std::string_view::npos))
+            {
+                quoted = true;
+            }
+
+            if (quoted)
+            {
+                (*out++) = '"';
+            }
+
+            size_t backslashes = 0;
+
+            for (char ch : arg)
+            {
+                if (ch == '\\')
+                {
+                    ++backslashes;
+                }
+                else if (ch == '"')
+                {
+                    if (backslashes)
+                    {
+                        for (size_t i = 0; i < 2 * backslashes; ++i)
+                        {
+                            (*out++) = '\\';
+                        }
+
+                        backslashes = 0;
+                    }
+
+                    (*out++) = '\\';
+                    (*out++) = ch;
+                }
+                else
+                {
+                    if (backslashes)
+                    {
+                        for (size_t i = 0; i < backslashes; ++i)
+                        {
+                            (*out++) = '\\';
+                        }
+
+                        backslashes = 0;
+                    }
+
+                    (*out++) = ch;
+                }
+            }
+
+            if (backslashes)
+            {
+                if (quoted)
+                {
+                    backslashes *= 2;
+                }
+
+                for (size_t i = 0; i < backslashes; ++i)
+                {
+                    (*out++) = '\\';
+                }
+            }
+
+            if (quoted)
+            {
+                (*out++) = '"';
+            }
+        }
+
+        size_t const length = out - buffer.data();
+        buffer.trim(length);
+        result = buffer.as_view();
     }
 }

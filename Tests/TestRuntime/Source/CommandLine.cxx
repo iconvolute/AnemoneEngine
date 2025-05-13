@@ -208,3 +208,94 @@ TEST_CASE("Command Line - Parsing")
         CHECK(params.empty());
     }
 }
+
+TEST_CASE("Command Line - Building")
+{
+    using namespace Anemone;
+
+    SECTION("Empty")
+    {
+        const char* const argv[] = {nullptr};
+        std::string result{};
+
+        CommandLine::Build(argv, result);
+
+        CHECK(result.empty());
+    }
+
+    SECTION("Single argument")
+    {
+        const char* const argv[] = {"arg1", nullptr};
+        std::string result{};
+
+        CommandLine::Build(argv, result);
+
+        CHECK(result == "arg1");
+    }
+
+    SECTION("Multiple arguments")
+    {
+        const char* const argv[] = {"arg1", "arg2", "arg3", nullptr};
+        std::string result{};
+
+        CommandLine::Build(argv, result);
+
+        CHECK(result == "arg1 arg2 arg3");
+    }
+
+    SECTION("Unquoted argument with spaces")
+    {
+        const char* const argv[] = {"arg1", "argument with white space", "arg3", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 "argument with white space" arg3)");
+    }
+
+    SECTION("Quoted argument")
+    {
+        const char* const argv[] = {"arg1", "\"quoted arg\"", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 "\"quoted arg\"")");
+    }
+
+    SECTION("Escaped quotes")
+    {
+        const char* const argv[] = {"arg1", R"("quoted \"escaped\" arg")", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 "\"quoted \\\"escaped\\\" arg\"")");
+    }
+
+    SECTION("Escaped backslashes")
+    {
+        const char* const argv[] = {"arg1", R"(C:\path\to\file.txt)", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 C:\path\to\file.txt)");
+    }
+
+    SECTION("Escaped backslashes, quotes and whitespace")
+    {
+        const char* const argv[] = {"arg1", R"(C:\path\to\file.txt)", R"("quoted arg")", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 C:\path\to\file.txt "\"quoted arg\"")");
+    }
+
+    SECTION("Escaped backslashes, quotes and whitespace with spaces")
+    {
+        const char* const argv[] = {"arg1", R"(C:\path\to\file.txt)", R"("quoted arg" with spaces)", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 C:\path\to\file.txt "\"quoted arg\" with spaces")");
+    }
+
+    SECTION("Escaped backslashes with spaces, quoted with inbalanced quotes")
+    {
+        const char* const argv[] = {"arg1", R"(C:\path\to\file.txt)", R"("quoted arg" with spaces "and \" unterminated)", nullptr};
+        std::string result{};
+        CommandLine::Build(argv, result);
+        CHECK(result == R"(arg1 C:\path\to\file.txt "\"quoted arg\" with spaces \"and \\\" unterminated")");
+    }
+}

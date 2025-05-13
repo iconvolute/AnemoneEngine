@@ -5,6 +5,7 @@
 #include <vector>
 #include <utility>
 #include <optional>
+#include <string>
 
 namespace Anemone::CommandLine
 {
@@ -23,4 +24,8 @@ namespace Anemone::CommandLine
         std::vector<std::string_view>& positional,
         std::vector<std::string_view>& switches,
         std::vector<std::pair<std::string_view, std::string_view>>& options);
+
+    RUNTIME_API void Build(
+        const char* const* argv,
+        std::string& result);
 }
