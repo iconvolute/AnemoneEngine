@@ -18,6 +18,16 @@ namespace Anemone::Interop::Linux
         AddDuration(self, Duration::FromMilliseconds(milliseconds));
     }
 
+    inline int32_t ValidateTimeoutDuration(Duration const& value)
+    {
+        int64_t const milliseconds = value.ToMilliseconds();
+        if ((milliseconds < 0) || (milliseconds > std::numeric_limits<int32_t>::max()))
+        {
+            AE_PANIC("Duration timeout out of range");
+        }
+        return static_cast<int32_t>(milliseconds);
+    }
+
     inline void SetCurrentThreadAffinity(size_t cpu)
     {
         cpu_set_t set;
