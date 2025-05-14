@@ -1,6 +1,8 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "Headers.hxx"
+        "MemoryBuffer.hxx"
+        "RingBuffer.hxx"
         "SafeHandle.hxx"
         "StringBuffer.hxx"
 )
