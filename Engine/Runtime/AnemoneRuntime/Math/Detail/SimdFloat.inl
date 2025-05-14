@@ -543,31 +543,32 @@ namespace Anemone::Math::Detail
         return vaddv_u32(shifted);
     }
 
-    anemone_forceinline uint32x4_t NeonCreateMask(bool x, bool y, bool z, bool w)
+    anemone_forceinline uint32x4_t anemone_vectorcall NeonCreateMask(bool x, bool y, bool z, bool w)
     {
         // = [x, y, z, w] as int32x4
-        int32x4_t const r{
+        int32_t const fr[4]{
             static_cast<int>(x),
             static_cast<int>(y),
             static_cast<int>(z),
             static_cast<int>(w),
         };
+        int32x4_t const r = vld1q_s32(fr);
 
         // = [r > 0]
         return vcgtzq_s32(r);
     }
 
-    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareSign(int32x4_t a, int32x4_t b)
+    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareSignInt32x4(int32x4_t a, int32x4_t b)
     {
         return vceqq_s32(vshrq_n_s32(a, 31), vshrq_n_s32(b, 31));
     }
 
-    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareSign(int32x2_t a, int32x2_t b)
+    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareSignInt32x2(int32x2_t a, int32x2_t b)
     {
         return vceq_s32(vshr_n_s32(a, 31), vshr_n_s32(b, 31));
     }
 
-    anemone_forceinline uint64x2_t anemone_vectorcall NeonCompareSign(int64x2_t a, int64x2_t b)
+    anemone_forceinline uint64x2_t anemone_vectorcall NeonCompareSignInt64x2(int64x2_t a, int64x2_t b)
     {
         return vceqq_s64(vshrq_n_s64(a, 63), vshrq_n_s64(b, 63));
     }
@@ -579,42 +580,42 @@ namespace Anemone::Math::Detail
         return vcleq_s32(ulpValue, ulpTolerance);
     }
 
-    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareNearZeroPrecise(int32x2_t v)
+    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareNearZeroPreciseInt32x2(int32x2_t v)
     {
         int32x2_t const ulpTolerance = vdup_n_s32(4);
         int32x2_t const ulpValue = vabs_s32(v);
         return vcle_s32(ulpValue, ulpTolerance);
     }
 
-    anemone_forceinline uint64x2_t anemone_vectorcall NeonCompareNearZeroPrecise(int64x2_t v)
+    anemone_forceinline uint64x2_t anemone_vectorcall NeonCompareNearZeroPreciseInt64x2(int64x2_t v)
     {
         int64x2_t const ulpTolerance = vdupq_n_s64(4);
         int64x2_t const ulpValue = vabsq_s64(v);
         return vcleq_s64(ulpValue, ulpTolerance);
     }
 
-    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareInBounds(float32x4_t v, float32x4_t lower, float32x4_t upper)
+    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareInBoundsFloat32x4(float32x4_t v, float32x4_t lower, float32x4_t upper)
     {
         uint32x4_t const maskLower = vcleq_f32(lower, v);
         uint32x4_t const maskUpper = vcleq_f32(v, upper);
         return vandq_u32(maskLower, maskUpper);
     }
 
-    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareInBounds(float32x2_t v, float32x2_t lower, float32x2_t upper)
+    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareInBoundsFloat32x2(float32x2_t v, float32x2_t lower, float32x2_t upper)
     {
         uint32x2_t const maskLower = vcle_f32(lower, v);
         uint32x2_t const maskUpper = vcle_f32(v, upper);
         return vand_u32(maskLower, maskUpper);
     }
 
-    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareInBounds(float32x4_t v, float32x4_t bounds)
+    anemone_forceinline uint32x4_t anemone_vectorcall NeonCompareInBoundsFloat32x4(float32x4_t v, float32x4_t bounds)
     {
         uint32x4_t const maskUpper = vcleq_f32(v, bounds);
         uint32x4_t const maskLower = vcleq_f32(vnegq_f32(bounds), v);
         return vandq_u32(maskLower, maskUpper);
     }
 
-    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareInBounds(float32x2_t v, float32x2_t bounds)
+    anemone_forceinline uint32x2_t anemone_vectorcall NeonCompareInBoundsFloat32x2(float32x2_t v, float32x2_t bounds)
     {
         uint32x2_t const maskUpper = vcle_f32(v, bounds);
         uint32x2_t const maskLower = vcle_f32(vneg_f32(bounds), v);
@@ -848,7 +849,8 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_setr_ps(x, y, z, w);
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{x, y, z, w};
+        float const r[4]{x, y, z, w};
+        return vld1q_f32(r);
 #endif
     }
 
@@ -1309,14 +1311,13 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_blend_ps(whenFalse, whenTrue, (X ? 0b0001 : 0) | (Y ? 0b0010 : 0) | (Z ? 0b0100 : 0) | (W ? 0b1000 : 0));
 #elif ANEMONE_FEATURE_NEON
-        static constexpr uint32x4_t mask{
+        static constexpr uint32_t mask[4]{
             X ? NeonMaskComponentUInt32 : 0,
             Y ? NeonMaskComponentUInt32 : 0,
             Z ? NeonMaskComponentUInt32 : 0,
             W ? NeonMaskComponentUInt32 : 0,
         };
-
-        return vbslq_f32(mask, whenTrue, whenFalse);
+        return vbslq_f32(vld1q_u32(mask), whenTrue, whenFalse);
 #endif
     }
 
@@ -1855,12 +1856,13 @@ namespace Anemone::Math::Detail
             Power<float>(xs[2], ys[2]),
             Power<float>(xs[3], ys[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Power<float>(vgetq_lane_f32(x, 0), vgetq_lane_f32(y, 0)),
             Power<float>(vgetq_lane_f32(x, 1), vgetq_lane_f32(y, 1)),
             Power<float>(vgetq_lane_f32(x, 2), vgetq_lane_f32(y, 2)),
             Power<float>(vgetq_lane_f32(x, 3), vgetq_lane_f32(y, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -1885,12 +1887,13 @@ namespace Anemone::Math::Detail
             Exp<float>(xs[2]),
             Exp<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Exp<float>(vgetq_lane_f32(v, 0)),
             Exp<float>(vgetq_lane_f32(v, 1)),
             Exp<float>(vgetq_lane_f32(v, 2)),
             Exp<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -1915,12 +1918,13 @@ namespace Anemone::Math::Detail
             Exp2<float>(xs[2]),
             Exp2<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Exp2<float>(vgetq_lane_f32(v, 0)),
             Exp2<float>(vgetq_lane_f32(v, 1)),
             Exp2<float>(vgetq_lane_f32(v, 2)),
             Exp2<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -1945,12 +1949,13 @@ namespace Anemone::Math::Detail
             Exp10<float>(xs[2]),
             Exp10<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Exp10<float>(vgetq_lane_f32(v, 0)),
             Exp10<float>(vgetq_lane_f32(v, 1)),
             Exp10<float>(vgetq_lane_f32(v, 2)),
             Exp10<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -1975,12 +1980,13 @@ namespace Anemone::Math::Detail
             Log<float>(xs[2]),
             Log<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Log<float>(vgetq_lane_f32(v, 0)),
             Log<float>(vgetq_lane_f32(v, 1)),
             Log<float>(vgetq_lane_f32(v, 2)),
             Log<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2007,12 +2013,13 @@ namespace Anemone::Math::Detail
             Log<float>(xs[2], ys[2]),
             Log<float>(xs[3], ys[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Log<float>(vgetq_lane_f32(x, 0), vgetq_lane_f32(base, 0)),
             Log<float>(vgetq_lane_f32(x, 1), vgetq_lane_f32(base, 1)),
             Log<float>(vgetq_lane_f32(x, 2), vgetq_lane_f32(base, 2)),
             Log<float>(vgetq_lane_f32(x, 3), vgetq_lane_f32(base, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2037,12 +2044,13 @@ namespace Anemone::Math::Detail
             Log2<float>(xs[2]),
             Log2<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Log2<float>(vgetq_lane_f32(v, 0)),
             Log2<float>(vgetq_lane_f32(v, 1)),
             Log2<float>(vgetq_lane_f32(v, 2)),
             Log2<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2067,12 +2075,13 @@ namespace Anemone::Math::Detail
             Log10<float>(xs[2]),
             Log10<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Log10<float>(vgetq_lane_f32(v, 0)),
             Log10<float>(vgetq_lane_f32(v, 1)),
             Log10<float>(vgetq_lane_f32(v, 2)),
             Log10<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2098,18 +2107,20 @@ namespace Anemone::Math::Detail
             Cos<float>(vs[2]),
             Cos<float>(vs[3]));
 #elif ANEMONE_FEATURE_NEON
-        sin = float32x4_t{
+        float const fsin[4]{
             Sin<float>(vgetq_lane_f32(v, 0)),
             Sin<float>(vgetq_lane_f32(v, 1)),
             Sin<float>(vgetq_lane_f32(v, 2)),
             Sin<float>(vgetq_lane_f32(v, 3)),
         };
-        cos = float32x4_t{
+        sin = vld1q_f32(fsin);
+        float const fcos[4]{
             Cos<float>(vgetq_lane_f32(v, 0)),
             Cos<float>(vgetq_lane_f32(v, 1)),
             Cos<float>(vgetq_lane_f32(v, 2)),
             Cos<float>(vgetq_lane_f32(v, 3)),
         };
+        cos = vld1q_f32(fcos);
 #endif
     }
 
@@ -2133,12 +2144,13 @@ namespace Anemone::Math::Detail
             Sin<float>(xs[2]),
             Sin<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Sin<float>(vgetq_lane_f32(v, 0)),
             Sin<float>(vgetq_lane_f32(v, 1)),
             Sin<float>(vgetq_lane_f32(v, 2)),
             Sin<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2162,12 +2174,13 @@ namespace Anemone::Math::Detail
             Cos<float>(xs[2]),
             Cos<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Cos<float>(vgetq_lane_f32(v, 0)),
             Cos<float>(vgetq_lane_f32(v, 1)),
             Cos<float>(vgetq_lane_f32(v, 2)),
             Cos<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2191,12 +2204,13 @@ namespace Anemone::Math::Detail
             Tan<float>(xs[2]),
             Tan<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Tan<float>(vgetq_lane_f32(v, 0)),
             Tan<float>(vgetq_lane_f32(v, 1)),
             Tan<float>(vgetq_lane_f32(v, 2)),
             Tan<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2220,12 +2234,13 @@ namespace Anemone::Math::Detail
             Asin<float>(xs[2]),
             Asin<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Asin<float>(vgetq_lane_f32(v, 0)),
             Asin<float>(vgetq_lane_f32(v, 1)),
             Asin<float>(vgetq_lane_f32(v, 2)),
             Asin<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2249,12 +2264,13 @@ namespace Anemone::Math::Detail
             Acos<float>(xs[2]),
             Acos<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Acos<float>(vgetq_lane_f32(v, 0)),
             Acos<float>(vgetq_lane_f32(v, 1)),
             Acos<float>(vgetq_lane_f32(v, 2)),
             Acos<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2278,12 +2294,13 @@ namespace Anemone::Math::Detail
             Atan<float>(xs[2]),
             Atan<float>(xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Atan<float>(vgetq_lane_f32(v, 0)),
             Atan<float>(vgetq_lane_f32(v, 1)),
             Atan<float>(vgetq_lane_f32(v, 2)),
             Atan<float>(vgetq_lane_f32(v, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2309,12 +2326,13 @@ namespace Anemone::Math::Detail
             Atan2<float>(ys[2], xs[2]),
             Atan2<float>(ys[3], xs[3]));
 #elif ANEMONE_FEATURE_NEON
-        return float32x4_t{
+        float const r[4]{
             Atan2<float>(vgetq_lane_f32(y, 0), vgetq_lane_f32(x, 0)),
             Atan2<float>(vgetq_lane_f32(y, 1), vgetq_lane_f32(x, 1)),
             Atan2<float>(vgetq_lane_f32(y, 2), vgetq_lane_f32(x, 2)),
             Atan2<float>(vgetq_lane_f32(y, 3), vgetq_lane_f32(x, 3)),
         };
+        return vld1q_f32(r);
 #endif
     }
 
@@ -2595,11 +2613,14 @@ namespace Anemone::Math::Detail
         float32x4_t const t2 = vmulq_f32(t, t);
 
         // = [1, -2, 1, 0]
-        float32x4_t const c2{1.0f, -2.0f, 1.0f, 0.0f};
+        static constexpr float fc2[4]{1.0f, -2.0f, 1.0f, 0.0f};
+        float32x4_t const c2 = vld1q_f32(fc2);
         // = [-2, 2, 0, 0]
-        float32x4_t const c1{-2.0f, 2.0f, 0.0f, 0.0f};
+        static constexpr float fc1[4]{-2.0f, 2.0f, 0.0f, 0.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
         // = [1, 0, 0, 0]
-        float32x4_t const c0{1.0f, 0.0f, 0.0f, 0.0f};
+        static constexpr float fc0[4]{1.0f, 0.0f, 0.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // Multiply by coefficients
         // = (c2 * t2 + (c1 * t + c0))
@@ -2669,9 +2690,11 @@ namespace Anemone::Math::Detail
         //       + ( 2 * t    ) * p2
 
         // = [2, -4, 2, 0]
-        float32x4_t const c1{2.0f, -4.0f, 2.0f, 0.0f};
+        static constexpr float const fc1[4]{2.0f, -4.0f, 2.0f, 0.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
         // = [-2, 2, 0, 0]
-        float32x4_t const c0{-2.0f, 2.0f, 0.0f, 0.0f};
+        static constexpr float const fc0[4]{-2.0f, 2.0f, 0.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // Multiply by coefficients
         float32x4_t const cc = vmlaq_f32(c0, c1, t);
@@ -2831,13 +2854,17 @@ namespace Anemone::Math::Detail
         float32x4_t const t3 = vmulq_f32(t2, t);
 
         // = [-1, 3, -3, 1]
-        float32x4_t const c3{-1.0f, 3.0f, -3.0f, 1.0f};
+        static constexpr float fc3[4]{-1.0f, 3.0f, -3.0f, 1.0f};
+        float32x4_t const c3 = vld1q_f32(fc3);
         // = [3, -6, 3, 0]
-        float32x4_t const c2{3.0f, -6.0f, 3.0f, 0.0f};
+        static constexpr float fc2[4]{3.0f, -6.0f, 3.0f, 0.0f};
+        float32x4_t const c2 = vld1q_f32(fc2);
         // = [-3, 3, 0, 0]
-        float32x4_t const c1{-3.0f, 3.0f, 0.0f, 0.0f};
+        static constexpr float fc1[4]{-3.0f, 3.0f, 0.0f, 0.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
         // = [1, 0, 0, 0]
-        float32x4_t const c0{1.0f, 0.0f, 0.0f, 0.0f};
+        static constexpr float fc0[4]{1.0f, 0.0f, 0.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // Multiply by coefficients
         // = (c3 * t3 + (c2 * t2)) + (c1 * t + c0)
@@ -2924,11 +2951,14 @@ namespace Anemone::Math::Detail
         float32x4_t const t2 = vmulq_f32(t, t);
 
         // = [-3, 9, -9, 3]
-        float32x4_t const c2{-3.0f, 9.0f, -9.0f, 3.0f};
+        static constexpr float fc2[4]{-3.0f, 9.0f, -9.0f, 3.0f};
+        float32x4_t const c2 = vld1q_f32(fc2);
         // = [6, -12, 6, 0]
-        float32x4_t const c1{6.0f, -12.0f, 6.0f, 0.0f};
+        static constexpr float fc1[4]{6.0f, -12.0f, 6.0f, 0.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
         // = [-3, 3, 0, 0]
-        float32x4_t const c0{-3.0f, 3.0f, 0.0f, 0.0f};
+        static constexpr float fc0[4]{-3.0f, 3.0f, 0.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // Multiply by coefficients
         // = (c2 * t2 + (c1 * t + c0))
@@ -3003,9 +3033,11 @@ namespace Anemone::Math::Detail
         //        + (  6 * t     ) * p3
 
         // = [-6, 18, -18, 6]
-        float32x4_t const c1{-6.0f, 18.0f, -18.0f, 6.0f};
+        static constexpr float fc1[4]{-6.0f, 18.0f, -18.0f, 6.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
         // = [6, -12, 6, 0]
-        float32x4_t const c0{6.0f, -12.0f, 6.0f, 0.0f};
+        static constexpr float fc0[4]{6.0f, -12.0f, 6.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // Multiply by coefficients
         // = (c1 * t + c0)
@@ -3092,8 +3124,10 @@ namespace Anemone::Math::Detail
         // = [t^3, t^3, t^3, t^3]
         float32x4_t const t3 = vmulq_f32(t2, t);
 
-        float32x4_t const c3{2.0f, 1.0f, -2.0f, 1.0f};
-        float32x4_t const c2{-3.0f, -2.0f, 3.0f, -1.0f};
+        static constexpr float fc3[4]{2.0f, 1.0f, -2.0f, 1.0f};
+        float32x4_t const c3 = vld1q_f32(fc3);
+        static constexpr float fc2[4]{-3.0f, -2.0f, 3.0f, -1.0f};
+        float32x4_t const c2 = vld1q_f32(fc2);
         float32x4_t const c0 = vsetq_lane_f32(1.0f, vdupq_n_f32(0.0f), 0);
 
         // Multiply by coefficients
@@ -3187,10 +3221,14 @@ namespace Anemone::Math::Detail
         //         ((  t^3 -  t^2        ) * p3)
         //      )
 
-        float32x4_t const c3{-1.0f, 3.0f, -3.0f, 1.0f};
-        float32x4_t const c2{2.0f, -5.0f, 4.0f, -1.0f};
-        float32x4_t const c1{-1.0f, 0.0f, 1.0f, 0.0f};
-        float32x4_t const c0{0.0f, 2.0f, 0.0f, 0.0f};
+        static constexpr float fc3[4]{-1.0f, 3.0f, -3.0f, 1.0f};
+        float32x4_t const c3 = vld1q_f32(fc3);
+        static constexpr float fc2[4]{2.0f, -5.0f, 4.0f, -1.0f};
+        float32x4_t const c2 = vld1q_f32(fc2);
+        static constexpr float fc1[4]{-1.0f, 0.0f, 1.0f, 0.0f};
+        float32x4_t const c1 = vld1q_f32(fc1);
+        static constexpr float fc0[4]{0.0f, 2.0f, 0.0f, 0.0f};
+        float32x4_t const c0 = vld1q_f32(fc0);
 
         // = [t^2, t^2, t^2, t^2]
         float32x4_t const t2 = vmulq_f32(t, t);
@@ -3705,7 +3743,8 @@ namespace Anemone::Math::Detail
         // = r1.xxxx
         return _mm_permute_ps(r3, _MM_SHUFFLE(0, 0, 0, 0));
 #elif ANEMONE_FEATURE_NEON
-        float32x2_t const negate_y{1.0f, -1.0f};
+        static constexpr float fnegate_y[2]{1.0f, -1.0f};
+        float32x2_t const negate_y = vld1_f32(fnegate_y);
 
         float32x2_t const a_xy = vget_low_f32(a);
         float32x2_t const b_xy = vget_low_f32(b);
@@ -5023,7 +5062,7 @@ namespace Anemone::Math::Detail
         int32x4_t const ulpB = vreinterpretq_s32_f32(b);
 
         // = (ulpA >> 31) == (ulpB >> 31)
-        uint32x4_t const maskSameSignUlp = NeonCompareSign(ulpA, ulpB);
+        uint32x4_t const maskSameSignUlp = NeonCompareSignInt32x4(ulpA, ulpB);
 
         // = ulp(a - b) < ulpTolerance
         uint32x4_t const maskWithinUlp = NeonCompareNearZeroPrecise(vsubq_s32(ulpA, ulpB));
@@ -5085,12 +5124,13 @@ namespace Anemone::Math::Detail
                 z ? AvxMaskComponentInt32 : 0,
                 w ? AvxMaskComponentInt32 : 0));
 #elif ANEMONE_FEATURE_NEON
-        return uint32x4_t{
+        uint32_t const r[4]{
             x ? NeonMaskComponentUInt32 : 0,
             y ? NeonMaskComponentUInt32 : 0,
             z ? NeonMaskComponentUInt32 : 0,
             w ? NeonMaskComponentUInt32 : 0,
         };
+        return vld1q_u32(r);
 #endif
     }
 
@@ -5111,12 +5151,13 @@ namespace Anemone::Math::Detail
                 z ? AvxMaskComponentInt32 : 0,
                 0));
 #elif ANEMONE_FEATURE_NEON
-        return uint32x4_t{
+        uint32_t const r[4]{
             x ? NeonMaskComponentUInt32 : 0,
             y ? NeonMaskComponentUInt32 : 0,
             z ? NeonMaskComponentUInt32 : 0,
             0,
         };
+        return vld1q_u32(r);
 #endif
     }
 
@@ -5137,12 +5178,13 @@ namespace Anemone::Math::Detail
                 0,
                 0));
 #elif ANEMONE_FEATURE_NEON
-        return uint32x4_t{
+        uint32_t const r[4]{
             x ? NeonMaskComponentUInt32 : 0,
             y ? NeonMaskComponentUInt32 : 0,
             0,
             0,
         };
+        return vld1q_u32(r);
 #endif
     }
 
@@ -5294,14 +5336,13 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_blend_ps(whenFalse, whenTrue, (X ? 0b0001 : 0) | (Y ? 0b0010 : 0) | (Z ? 0b0100 : 0) | (W ? 0b1000 : 0));
 #elif ANEMONE_FEATURE_NEON
-        static constexpr uint32x4_t mask{
+        static constexpr uint32_t mask[4]{
             X ? NeonMaskComponentUInt32 : 0,
             Y ? NeonMaskComponentUInt32 : 0,
             Z ? NeonMaskComponentUInt32 : 0,
             W ? NeonMaskComponentUInt32 : 0,
         };
-
-        return vbslq_u32(mask, whenTrue, whenFalse);
+        return vbslq_u32(vld1q_u32(mask), whenTrue, whenFalse);
 #endif
     }
 
@@ -5575,7 +5616,8 @@ namespace Anemone::Math::Detail
         float32x4_t const sp_cp_cp_cp = vcopyq_laneq_f32(cp_cp_cp_cp, 0, sp_sp_sp_sp, 0);
         float32x4_t const r0 = vmulq_f32(cr_cr_sr_cr, sp_cp_cp_cp);
 
-        float32x4_t const negate_yz{1.0f, -1.0f, -1.0f, 1.0f};
+        static constexpr float fnegate_yz[4]{1.0f, -1.0f, -1.0f, 1.0f};
+        float32x4_t const negate_yz = vld1q_f32(fnegate_yz);
         float32x4_t const cp_sp_sp_sp = vcopyq_laneq_f32(sp_sp_sp_sp, 0, cp_cp_cp_cp, 0);
         float32x4_t const r1 = vmulq_f32(cp_sp_sp_sp, negate_yz);
 
@@ -5607,7 +5649,8 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return QuaternionF_CreateFromEulerAngles(_mm_setr_ps(pitch, yaw, roll, 0.0f));
 #elif ANEMONE_FEATURE_NEON
-        return QuaternionF_CreateFromEulerAngles(float32x4_t{pitch, yaw, roll, 0.0f});
+        float const angles[4]{pitch, yaw, roll, 0.0f};
+        return QuaternionF_CreateFromEulerAngles(vld1q_f32(angles));
 #endif
     }
 
@@ -5749,9 +5792,12 @@ namespace Anemone::Math::Detail
         float32x4_t const a_xyzw = a;
         float32x4_t const b_xyzw = b;
 
-        float32x4_t const negate_yw{1.0f, -1.0f, 1.0f, -1.0f};
-        float32x4_t const negate_zw{1.0f, 1.0f, -1.0f, -1.0f};
-        float32x4_t const negate_xw{-1.0f, 1.0f, 1.0f, -1.0f};
+        static constexpr float fnegate_yw[4]{1.0f, -1.0f, 1.0f, -1.0f};
+        float32x4_t const negate_yw = vld1q_f32(fnegate_yw);
+        static constexpr float fnegate_zw[4]{1.0f, 1.0f, -1.0f, -1.0f};
+        float32x4_t const negate_zw = vld1q_f32(fnegate_zw);
+        static constexpr float fnegate_xw[4]{-1.0f, 1.0f, 1.0f, -1.0f};
+        float32x4_t const negate_xw = vld1q_f32(fnegate_xw);
 
         float32x2_t const a_xy = vget_low_f32(a_xyzw);
         float32x2_t const a_zw = vget_high_f32(a_xyzw);
@@ -5802,8 +5848,8 @@ namespace Anemone::Math::Detail
         __m128 const negate_xyz = _mm_setr_ps(-1.0f, -1.0f, -1.0f, 1.0f);
         return _mm_mul_ps(q, negate_xyz);
 #elif ANEMONE_FEATURE_NEON
-        float32x4_t const negate_xyz{-1.0f, -1.0f, -1.0f, 1.0f};
-        return vmulq_f32(q, negate_xyz);
+        static constexpr float fnegate_xyz[4]{-1.0f, -1.0f, -1.0f, 1.0f};
+        return vmulq_f32(q, vld1q_f32(fnegate_xyz));
 #endif
     }
 
@@ -6277,13 +6323,17 @@ namespace Anemone::Math::Detail
         float32x4_t const v_zzyz = vcombine_f32(v_zz, v_yz);
 
         // = [1, -1, -1, -1]
-        float32x4_t const negate_yzw{1.0f, -1.0f, -1.0f, -1.0f};
+        static constexpr float fnegate_yzw[4]{1.0f, -1.0f, -1.0f, -1.0f};
+        float32x4_t const negate_yzw = vld1q_f32(fnegate_yzw);
         // = [1, 1, -1, 1]
-        float32x4_t const negate_z{1.0f, 1.0f, -1.0f, 1.0f};
+        static constexpr float fnegate_z[4]{1.0f, 1.0f, -1.0f, 1.0f};
+        float32x4_t const negate_z = vld1q_f32(fnegate_z);
         // = [1, -1, 1, 1]
-        float32x4_t const negate_y{1.0f, -1.0f, 1.0f, 1.0f};
+        static constexpr float fnegate_y[4]{1.0f, -1.0f, 1.0f, 1.0f};
+        float32x4_t const negate_y = vld1q_f32(fnegate_y);
         // = [1, -1, -1, 1]
-        float32x4_t const negate_yz{1.0f, -1.0f, -1.0f, 1.0f};
+        static constexpr float fnegate_yz[4]{1.0f, -1.0f, -1.0f, 1.0f};
+        float32x4_t const negate_yz = vld1q_f32(fnegate_yz);
 
         // qx = ((rw * vx) +  1.0f * (vy * rx)) +  1.0f * (vz * ry);
         // qy = ((rw * vy) + -1.0f * (vx * rx)) +  1.0f * (vz * rz);
@@ -6421,9 +6471,12 @@ namespace Anemone::Math::Detail
         float32x4_t const b_yxxy = vcombine_f32(b_yx, b_xy);
         float32x4_t const b_zzyz = vcombine_f32(b_zz, b_yz);
 
-        float32x4_t const negate_w{1.0f, 1.0f, 1.0f, -1.0f};
-        float32x4_t const negate_yw{1.0f, -1.0f, 1.0f, -1.0f};
-        float32x4_t const negate_xzw{-1.0f, 1.0f, -1.0f, -1.0f};
+        static constexpr float fnegate_w[4]{1.0f, 1.0f, 1.0f, -1.0f};
+        float32x4_t const negate_w = vld1q_f32(fnegate_w);
+        static constexpr float fnegate_yw[4]{1.0f, -1.0f, 1.0f, -1.0f};
+        float32x4_t const negate_yw = vld1q_f32(fnegate_yw);
+        static constexpr float fnegate_xzw[4]{-1.0f, 1.0f, -1.0f, -1.0f};
+        float32x4_t const negate_xzw = vld1q_f32(fnegate_xzw);
 
         // = ((t1 * negate_w) + t0) + ((t3 * negate_xzw) + (t2 * negate_yw))
         // = a.xyzw * b.wwww
@@ -6455,8 +6508,8 @@ namespace Anemone::Math::Detail
         __m128 const negate_xyz = _mm_setr_ps(-1.0f, -1.0f, -1.0f, 1.0f);
         return _mm_mul_ps(rotor, negate_xyz);
 #elif ANEMONE_FEATURE_NEON
-        float32x4_t const negate_xyz{-1.0f, -1.0f, -1.0f, 1.0f};
-        return vmulq_f32(rotor, negate_xyz);
+        static constexpr float fnegate_xyz[4]{-1.0f, -1.0f, -1.0f, 1.0f};
+        return vmulq_f32(rotor, vld1q_f32(fnegate_xyz));
 #endif
     }
 
@@ -6634,11 +6687,14 @@ namespace Anemone::Math::Detail
         float32x4_t const r_2yz_2xz_2xy_2xy = vaddq_f32(r_yz_xz_xy_xy, r_yz_xz_xy_xy);
 
         // = [-1, -1, 1, 1]
-        float32x4_t const negate_xy{-1.0f, -1.0f, 1.0f, 1.0f};
+        static constexpr float fnegate_xy[4]{-1.0f, -1.0f, 1.0f, 1.0f};
+        float32x4_t const negate_xy = vld1q_f32(fnegate_xy);
         // = [-1, 1, -1, -1]
-        float32x4_t const negate_xz{-1.0f, 1.0f, -1.0f, -1.0f};
+        static constexpr float fnegate_xz[4]{-1.0f, 1.0f, -1.0f, -1.0f};
+        float32x4_t const negate_xz = vld1q_f32(fnegate_xz);
         // = [1, -1, -1, 1]
-        float32x4_t const negate_yz{1.0f, -1.0f, -1.0f, 1.0f};
+        static constexpr float fnegate_yz[4]{1.0f, -1.0f, -1.0f, 1.0f};
+        float32x4_t const negate_yz = vld1q_f32(fnegate_yz);
 
         // m11 = (rww + -1.0f * rxx) + (-1.0f * ryy + ( 1.0f * rzz));
         // m22 = (rww + -1.0f * rxx) + ( 1.0f * ryy + (-1.0f * rzz));
@@ -7856,11 +7912,12 @@ namespace Anemone::Math::Detail
             _mm_setr_ps(x, y, z, 1.0f),
         };
 #elif ANEMONE_FEATURE_NEON
+        float const last[4] { x,y,z,1.0f};
         return SimdMatrix4x4F{
             vld1q_f32(F32x4_PositiveUnitX.As<float>()),
             vld1q_f32(F32x4_PositiveUnitY.As<float>()),
             vld1q_f32(F32x4_PositiveUnitZ.As<float>()),
-            float32x4_t{x, y, z, 1.0f},
+            vld1q_f32(last),
         };
 #endif
     }
@@ -8447,7 +8504,8 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return Matrix4x4F_CreateFromPitchYawRoll(_mm_setr_ps(pitch, yaw, roll, 0.0f));
 #elif ANEMONE_FEATURE_NEON
-        return Matrix4x4F_CreateFromPitchYawRoll(float32x4_t{pitch, yaw, roll, 0.0f});
+        float const angles[4] { pitch,yaw,roll,0.0f};
+        return Matrix4x4F_CreateFromPitchYawRoll(vld1q_f32(angles));
 #endif
     }
 
@@ -8602,7 +8660,8 @@ namespace Anemone::Math::Detail
         //      -cr
         //      sr
         // ]
-        float32x4_t const sign{1.0f, -1.0f, -1.0f, 1.0f};
+        static constexpr float fsign[4]{1.0f, -1.0f, -1.0f, 1.0f};
+        float32x4_t const sign = vld1q_f32(fsign);
         float32x4_t const t0 = vmulq_f32(cr_sr_cr_sr, sign);
 
         // = [
@@ -10089,7 +10148,8 @@ namespace Anemone::Math::Detail
         // = [m11, m10, m10, m10];
         float32x4_t const v2 = vcombine_f32(m10_m11, m10_m10);
 
-        float32x4_t const negate_yw{-1.0f, 1.0f, -1.0f, 1.0f};
+        static constexpr float fnegate_yw[4]{-1.0f, 1.0f, -1.0f, 1.0f};
+        float32x4_t const negate_yw = vld1q_f32(fnegate_yw);
 
         float32x2_t const m00_m01 = vget_low_f32(matrix.val[0]);
         float32x2_t const m02_m03 = vget_high_f32(matrix.val[0]);
