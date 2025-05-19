@@ -120,23 +120,12 @@ namespace Anemone::Diagnostics
                 }
             }
         };
-
-        UninitializedObject<DebugEngineImpl> GDebugEngine{};
-    }
-
-    void DebugEngine::Initialize()
-    {
-        GDebugEngine.Create();
-    }
-
-    void DebugEngine::Finalize()
-    {
-        GDebugEngine.Destroy();
     }
 
     DebugEngine& DebugEngine::Get()
     {
-        return *GDebugEngine;
+        static DebugEngineImpl instance{};
+        return instance;
     }
 
 }

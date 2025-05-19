@@ -16,6 +16,8 @@
 #include <iterator>
 #include <format>
 
+#include "AnemoneRuntime/Base/Instant.hxx"
+
 
 namespace Anemone::Diagnostics
 {
@@ -175,6 +177,33 @@ namespace Anemone::Diagnostics
             return EXCEPTION_EXECUTE_HANDLER;
         }
 #endif
+
+        _purecall_handler GPureCallHandler{};
+
+        void __cdecl OnPureCallHandler(void)
+        {
+            AE_PANIC("pure-call");
+        }
+
+        _invalid_parameter_handler GInvalidParameterHandler{};
+
+        void __cdecl OnInvalidParameterHandler(
+            wchar_t const*,
+            wchar_t const*,
+            wchar_t const*,
+            unsigned int,
+            uintptr_t)
+        {
+            AE_PANIC("Invalid parameter");
+        }
+
+
+        std::terminate_handler GTerminateHandler{};
+
+        void __CRTDECL OnTerminateHandler(void)
+        {
+            AE_PANIC("Terminate handler");
+        }
     }
 }
 
@@ -184,6 +213,12 @@ namespace Anemone::Diagnostics
     {
         // Initialize exception handlers
         GPreviousExceptionFilter = SetUnhandledExceptionFilter(OnUnhandledExceptionFilter);
+
+#if defined(_MSC_VER)
+        GPureCallHandler = _set_purecall_handler(OnPureCallHandler);
+        GInvalidParameterHandler = _set_invalid_parameter_handler(OnInvalidParameterHandler);
+        GTerminateHandler = std::set_terminate(OnTerminateHandler);
+#endif
 
 #if ENABLE_HEAP_CORRUPTION_CRASHES
         AddVectoredExceptionHandler(0, OnUnhandledExceptionVEH);
@@ -200,18 +235,10 @@ namespace Anemone::Diagnostics
 
         GEtwTraceListener.Create();
         GetTraceDispatcher().Register(*GEtwTraceListener);
-
-        //
-        // Initialize the debug engine.
-        //
-
-        DebugEngine::Initialize();
     }
 
     extern void PlatformFinalizeDebugger()
     {
-        DebugEngine::Finalize();
-
         if (GEtwTraceListener)
         {
             GetTraceDispatcher().Unregister(*GEtwTraceListener);
@@ -227,6 +254,12 @@ namespace Anemone::Diagnostics
         // Restore exception handlers.
 #if ENABLE_HEAP_CORRUPTION_CRASHES
         RemoveVectoredExceptionHandler(OnUnhandledExceptionVEH);
+#endif
+
+#if defined(_MSC_VER)
+        _set_purecall_handler(GPureCallHandler);
+        _set_invalid_parameter_handler(GInvalidParameterHandler);
+        std::set_terminate(GTerminateHandler);
 #endif
 
         SetUnhandledExceptionFilter(GPreviousExceptionFilter);

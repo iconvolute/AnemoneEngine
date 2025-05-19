@@ -8,8 +8,6 @@ namespace Anemone::Diagnostics
     class DebugEngine
     {
     public:
-        static void Initialize();
-        static void Finalize();
         static DebugEngine& Get();
 
     public:
