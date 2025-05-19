@@ -87,6 +87,16 @@ namespace Anemone
             return {.Seconds = value, .Nanoseconds = 0};
         }
 
+        [[nodiscard]] static constexpr Duration FromFrequency(int64_t frequency)
+        {
+            if (frequency > 0)
+            {
+                return {.Seconds = 0, .Nanoseconds = 1'000'000'000 / frequency};
+            }
+
+            return {};
+        }
+
         constexpr void Normalize()
         {
             this->Seconds += (this->Nanoseconds / Internal::NanosecondsInSecond);
