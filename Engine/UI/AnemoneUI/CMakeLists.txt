@@ -1,18 +1,7 @@
 target_sources(AnemoneUI
     PRIVATE
-        "ColorF.cxx"
-        "ColorF.hxx"
-        "Enums.hxx"
-        "ThicknessF.cxx"
-        "ThicknessF.hxx"
-        "MatrixF.cxx"
-        "MatrixF.hxx"
-        "PointF.cxx"
-        "PointF.hxx"
-        "SizeF.cxx"
-        "SizeF.hxx"
-        "TransformF.cxx"
-        "TransformF.hxx"
-        "VectorF.cxx"
-        "VectorF.hxx"
+        "UIElement.cxx"
+        "UIElement.hxx"
+        "Visual.cxx"
+        "Visual.hxx"
 )

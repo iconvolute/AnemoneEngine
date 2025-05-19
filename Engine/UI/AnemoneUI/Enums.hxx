@@ -171,4 +171,95 @@ namespace Anemone::UI
         Hidden,
         Scroll,
     };
+
+        enum class TextAlignment
+    {
+        Left,
+        Center,
+        Right,
+        Justify,
+    };
+
+    enum class TextDecoration
+    {
+        Underline,
+        Overline,
+        Strikethrough,
+        Baseline,
+    };
+
+    enum class TextTrimming
+    {
+        WrapWithOverflow,
+        NoWrap,
+        Wrap,
+    };
+
+    enum class Visibility
+    {
+        Visible,
+        Hidden,
+        Collapsed,
+    };
+
+    enum class FlowDirection
+    {
+        LeftToRight,
+        RightToLeft,
+    };
+
+    enum class ResizeMode
+    {
+        CanMinimize,
+        CanResize,
+        CanResizeWithGrip,
+        NoResize,
+    };
+
+    enum class HorizontalAlignment
+    {
+        Left,
+        Center,
+        Right,
+        Stretch,
+    };
+
+    enum class VerticalAlignment
+    {
+        Top,
+        Middle,
+        Bottom,
+        Stretch,
+    };
+
+    enum class WrapDirection
+    {
+        None,
+        Left,
+        Right,
+        Both,
+    };
+
+    enum class WindowStartupLocation
+    {
+        CenterOwner,
+        CenterScreen,
+        Manual,
+    };
+
+    enum class WindowState
+    {
+        Normal,
+        Minimized,
+        Maximized,
+    };
+
+    enum class WindowStyle
+    {
+        None,
+        SingleBorder,
+        Normal,
+        ToolWindow,
+    };
+
 }

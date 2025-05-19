@@ -1,1 +1,0 @@
-#include <AnemoneUI/SizeF.hxx>
