@@ -20,6 +20,7 @@ target_sources(AnemoneRuntime
         "Spinlock.hxx"
         "SpinWait.hxx"
         "SpscQueue.hxx"
+        "SynchronizedSpscQueue.hxx"
         "Thread.hxx"
         "UserAutoResetEvent.hxx"
         "UserCriticalSection.hxx"
