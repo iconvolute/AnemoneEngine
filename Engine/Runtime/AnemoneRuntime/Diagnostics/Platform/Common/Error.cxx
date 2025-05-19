@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Diagnostics/Platform/Common/CommonError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Common/Error.hxx"
 #include "AnemoneRuntime/Diagnostics/Status.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"

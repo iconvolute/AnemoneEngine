@@ -84,7 +84,7 @@ namespace Anemone
 
                 if (nextEnqueueIndex == this->m_DequeueCached)
                 {
-                    // Double checked. Queue is full.
+                    // Double check. Queue is full.
                     return false;
                 }
             }

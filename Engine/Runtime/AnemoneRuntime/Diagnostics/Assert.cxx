@@ -25,7 +25,7 @@ namespace Anemone::Diagnostics
         dispatcher.TraceFatal("expression: {}", expression);
         dispatcher.TraceFatal("message: {}", std::string_view{message.data(), message.size()});
 
-        StackTrace::Walk([&](void* address, std::string_view name)
+        GetCurrentStackTrace([&](void* address, std::string_view name)
         {
             dispatcher.TraceFatal("{} {}", address, name);
         });
@@ -64,7 +64,7 @@ namespace Anemone::Diagnostics
         dispatcher.TraceFatal("location: {}:{}", location.file_name(), location.line());
         dispatcher.TraceFatal("message: {}", std::string_view{message.data(), message.size()});
 
-        StackTrace::Walk([&](void* address, std::string_view name)
+        GetCurrentStackTrace([&](void* address, std::string_view name)
         {
             dispatcher.TraceFatal("{} {}", address, name);
         });

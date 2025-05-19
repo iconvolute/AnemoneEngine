@@ -10,7 +10,7 @@
 #include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsError.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Error.hxx"
 
 #include <locale>
 #include <algorithm>

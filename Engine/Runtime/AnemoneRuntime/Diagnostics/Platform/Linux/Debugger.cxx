@@ -32,6 +32,21 @@ namespace Anemone::Diagnostics
 
     bool IsDebuggerAttached()
     {
+        if (FILE* f = fopen("/proc/self/status", "r"))
+        {
+            int tracePid = 0;
+
+            std::array<char, 256> line{};
+
+            while (fgets(line.data(), line.size(), f))
+            {
+                if (sscanf(line.data(), "TracerPid:\t%d") == 1)
+                {
+                    return tracePid != 0;
+                }
+            }
+        }
+
         return false;
     }
 

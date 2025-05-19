@@ -2,8 +2,10 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "LinuxDebugger.cxx"
-        "LinuxDebugger.hxx"
+        "Debugger.cxx"
+        "Debugger.hxx"
+
+        "StackTrace.cxx"
 )
 
 endif()

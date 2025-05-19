@@ -1,5 +1,5 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "CommonError.cxx"
-        "CommonError.hxx"
+        "Error.cxx"
+        "Error.hxx"
 )

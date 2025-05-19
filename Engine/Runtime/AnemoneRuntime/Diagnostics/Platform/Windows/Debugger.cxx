@@ -1,5 +1,6 @@
 #include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/DebugEngine.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Interop/Windows/Process.hxx"
@@ -15,24 +16,28 @@
 #include <iterator>
 #include <format>
 
+
 namespace Anemone::Diagnostics
 {
-    struct CrashDetails
+    namespace
     {
-        CHAR BuildId[64];
-        DWORD ProcessId;
-        DWORD ThreadId;
-        EXCEPTION_RECORD ExceptionRecord;
-        CONTEXT Context;
-        PVOID XmmRegisters;
-        PVOID YmmRegisters;
-        PVOID ZmmRegisters;
-        PVOID ZmmhRegisters;
-        DWORD XmmRegistersLength;
-        DWORD YmmRegistersLength;
-        DWORD ZmmRegistersLength;
-        DWORD ZmmhRegistersLength;
-    };
+        struct CrashDetails
+        {
+            CHAR BuildId[64];
+            DWORD ProcessId;
+            DWORD ThreadId;
+            EXCEPTION_RECORD ExceptionRecord;
+            CONTEXT Context;
+            PVOID XmmRegisters;
+            PVOID YmmRegisters;
+            PVOID ZmmRegisters;
+            PVOID ZmmhRegisters;
+            DWORD XmmRegistersLength;
+            DWORD YmmRegistersLength;
+            DWORD ZmmRegistersLength;
+            DWORD ZmmhRegistersLength;
+        };
+    }
 }
 
 
@@ -195,10 +200,18 @@ namespace Anemone::Diagnostics
 
         GEtwTraceListener.Create();
         GetTraceDispatcher().Register(*GEtwTraceListener);
+
+        //
+        // Initialize the debug engine.
+        //
+
+        DebugEngine::Initialize();
     }
 
     extern void PlatformFinalizeDebugger()
     {
+        DebugEngine::Finalize();
+
         if (GEtwTraceListener)
         {
             GetTraceDispatcher().Unregister(*GEtwTraceListener);
