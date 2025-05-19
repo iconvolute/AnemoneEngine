@@ -166,6 +166,16 @@ namespace Anemone::Math
         return Inflate(self, border.Left, border.Top, border.Right, border.Bottom);
     }
 
+    constexpr RectF Inflate(RectF self, SizeF size)
+    {
+        return {
+            self.X - (size.Width / 2.0f),
+            self.Y - (size.Height / 2.0f),
+            self.Width + size.Width,
+            self.Height + size.Height,
+        };
+    }
+
     constexpr RectF Deflate(RectF self, float value)
     {
         return {self.X + value, self.Y + value, self.Width - (2.0f * value), self.Height - (2.0f * value)};
@@ -184,6 +194,16 @@ namespace Anemone::Math
     constexpr RectF Deflate(RectF self, ThicknessF border)
     {
         return Deflate(self, border.Left, border.Top, border.Right, border.Bottom);
+    }
+
+    constexpr RectF Deflate(RectF self, SizeF size)
+    {
+        return {
+            self.X + (size.Width / 2.0f),
+            self.Y + (size.Height / 2.0f),
+            self.Width - size.Width,
+            self.Height - size.Height,
+        };
     }
 
     constexpr RectF Translate(RectF self, float x, float y)
@@ -259,6 +279,19 @@ namespace Anemone::Math
 
         float const maxY = (bottomSelf > bottomOther) ? bottomSelf : bottomOther;
 
+        return RectF{minX, minY, maxX - minX, maxY - minY};
+    }
+
+    constexpr RectF Union(RectF self, PointF other)
+    {
+        float const minX = (self.X < other.X) ? self.X : other.X;
+        float const minY = (self.Y < other.Y) ? self.Y : other.Y;
+
+        float const rightSelf = self.X + self.Width;
+        float const bottomSelf = self.Y + self.Height;
+
+        float const maxX = (rightSelf > other.X) ? rightSelf : other.X;
+        float const maxY = (bottomSelf > other.Y) ? bottomSelf : other.Y;
         return RectF{minX, minY, maxX - minX, maxY - minY};
     }
 

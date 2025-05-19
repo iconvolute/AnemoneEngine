@@ -1,9 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Platform/Detect.hxx"
-
-#include <compare>
-#include <span>
-#include <optional>
+#include "AnemoneRuntime/Interop/Headers.hxx"
 
 namespace Anemone::Math
 {

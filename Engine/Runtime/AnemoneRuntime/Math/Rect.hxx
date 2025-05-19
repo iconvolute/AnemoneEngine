@@ -50,11 +50,13 @@ namespace Anemone::Math
     [[nodiscard]] constexpr RectF Inflate(RectF self, float horizontal, float vertical);
     [[nodiscard]] constexpr RectF Inflate(RectF self, float left, float top, float right, float bottom);
     [[nodiscard]] constexpr RectF Inflate(RectF self, ThicknessF border);
+    [[nodiscard]] constexpr RectF Inflate(RectF self, SizeF size);
 
     [[nodiscard]] constexpr RectF Deflate(RectF self, float value);
     [[nodiscard]] constexpr RectF Deflate(RectF self, float horizontal, float vertical);
     [[nodiscard]] constexpr RectF Deflate(RectF self, float left, float top, float right, float bottom);
     [[nodiscard]] constexpr RectF Deflate(RectF self, ThicknessF border);
+    [[nodiscard]] constexpr RectF Deflate(RectF self, SizeF size);
 
     [[nodiscard]] constexpr RectF Translate(RectF self, float x, float y);
 
@@ -65,6 +67,7 @@ namespace Anemone::Math
     [[nodiscard]] constexpr RectF Intersect(RectF self, RectF other);
     [[nodiscard]] constexpr bool IntersectsWith(RectF self, RectF other);
     [[nodiscard]] constexpr RectF Union(RectF self, RectF other);
+    [[nodiscard]] constexpr RectF Union(RectF self, PointF other);
     [[nodiscard]] constexpr RectF Transpose(RectF self);
     [[nodiscard]] constexpr RectF CenterTranspose(RectF self);
     [[nodiscard]] constexpr PointF Clip(RectF self, PointF point);
