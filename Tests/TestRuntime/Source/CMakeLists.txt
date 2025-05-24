@@ -2,6 +2,7 @@ target_sources(TestRuntime
     PRIVATE
         "Checked.cxx"
         "CommandLine.cxx"
+        "Duration.cxx"
         "Flags.cxx"
         "Float16.cxx"
         "FNV.cxx"

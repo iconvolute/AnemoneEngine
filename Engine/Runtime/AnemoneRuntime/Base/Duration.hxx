@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
+
 #include <cstdint>
 #include <compare>
 #include <optional>
@@ -166,6 +167,28 @@ namespace Anemone
     {
         self = self - other;
         return self;
+    }
+
+    [[nodiscard]] constexpr Duration Absolute(Duration const& self)
+    {
+        if (self.IsNegative())
+        {
+            return -self;
+        }
+
+        return self;
+    }
+
+    [[nodiscard]] constexpr bool IsNearEqual(Duration const self, Duration const& other, Duration const& epsilon)
+    {
+        //
+        // Note: max difference represented in nanosecond precision is equal to 292 YEARS.
+        //
+
+        int64_t const difference = (self - other).ToNanoseconds();
+        int64_t const tolerance = epsilon.ToNanoseconds();
+
+        return (-tolerance <= difference) and (difference <= tolerance);
     }
 }
 

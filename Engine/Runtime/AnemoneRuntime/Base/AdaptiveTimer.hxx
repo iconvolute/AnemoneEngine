@@ -61,6 +61,14 @@ namespace Anemone
 
             if (this->_fixedStep)
             {
+                static constexpr Duration maxTolerance{0, 250'000};
+
+                if (IsNearEqual(timeDelta, this->_targetDeltaTime, maxTolerance))
+                {
+                    timeDelta = this->_targetDeltaTime;
+                }
+
+
                 // Update the time.
                 this->_leftoverTime += timeDelta;
 
