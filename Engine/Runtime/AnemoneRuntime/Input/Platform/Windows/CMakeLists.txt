@@ -4,7 +4,7 @@ target_sources(AnemoneRuntime
     PRIVATE
         "GameInput.cxx"
         "GameInput.hxx"
-        "Initialize.cxx"
+        "Runtime.cxx"
         "WindowsInput.cxx"
         "WindowsInput.hxx"
         "XInput.cxx"

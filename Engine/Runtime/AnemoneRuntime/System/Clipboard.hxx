@@ -4,9 +4,13 @@
 #include <string_view>
 #include <string>
 
-namespace Anemone::Clipboard
+namespace Anemone
 {
-    RUNTIME_API void Clear();
-    RUNTIME_API bool GetText(std::string& result);
-    RUNTIME_API bool SetText(std::string_view value);
+    class Clipboard final
+    {
+    public:
+        RUNTIME_API static void Clear();
+        RUNTIME_API static bool GetText(std::string& result);
+        RUNTIME_API static bool SetText(std::string_view value);
+    };
 }

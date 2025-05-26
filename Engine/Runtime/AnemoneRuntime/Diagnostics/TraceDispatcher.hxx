@@ -3,7 +3,7 @@
 
 namespace Anemone::Diagnostics
 {
-    class RUNTIME_API TraceDispatcher final : public TraceListener
+    class RUNTIME_API TraceDispatcher : public TraceListener
     {
     private:
         ReaderWriterLock _lock{};

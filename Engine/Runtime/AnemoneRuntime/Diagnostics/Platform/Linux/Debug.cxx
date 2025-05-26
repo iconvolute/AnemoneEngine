@@ -1,27 +1,15 @@
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+
+#include <format>
 
 namespace Anemone::Diagnostics
 {
-    extern void PlatformInitializeDebugger()
-    {
-    }
-
-    extern void PlatformFinalizeDebugger()
-    {
-    }
-}
-
-namespace Anemone::Diagnostics
-{
-    void Break()
+    void Debug::Break()
     {
         anemone_debugbreak();
     }
 
-    void Crash()
+    void Debug::Crash()
     {
 #if !ANEMONE_BUILD_SHIPPING
         anemone_debugbreak();
@@ -30,7 +18,7 @@ namespace Anemone::Diagnostics
         abort();
     }
 
-    bool IsDebuggerAttached()
+    bool Debug::IsDebuggerAttached()
     {
         if (FILE* f = fopen("/proc/self/status", "r"))
         {
@@ -50,19 +38,30 @@ namespace Anemone::Diagnostics
         return false;
     }
 
-    void WaitForDebugger()
+    void Debug::WaitForDebugger()
     {
     }
 
-    bool AttachDebugger()
+    bool Debug::AttachDebugger()
     {
         return false;
     }
 
-    void ReportApplicationStop(std::string_view reason)
+    void Debug::ReportApplicationStop(std::string_view reason)
     {
         (void)fwrite(reason.data(), 1, reason.size(), stderr);
         (void)fflush(stderr);
         abort();
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void PlatformInitializeDebug()
+    {
+    }
+
+    extern void PlatformFinalizeDebug()
+    {
     }
 }

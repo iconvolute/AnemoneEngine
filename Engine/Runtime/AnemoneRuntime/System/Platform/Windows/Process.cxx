@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/System/Process.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 
 #include <array>

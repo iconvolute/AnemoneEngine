@@ -11,7 +11,7 @@
 #error Not implemented
 #endif
 
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <cstdint>
 #include <atomic>

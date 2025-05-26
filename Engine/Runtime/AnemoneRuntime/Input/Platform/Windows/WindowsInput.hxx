@@ -13,8 +13,6 @@ namespace Anemone
     class WindowsInput final
     {
     public:
-        static void Initialize();
-        static void Finalize();
         static WindowsInput& Get();
 
     public:

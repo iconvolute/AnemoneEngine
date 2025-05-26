@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/System/SharedLibrary.hxx"
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {

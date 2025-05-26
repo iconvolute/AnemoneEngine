@@ -1,8 +1,7 @@
 #include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Error.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
 
 namespace Anemone
 {
@@ -129,7 +128,7 @@ namespace Anemone
                 return FileHandle{Interop::Windows::SafeFileHandle{result}};
             }
 
-            return std::unexpected(Internal::TranslateErrorCodeWin32(GetLastError()));
+            return std::unexpected(Diagnostics::WindowsDebug::TranslateErrorCodeWin32(GetLastError()));
         }
 
         return std::unexpected(Status::InvalidArgument);

@@ -1,32 +1,10 @@
 #include "AnemoneRuntime/Input/Platform/Windows/GameInput.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/App/Platform/Windows/Window.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Error.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #pragma comment(lib, "gameinput.lib")
-namespace Anemone
-{
-    namespace
-    {
-        Anemone::UninitializedObject<GameInput> GGameInput;
-    }
-
-    void GameInput::Initialize()
-    {
-        GGameInput.Create();
-    }
-
-    void GameInput::Finalize()
-    {
-        GGameInput.Destroy();
-    }
-
-    GameInput& GameInput::Get()
-    {
-        return *GGameInput;
-    }
-}
 
 namespace Anemone
 {
@@ -127,5 +105,31 @@ namespace Anemone
         }
 
         (void)events;
+    }
+}
+
+namespace Anemone
+{
+    namespace
+    {
+        Anemone::UninitializedObject<GameInput> GGameInput;
+    }
+
+    GameInput& GameInput::Get()
+    {
+        return *GGameInput;
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeGameInput()
+    {
+        GGameInput.Create();
+    }
+
+    extern void FinalizeGameInput()
+    {
+        GGameInput.Destroy();
     }
 }

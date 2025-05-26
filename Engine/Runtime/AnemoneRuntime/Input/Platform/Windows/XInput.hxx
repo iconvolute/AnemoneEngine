@@ -16,8 +16,6 @@ namespace Anemone
     class XInput final
     {
     public:
-        static void Initialize();
-        static void Finalize();
         static XInput& Get();
 
     public:

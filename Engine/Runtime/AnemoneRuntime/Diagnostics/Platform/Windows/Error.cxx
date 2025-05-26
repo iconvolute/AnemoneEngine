@@ -1,11 +1,10 @@
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Error.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
-    void ReportErrorWin32(DWORD error, std::source_location const& location)
+    void WindowsDebug::ReportErrorWin32(DWORD error, std::source_location const& location)
     {
 #if ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
         // https://learn.microsoft.com/en-us/windows/win32/seccrypto/retrieving-error-messages
@@ -64,7 +63,7 @@ namespace Anemone::Internal
         Interop::string_buffer<char, 128> szMessage;
         Interop::Windows::NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
 
-        Diagnostics::GetTraceDispatcher().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
+        Trace::Get().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}, message: '{}'",
             location.file_name(),
             location.line(),
             location.function_name(),
@@ -73,7 +72,7 @@ namespace Anemone::Internal
             szMessage.c_str());
 #else
 
-        Diagnostics::GetTraceDispatcher().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}",
+        Trace::Get().TraceError("{}:({}): caller: {}, tid: {}, error: {:#08x}",
             location.file_name(),
             location.line(),
             location.function_name(),
@@ -84,7 +83,7 @@ namespace Anemone::Internal
         anemone_debugbreak();
     }
 
-    void ReportErrorHRESULT(HRESULT hresult, std::source_location const& location)
+    void WindowsDebug::ReportErrorHRESULT(HRESULT hresult, std::source_location const& location)
     {
         //
         // Forwarding to Win32 version as it supports HRESULT as well.
@@ -93,7 +92,7 @@ namespace Anemone::Internal
         ReportErrorWin32(static_cast<DWORD>(hresult), location);
     }
 
-    Status TranslateErrorCodeHRESULT(HRESULT hr)
+    Status WindowsDebug::TranslateErrorCodeHRESULT(HRESULT hr)
     {
         if (SUCCEEDED(hr))
         {
@@ -199,7 +198,7 @@ namespace Anemone::Internal
         return Status::Unknown;
     }
 
-    Status TranslateErrorCodeWin32(DWORD error)
+    Status WindowsDebug::TranslateErrorCodeWin32(DWORD error)
     {
         return TranslateErrorCodeHRESULT(__HRESULT_FROM_WIN32(error));
     }

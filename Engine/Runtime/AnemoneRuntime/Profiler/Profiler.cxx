@@ -3,6 +3,17 @@
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
+namespace Anemone::Internal
+{
+    extern void InitializeProfiling()
+    {
+    }
+
+    extern void FinalizeProfiling()
+    {
+    }
+}
+
 #if ANEMONE_BUILD_PROFILING
 
 namespace Anemone
@@ -30,14 +41,6 @@ namespace Anemone
             return registry;
         }
     };
-
-    void Profiler::Initialize()
-    {
-    }
-
-    void Profiler::Finalize()
-    {
-    }
 
     void Profiler::RegisterMarker(ProfilerMarker& marker)
     {

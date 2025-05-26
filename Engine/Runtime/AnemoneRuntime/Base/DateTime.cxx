@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Base/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
 
 #include <array>

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Network/IpEndPoint.hxx"
 #include "AnemoneRuntime/Network/Detail.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #if ANEMONE_PLATFORM_ANDROID || ANEMONE_PLATFORM_LINUX
 #include <arpa/inet.h>

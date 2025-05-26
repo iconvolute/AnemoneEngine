@@ -1,5 +1,7 @@
 target_sources(AnemoneUI
     PRIVATE
+        "Style.cxx"
+        "Style.hxx"
         "UIElement.cxx"
         "UIElement.hxx"
         "Visual.cxx"

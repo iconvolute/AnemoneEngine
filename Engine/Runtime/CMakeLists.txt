@@ -57,3 +57,8 @@ endif()
 endif()
 
 add_subdirectory("AnemoneRuntime")
+
+if (WIN32)
+add_subdirectory("Windows")
+target_include_directories(AnemoneRuntime PRIVATE "Windows")
+endif()

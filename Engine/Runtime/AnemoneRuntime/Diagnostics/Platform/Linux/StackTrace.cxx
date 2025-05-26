@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #if ANEMONE_FEATURE_STACKTRACE_SYMBOLS && ANEMONE_FEATURE_STACKTRACE
 
@@ -10,7 +10,7 @@
 
 namespace Anemone::Diagnostics
 {
-    void GetCurrentStackTrace(
+    void Debug::GetCurrentStackTrace(
         FunctionRef<void(void* address)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE
@@ -46,7 +46,7 @@ namespace Anemone::Diagnostics
 #endif
     }
 
-    void GetCurrentStackTrace(
+    void Debug::GetCurrentStackTrace(
         FunctionRef<void(void* address, std::string_view symbol)> callback)
     {
 #if ANEMONE_FEATURE_STACKTRACE

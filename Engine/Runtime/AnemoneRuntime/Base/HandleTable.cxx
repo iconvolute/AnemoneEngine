@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Base/HandleTable.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <bit>
 

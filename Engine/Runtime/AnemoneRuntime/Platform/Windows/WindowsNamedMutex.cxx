@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Platform/Windows/WindowsNamedMutex.hxx"
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {

@@ -10,29 +10,6 @@ namespace Anemone
 {
     namespace
     {
-        Anemone::UninitializedObject<WindowsInput> GWindowsInput;
-    }
-
-    void WindowsInput::Initialize()
-    {
-        GWindowsInput.Create();
-    }
-
-    void WindowsInput::Finalize()
-    {
-        GWindowsInput.Destroy();
-    }
-
-    WindowsInput& WindowsInput::Get()
-    {
-        return *GWindowsInput;
-    }
-}
-
-namespace Anemone
-{
-    namespace
-    {
         constexpr auto GKeyMapping = []
         {
             std::array<VirtualKey, 256> result{};
@@ -783,5 +760,32 @@ namespace Anemone
         }
 
         return result;
+    }
+}
+
+
+namespace Anemone
+{
+    namespace
+    {
+        UninitializedObject<WindowsInput> GWindowsInput;
+    }
+
+    WindowsInput& WindowsInput::Get()
+    {
+        return *GWindowsInput;
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeWindowsInput()
+    {
+        GWindowsInput.Create();
+    }
+
+    extern void FinalizeWindowsInput()
+    {
+        GWindowsInput.Destroy();
     }
 }

@@ -2,16 +2,14 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "DebugEngine.cxx"
-        "DebugEngine.hxx"
-
-        "Debugger.cxx"
-        "Debugger.hxx"
+        "Debug.cxx"
+        "Debug.hxx"
 
         "Error.cxx"
-        "Error.hxx"
 
         "StackTrace.cxx"
+
+        "Trace.cxx"
 )
 
 endif()

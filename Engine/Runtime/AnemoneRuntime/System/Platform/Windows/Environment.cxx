@@ -9,8 +9,7 @@
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Error.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
 
 #include <locale>
 #include <algorithm>
@@ -25,7 +24,16 @@
 #include <netlistmgr.h>
 #include <shellapi.h>
 
-namespace Anemone::Environment
+namespace Anemone::Internal
+{
+    extern bool GIsConsoleApplication; 
+    bool GIsConsoleApplication = false;
+
+    extern UINT GBinaryClipboardFormat;
+    UINT GBinaryClipboardFormat = 0;
+}
+
+namespace Anemone
 {
     namespace
     {
@@ -93,7 +101,7 @@ namespace Anemone::Environment
             // Capture application startup time.
             //
 
-            statics.startupTime = GetCurrentDateTime();
+            statics.startupTime = Environment::GetCurrentDateTime();
 
 
             //
@@ -195,7 +203,7 @@ namespace Anemone::Environment
                 }
                 else
                 {
-                    Diagnostics::ReportApplicationStop("Failed to get system information");
+                    Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
                 }
 
                 if (auto const keyBios = keySystem.OpenSubKey(LR"(BIOS)"))
@@ -206,7 +214,7 @@ namespace Anemone::Environment
                     }
                     else
                     {
-                        Diagnostics::ReportApplicationStop("Failed to get system information");
+                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
                     }
 
                     if (keyBios.ReadString(L"SystemProductName", buffer))
@@ -215,7 +223,7 @@ namespace Anemone::Environment
                     }
                     else
                     {
-                        Diagnostics::ReportApplicationStop("Failed to get system information");
+                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
                     }
 
                     if (keyBios.ReadString(L"SystemVersion", buffer))
@@ -224,17 +232,17 @@ namespace Anemone::Environment
                     }
                     else
                     {
-                        Diagnostics::ReportApplicationStop("Failed to get system information");
+                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
                     }
                 }
                 else
                 {
-                    Diagnostics::ReportApplicationStop("Failed to get system information");
+                    Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
                 }
             }
             else
             {
-                Diagnostics::ReportApplicationStop("Failed to get system information");
+                Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
             }
         }
 
@@ -358,17 +366,17 @@ namespace Anemone::Environment
             {
                 if (not key.ReadString("ProcessorNameString", statics.processorName))
                 {
-                    Diagnostics::ReportApplicationStop("Cannot obtain processor information");
+                    Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
                 }
 
                 if (not key.ReadString("VendorIdentifier", statics.processorVendor))
                 {
-                    Diagnostics::ReportApplicationStop("Cannot obtain processor information");
+                    Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
                 }
             }
             else
             {
-                Diagnostics::ReportApplicationStop("Cannot obtain processor information");
+                Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
             }
         }
 
@@ -377,18 +385,18 @@ namespace Anemone::Environment
             if (Interop::Windows::IsProcessEmulated())
             {
                 // VERIFY: AVX is not supported in WoA process emulation.
-                Diagnostics::ReportApplicationStop("Emulated process not supported.");
+                Diagnostics::Debug::ReportApplicationStop("Emulated process not supported.");
             }
 
             if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
             {
-                Diagnostics::ReportApplicationStop("64-bit compare-exchange not supported.");
+                Diagnostics::Debug::ReportApplicationStop("64-bit compare-exchange not supported.");
             }
 
 #if ANEMONE_ARCHITECTURE_X64
             if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128))
             {
-                Diagnostics::ReportApplicationStop("128-bit compare-exchange not supported");
+                Diagnostics::Debug::ReportApplicationStop("128-bit compare-exchange not supported");
             }
 #endif
 
@@ -396,26 +404,26 @@ namespace Anemone::Environment
 
             if (not IsProcessorFeaturePresent(PF_XSAVE_ENABLED))
             {
-                Diagnostics::ReportApplicationStop("XSAVE not enabled.");
+                Diagnostics::Debug::ReportApplicationStop("XSAVE not enabled.");
             }
 
             if (not IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::ReportApplicationStop("AVX not supported.");
+                Diagnostics::Debug::ReportApplicationStop("AVX not supported.");
             }
 #endif
 
 #if ANEMONE_FEATURE_AVX2
             if (not IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::ReportApplicationStop("AVX2 not supported.");
+                Diagnostics::Debug::ReportApplicationStop("AVX2 not supported.");
             }
 #endif
 
 #if ANEMONE_FEATURE_NEON
             if (not IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::ReportApplicationStop("NEON not supported.");
+                Diagnostics::Debug::ReportApplicationStop("NEON not supported.");
             }
 #endif
 
@@ -440,7 +448,7 @@ namespace Anemone::Environment
                     VER_MAJORVERSION | VER_MINORVERSION,
                     conditionMask))
             {
-                Diagnostics::ReportApplicationStop("Windows 10 or newer required");
+                Diagnostics::Debug::ReportApplicationStop("Windows 10 or newer required");
             }
         }
 
@@ -478,14 +486,14 @@ namespace Anemone::Environment
     }
 }
 
-namespace Anemone::Environment
+namespace Anemone::Internal
 {
-    extern void Initialize()
+    extern void InitializeEnvironment()
     {
         // Initialize COM
         if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
         {
-            Diagnostics::ReportApplicationStop("Failed to initialize COM.");
+            Diagnostics::Debug::ReportApplicationStop("Failed to initialize COM.");
         }
 
         // Initialize DPI awareness.
@@ -512,7 +520,7 @@ namespace Anemone::Environment
         WSADATA wsaData{};
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         {
-            Diagnostics::ReportApplicationStop("Failed to initialize networking.");
+            Diagnostics::Debug::ReportApplicationStop("Failed to initialize networking.");
         }
 
 
@@ -532,18 +540,21 @@ namespace Anemone::Environment
         }
 #endif
 
+        // Register our clipboard format
+        GBinaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
+
         GStatics.Create();
         InitializeEnvironment(*GStatics);
         InitializeProcessorProperties(*GStatics);
     }
 
-    extern void Finalize()
+    extern void FinalizeEnvironment()
     {
         GStatics.Destroy();
 
         if (WSACleanup() != 0)
         {
-            Diagnostics::ReportApplicationStop("Failed to finalize networking.");
+            Diagnostics::Debug::ReportApplicationStop("Failed to finalize networking.");
         }
 
         // Finalize COM
@@ -551,9 +562,9 @@ namespace Anemone::Environment
     }
 }
 
-namespace Anemone::Environment
+namespace Anemone
 {
-    auto GetEnvironmentVariable(std::string& result, std::string_view name) -> bool
+    auto Environment::GetEnvironmentVariable(std::string& result, std::string_view name) -> bool
     {
         result.clear();
         Interop::string_buffer<wchar_t, 128> wname{};
@@ -569,7 +580,7 @@ namespace Anemone::Environment
         return false;
     }
 
-    auto SetEnvironmentVariable(std::string name, std::string_view value) -> bool
+    auto Environment::SetEnvironmentVariable(std::string name, std::string_view value) -> bool
     {
         Interop::string_buffer<wchar_t, 128> wname{};
         Interop::Windows::WidenString(wname, name);
@@ -580,7 +591,7 @@ namespace Anemone::Environment
         return SetEnvironmentVariableW(wname, wvalue) != FALSE;
     }
 
-    auto RemoveEnvironmentVariable(std::string_view name) -> bool
+    auto Environment::RemoveEnvironmentVariable(std::string_view name) -> bool
     {
         Interop::string_buffer<wchar_t, 128> wname{};
         Interop::Windows::WidenString(wname, name);
@@ -588,7 +599,7 @@ namespace Anemone::Environment
         return SetEnvironmentVariableW(wname, nullptr) != FALSE;
     }
 
-    void GetDisplayMetrics(DisplayMetrics& metrics)
+    void Environment::GetDisplayMetrics(DisplayMetrics& metrics)
     {
         metrics.Displays.clear();
 
@@ -713,7 +724,7 @@ namespace Anemone::Environment
         }
     }
 
-    auto GetScreenPixel(Math::PointF position, float gamma) -> ColorRef
+    auto Environment::GetScreenPixel(Math::PointF position, float gamma) -> ColorRef
     {
         COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), static_cast<int>(position.X), static_cast<int>(position.Y));
 
@@ -731,32 +742,32 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetSystemVersion() -> std::string_view
+    auto Environment::GetSystemVersion() -> std::string_view
     {
         return GStatics->systemVersion;
     }
 
-    auto GetSystemId() -> Uuid
+    auto Environment::GetSystemId() -> Uuid
     {
         return GStatics->systemId;
     }
 
-    auto GetSystemName() -> std::string_view
+    auto Environment::GetSystemName() -> std::string_view
     {
         return GStatics->systemName;
     }
 
-    auto GetSystemUptime() -> Duration
+    auto Environment::GetSystemUptime() -> Duration
     {
         return Duration::FromMilliseconds(static_cast<int64_t>(GetTickCount64()));
     }
 
-    auto GetApplicationStartupTime() -> DateTime
+    auto Environment::GetApplicationStartupTime() -> DateTime
     {
         return GStatics->startupTime;
     }
 
-    auto GetMemoryProperties() -> MemoryProperties
+    auto Environment::GetMemoryProperties() -> MemoryProperties
     {
         MEMORYSTATUSEX memoryStatus{};
         memoryStatus.dwLength = sizeof(memoryStatus);
@@ -783,7 +794,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetMemoryUsage() -> MemoryUsage
+    auto Environment::GetMemoryUsage() -> MemoryUsage
     {
         MEMORYSTATUSEX memoryStatus{};
         memoryStatus.dwLength = sizeof(memoryStatus);
@@ -811,7 +822,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetPowerUsage() -> PowerUsage
+    auto Environment::GetPowerUsage() -> PowerUsage
     {
         SYSTEM_POWER_STATUS powerStatus{};
         if (!GetSystemPowerStatus(&powerStatus))
@@ -852,7 +863,7 @@ namespace Anemone::Environment
         return result;
     }
 
-    auto GetProcessorUsage() -> ProcessorUsage
+    auto Environment::GetProcessorUsage() -> ProcessorUsage
     {
         FILETIME ftCreation{};
         FILETIME ftExit{};
@@ -870,7 +881,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetProcessMemoryUsage() -> ProcessMemoryUsage
+    auto Environment::GetProcessMemoryUsage() -> ProcessMemoryUsage
     {
         PROCESS_MEMORY_COUNTERS process_memory_counters{};
         process_memory_counters.cb = sizeof(process_memory_counters);
@@ -890,7 +901,7 @@ namespace Anemone::Environment
         };
     }
 
-    void Terminate(bool force)
+    void Environment::Terminate(bool force)
     {
         if (force)
         {
@@ -902,84 +913,89 @@ namespace Anemone::Environment
         }
     }
 
-    auto GetDeviceUniqueId() -> std::string_view
+    bool Environment::IsConsoleApplication()
+    {
+        return Internal::GIsConsoleApplication;
+    }
+
+    auto Environment::GetDeviceUniqueId() -> std::string_view
     {
         return GStatics->deviceId;
     }
 
-    auto GetDeviceName() -> std::string_view
+    auto Environment::GetDeviceName() -> std::string_view
     {
         return GStatics->deviceName;
     }
 
-    auto GetDeviceModel() -> std::string_view
+    auto Environment::GetDeviceModel() -> std::string_view
     {
         return GStatics->deviceModel;
     }
 
-    auto GetDeviceType() -> DeviceType
+    auto Environment::GetDeviceType() -> DeviceType
     {
         return GStatics->deviceType;
     }
 
-    auto GetDeviceProperties() -> DeviceProperties
+    auto Environment::GetDeviceProperties() -> DeviceProperties
     {
         return GStatics->deviceProperties;
     }
 
-    auto GetComputerName() -> std::string_view
+    auto Environment::GetComputerName() -> std::string_view
     {
         return GStatics->computerName;
     }
 
-    auto GetUserName() -> std::string_view
+    auto Environment::GetUserName() -> std::string_view
     {
         return GStatics->userName;
     }
 
-    auto GetExecutablePath() -> std::string_view
+    auto Environment::GetExecutablePath() -> std::string_view
     {
         return GStatics->executablePath;
     }
 
-    auto GetStartupPath() -> std::string_view
+    auto Environment::GetStartupPath() -> std::string_view
     {
         return GStatics->startupPath;
     }
 
-    auto GetHomePath() -> std::string_view
+    auto Environment::GetHomePath() -> std::string_view
     {
         return GStatics->profilePath;
     }
 
-    auto GetDesktopPath() -> std::string_view
+    auto Environment::GetDesktopPath() -> std::string_view
     {
         return GStatics->desktopPath;
     }
 
-    auto GetDocumentsPath() -> std::string_view
+    auto Environment::GetDocumentsPath() -> std::string_view
     {
         return GStatics->documentsPath;
     }
 
-    auto GetDownloadsPath() -> std::string_view
+    auto Environment::GetDownloadsPath() -> std::string_view
     {
         return GStatics->downloadsPath;
     }
 
-    auto GetTemporaryPath() -> std::string_view
+    auto Environment::GetTemporaryPath() -> std::string_view
     {
         return GStatics->temporaryPath;
     }
 
-    auto GetCurrentDateTime() -> DateTime
+    auto Environment::GetCurrentDateTime() -> DateTime
     {
         FILETIME ft;
         Interop::Windows::GetLocalTimeAsFileTime(ft);
         return Interop::Windows::ToDateTime(ft);
     }
 
-    auto GetCurrentDateTimeUtc() -> DateTime
+    auto Environment::GetCurrentDateTimeUtc() -> DateTime
     {
         FILETIME ft;
         GetSystemTimePreciseAsFileTime(&ft);
@@ -987,7 +1003,7 @@ namespace Anemone::Environment
         return Interop::Windows::ToDateTime(ft);
     }
 
-    auto GetCurrentTimeZoneBias() -> Duration
+    auto Environment::GetCurrentTimeZoneBias() -> Duration
     {
         DYNAMIC_TIME_ZONE_INFORMATION dtzi;
 
@@ -1020,7 +1036,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetCurrentInstant() -> Instant
+    auto Environment::GetCurrentInstant() -> Instant
     {
         static constexpr int64_t QpcFrequency = 10'000'000;
 
@@ -1047,7 +1063,7 @@ namespace Anemone::Environment
         }
     }
 
-    void GetRandom(std::span<std::byte> buffer)
+    void Environment::GetRandom(std::span<std::byte> buffer)
     {
         NTSTATUS status = BCryptGenRandom(
             nullptr,
@@ -1058,7 +1074,7 @@ namespace Anemone::Environment
         AE_ENSURE(BCRYPT_SUCCESS(status));
     }
 
-    void LaunchUrl(std::string_view url)
+    void Environment::LaunchUrl(std::string_view url)
     {
         Interop::string_buffer<wchar_t, 512> wUrl{};
         Interop::Windows::WidenString(wUrl, url);
@@ -1069,7 +1085,7 @@ namespace Anemone::Environment
         }
     }
 
-    bool IsOnline()
+    bool Environment::IsOnline()
     {
         Microsoft::WRL::ComPtr<INetworkListManager> networkListManager{};
 
@@ -1096,57 +1112,57 @@ namespace Anemone::Environment
         return false;
     }
 
-    auto GetPhysicalCoresCount() -> size_t
+    auto Environment::GetPhysicalCoresCount() -> size_t
     {
         return GStatics->physicalCores;
     }
 
-    auto GetLogicalCoresCount() -> size_t
+    auto Environment::GetLogicalCoresCount() -> size_t
     {
         return GStatics->logicalCores;
     }
 
-    auto GetPerformanceCoresCount() -> size_t
+    auto Environment::GetPerformanceCoresCount() -> size_t
     {
         return GStatics->performanceCores;
     }
 
-    auto GetEfficiencyCoresCount() -> size_t
+    auto Environment::GetEfficiencyCoresCount() -> size_t
     {
         return GStatics->efficiencyCores;
     }
 
-    bool IsHyperThreadingEnabled()
+    bool Environment::IsHyperThreadingEnabled()
     {
         return GStatics->hyperThreading;
     }
 
-    auto GetCacheLineSize() -> size_t
+    auto Environment::GetCacheLineSize() -> size_t
     {
         return GStatics->cacheLineSize;
     }
 
-    auto GetCacheSizeLevel1() -> size_t
+    auto Environment::GetCacheSizeLevel1() -> size_t
     {
         return GStatics->cacheSizeLevel1;
     }
 
-    auto GetCacheSizeLevel2() -> size_t
+    auto Environment::GetCacheSizeLevel2() -> size_t
     {
         return GStatics->cacheSizeLevel2;
     }
 
-    auto GetCacheSizeLevel3() -> size_t
+    auto Environment::GetCacheSizeLevel3() -> size_t
     {
         return GStatics->cacheSizeLevel3;
     }
 
-    auto GetProcessorName() -> std::string_view
+    auto Environment::GetProcessorName() -> std::string_view
     {
         return GStatics->processorName.as_view();
     }
 
-    auto GetProcessorVendor() -> std::string_view
+    auto Environment::GetProcessorVendor() -> std::string_view
     {
         return GStatics->processorVendor.as_view();
     }

@@ -1,21 +1,19 @@
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
-#include "AnemoneRuntime/Platform/StackTrace.hxx"
-#include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <iterator>
 
 namespace Anemone::Diagnostics
 {
-    bool ReportAssertionFormatted(
+    bool Debug::ReportAssertionFormatted(
         std::source_location const& location,
         std::string_view expression,
         std::string_view format,
         fmt::format_args args)
     {
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
-        TraceDispatcher& dispatcher = GetTraceDispatcher();
+        TraceDispatcher& dispatcher = Trace::Get();
 
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
@@ -50,12 +48,12 @@ namespace Anemone::Diagnostics
 #endif
     }
 
-    void ReportPanicFormatted(
+    void Debug::ReportPanicFormatted(
         std::source_location const& location,
         std::string_view format,
         fmt::format_args args)
     {
-        TraceDispatcher& dispatcher = GetTraceDispatcher();
+        TraceDispatcher& dispatcher = Trace::Get();
 
         fmt::memory_buffer message{};
         fmt::vformat_to(std::back_inserter(message), format, args);
@@ -75,5 +73,21 @@ namespace Anemone::Diagnostics
 #if false
         Debugger::Attach();
 #endif
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void PlatformInitializeDebug();
+    extern void PlatformFinalizeDebug();
+
+    extern void InitializeDebug()
+    {
+        PlatformInitializeDebug();
+    }
+
+    extern void FinalizeDebug()
+    {
+        PlatformFinalizeDebug();
     }
 }

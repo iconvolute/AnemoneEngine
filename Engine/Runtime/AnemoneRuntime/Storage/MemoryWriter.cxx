@@ -1,5 +1,5 @@
 #include "AnemoneRuntime/Storage/MemoryWriter.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <algorithm>
 

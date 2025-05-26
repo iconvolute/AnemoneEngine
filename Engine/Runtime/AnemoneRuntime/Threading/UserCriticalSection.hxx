@@ -12,7 +12,7 @@
 #endif
 
 #include "AnemoneRuntime/Threading/Lock.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <atomic>
 

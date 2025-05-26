@@ -1,28 +1,16 @@
 #include "AnemoneRuntime/System/CommandLine.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 #include <algorithm>
 
-namespace Anemone::CommandLine
+namespace Anemone::Internal
 {
-    namespace
-    {
-        int GCommandLineArgC{};
-        char** GCommandLineArgV{};
-    }
+    extern int GCommandLineArgC;
+    extern char** GCommandLineArgV;
 
-    extern void Initialize(int argc, char** argv)
-    {
-        GCommandLineArgC = argc;
-        GCommandLineArgV = argv;
-    }
-
-    extern void Finalize()
-    {
-        GCommandLineArgC = 0;
-        GCommandLineArgV = nullptr;
-    }
+    int GCommandLineArgC = 0;
+    char** GCommandLineArgV = nullptr;
 }
 
 namespace Anemone
@@ -163,16 +151,16 @@ namespace Anemone
 }
 
 
-namespace Anemone::CommandLine
+namespace Anemone
 {
-    auto GetOption(
+    auto CommandLine::GetOption(
         std::string_view name) -> std::optional<std::string_view>
     {
         std::optional<std::string_view> result{};
 
-        for (int i = 1; i < GCommandLineArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{GCommandLineArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
@@ -185,13 +173,13 @@ namespace Anemone::CommandLine
         return result;
     }
 
-    void GetOption(
+    void CommandLine::GetOption(
         std::string_view name,
         std::vector<std::string_view>& values)
     {
-        for (int i = 1; i < GCommandLineArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{GCommandLineArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name))
             {
@@ -200,12 +188,12 @@ namespace Anemone::CommandLine
         }
     }
 
-    void GetPositional(
+    void CommandLine::GetPositional(
         std::vector<std::string_view>& positional)
     {
-        for (int i = 1; i < GCommandLineArgC; ++i)
+        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
-            std::string_view token{GCommandLineArgV[i]};
+            std::string_view token{Internal::GCommandLineArgV[i]};
 
             if (token.starts_with('-'))
             {
@@ -217,7 +205,7 @@ namespace Anemone::CommandLine
         }
     }
 
-    void Parse(
+    void CommandLine::Parse(
         std::string_view commandLine,
         std::vector<std::string_view>& positional,
         std::vector<std::string_view>& switches,
@@ -264,7 +252,7 @@ namespace Anemone::CommandLine
         }
     }
 
-    void Build(const char* const* argv, std::string& result)
+    void CommandLine::Build(const char* const* argv, std::string& result)
     {
         Interop::string_buffer<char, 256> buffer{};
 

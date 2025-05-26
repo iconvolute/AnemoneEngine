@@ -1,28 +1,50 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
-
-#include <utility>
+#include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 
 namespace Anemone::Diagnostics
 {
     namespace
     {
-        UninitializedObject<TraceDispatcher> GTraceDispatcher{};
+        UninitializedObject<Trace> GTrace{};
+        UninitializedObject<ConsoleTraceListener> GConsoleTraceListener{};
     }
+
+    Trace& Trace::Get()
+    {
+        return *GTrace;
+    }
+};
+
+namespace Anemone::Internal
+{
+    extern void PlatformInitializeTrace();
+    extern void PlatformFinalizeTrace();
 
     extern void InitializeTrace()
     {
-        GTraceDispatcher.Create();
+        Diagnostics::GTrace.Create();
+
+        PlatformInitializeTrace();
+
+        if (Environment::IsConsoleApplication())
+        {
+            Diagnostics::GConsoleTraceListener.Create();
+            Diagnostics::Trace::Get().Register(*Diagnostics::GConsoleTraceListener);
+        }
     }
 
     extern void FinalizeTrace()
     {
-        GTraceDispatcher.Destroy();
-    }
+        if (Diagnostics::GConsoleTraceListener)
+        {
+            Diagnostics::Trace::Get().Unregister(*Diagnostics::GConsoleTraceListener);
+            Diagnostics::GConsoleTraceListener.Destroy();
+        }
 
-    TraceDispatcher& GetTraceDispatcher()
-    {
-        return *GTraceDispatcher;
+        PlatformFinalizeTrace();
+
+        Diagnostics::GTrace.Destroy();
     }
 }

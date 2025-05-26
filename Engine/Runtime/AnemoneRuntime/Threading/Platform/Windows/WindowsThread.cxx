@@ -2,7 +2,7 @@
 
 #if ANEMONE_PLATFORM_WINDOWS
 
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 

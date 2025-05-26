@@ -1,13 +1,12 @@
-#include "AnemoneRuntime/Diagnostics/Platform/Common/Error.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #include <cerrno>
 
-namespace Anemone::Internal
+namespace Anemone::Diagnostics
 {
-    void ReportErrorErrno(int error, std::source_location const& location)
+    void Debug::ReportErrorErrno(int error, std::source_location const& location)
     {
 #if ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES
 
@@ -38,7 +37,7 @@ namespace Anemone::Internal
 #endif
     }
 
-    Status TranslateErrorCodeErrno(int error)
+    Status Debug::TranslateErrorCodeErrno(int error)
     {
         switch (error)
         {

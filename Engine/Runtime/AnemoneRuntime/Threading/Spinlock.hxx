@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Threading/SpinWait.hxx"
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/CurrentThread.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include <atomic>

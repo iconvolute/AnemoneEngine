@@ -115,7 +115,59 @@ namespace Anemone::Graphics
                 ExtractBits<uint32_t, 0, 10>(this->Inner),
                 ExtractBits<uint32_t, 10, 10>(this->Inner),
                 ExtractBits<uint32_t, 20, 10>(this->Inner),
-                ExtractBits<uint32_t, 30, 2>(this->Inner)};
+                ExtractBits<uint32_t, 30, 2>(this->Inner),
+            };
         }
     };
+
+    struct Pixel_8_8_8_8 final
+    {
+        uint32_t Inner;
+
+        ColorUInt ToColorUInt() const
+        {
+            return ColorUInt{
+                ExtractBits<uint8_t, 0, 8>(this->Inner),
+                ExtractBits<uint8_t, 8, 8>(this->Inner),
+                ExtractBits<uint8_t, 16, 8>(this->Inner),
+                ExtractBits<uint8_t, 24, 8>(this->Inner),
+            };
+        }
+    };
+
+    struct ColorU32 final
+    {
+        uint32_t R;
+        uint32_t G;
+        uint32_t B;
+        uint32_t A;
+    };
+
+    struct ColorU16 final
+    {
+        uint16_t R;
+        uint16_t G;
+        uint16_t B;
+        uint16_t A;
+    };
+
+    struct ColorU8 final
+    {
+        uint8_t R;
+        uint8_t G;
+        uint8_t B;
+        uint8_t A;
+    };
+
+    struct ColorF final
+    {
+        float R;
+        float G;
+        float B;
+        float A;
+    };
+
+    // Pixel formats are more complicated than this:
+    // - various bits per channel
+    // - values may be normalized (SNorm -> -1..1, UNorm -> 0..1)
 }

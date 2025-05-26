@@ -2,7 +2,7 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Initialize.cxx"
+        "Runtime.cxx"
 )
 
 endif()

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Platform/EntryPoint.hxx"
+#include "AnemoneRuntime/Runtime/EntryPoint.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
 
 
@@ -10,10 +10,12 @@
 
 #include <expected>
 
+#include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
+#include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#include "AnemoneRuntime/Network/Tcp.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
-
 
 namespace anemone
 {
@@ -62,22 +64,27 @@ namespace anemone
 }
 
 #include "AnemoneRuntime/Base/Uuid.hxx"
-
+/*
 namespace Anemone::inline FileSystemX
 {
     struct Base64
     {
+        static constexpr char Charset[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                                          "abcdefghijklmnopqrstuvwxyz"
+                                          "0123456789+/";
+
+
         static std::expected<size_t, Status> GetEncodedSize(size_t size);
         static std::expected<size_t, Status> GetDecodedSize(std::string_view encoded);
 
-        static std::expected<void, Status> Encode(std::span<std::byte const> data, std::span<char> encoded);
-        static std::expected<void, Status> Decode(std::string_view encoded, std::span<std::byte> data);
+        static std::expected<size_t, Status> Encode(std::span<std::byte const> input, std::span<char> output);
+        static std::expected<size_t, Status> Decode(std::string_view encoded, std::span<std::byte> data);
     };
-}
+}*/
 
 #include "AnemoneRuntime/App/IApplication.hxx"
 #include "AnemoneRuntime/App/IApplicationEvents.hxx"
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
 
@@ -188,7 +195,7 @@ public:
         }
         else
         {
-        AE_ASSERT(false);
+            AE_ASSERT(false);
         }
     }
 
@@ -281,7 +288,13 @@ public:
     void OnDisplayChange() override
     {
     }
+
+    void OnWindowVisibilityChanged(Anemone::IWindow& window, Anemone::WindowVisibilityChangedEventArgs& args) override
+    {
+        AE_TRACE(Error, "Window: {} is visible: {}", fmt::ptr(&window), args.Visible);
+    }
 };
+#pragma comment(lib, "Dwmapi.lib")
 
 #include "AnemoneRuntime/System/Environment.hxx"
 
@@ -295,8 +308,11 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Hash/FNV.hxx"
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-
-#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#endif
+#include "AnemoneRuntime/Interop/Windows/Environment.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
 
 struct V2 : Anemone::DirectoryVisitor
 {
@@ -358,7 +374,7 @@ int AnemoneMain(int argc, char** argv)
         };
 
         Vi vi{};
-        (void)Anemone::FileSystem::DirectoryEnumerate(".", vi);
+        (void)Anemone::FileSystem::DirectoryEnumerate(Anemone::Environment::GetStartupPath(), vi);
     }
 
     if (auto fh = Anemone::FileHandle::Create("non-existing", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
@@ -484,7 +500,7 @@ int AnemoneMain(int argc, char** argv)
 
     EH eh{};
 
-    AE_TRACE(Error, "Error: {}", Anemone::Internal::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
+    AE_TRACE(Error, "Error: {}", Anemone::Diagnostics::WindowsDebug::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
     Anemone::IApplication::Initialize(&eh);
     auto window1 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
     auto window2 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
@@ -499,15 +515,6 @@ int AnemoneMain(int argc, char** argv)
 
         while (not window1->IsClosed() or not window2->IsClosed())
         {
-            if (not window1->IsClosed())
-            {
-                auto const client = window1->GetClientBounds();
-                auto const window = window1->GetBounds();
-                AE_TRACE(Error, "Client: {}, {}, {}, {}, Window: {}, {}, {}, {}",
-                    client.X, client.Y, client.Width, client.Height,
-                    window.X, window.Y, window.Width, window.Height);
-            }
-
             Anemone::IApplication::Get().ProcessMessages();
             Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
         }

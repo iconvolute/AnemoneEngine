@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <type_traits>
 #include <utility>

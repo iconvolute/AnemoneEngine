@@ -10,16 +10,16 @@ namespace Anemone::Internal
     UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics{};
 }
 
-namespace Anemone::Threading
+namespace Anemone::Internal
 {
-    extern void InitializeTaskScheduler()
+    extern void InitializeThreading()
     {
-        Internal::GTaskSchedulerStatics.Create();
+        GTaskSchedulerStatics.Create();
     }
 
-    extern void FinalizeTaskScheduler()
+    extern void FinalizeThreading()
     {
-        Internal::GTaskSchedulerStatics.Destroy();
+        GTaskSchedulerStatics.Destroy();
     }
 }
 

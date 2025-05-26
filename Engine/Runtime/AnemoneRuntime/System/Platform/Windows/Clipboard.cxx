@@ -1,26 +1,11 @@
 #include "AnemoneRuntime/System/Clipboard.hxx"
+
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 
-namespace Anemone::Clipboard
+namespace Anemone
 {
-    namespace
-    {
-        UINT GBinaryClipboardFormat = 0;
-    }
-
-    extern void Initialize()
-    {
-        GBinaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
-    }
-
-    extern void Finalize()
-    {
-    }
-}
-
-namespace Anemone::Clipboard
-{
-    void Clear()
+    void Clipboard::Clear()
     {
         if (OpenClipboard(nullptr))
         {
@@ -29,7 +14,7 @@ namespace Anemone::Clipboard
         }
     }
 
-    bool GetText(std::string& result)
+    bool Clipboard::GetText(std::string& result)
     {
         result.clear();
 
@@ -62,7 +47,7 @@ namespace Anemone::Clipboard
         return success;
     }
 
-    bool SetText(std::string_view value)
+    bool Clipboard::SetText(std::string_view value)
     {
         bool success = false;
 

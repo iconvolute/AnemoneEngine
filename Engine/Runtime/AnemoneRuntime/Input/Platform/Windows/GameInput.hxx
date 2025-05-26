@@ -17,8 +17,6 @@ namespace Anemone
     class GameInput final
     {
     public:
-        static void Initialize();
-        static void Finalize();
         static GameInput& Get();
 
     private:

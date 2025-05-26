@@ -6,29 +6,6 @@ namespace Anemone
 {
     namespace
     {
-        Anemone::UninitializedObject<XInput> GXInput;
-    }
-
-    void XInput::Initialize()
-    {
-        GXInput.Create();
-    }
-
-    void XInput::Finalize()
-    {
-        GXInput.Destroy();
-    }
-
-    XInput& XInput::Get()
-    {
-        return *GXInput;
-    }
-}
-
-namespace Anemone
-{
-    namespace
-    {
         constexpr struct WindowsXInputButtonMapping
         {
             WORD Source;
@@ -238,5 +215,31 @@ namespace Anemone
                 events.OnGamepadButtonUp(state.DeviceId, e);
             }
         }
+    }
+}
+
+namespace Anemone
+{
+    namespace
+    {
+        Anemone::UninitializedObject<XInput> GXInput;
+    }
+
+    XInput& XInput::Get()
+    {
+        return *GXInput;
+    }
+}
+
+namespace Anemone::Internal
+{
+    extern void InitializeXInput()
+    {
+        GXInput.Create();
+    }
+
+    extern void FinalizeXInput()
+    {
+        GXInput.Destroy();
     }
 }

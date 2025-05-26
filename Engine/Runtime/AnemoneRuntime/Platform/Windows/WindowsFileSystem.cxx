@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
 #include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::Internal
 {

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Memory/SystemAllocator.hxx"
 #include "AnemoneRuntime/Base/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Headers.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN

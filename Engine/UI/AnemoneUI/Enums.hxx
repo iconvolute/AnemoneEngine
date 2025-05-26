@@ -262,4 +262,13 @@ namespace Anemone::UI
         ToolWindow,
     };
 
+    enum Docking
+    {
+        None,
+        Left,
+        Right,
+        Top,
+        Bottom,
+        Fill,
+    };
 }

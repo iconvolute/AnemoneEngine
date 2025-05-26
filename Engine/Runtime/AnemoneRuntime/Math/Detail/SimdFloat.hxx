@@ -47,7 +47,7 @@
 
 #include "AnemoneRuntime/Math/Functions.hxx"
 #include "AnemoneRuntime/Math/Numbers.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::Math::Detail
 {

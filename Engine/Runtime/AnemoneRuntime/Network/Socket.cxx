@@ -1,8 +1,10 @@
 #include "AnemoneRuntime/Network/Socket.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#endif
 
 #include <optional>
 #include <utility>
@@ -16,9 +18,9 @@ namespace Anemone::Network::Detail
     static Status GetLastSocketError()
     {
 #if ANEMONE_PLATFORM_WINDOWS
-        return Internal::TranslateErrorCodeWin32(WSAGetLastError());
+        return Diagnostics::WindowsDebug::TranslateErrorCodeWin32(WSAGetLastError());
 #else
-        return Internal::TranslateErrorCodeErrno(errno);
+        return Diagnostics::TranslateErrorCodeErrno(errno);
 #endif
     }
 
@@ -148,7 +150,7 @@ namespace Anemone::Network
 #if ANEMONE_PLATFORM_WINDOWS
         if (handle == INVALID_SOCKET)
         {
-            return std::unexpected(Internal::TranslateErrorCodeWin32(WSAGetLastError()));
+            return std::unexpected(Diagnostics::WindowsDebug::TranslateErrorCodeWin32(WSAGetLastError()));
         }
 #else
         if (handle < 0)
@@ -167,7 +169,7 @@ namespace Anemone::Network
 #if ANEMONE_PLATFORM_WINDOWS
             if (not closesocket(this->m_native.Inner))
             {
-                return std::unexpected(Internal::TranslateErrorCodeWin32(WSAGetLastError()));
+                return std::unexpected(Diagnostics::WindowsDebug::TranslateErrorCodeWin32(WSAGetLastError()));
             }
 #else
             if (not close(this->m_native.Inner))

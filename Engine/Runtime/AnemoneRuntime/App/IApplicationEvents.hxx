@@ -57,6 +57,14 @@ namespace Anemone
         float Value;
     };
 
+    struct MotionEventArgs
+    {
+        Math::Packed::Vector2F Tilt;
+        Math::Packed::Vector3F RotationRate;
+        Math::Packed::Vector3F Gravity;
+        Math::Packed::Vector3F Acceleration;
+    };
+
     struct WindowEventArgs
     {
     };

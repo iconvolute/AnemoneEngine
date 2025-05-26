@@ -3,7 +3,7 @@
 #if ANEMONE_PLATFORM_WINDOWS
 
 #include "AnemoneRuntime/Interop/Windows/Threading.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {
