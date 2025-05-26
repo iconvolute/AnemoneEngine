@@ -14,6 +14,7 @@ target_sources(AnemoneRuntime
         "Process.hxx"
         "Registry.hxx"
         "SafeHandle.hxx"
+        "Sdk.hxx"
         "StringBuffer.hxx"
         "System.hxx"
         "Text.hxx"
