@@ -17,7 +17,7 @@ namespace Anemone::Interop::Windows
             return hr;
         }
 
-        if (requiredSize <= buffer.capacity())
+        if (requiredSize <= buffer.size())
         {
             assert(requiredSize != 0);
             buffer.trim(requiredSize);

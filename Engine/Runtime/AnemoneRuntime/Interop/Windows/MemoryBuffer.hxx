@@ -18,7 +18,7 @@ namespace Anemone::Interop::Windows
             return hr;
         }
 
-        if (requiredSize <= buffer.capacity())
+        if (requiredSize <= buffer.size())
         {
             // Callback reported success and the buffer is large enough to hold the required size.
             buffer.resize(requiredSize);

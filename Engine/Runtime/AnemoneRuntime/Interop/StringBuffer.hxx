@@ -220,7 +220,7 @@ namespace Anemone::Interop
             return false;
         }
 
-        if (requiredSize <= buffer.capacity())
+        if (requiredSize <= buffer.size())
         {
             assert(requiredSize != 0);
             buffer.trim(requiredSize);
