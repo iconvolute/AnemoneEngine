@@ -1268,42 +1268,42 @@ namespace Anemone::Math
     constexpr T RevolutionsToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RevolutionsToDegrees;
+        return value * Detail::Factor_RevolutionsToDegrees<T>;
     }
 
     template <typename T>
     constexpr T RevolutionsToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RevolutionsToRadians;
+        return value * Detail::Factor_RevolutionsToRadians<T>;
     }
 
     template <typename T>
     constexpr T DegreesToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_DegreesToRevolutions;
+        return value * Detail::Factor_DegreesToRevolutions<T>;
     }
 
     template <typename T>
     constexpr T RadiansToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RadiansToRevolutions;
+        return value * Detail::Factor_RadiansToRevolutions<T>;
     }
 
     template <typename T>
     constexpr T RadiansToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RadiansToDegrees;
+        return value * Detail::Factor_RadiansToDegrees<T>;
     }
 
     template <typename T>
     constexpr T DegreesToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_DegreesToRadians;
+        return value * Detail::Factor_DegreesToRadians<T>;
     }
 
 }

@@ -101,12 +101,23 @@ namespace Anemone::Math
 
 namespace Anemone::Math::Detail
 {
-    inline constexpr float Factor_RevolutionsToDegrees = 360.0f;
-    inline constexpr float Factor_RevolutionsToRadians = Pi2<float>;
-    inline constexpr float Factor_DegreesToRevolutions = 1.0f / 360.0f;
-    inline constexpr float Factor_DegreesToRadians = Pi<float> / 180.0f;
-    inline constexpr float Factor_RadiansToRevolutions = 1.0f / Pi2<float>;
-    inline constexpr float Factor_RadiansToDegrees = 180.0f / Pi<float>;
+    template <typename T>
+    inline constexpr T Factor_RevolutionsToDegrees = T(360);
+
+    template <typename T>
+    inline constexpr T Factor_RevolutionsToRadians = Pi2<T>;
+
+    template <typename T>
+    inline constexpr T Factor_DegreesToRevolutions = T(1) / T(360);
+
+    template <typename T>
+    inline constexpr T Factor_DegreesToRadians = Pi<T> / T(180);
+
+    template <typename T>
+    inline constexpr T Factor_RadiansToRevolutions = T(1) / Pi2<T>;
+
+    template <typename T>
+    inline constexpr T Factor_RadiansToDegrees = T(180) / Pi<T>;
 
     template <typename T, size_t Lanes, size_t Alignment = 16>
     struct VectorConstant

@@ -3323,8 +3323,8 @@ namespace Anemone::Math::Detail
             UnwindDegrees<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        __m128 const vToRevolutions = _mm_set1_ps(Factor_DegreesToRevolutions);
-        __m128 const vFromRevolutions = _mm_set1_ps(Factor_RevolutionsToDegrees);
+        __m128 const vToRevolutions = _mm_set1_ps(Factor_DegreesToRevolutions<float>);
+        __m128 const vFromRevolutions = _mm_set1_ps(Factor_RevolutionsToDegrees<float>);
 
         // Convert degrees to full revolutions
         __m128 r = _mm_mul_ps(v, vToRevolutions);
@@ -3332,8 +3332,8 @@ namespace Anemone::Math::Detail
         // Convert full revolutions back to degrees and subtract from original
         return Vector4F_NegateMultiplyAdd(r, vFromRevolutions, v);
 #elif ANEMONE_FEATURE_NEON
-        float32x4_t const vToRevolutions = vdupq_n_f32(Factor_DegreesToRevolutions);
-        float32x4_t const vFromRevolutions = vdupq_n_f32(Factor_RevolutionsToDegrees);
+        float32x4_t const vToRevolutions = vdupq_n_f32(Factor_DegreesToRevolutions<float>);
+        float32x4_t const vFromRevolutions = vdupq_n_f32(Factor_RevolutionsToDegrees<float>);
 
         // Convert degrees to full revolutions
         float32x4_t r = vmulq_f32(v, vToRevolutions);
@@ -3385,9 +3385,9 @@ namespace Anemone::Math::Detail
             RevolutionsToDegrees<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_RevolutionsToDegrees));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_RevolutionsToDegrees<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_RevolutionsToDegrees));
+        return vmulq_f32(v, vdupq_n_f32(Factor_RevolutionsToDegrees<float>));
 #endif
     }
 
@@ -3401,9 +3401,9 @@ namespace Anemone::Math::Detail
             RevolutionsToRadians<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_RevolutionsToRadians));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_RevolutionsToRadians<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_RevolutionsToRadians));
+        return vmulq_f32(v, vdupq_n_f32(Factor_RevolutionsToRadians<float>));
 #endif
     }
 
@@ -3417,9 +3417,9 @@ namespace Anemone::Math::Detail
             DegreesToRevolutions<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_DegreesToRevolutions));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_DegreesToRevolutions<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_DegreesToRevolutions));
+        return vmulq_f32(v, vdupq_n_f32(Factor_DegreesToRevolutions<float>));
 #endif
     }
 
@@ -3433,9 +3433,9 @@ namespace Anemone::Math::Detail
             RadiansToRevolutions<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_RadiansToRevolutions));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_RadiansToRevolutions<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_RadiansToRevolutions));
+        return vmulq_f32(v, vdupq_n_f32(Factor_RadiansToRevolutions<float>));
 #endif
     }
 
@@ -3449,9 +3449,9 @@ namespace Anemone::Math::Detail
             RadiansToDegrees<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_RadiansToDegrees));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_RadiansToDegrees<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_RadiansToDegrees));
+        return vmulq_f32(v, vdupq_n_f32(Factor_RadiansToDegrees<float>));
 #endif
     }
 
@@ -3465,9 +3465,9 @@ namespace Anemone::Math::Detail
             DegreesToRadians<float>(v.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_mul_ps(v, _mm_set1_ps(Factor_DegreesToRadians));
+        return _mm_mul_ps(v, _mm_set1_ps(Factor_DegreesToRadians<float>));
 #elif ANEMONE_FEATURE_NEON
-        return vmulq_f32(v, vdupq_n_f32(Factor_DegreesToRadians));
+        return vmulq_f32(v, vdupq_n_f32(Factor_DegreesToRadians<float>));
 #endif
     }
 
