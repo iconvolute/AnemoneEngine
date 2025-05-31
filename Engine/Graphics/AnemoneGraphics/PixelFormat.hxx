@@ -159,14 +159,6 @@ namespace Anemone::Graphics
         uint8_t A;
     };
 
-    struct ColorF final
-    {
-        float R;
-        float G;
-        float B;
-        float A;
-    };
-
     // Pixel formats are more complicated than this:
     // - various bits per channel
     // - values may be normalized (SNorm -> -1..1, UNorm -> 0..1)

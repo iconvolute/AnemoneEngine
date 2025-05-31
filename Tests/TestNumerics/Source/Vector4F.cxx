@@ -603,29 +603,30 @@ TEST_CASE("Vector4F_MultiplyAdd")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -649,29 +650,30 @@ TEST_CASE("Vector4F_MultiplySubtract")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -695,29 +697,30 @@ TEST_CASE("Vector4F_NegateMultiplyAdd")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -741,29 +744,30 @@ TEST_CASE("Vector4F_NegateMultiplySubtract")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -785,22 +789,23 @@ TEST_CASE("Vector4F_Add")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -821,22 +826,23 @@ TEST_CASE("Vector4F_Subtract")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -859,22 +865,23 @@ TEST_CASE("Vector4F_Multiply")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -895,22 +902,23 @@ TEST_CASE("Vector4F_Divide")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -931,15 +939,16 @@ TEST_CASE("Vector4F_Negate")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -959,15 +968,16 @@ TEST_CASE("Vector4F_Reciprocal")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -989,15 +999,16 @@ TEST_CASE("Vector4F_ReciprocalEst")
 
     static constexpr float tolerance = 0.1f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1017,22 +1028,23 @@ TEST_CASE("Vector4F_Min")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1053,22 +1065,23 @@ TEST_CASE("Vector4F_Max")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1089,15 +1102,16 @@ TEST_CASE("Vector4F_Abs")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1117,15 +1131,16 @@ TEST_CASE("Vector4F_Square")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1145,15 +1160,16 @@ TEST_CASE("Vector4F_SignedSquare")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1173,29 +1189,30 @@ TEST_CASE("Vector4F_Clamp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            b[0] + r.NextFloat(10.0f),
-            b[1] + r.NextFloat(10.0f),
-            b[2] + r.NextFloat(10.0f),
-            b[3] + r.NextFloat(10.0f),
+            b[0] + uniform(r, 10.0f),
+            b[1] + uniform(r, 10.0f),
+            b[2] + uniform(r, 10.0f),
+            b[3] + uniform(r, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1217,15 +1234,16 @@ TEST_CASE("Vector4F_Saturate")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-1.0f, 2.0f),
-            r.NextFloat(-1.0f, 2.0f),
-            r.NextFloat(-1.0f, 2.0f),
-            r.NextFloat(-1.0f, 2.0f),
+            uniform(r, -1.0f, 2.0f),
+            uniform(r, -1.0f, 2.0f),
+            uniform(r, -1.0f, 2.0f),
+            uniform(r, -1.0f, 2.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1245,15 +1263,16 @@ TEST_CASE("Vector4F_SquareRoot")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1275,15 +1294,16 @@ TEST_CASE("Vector4F_SquareRootEst")
 
     static constexpr float tolerance = 0.005f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1303,15 +1323,16 @@ TEST_CASE("Vector4F_ReciprocalSquareRoot")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1333,15 +1354,16 @@ TEST_CASE("Vector4F_ReciprocalSquareRootEst")
 
     static constexpr float tolerance = 0.005f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
-            r.NextFloat(0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
+            uniform(r, 0.0f, 49.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1361,15 +1383,16 @@ TEST_CASE("Vector4F_Ceil")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1389,15 +1412,16 @@ TEST_CASE("Vector4F_Floor")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1417,15 +1441,16 @@ TEST_CASE("Vector4F_Truncate")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1445,15 +1470,16 @@ TEST_CASE("Vector4F_Round")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1473,15 +1499,16 @@ TEST_CASE("Vector4F_Fraction")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
-            r.NextFloat(-50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
+            uniform(r, -50.0f, 50.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1501,22 +1528,23 @@ TEST_CASE("Vector4F_Remainder")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1539,22 +1567,23 @@ TEST_CASE("Vector4F_Repeat")
 
     static constexpr float tolerance = 0.005f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1577,29 +1606,30 @@ TEST_CASE("Vector4F_Wrap")
 
     static constexpr float tolerance = 0.005f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const c[4] = {
-            b[0] + r.NextFloat(10.0f),
-            b[1] + r.NextFloat(10.0f),
-            b[2] + r.NextFloat(10.0f),
-            b[3] + r.NextFloat(10.0f),
+            b[0] + uniform(r, 10.0f),
+            b[1] + uniform(r, 10.0f),
+            b[2] + uniform(r, 10.0f),
+            b[3] + uniform(r, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1621,22 +1651,23 @@ TEST_CASE("Vector4F_Power")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
-            r.NextFloat(0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
+            uniform(r, 0.1f, 10.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(0.01f, 3.0f) * ((r.NextUInt32() & 1) ? 1.0f : -1.0f),
-            r.NextFloat(0.01f, 3.0f) * ((r.NextUInt32() & 1) ? 1.0f : -1.0f),
-            r.NextFloat(0.01f, 3.0f) * ((r.NextUInt32() & 1) ? 1.0f : -1.0f),
-            r.NextFloat(0.01f, 3.0f) * ((r.NextUInt32() & 1) ? 1.0f : -1.0f),
+            uniform(r, 0.01f, 3.0f) * ((r.Next() & 1) ? 1.0f : -1.0f),
+            uniform(r, 0.01f, 3.0f) * ((r.Next() & 1) ? 1.0f : -1.0f),
+            uniform(r, 0.01f, 3.0f) * ((r.Next() & 1) ? 1.0f : -1.0f),
+            uniform(r, 0.01f, 3.0f) * ((r.Next() & 1) ? 1.0f : -1.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1657,15 +1688,16 @@ TEST_CASE("Vector4F_Exp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1685,15 +1717,16 @@ TEST_CASE("Vector4F_Exp2")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1713,15 +1746,16 @@ TEST_CASE("Vector4F_Exp10")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1741,15 +1775,16 @@ TEST_CASE("Vector4F_Log")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1769,18 +1804,19 @@ TEST_CASE("Vector4F_Log with base")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
         };
 
-        float const b = r.NextFloat(2.0f, 20.0f);
+        float const b = uniform(r, 2.0f, 20.0f);
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
         SimdVector4F const vb = Vector4F_Replicate(b);
@@ -1800,15 +1836,16 @@ TEST_CASE("Vector4F_Log2")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1828,15 +1865,16 @@ TEST_CASE("Vector4F_Log10")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
-            r.NextFloat(0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
+            uniform(r, 0.001f, 10.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1856,15 +1894,16 @@ TEST_CASE("Vector4F_SinCos")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1892,15 +1931,16 @@ TEST_CASE("Vector4F_Sin")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1920,15 +1960,16 @@ TEST_CASE("Vector4F_Cos")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1948,15 +1989,16 @@ TEST_CASE("Vector4F_Tan")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
-            r.NextFloat(-Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
+            uniform(r, -Pi2<float>, Pi2<float>),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -1976,15 +2018,16 @@ TEST_CASE("Vector4F_Asin")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2004,15 +2047,16 @@ TEST_CASE("Vector4F_Acos")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2032,15 +2076,16 @@ TEST_CASE("Vector4F_Atan")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2060,22 +2105,23 @@ TEST_CASE("Vector4F_Atan2")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const a[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         float const b[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2096,6 +2142,7 @@ TEST_CASE("Vector4F_PreciseLerp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     SECTION("Separate T")
@@ -2103,24 +2150,24 @@ TEST_CASE("Vector4F_PreciseLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const t[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2141,20 +2188,20 @@ TEST_CASE("Vector4F_PreciseLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
-            float const t = r.NextFloat(0.0f, 1.0f);
+            float const t = uniform(r, 0.0f, 1.0f);
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
             SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
@@ -2177,6 +2224,7 @@ TEST_CASE("Vector4F_Lerp")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     SECTION("Separate T")
@@ -2184,24 +2232,24 @@ TEST_CASE("Vector4F_Lerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const t[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2222,20 +2270,20 @@ TEST_CASE("Vector4F_Lerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
-            float const t = r.NextFloat(0.0f, 1.0f);
+            float const t = uniform(r, 0.0f, 1.0f);
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
             SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
@@ -2256,6 +2304,7 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     SECTION("Separate T")
@@ -2263,45 +2312,45 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const c[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const d[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const u[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             float const v[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2325,36 +2374,36 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const c[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const d[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
-            float const u = r.NextFloat(0.0f, 1.0f);
+            float const u = uniform(r, 0.0f, 1.0f);
 
-            float const v = r.NextFloat(0.0f, 1.0f);
+            float const v = uniform(r, 0.0f, 1.0f);
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
             SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
@@ -2379,6 +2428,7 @@ TEST_CASE("Vector4F_BilinearLerp")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     SECTION("Separate T")
@@ -2386,45 +2436,45 @@ TEST_CASE("Vector4F_BilinearLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const c[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const d[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const u[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             float const v[4] = {
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
-                r.NextFloat(0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
+                uniform(r, 0.0f, 1.0f),
             };
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
@@ -2448,36 +2498,36 @@ TEST_CASE("Vector4F_BilinearLerp")
         for (size_t i = 0; i < 200; ++i)
         {
             float const a[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const b[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const c[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
             float const d[4] = {
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
-                r.NextFloat(-10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
+                uniform(r, -10.0f, 10.0f),
             };
 
-            float const u = r.NextFloat(0.0f, 1.0f);
+            float const u = uniform(r, 0.0f, 1.0f);
 
-            float const v = r.NextFloat(0.0f, 1.0f);
+            float const v = uniform(r, 0.0f, 1.0f);
 
             SimdVector4F const va = Vector4F_LoadUnalignedFloat4(a);
             SimdVector4F const vb = Vector4F_LoadUnalignedFloat4(b);
@@ -2504,29 +2554,30 @@ TEST_CASE("Vector4F_Unlerp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const lower[4] = {
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
-            r.NextFloat(-1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
+            uniform(r, -1.0f, 1.0f),
         };
 
         float const upper[4] = {
-            lower[0] + r.NextFloat(1.0f, 10.0f),
-            lower[1] + r.NextFloat(1.0f, 10.0f),
-            lower[2] + r.NextFloat(1.0f, 10.0f),
-            lower[3] + r.NextFloat(1.0f, 10.0f),
+            lower[0] + uniform(r, 1.0f, 10.0f),
+            lower[1] + uniform(r, 1.0f, 10.0f),
+            lower[2] + uniform(r, 1.0f, 10.0f),
+            lower[3] + uniform(r, 1.0f, 10.0f),
         };
 
         float const t[4] = {
-            r.NextFloat(lower[0], upper[0]),
-            r.NextFloat(lower[0], upper[0]),
-            r.NextFloat(lower[0], upper[0]),
-            r.NextFloat(lower[0], upper[0]),
+            uniform(r, lower[0], upper[0]),
+            uniform(r, lower[0], upper[0]),
+            uniform(r, lower[0], upper[0]),
+            uniform(r, lower[0], upper[0]),
         };
 
         SimdVector4F const vLower = Vector4F_LoadUnalignedFloat4(lower);
@@ -2550,43 +2601,44 @@ TEST_CASE("Vector4F_Map")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const sourceLower[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const sourceUpper[4] = {
-            sourceLower[0] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[1] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[2] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[3] + r.NextFloat(1.0f, 10.0f),
+            sourceLower[0] + uniform(r, 1.0f, 10.0f),
+            sourceLower[1] + uniform(r, 1.0f, 10.0f),
+            sourceLower[2] + uniform(r, 1.0f, 10.0f),
+            sourceLower[3] + uniform(r, 1.0f, 10.0f),
         };
 
         float const targetLower[4] = {
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
         };
 
         float const targetUpper[4] = {
-            sourceLower[0] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[1] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[2] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[3] + r.NextFloat(5.0f, 20.0f),
+            sourceLower[0] + uniform(r, 5.0f, 20.0f),
+            sourceLower[1] + uniform(r, 5.0f, 20.0f),
+            sourceLower[2] + uniform(r, 5.0f, 20.0f),
+            sourceLower[3] + uniform(r, 5.0f, 20.0f),
         };
 
         float const value[4] = {
-            r.NextFloat(sourceLower[0], sourceUpper[0]),
-            r.NextFloat(sourceLower[1], sourceUpper[1]),
-            r.NextFloat(sourceLower[2], sourceUpper[2]),
-            r.NextFloat(sourceLower[3], sourceUpper[3]),
+            uniform(r, sourceLower[0], sourceUpper[0]),
+            uniform(r, sourceLower[1], sourceUpper[1]),
+            uniform(r, sourceLower[2], sourceUpper[2]),
+            uniform(r, sourceLower[3], sourceUpper[3]),
         };
 
         SimdVector4F vSourceLower = Vector4F_LoadUnalignedFloat4(sourceLower);
@@ -2612,43 +2664,44 @@ TEST_CASE("Vector4F_PreciseMap")
 
     static constexpr float tolerance = 0.001f;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 200; ++i)
     {
         float const sourceLower[4] = {
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
         };
 
         float const sourceUpper[4] = {
-            sourceLower[0] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[1] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[2] + r.NextFloat(1.0f, 10.0f),
-            sourceLower[3] + r.NextFloat(1.0f, 10.0f),
+            sourceLower[0] + uniform(r, 1.0f, 10.0f),
+            sourceLower[1] + uniform(r, 1.0f, 10.0f),
+            sourceLower[2] + uniform(r, 1.0f, 10.0f),
+            sourceLower[3] + uniform(r, 1.0f, 10.0f),
         };
 
         float const targetLower[4] = {
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
-            r.NextFloat(-5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
+            uniform(r, -5.0f, 15.0f),
         };
 
         float const targetUpper[4] = {
-            sourceLower[0] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[1] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[2] + r.NextFloat(5.0f, 20.0f),
-            sourceLower[3] + r.NextFloat(5.0f, 20.0f),
+            sourceLower[0] + uniform(r, 5.0f, 20.0f),
+            sourceLower[1] + uniform(r, 5.0f, 20.0f),
+            sourceLower[2] + uniform(r, 5.0f, 20.0f),
+            sourceLower[3] + uniform(r, 5.0f, 20.0f),
         };
 
         float const value[4] = {
-            r.NextFloat(sourceLower[0], sourceUpper[0]),
-            r.NextFloat(sourceLower[1], sourceUpper[1]),
-            r.NextFloat(sourceLower[2], sourceUpper[2]),
-            r.NextFloat(sourceLower[3], sourceUpper[3]),
+            uniform(r, sourceLower[0], sourceUpper[0]),
+            uniform(r, sourceLower[1], sourceUpper[1]),
+            uniform(r, sourceLower[2], sourceUpper[2]),
+            uniform(r, sourceLower[3], sourceUpper[3]),
         };
 
         SimdVector4F vSourceLower = Vector4F_LoadUnalignedFloat4(sourceLower);
@@ -2672,15 +2725,16 @@ TEST_CASE("Vector4F_UnwindRadians")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_UnwindRadians(v);
 
@@ -2697,15 +2751,16 @@ TEST_CASE("Vector4F_UnwindDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f));
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f));
 
         SimdVector4F const result = Vector4F_UnwindDegrees(v);
 
@@ -2722,21 +2777,22 @@ TEST_CASE("Vector4F_AngleDifferenceRadians")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const a = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const b = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_AngleDifferenceRadians(a, b);
 
@@ -2753,21 +2809,22 @@ TEST_CASE("Vector4F_AngleDifferenceDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const a = Vector4F_Create(
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f));
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f));
 
         SimdVector4F const b = Vector4F_Create(
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f));
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f));
 
         SimdVector4F const result = Vector4F_AngleDifferenceDegrees(a, b);
 
@@ -2784,15 +2841,16 @@ TEST_CASE("Vector4F_RevolutionsToDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_RevolutionsToDegrees(v);
 
@@ -2809,15 +2867,16 @@ TEST_CASE("Vector4F_RevolutionsToRadians")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_RevolutionsToRadians(v);
 
@@ -2834,15 +2893,16 @@ TEST_CASE("Vector4F_DegreesToRevolutions")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f));
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f));
 
         SimdVector4F const result = Vector4F_DegreesToRevolutions(v);
 
@@ -2859,15 +2919,16 @@ TEST_CASE("Vector4F_RadiansToRevolutions")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_RadiansToRevolutions(v);
 
@@ -2884,15 +2945,16 @@ TEST_CASE("Vector4F_RadiansToDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f),
-            r.NextFloat(-10.0f, 10.0f));
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f),
+            uniform(r, -10.0f, 10.0f));
 
         SimdVector4F const result = Vector4F_RadiansToDegrees(v);
 
@@ -2909,15 +2971,16 @@ TEST_CASE("Vector4F_DegreesToRadians")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    UniformDistribution<float> uniform{};
     Random r{2137};
 
     for (size_t i = 0; i < 20; ++i)
     {
         SimdVector4F const v = Vector4F_Create(
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f),
-            r.NextFloat(-700.0f, 700.0f));
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f),
+            uniform(r, -700.0f, 700.0f));
 
         SimdVector4F const result = Vector4F_DegreesToRadians(v);
 

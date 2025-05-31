@@ -273,23 +273,24 @@ TEST_CASE("RotorF_Rotate3")
     SECTION("Random")
     {
         Random random{2137};
+        UniformDistribution<float> uniform{};
 
         // Pick random unit vector
         for (size_t i = 0; i < 16; ++i)
         {
-            float const axis_x = random.NextFloat(-1.0f, 1.0f);
-            float const axis_y = random.NextFloat(-1.0f, 1.0f);
+            float const axis_x = uniform(random, -1.0f, 1.0f);
+            float const axis_y = uniform(random, -1.0f, 1.0f);
             float const axis_z = 1.0f - (axis_x * axis_x + axis_y * axis_y);
 
             SimdVector4F const axis = Vector4F_Normalize3(Vector4F_Create(axis_x, axis_y, axis_z, 0.0f));
 
-            float const unit_x = random.NextFloat(-1.0f, 1.0f);
-            float const unit_y = random.NextFloat(-1.0f, 1.0f);
+            float const unit_x = uniform(random, -1.0f, 1.0f);
+            float const unit_y = uniform(random, -1.0f, 1.0f);
             float const unit_z = 1.0f - (unit_x * unit_x + unit_y * unit_y);
 
             SimdVector4F const unit = Vector4F_Normalize3(Vector4F_Create(unit_x, unit_y, unit_z, 0.0f));
 
-            float const angle = random.NextFloat(-Pi2<float>, Pi2<float>);
+            float const angle = uniform(random, -Pi2<float>, Pi2<float>);
 
             auto const rotation = RotorF_CreateFromAxisAngle(axis, angle);
 

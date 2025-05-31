@@ -319,4 +319,20 @@ namespace Anemone::Math::Packed
         double M21, M22, M23;
         double M31, M32, M33;
     };
+
+    struct ColorF final
+    {
+        float R;
+        float G;
+        float B;
+        float A;
+    };
+
+    struct ColorD final
+    {
+        double R;
+        double G;
+        double B;
+        double A;
+    };
 }

@@ -12,8 +12,8 @@ namespace Anemone
 
     Uuid UuidGenerator::CreateRandom(Math::Random& generator)
     {
-        uint64_t const lo = generator.NextUInt64();
-        uint64_t const hi = generator.NextUInt64();
+        uint64_t const lo = generator.Next();
+        uint64_t const hi = generator.Next();
 
         std::array elements{lo, hi};
 
@@ -32,8 +32,8 @@ namespace Anemone
         // Big-endian representation of the milliseconds since Unix epoch
         uint64_t const bytes_bigendian = Bitwise::ToBigEndian(milliseconds << 16u);
 
-        uint64_t const lo = generator.NextUInt64();
-        uint64_t const hi = generator.NextUInt64();
+        uint64_t const lo = generator.Next();
+        uint64_t const hi = generator.Next();
 
         std::array elements{lo, hi};
 

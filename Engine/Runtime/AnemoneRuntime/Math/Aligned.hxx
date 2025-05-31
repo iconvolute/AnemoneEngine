@@ -319,4 +319,20 @@ namespace Anemone::Math::Aligned
         double M21, M22, M23;
         double M31, M32, M33;
     };
+
+    struct alignas(16) ColorF final
+    {
+        float R;
+        float G;
+        float B;
+        float A;
+    };
+
+    struct alignas(32) ColorD final
+    {
+        double R;
+        double G;
+        double B;
+        double A;
+    };
 }

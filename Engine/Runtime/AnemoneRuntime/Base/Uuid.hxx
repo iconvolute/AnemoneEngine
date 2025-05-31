@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
 
 #include <cstdint>
 #include <span>
@@ -12,11 +13,6 @@
 #include <array>
 
 #include <fmt/format.h>
-
-namespace Anemone::Math
-{
-    class Random;
-}
 
 namespace Anemone
 {

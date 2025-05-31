@@ -373,6 +373,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
     SECTION("Random")
     {
+        UniformDistribution<float> uniform{};
         Random random{2137};
 
         for (size_t i = 0; i < 100; ++i)
@@ -381,7 +382,7 @@ TEST_CASE("Matrix4x4F_Determinant")
 
             for (float& c : m)
             {
-                c = random.NextFloat(-10.0f, 10.0f);
+                c = uniform(random, -10.0f, 10.0f);
             }
 
             float const expected = Helper_Matrix4x4_ComputeDeterminant(m);
@@ -640,6 +641,7 @@ TEST_CASE("Matrix4x4F_Inverse")
 
     SECTION("Random")
     {
+        UniformDistribution<float> uniform{};
         Random random{2137};
 
         for (size_t i = 0; i < 100; ++i)
@@ -648,7 +650,7 @@ TEST_CASE("Matrix4x4F_Inverse")
 
             for (float& c : m)
             {
-                c = random.NextFloat(-10.0f, 10.0f);
+                c = uniform(random, -10.0f, 10.0f);
             }
 
             float expected_inverse[16];
