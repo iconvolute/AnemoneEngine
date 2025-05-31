@@ -4754,8 +4754,13 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_cmpunord_ps(v, v);
 #elif ANEMONE_FEATURE_NEON
-        uint32x4_t const mask = vceqq_f32(v, v);
-        return vmvnq_u32(mask);
+        //uint32x4_t const mask = vceqq_f32(v, v);
+        //return vmvnq_u32(mask);
+
+        // = [abs(x) as u32, ...]
+        uint32x4_t const absValue = vandq_u32(vreinterpretq_u32_f32(v), vdupq_n_u32(~Float32::SignMask));
+        // = [v > positiveInfinityBits, ...]
+        return vcgtq_u32(absValue, vdupq_n_u32(Float32::PositiveInfinityBits));
 #endif
     }
 

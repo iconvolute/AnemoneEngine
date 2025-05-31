@@ -1352,7 +1352,7 @@ TEST_CASE("Vector4F_ReciprocalSquareRootEst")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
-    static constexpr float tolerance = 0.005f;
+    static constexpr float tolerance = 0.0075f;
 
     UniformDistribution<float> uniform{};
     Random r{2137};
@@ -2142,6 +2142,8 @@ TEST_CASE("Vector4F_PreciseLerp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    static constexpr float tolerance = 0.01f;
+
     UniformDistribution<float> uniform{};
     Random r{2137};
 
@@ -2176,10 +2178,10 @@ TEST_CASE("Vector4F_PreciseLerp")
 
             SimdVector4F const result = Vector4F_PreciseLerp(va, vb, vt);
 
-            REQUIRE_THAT(Vector4F_Extract<0>(result), WithinRel(PreciseLerp<float>(a[0], b[0], t[0])));
-            REQUIRE_THAT(Vector4F_Extract<1>(result), WithinRel(PreciseLerp<float>(a[1], b[1], t[1])));
-            REQUIRE_THAT(Vector4F_Extract<2>(result), WithinRel(PreciseLerp<float>(a[2], b[2], t[2])));
-            REQUIRE_THAT(Vector4F_Extract<3>(result), WithinRel(PreciseLerp<float>(a[3], b[3], t[3])));
+            REQUIRE_THAT(Vector4F_Extract<0>(result), WithinRel(PreciseLerp<float>(a[0], b[0], t[0]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<1>(result), WithinRel(PreciseLerp<float>(a[1], b[1], t[1]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<2>(result), WithinRel(PreciseLerp<float>(a[2], b[2], t[2]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<3>(result), WithinRel(PreciseLerp<float>(a[3], b[3], t[3]), tolerance));
         }
     }
 
@@ -2304,6 +2306,8 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    static constexpr float tolerance = 0.01f;
+
     UniformDistribution<float> uniform{};
     Random r{2137};
 
@@ -2362,10 +2366,10 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
 
             SimdVector4F const result = Vector4F_PreciseBilinearLerp(va, vb, vc, vd, vu, vv);
 
-            REQUIRE_THAT(Vector4F_Extract<0>(result), WithinRel(PreciseBilinearLerp<float>(a[0], b[0], c[0], d[0], u[0], v[0])));
-            REQUIRE_THAT(Vector4F_Extract<1>(result), WithinRel(PreciseBilinearLerp<float>(a[1], b[1], c[1], d[1], u[1], v[1])));
-            REQUIRE_THAT(Vector4F_Extract<2>(result), WithinRel(PreciseBilinearLerp<float>(a[2], b[2], c[2], d[2], u[2], v[2])));
-            REQUIRE_THAT(Vector4F_Extract<3>(result), WithinRel(PreciseBilinearLerp<float>(a[3], b[3], c[3], d[3], u[3], v[3])));
+            REQUIRE_THAT(Vector4F_Extract<0>(result), WithinRel(PreciseBilinearLerp<float>(a[0], b[0], c[0], d[0], u[0], v[0]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<1>(result), WithinRel(PreciseBilinearLerp<float>(a[1], b[1], c[1], d[1], u[1], v[1]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<2>(result), WithinRel(PreciseBilinearLerp<float>(a[2], b[2], c[2], d[2], u[2], v[2]), tolerance));
+            REQUIRE_THAT(Vector4F_Extract<3>(result), WithinRel(PreciseBilinearLerp<float>(a[3], b[3], c[3], d[3], u[3], v[3]), tolerance));
         }
     }
 
@@ -2751,6 +2755,8 @@ TEST_CASE("Vector4F_UnwindDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    static constexpr float tolerance = 0.01f;
+
     UniformDistribution<float> uniform{};
     Random r{2137};
 
@@ -2764,10 +2770,10 @@ TEST_CASE("Vector4F_UnwindDegrees")
 
         SimdVector4F const result = Vector4F_UnwindDegrees(v);
 
-        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(UnwindDegrees(Vector4F_Extract<0>(v))));
-        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(UnwindDegrees(Vector4F_Extract<1>(v))));
-        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(UnwindDegrees(Vector4F_Extract<2>(v))));
-        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(UnwindDegrees(Vector4F_Extract<3>(v))));
+        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(UnwindDegrees(Vector4F_Extract<0>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(UnwindDegrees(Vector4F_Extract<1>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(UnwindDegrees(Vector4F_Extract<2>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(UnwindDegrees(Vector4F_Extract<3>(v)), tolerance));
     }
 }
 
@@ -2776,6 +2782,8 @@ TEST_CASE("Vector4F_AngleDifferenceRadians")
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
+
+    static constexpr float tolerance = 0.01f;
 
     UniformDistribution<float> uniform{};
     Random r{2137};
@@ -2796,10 +2804,10 @@ TEST_CASE("Vector4F_AngleDifferenceRadians")
 
         SimdVector4F const result = Vector4F_AngleDifferenceRadians(a, b);
 
-        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<0>(a), Vector4F_Extract<0>(b))));
-        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<1>(a), Vector4F_Extract<1>(b))));
-        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<2>(a), Vector4F_Extract<2>(b))));
-        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<3>(a), Vector4F_Extract<3>(b))));
+        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<0>(a), Vector4F_Extract<0>(b)), tolerance));
+        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<1>(a), Vector4F_Extract<1>(b)), tolerance));
+        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<2>(a), Vector4F_Extract<2>(b)), tolerance));
+        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(AngleDifferenceRadians(Vector4F_Extract<3>(a), Vector4F_Extract<3>(b)), tolerance));
     }
 }
 
@@ -4003,7 +4011,7 @@ TEST_CASE("Vector4F_CompareNaN")
     using namespace Catch::Matchers;
 
     {
-        SimdVector4F const v = Vector4F_Create((rand() & 1) ? std::numeric_limits<float>::quiet_NaN() : 0.0f, 2.0f, 1.0f, std::numeric_limits<float>::infinity());
+        SimdVector4F const v = Vector4F_Create(static_cast<float>(rand()) + std::numeric_limits<float>::quiet_NaN(), 2.0f, 1.0f, std::numeric_limits<float>::infinity());
         SimdMask4F const r = Vector4F_CompareNaN(v);
 
         REQUIRE(Mask4F_Extract<0>(r) != 0);

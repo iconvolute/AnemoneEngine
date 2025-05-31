@@ -27,37 +27,33 @@ namespace Anemone::Math
 {
     struct [[nodiscard]] Xorshiro256ss final
     {
-        std::array<uint64_t, 4> state{};
+        std::array<uint64_t, 4> State{};
 
-        static constexpr Xorshiro256ss New()
+        explicit Xorshiro256ss()
+            : Xorshiro256ss{0}
         {
-            return New(1);
         }
 
-        static constexpr Xorshiro256ss New(uint64_t seed)
+        explicit Xorshiro256ss(uint64_t seed)
         {
-            Xorshiro256ss result;
-
-            for (uint64_t& value : result.state)
+            for (uint64_t& state : this->State)
             {
-                value = Detail::SplitMix64(seed);
+                state = Detail::SplitMix64(seed);
             }
-
-            return result;
         }
 
         constexpr uint64_t Next()
         {
-            uint64_t const result = std::rotl<uint64_t>(this->state[1] * 5u, 7u) * 9u;
-            uint64_t const t = this->state[1] << 17u;
+            uint64_t const result = std::rotl<uint64_t>(this->State[1] * 5u, 7u) * 9u;
+            uint64_t const t = this->State[1] << 17u;
 
-            this->state[2] ^= this->state[0];
-            this->state[3] ^= this->state[1];
-            this->state[1] ^= this->state[2];
-            this->state[0] ^= this->state[3];
+            this->State[2] ^= this->State[0];
+            this->State[3] ^= this->State[1];
+            this->State[1] ^= this->State[2];
+            this->State[0] ^= this->State[3];
 
-            this->state[2] ^= t;
-            this->state[3] = std::rotl<uint64_t>(this->state[3], 45u);
+            this->State[2] ^= t;
+            this->State[3] = std::rotl<uint64_t>(this->State[3], 45u);
 
             return result;
         }
@@ -82,60 +78,56 @@ namespace Anemone::Math
                 {
                     if (index & (uint64_t{1} << b))
                     {
-                        s0 ^= this->state[0];
-                        s1 ^= this->state[1];
-                        s2 ^= this->state[2];
-                        s3 ^= this->state[3];
+                        s0 ^= this->State[0];
+                        s1 ^= this->State[1];
+                        s2 ^= this->State[2];
+                        s3 ^= this->State[3];
                     }
 
                     (void)this->Next();
                 }
             }
 
-            this->state[0] = s0;
-            this->state[1] = s1;
-            this->state[2] = s2;
-            this->state[3] = s3;
+            this->State[0] = s0;
+            this->State[1] = s1;
+            this->State[2] = s2;
+            this->State[3] = s3;
         }
     };
 
     struct [[nodiscard]] Xorshiro512ss final
     {
-        std::array<uint64_t, 8> state{};
+        std::array<uint64_t, 8> State{};
 
-        static constexpr Xorshiro512ss New()
+        explicit Xorshiro512ss()
+            : Xorshiro512ss{0}
         {
-            return New(1);
         }
 
-        static constexpr Xorshiro512ss New(uint64_t seed)
+        explicit Xorshiro512ss(uint64_t seed)
         {
-            Xorshiro512ss result;
-
-            for (uint64_t& value : result.state)
+            for (uint64_t& state : this->State)
             {
-                value = Detail::SplitMix64(seed);
+                state = Detail::SplitMix64(seed);
             }
-
-            return result;
         }
 
         constexpr uint64_t Next()
         {
-            uint64_t const result = std::rotl<uint64_t>(this->state[1] * 5u, 7u) * 9u;
-            uint64_t const t = this->state[1] << 11u;
+            uint64_t const result = std::rotl<uint64_t>(this->State[1] * 5u, 7u) * 9u;
+            uint64_t const t = this->State[1] << 11u;
 
-            this->state[2] ^= this->state[0];
-            this->state[5] ^= this->state[1];
-            this->state[1] ^= this->state[2];
-            this->state[7] ^= this->state[3];
-            this->state[3] ^= this->state[4];
-            this->state[4] ^= this->state[5];
-            this->state[0] ^= this->state[6];
-            this->state[6] ^= this->state[7];
+            this->State[2] ^= this->State[0];
+            this->State[5] ^= this->State[1];
+            this->State[1] ^= this->State[2];
+            this->State[7] ^= this->State[3];
+            this->State[3] ^= this->State[4];
+            this->State[4] ^= this->State[5];
+            this->State[0] ^= this->State[6];
+            this->State[6] ^= this->State[7];
 
-            this->state[6] ^= t;
-            this->state[7] = std::rotl<uint64_t>(this->state[7], 21u);
+            this->State[6] ^= t;
+            this->State[7] = std::rotl<uint64_t>(this->State[7], 21u);
 
             return result;
         }
@@ -168,28 +160,28 @@ namespace Anemone::Math
                 {
                     if (index & (uint64_t{1} << b))
                     {
-                        s0 ^= this->state[0];
-                        s1 ^= this->state[1];
-                        s2 ^= this->state[2];
-                        s3 ^= this->state[3];
-                        s4 ^= this->state[4];
-                        s5 ^= this->state[5];
-                        s6 ^= this->state[6];
-                        s7 ^= this->state[7];
+                        s0 ^= this->State[0];
+                        s1 ^= this->State[1];
+                        s2 ^= this->State[2];
+                        s3 ^= this->State[3];
+                        s4 ^= this->State[4];
+                        s5 ^= this->State[5];
+                        s6 ^= this->State[6];
+                        s7 ^= this->State[7];
                     }
 
                     (void)this->Next();
                 }
             }
 
-            this->state[0] = s0;
-            this->state[1] = s1;
-            this->state[2] = s2;
-            this->state[3] = s3;
-            this->state[4] = s4;
-            this->state[5] = s5;
-            this->state[6] = s6;
-            this->state[7] = s7;
+            this->State[0] = s0;
+            this->State[1] = s1;
+            this->State[2] = s2;
+            this->State[3] = s3;
+            this->State[4] = s4;
+            this->State[5] = s5;
+            this->State[6] = s6;
+            this->State[7] = s7;
         }
     };
 
