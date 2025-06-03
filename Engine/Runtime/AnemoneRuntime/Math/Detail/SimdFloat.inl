@@ -534,6 +534,28 @@ namespace Anemone::Math::Detail
         return vaddvq_u32(shifted);
     }
 
+#if ANEMONE_COMPILER_MSVC
+#pragma float_control(push)
+#pragma float_control(precise, on)
+#endif
+
+    inline uint32x4_t anemone_vectorcall NeonCompareNaN(float32x4_t v)
+    {
+#if false
+        uint32x4_t const mask = vceqq_f32(v, v);
+        return vmvnq_u32(mask);
+#else
+        // = [abs(x) as u32, ...]
+        uint32x4_t const absValue = vandq_u32(vreinterpretq_u32_f32(v), vdupq_n_u32(~Float32::SignMask));
+        // = [v > positiveInfinityBits, ...]
+        return vcgtq_u32(absValue, vdupq_n_u32(Float32::PositiveInfinityBits));
+#endif
+    }
+
+#if ANEMONE_COMPILER_MSVC
+#pragma float_control(pop)
+#endif
+
     inline uint32_t anemone_vectorcall NeonExtractMask2(uint32x2_t m)
     {
         // = [v & 1 << 31]
@@ -4754,13 +4776,7 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_cmpunord_ps(v, v);
 #elif ANEMONE_FEATURE_NEON
-        //uint32x4_t const mask = vceqq_f32(v, v);
-        //return vmvnq_u32(mask);
-
-        // = [abs(x) as u32, ...]
-        uint32x4_t const absValue = vandq_u32(vreinterpretq_u32_f32(v), vdupq_n_u32(~Float32::SignMask));
-        // = [v > positiveInfinityBits, ...]
-        return vcgtq_u32(absValue, vdupq_n_u32(Float32::PositiveInfinityBits));
+        return NeonCompareNaN(v);
 #endif
     }
 
