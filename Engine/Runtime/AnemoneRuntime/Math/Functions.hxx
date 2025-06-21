@@ -510,23 +510,39 @@ namespace Anemone::Math
 
 namespace Anemone::Math
 {
-    inline Packed::Vector3F CartesianToSpherical(Packed::Vector3F const& value) noexcept
+    inline Packed::Vector3F CartesianToSpherical(Packed::Vector3F const& value)
     {
-        const auto radius = Sqrt(
+        auto const radius = Sqrt(
             value.X * value.X +
             value.Y * value.Y +
             value.Z * value.Z);
 
-        const auto theta = Acos(
+        auto const theta = Acos(
             value.Z / radius);
 
-        const auto phi = Atan(
+        auto const phi = Atan(
             value.Y / value.X);
 
         return {radius, theta, phi};
     }
 
-    inline Packed::Vector3F SphericalToCartesian(Packed::Vector3F const& value) noexcept
+    inline Packed::Vector3D CartesianToSpherical(Packed::Vector3D const& value)
+    {
+        auto const radius = Sqrt(
+            value.X * value.X +
+            value.Y * value.Y +
+            value.Z * value.Z);
+
+        auto const theta = Acos(
+            value.Z / radius);
+
+        auto const phi = Atan(
+            value.Y / value.X);
+
+        return {radius, theta, phi};
+    }
+
+    inline Packed::Vector3F SphericalToCartesian(Packed::Vector3F const& value)
     {
         auto const [sinTheta, cosTheta] = SinCos(value.Y);
 
@@ -539,7 +555,20 @@ namespace Anemone::Math
         return {partial * cosPhi, partial * sinPhi, radius * cosTheta};
     }
 
-    inline Packed::Vector3F CartesianToCylindrical(Packed::Vector3F const& value) noexcept
+    inline Packed::Vector3D SphericalToCartesian(Packed::Vector3D const& value)
+    {
+        auto const [sinTheta, cosTheta] = SinCos(value.Y);
+
+        auto const [sinPhi, cosPhi] = SinCos(value.Z);
+
+        auto const radius = value.X;
+
+        auto const partial = radius * sinTheta;
+
+        return {partial * cosPhi, partial * sinPhi, radius * cosTheta};
+    }
+
+    inline Packed::Vector3F CartesianToCylindrical(Packed::Vector3F const& value)
     {
         auto const radius = Sqrt(
             value.X * value.X +
@@ -553,21 +582,41 @@ namespace Anemone::Math
         return {radius, angle, elevation};
     }
 
-    inline Packed::Vector3F CylindricalToCartesian(Packed::Vector3F const& value) noexcept
+    inline Packed::Vector3D CartesianToCylindrical(Packed::Vector3D const& value)
     {
-        auto const radius = value.X;
-        auto const angle = value.Y;
+        auto const radius = Sqrt(
+            value.X * value.X +
+            value.Y * value.Y);
+
+        auto const angle = Atan(
+            value.Y / value.X);
+
         auto const elevation = value.Z;
+
+        return {radius, angle, elevation};
+    }
+
+    inline Packed::Vector3F CylindricalToCartesian(Packed::Vector3F const& value)
+    {
+        auto const [radius, angle, elevation] = value;
 
         auto const [sinAngle, cosAngle] = SinCos(angle);
 
         return {radius * cosAngle, radius * sinAngle, elevation};
     }
 
-    inline Packed::Vector2F PolarToCartesian(Packed::Vector2F const& value) noexcept
+    inline Packed::Vector3D CylindricalToCartesian(Packed::Vector3D const& value)
     {
-        auto const radius = value.X;
-        auto const angle = value.Y;
+        auto const [radius, angle, elevation] = value;
+
+        auto const [sinAngle, cosAngle] = SinCos(angle);
+
+        return {radius * cosAngle, radius * sinAngle, elevation};
+    }
+
+    inline Packed::Vector2F PolarToCartesian(Packed::Vector2F const& value)
+    {
+        auto const [radius, angle] = value;
 
         auto const [sinAngle, cosAngle] = SinCos(angle);
 
@@ -577,7 +626,30 @@ namespace Anemone::Math
         return {x, y};
     }
 
-    inline Packed::Vector2F CartesianToPolar(Packed::Vector2F const& value) noexcept
+    inline Packed::Vector2D PolarToCartesian(Packed::Vector2D const& value)
+    {
+        auto const [radius, angle] = value;
+
+        auto const [sinAngle, cosAngle] = SinCos(angle);
+
+        auto const x = radius * cosAngle;
+        auto const y = radius * sinAngle;
+
+        return {x, y};
+    }
+
+    inline Packed::Vector2F CartesianToPolar(Packed::Vector2F const& value)
+    {
+        auto const radius = Sqrt(
+            value.X * value.X +
+            value.Y * value.Y);
+
+        auto const angle = Atan2(value.Y, value.X);
+
+        return {radius, angle};
+    }
+
+    inline Packed::Vector2D CartesianToPolar(Packed::Vector2D const& value)
     {
         auto const radius = Sqrt(
             value.X * value.X +
