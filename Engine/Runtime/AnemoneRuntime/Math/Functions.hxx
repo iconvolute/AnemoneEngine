@@ -99,6 +99,12 @@ namespace Anemone::Math::Detail
 
 #endif
 
+namespace Anemone::Math::Detail
+{
+    inline constexpr int32_t UlpToleranceFloat = 4;
+    inline constexpr int64_t UlpToleranceDouble = 16;
+}
+
 namespace Anemone::Math
 {
     template <typename T>
@@ -999,18 +1005,14 @@ namespace Anemone::Math
 
     inline bool IsNearZeroPrecise(float x)
     {
-        static constexpr int32_t ulpTolerance = 4;
-
         int32_t const bits = std::bit_cast<int32_t>(x);
-        return Abs(bits) <= ulpTolerance;
+        return Abs(bits) <= Detail::UlpToleranceFloat;
     }
 
     inline bool IsNearZeroPrecise(double x)
     {
-        static constexpr int64_t ulpTolerance = 4;
-
         int64_t const bits = std::bit_cast<int64_t>(x);
-        return Abs(bits) <= ulpTolerance;
+        return Abs(bits) <= Detail::UlpToleranceDouble;
     }
 
     template <typename T>
@@ -1055,8 +1057,7 @@ namespace Anemone::Math
 
         // FLT_EPSILON does not scale with the magnitude of the numbers being compared.
         // Use ULP (Units in the Last Place) to compare floating point numbers.
-        static constexpr int32_t ulpTolerance = 4;
-        return Abs(bitsA - bitsB) <= ulpTolerance;
+        return Abs(bitsA - bitsB) <= Detail::UlpToleranceFloat;
     }
 
     inline bool IsNearEqualPrecise(double a, double b)
@@ -1080,8 +1081,7 @@ namespace Anemone::Math
 
         // DBL_EPSILON does not scale with the magnitude of the numbers being compared.
         // Use ULP (Units in the Last Place) to compare floating point numbers.
-        static constexpr int64_t ulpTolerance = 4;
-        return Abs(bitsA - bitsB) <= ulpTolerance;
+        return Abs(bitsA - bitsB) <= Detail::UlpToleranceDouble;
     }
 
     template <typename T>
