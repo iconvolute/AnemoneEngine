@@ -643,6 +643,13 @@ namespace Anemone::Math
     }
 
     template <typename T>
+    constexpr T Midpoint(T a, T b)
+        requires(std::is_floating_point_v<T>)
+    {
+        return (a + b) * T(0.5);
+    }
+
+    template <typename T>
     constexpr T Map(T value, T sourceLower, T sourceUpper, T targetLower, T targetUpper)
         requires(std::is_floating_point_v<T>)
     {
