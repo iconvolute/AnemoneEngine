@@ -232,6 +232,7 @@ namespace Anemone::Math::Detail
     SimdVector4F anemone_vectorcall Vector4F_CatmullRom(SimdVector4F p0, SimdVector4F p1, SimdVector4F p2, SimdVector4F p3, SimdVector4F t);
     SimdVector4F anemone_vectorcall Vector4F_CatmullRom(SimdVector4F p0, SimdVector4F p1, SimdVector4F p2, SimdVector4F p3, float t);
 
+    SimdVector4F anemone_vectorcall Vector4F_Midpoint(SimdVector4F p0, SimdVector4F p1);
     SimdVector4F anemone_vectorcall Vector4F_DeCasteljau(SimdVector4F p0, SimdVector4F p1, SimdVector4F p2, SimdVector4F p3, SimdVector4F t);
 
     SimdVector4F anemone_vectorcall Vector4F_UnwindRadians(SimdVector4F v);

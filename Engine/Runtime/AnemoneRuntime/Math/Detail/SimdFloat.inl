@@ -3291,6 +3291,22 @@ namespace Anemone::Math::Detail
 #endif
     }
 
+    inline SimdVector4F anemone_vectorcall Vector4F_Midpoint(SimdVector4F p0, SimdVector4F p1)
+    {
+#if ANEMONE_BUILD_DISABLE_SIMD
+        return SimdVector4F{
+            Midpoint<float>(p0.Inner[0], p1.Inner[0]),
+            Midpoint<float>(p0.Inner[1], p1.Inner[1]),
+            Midpoint<float>(p0.Inner[2], p1.Inner[2]),
+            Midpoint<float>(p0.Inner[3], p1.Inner[3]),
+        };
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+        return _mm_mul_ps(_mm_add_ps(p0, p1), _mm_set1_ps(0.5f));
+#elif ANEMONE_FEATURE_NEON
+        return vmulq_f32(vaddq_f32(p0, p1), vdupq_n_f32(0.5f));
+#endif
+    }
+
     inline SimdVector4F anemone_vectorcall Vector4F_DeCasteljau(SimdVector4F p0, SimdVector4F p1, SimdVector4F p2, SimdVector4F p3, SimdVector4F t)
     {
         // https://en.wikipedia.org/wiki/De_Casteljau%27s_algorithm
