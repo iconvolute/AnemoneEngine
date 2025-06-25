@@ -141,8 +141,14 @@ namespace Anemone::UI
         virtual ~Style() = default;
     };
 
-    struct StylePatch
+    struct StylePatch final
     {
+        Math::RectF Rect;
+    };
+
+    struct StylePatchGrid final
+    {
+        Math::RectF Rect;
         Math::ThicknessF Padding;
     };
 

@@ -51,14 +51,6 @@ namespace Anemone::UI
         RightToLeft,
     };
 
-    enum class ResizeMode
-    {
-        CanMinimalize,
-        CanResize,
-        CanResizeWithGrip,
-        NoResize,
-    };
-
     enum class HorizontalAlignment
     {
         Left,
@@ -172,56 +164,12 @@ namespace Anemone::UI
         Scroll,
     };
 
-        enum class TextAlignment
-    {
-        Left,
-        Center,
-        Right,
-        Justify,
-    };
-
-    enum class TextDecoration
-    {
-        Underline,
-        Overline,
-        Strikethrough,
-        Baseline,
-    };
-
-    enum class TextTrimming
-    {
-        WrapWithOverflow,
-        NoWrap,
-        Wrap,
-    };
-
-    enum class Visibility
-    {
-        Visible,
-        Hidden,
-        Collapsed,
-    };
-
-    enum class FlowDirection
-    {
-        LeftToRight,
-        RightToLeft,
-    };
-
     enum class ResizeMode
     {
         CanMinimize,
         CanResize,
         CanResizeWithGrip,
         NoResize,
-    };
-
-    enum class HorizontalAlignment
-    {
-        Left,
-        Center,
-        Right,
-        Stretch,
     };
 
     enum class VerticalAlignment
@@ -232,36 +180,6 @@ namespace Anemone::UI
         Stretch,
     };
 
-    enum class WrapDirection
-    {
-        None,
-        Left,
-        Right,
-        Both,
-    };
-
-    enum class WindowStartupLocation
-    {
-        CenterOwner,
-        CenterScreen,
-        Manual,
-    };
-
-    enum class WindowState
-    {
-        Normal,
-        Minimized,
-        Maximized,
-    };
-
-    enum class WindowStyle
-    {
-        None,
-        SingleBorder,
-        Normal,
-        ToolWindow,
-    };
-
     enum Docking
     {
         None,
@@ -270,5 +188,11 @@ namespace Anemone::UI
         Top,
         Bottom,
         Fill,
+    };
+
+    enum class NavigationDirection
+    {
+        Forward,
+        Backward,
     };
 }
