@@ -336,8 +336,206 @@ struct V2 : Anemone::DirectoryVisitor
 // EditorEngine : Engine
 //
 
-int AnemoneMain(int argc, char** argv)
+#include "AnemoneRuntime/Math/PidController.hxx"
+#include "AnemoneRuntime/Math/Random.hxx"
+
+namespace Anemone::Builtins
 {
+    constexpr uint32_t UInt32_MaskTrue = 0xFFFFFFFFu;
+    constexpr uint32_t UInt32_MaskFalse = 0x00000000u;
+
+    constexpr uint32_t UInt32_ToBitwiseMask(bool value)
+    {
+        return static_cast<uint32_t>(-static_cast<int32_t>(value));
+    }
+
+    constexpr uint32_t UInt32_CompareEquals(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a == b);
+    }
+
+    constexpr uint32_t UInt32_CompareNotEquals(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a != b);
+    }
+
+    constexpr uint32_t UInt32_CompareLess(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a < b);
+    }
+
+    constexpr uint32_t UInt32_CompareLessEqual(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a <= b);
+    }
+
+    constexpr uint32_t UInt32_CompareGreater(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a > b);
+    }
+
+    constexpr uint32_t UInt32_CompareGreaterEqual(uint32_t a, uint32_t b)
+    {
+        return UInt32_ToBitwiseMask(a >= b);
+    }
+
+    constexpr uint32_t UInt32_BitwiseAnd(uint32_t a, uint32_t b)
+    {
+        return a & b;
+    }
+
+    constexpr uint32_t UInt32_BitwiseOr(uint32_t a, uint32_t b)
+    {
+        return a | b;
+    }
+
+    constexpr uint32_t UInt32_BitwiseXor(uint32_t a, uint32_t b)
+    {
+        return a ^ b;
+    }
+
+    constexpr uint32_t UInt32_BitwiseNot(uint32_t a)
+    {
+        return ~a;
+    }
+
+    constexpr uint32_t UInt32_BitwiseSelect(uint32_t mask, uint32_t whenFalse, uint32_t whenTrue)
+    {
+        return (mask & whenTrue) | (~mask & whenFalse);
+    }
+
+    constexpr uint32_t UInt32_Min(uint32_t a, uint32_t b)
+    {
+        return (a < b) ? a : b;
+    }
+
+    constexpr uint32_t UInt32_Max(uint32_t a, uint32_t b)
+    {
+        return (a > b) ? a : b;
+    }
+
+
+}
+
+namespace Anemone::Math
+{
+    namespace Detail
+    {
+        constexpr float KernelReduce(float x)
+        {
+            float quotient = x * InvPi2<float>;
+
+            if (x >= 0.0f)
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient + 0.5f));
+            }
+            else
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient - 0.5f));
+            }
+
+            float y = x - quotient * Pi2<float>;
+
+            if (y > PiOver2<float>)
+            {
+                y = Pi<float> - y;
+            }
+            else if (y < -PiOver2<float>)
+            {
+                y = -Pi<float> - y;
+            }
+
+            return y;
+        }
+    }
+
+    constexpr float MySin(float x)
+    {
+        x = Detail::KernelReduce(x);
+
+        static constexpr float ConstFloat32_SinC0 = +1.0f;
+        static constexpr float ConstFloat32_SinC1 = -0.16666667f;
+        static constexpr float ConstFloat32_SinC2 = +0.0083333310f;
+        static constexpr float ConstFloat32_SinC3 = -0.00019840874f;
+        static constexpr float ConstFloat32_SinC4 = +2.7525562e-06f;
+        static constexpr float ConstFloat32_SinC5 = -2.3889859e-08f;
+
+        float const x2 = x * x;
+
+        float const r0 = (ConstFloat32_SinC5 * x2) + ConstFloat32_SinC4;
+        float const r1 = (r0 * x2) + ConstFloat32_SinC3;
+        float const r2 = (r1 * x2) + ConstFloat32_SinC2;
+        float const r3 = (r2 * x2) + ConstFloat32_SinC1;
+        float const r4 = (r3 * x2) + ConstFloat32_SinC0;
+        return r4 * x;
+    }
+}
+
+anemone_noinline void
+test1()
+{
+    float maxdiff = 0.0f;
+
+    for (float x = -Anemone::Math::Pi2<float>; x < Anemone::Math::Pi2<float>; x = std::nexttoward(x, 100.0f))
+    {
+        float const mysin = Anemone::Math::MySin(x);
+        float const oursin = Anemone::Math::Sin(x);
+        float const diff = Anemone::Math::Max(mysin, oursin) - Anemone::Math::Min(mysin, oursin);
+        maxdiff = Anemone::Math::Max(maxdiff, diff);
+        //AE_TRACE(Error, "mysin: {} = {} => {}", mysin, oursin, diff);
+    }
+    AE_TRACE(Error, "MaxDiff: {}", maxdiff);
+    (void)Anemone::Clipboard2::Get().SetText("testing1!");
+}
+
+anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
+{
+    return Anemone::Math::UniformDistribution<double>{}(generator);
+}
+
+anemone_noinline void test2()
+{
+    (void)Anemone::Clipboard::SetText("testing2123");
+}
+
+anemone_noinline Anemone::Math::Detail::SimdMask4F foo(Anemone::Math::Detail::SimdVector4F v)
+{
+    return Anemone::Math::Detail::Vector4F_CompareNaN(v);
+}
+
+#include "AnemoneRuntime/Base/AdaptiveTimer.hxx"
+
+anemone_noinline void test3()
+{
+    Anemone::AdaptiveTimer timer{};
+
+    for (size_t i = 0; i < 1000; ++i)
+    {
+        timer.Tick([&](Anemone::Duration const& duration)
+        {
+            Anemone::CurrentThread::YieldAnyThreadOnSameProcessor();
+            (void)duration;
+            // Anemone::CurrentThread::Sleep(50);
+            // AE_TRACE(Error, "Tick: {}, DT: {}, FC: {}, FPS: {}", i, duration.ToMicroseconds(), timer.GetFramesCount(), timer.GetFramesPerSecond());
+        });
+    }
+    AE_TRACE(Error, "Frames:            '{}'", timer.GetFramesCount());
+    AE_TRACE(Error, "Frames-Per-Second: '{}'", timer.GetFramesPerSecond());
+}
+
+anemone_noinline int AnemoneMain(int argc, char** argv)
+{
+    //test3();
+    //if (argc)
+    //{
+    //    return -1;
+    //}
+    //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
+    test1();
+    test2();
+    (void)Anemone::Clipboard2::Get().SetText("testing1!");
+    (void)Anemone::Clipboard2::Get().SetText("testing2!");
+
 #if false
     (void)Anemone::Process::Start("DevDebugger.exe", fmt::format("--pid {}", GetCurrentProcessId()), {});
 #endif

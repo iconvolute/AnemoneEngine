@@ -1,18 +1,8 @@
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
-//#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-//#include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-//#include "AnemoneRuntime/Interop/Windows/Process.hxx"
-//#include "AnemoneRuntime/Interop/Windows/Debugger.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/MemoryMappedFile.hxx"
-//#include "AnemoneRuntime/Threading/CriticalSection.hxx"
-//#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-//
-//
-//#include <iterator>
+
 #include <format>
-//
-//#include "AnemoneRuntime/Base/Instant.hxx"
 
 namespace Anemone::Diagnostics
 {
@@ -353,7 +343,35 @@ namespace Anemone::Internal
 #if defined(_MSC_VER)
         Diagnostics::GPureCallHandler = _set_purecall_handler(Diagnostics::OnPureCallHandler);
         Diagnostics::GInvalidParameterHandler = _set_invalid_parameter_handler(Diagnostics::OnInvalidParameterHandler);
+#endif
+
         Diagnostics::GTerminateHandler = std::set_terminate(Diagnostics::OnTerminateHandler);
+
+#if !defined(NDEBUG) && defined(_MSC_VER)
+        //
+        // Enable CRT debugging facilities.
+        //
+
+        auto crtdbg = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
+        crtdbg |= _CRTDBG_ALLOC_MEM_DF;
+        crtdbg |= _CRTDBG_CHECK_ALWAYS_DF;
+        crtdbg |= _CRTDBG_CHECK_CRT_DF;
+        crtdbg |= _CRTDBG_DELAY_FREE_MEM_DF;
+        crtdbg |= _CRTDBG_LEAK_CHECK_DF;
+
+        if constexpr (true)
+        {
+            // Enable checking each 1024 allocations
+            crtdbg &= ~_CRTDBG_CHECK_ALWAYS_DF;
+            crtdbg &= 0x0000FFFF;
+            crtdbg |= _CRTDBG_CHECK_EVERY_1024_DF;
+        }
+
+        _CrtSetDbgFlag(crtdbg);
+
+        _CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_ERROR, _CRTDBG_MODE_DEBUG);
+        _CrtSetReportMode(_CRT_ASSERT, _CRTDBG_MODE_DEBUG);
 #endif
 
 #if ENABLE_HEAP_CORRUPTION_CRASHES
@@ -368,11 +386,12 @@ namespace Anemone::Internal
         RemoveVectoredExceptionHandler(OnUnhandledExceptionVEH);
 #endif
 
-#if defined(_MSC_VER)
+#if ANEMONE_COMPILER_MSVC
         _set_purecall_handler(Diagnostics::GPureCallHandler);
         _set_invalid_parameter_handler(Diagnostics::GInvalidParameterHandler);
-        std::set_terminate(Diagnostics::GTerminateHandler);
 #endif
+
+        std::set_terminate(Diagnostics::GTerminateHandler);
 
         SetUnhandledExceptionFilter(Diagnostics::GPreviousExceptionFilter);
     }
