@@ -28,9 +28,6 @@ namespace Anemone::Internal
 {
     extern bool GIsConsoleApplication; 
     bool GIsConsoleApplication = false;
-
-    extern UINT GBinaryClipboardFormat;
-    UINT GBinaryClipboardFormat = 0;
 }
 
 namespace Anemone
@@ -43,7 +40,7 @@ namespace Anemone
             bool HyperThreaded{};
         };
 
-        struct Statics final
+        struct EnvironmentStatics final
         {
             DateTime startupTime;
             Uuid systemId;
@@ -93,9 +90,9 @@ namespace Anemone
             Interop::string_buffer<char, 64> processorVendor{};
         };
 
-        UninitializedObject<Statics> GStatics{};
+        UninitializedObject<EnvironmentStatics> gEnvironmentStatics{};
 
-        void InitializeEnvironment(Statics& statics)
+        void InitializeEnvironment(EnvironmentStatics& statics)
         {
             //
             // Capture application startup time.
@@ -246,7 +243,7 @@ namespace Anemone
             }
         }
 
-        void InitializeProcessorProperties(Statics& statics)
+        void InitializeProcessorProperties(EnvironmentStatics& statics)
         {
             Interop::memory_buffer<4096> buffer{};
 
@@ -540,17 +537,14 @@ namespace Anemone::Internal
         }
 #endif
 
-        // Register our clipboard format
-        GBinaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
-
-        GStatics.Create();
-        InitializeEnvironment(*GStatics);
-        InitializeProcessorProperties(*GStatics);
+        gEnvironmentStatics.Create();
+        InitializeEnvironment(*gEnvironmentStatics);
+        InitializeProcessorProperties(*gEnvironmentStatics);
     }
 
     extern void FinalizeEnvironment()
     {
-        GStatics.Destroy();
+        gEnvironmentStatics.Destroy();
 
         if (WSACleanup() != 0)
         {
@@ -744,17 +738,17 @@ namespace Anemone
 
     auto Environment::GetSystemVersion() -> std::string_view
     {
-        return GStatics->systemVersion;
+        return gEnvironmentStatics->systemVersion;
     }
 
     auto Environment::GetSystemId() -> Uuid
     {
-        return GStatics->systemId;
+        return gEnvironmentStatics->systemId;
     }
 
     auto Environment::GetSystemName() -> std::string_view
     {
-        return GStatics->systemName;
+        return gEnvironmentStatics->systemName;
     }
 
     auto Environment::GetSystemUptime() -> Duration
@@ -764,7 +758,7 @@ namespace Anemone
 
     auto Environment::GetApplicationStartupTime() -> DateTime
     {
-        return GStatics->startupTime;
+        return gEnvironmentStatics->startupTime;
     }
 
     auto Environment::GetMemoryProperties() -> MemoryProperties
@@ -920,72 +914,72 @@ namespace Anemone
 
     auto Environment::GetDeviceUniqueId() -> std::string_view
     {
-        return GStatics->deviceId;
+        return gEnvironmentStatics->deviceId;
     }
 
     auto Environment::GetDeviceName() -> std::string_view
     {
-        return GStatics->deviceName;
+        return gEnvironmentStatics->deviceName;
     }
 
     auto Environment::GetDeviceModel() -> std::string_view
     {
-        return GStatics->deviceModel;
+        return gEnvironmentStatics->deviceModel;
     }
 
     auto Environment::GetDeviceType() -> DeviceType
     {
-        return GStatics->deviceType;
+        return gEnvironmentStatics->deviceType;
     }
 
     auto Environment::GetDeviceProperties() -> DeviceProperties
     {
-        return GStatics->deviceProperties;
+        return gEnvironmentStatics->deviceProperties;
     }
 
     auto Environment::GetComputerName() -> std::string_view
     {
-        return GStatics->computerName;
+        return gEnvironmentStatics->computerName;
     }
 
     auto Environment::GetUserName() -> std::string_view
     {
-        return GStatics->userName;
+        return gEnvironmentStatics->userName;
     }
 
     auto Environment::GetExecutablePath() -> std::string_view
     {
-        return GStatics->executablePath;
+        return gEnvironmentStatics->executablePath;
     }
 
     auto Environment::GetStartupPath() -> std::string_view
     {
-        return GStatics->startupPath;
+        return gEnvironmentStatics->startupPath;
     }
 
     auto Environment::GetHomePath() -> std::string_view
     {
-        return GStatics->profilePath;
+        return gEnvironmentStatics->profilePath;
     }
 
     auto Environment::GetDesktopPath() -> std::string_view
     {
-        return GStatics->desktopPath;
+        return gEnvironmentStatics->desktopPath;
     }
 
     auto Environment::GetDocumentsPath() -> std::string_view
     {
-        return GStatics->documentsPath;
+        return gEnvironmentStatics->documentsPath;
     }
 
     auto Environment::GetDownloadsPath() -> std::string_view
     {
-        return GStatics->downloadsPath;
+        return gEnvironmentStatics->downloadsPath;
     }
 
     auto Environment::GetTemporaryPath() -> std::string_view
     {
-        return GStatics->temporaryPath;
+        return gEnvironmentStatics->temporaryPath;
     }
 
     auto Environment::GetCurrentDateTime() -> DateTime
@@ -1114,56 +1108,56 @@ namespace Anemone
 
     auto Environment::GetPhysicalCoresCount() -> size_t
     {
-        return GStatics->physicalCores;
+        return gEnvironmentStatics->physicalCores;
     }
 
     auto Environment::GetLogicalCoresCount() -> size_t
     {
-        return GStatics->logicalCores;
+        return gEnvironmentStatics->logicalCores;
     }
 
     auto Environment::GetPerformanceCoresCount() -> size_t
     {
-        return GStatics->performanceCores;
+        return gEnvironmentStatics->performanceCores;
     }
 
     auto Environment::GetEfficiencyCoresCount() -> size_t
     {
-        return GStatics->efficiencyCores;
+        return gEnvironmentStatics->efficiencyCores;
     }
 
     bool Environment::IsHyperThreadingEnabled()
     {
-        return GStatics->hyperThreading;
+        return gEnvironmentStatics->hyperThreading;
     }
 
     auto Environment::GetCacheLineSize() -> size_t
     {
-        return GStatics->cacheLineSize;
+        return gEnvironmentStatics->cacheLineSize;
     }
 
     auto Environment::GetCacheSizeLevel1() -> size_t
     {
-        return GStatics->cacheSizeLevel1;
+        return gEnvironmentStatics->cacheSizeLevel1;
     }
 
     auto Environment::GetCacheSizeLevel2() -> size_t
     {
-        return GStatics->cacheSizeLevel2;
+        return gEnvironmentStatics->cacheSizeLevel2;
     }
 
     auto Environment::GetCacheSizeLevel3() -> size_t
     {
-        return GStatics->cacheSizeLevel3;
+        return gEnvironmentStatics->cacheSizeLevel3;
     }
 
     auto Environment::GetProcessorName() -> std::string_view
     {
-        return GStatics->processorName.as_view();
+        return gEnvironmentStatics->processorName.as_view();
     }
 
     auto Environment::GetProcessorVendor() -> std::string_view
     {
-        return GStatics->processorVendor.as_view();
+        return gEnvironmentStatics->processorVendor.as_view();
     }
 }

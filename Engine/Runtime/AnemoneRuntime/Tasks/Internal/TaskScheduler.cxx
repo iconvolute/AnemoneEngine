@@ -5,43 +5,38 @@
 #include "AnemoneRuntime/System/Environment.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics{};
-}
-
-namespace Anemone::Internal
-{
-    extern void InitializeThreading()
+    namespace
     {
-        GTaskSchedulerStatics.Create();
+        Anemone::UninitializedObject<DefaultTaskScheduler> gDefaultTaskScheduler{};
     }
 
-    extern void FinalizeThreading()
+    namespace Internal
     {
-        GTaskSchedulerStatics.Destroy();
+        extern void InitializeTaskScheduler()
+        {
+            gDefaultTaskScheduler.Create();
+        }
+
+        extern void FinalizeTaskScheduler()
+        {
+            gDefaultTaskScheduler.Destroy();
+        }
+    }
+
+    TaskScheduler& TaskScheduler::Get()
+    {
+        return *gDefaultTaskScheduler;
     }
 }
 
-
-namespace Anemone::Internal
+namespace Anemone
 {
     AE_DECLARE_PROFILE(TaskWorkerWait);
     AE_DECLARE_PROFILE(TaskWorkerProcess);
 
-    uint32_t TaskSchedulerStatics::GenerateTaskId()
-    {
-        uint32_t result;
-
-        do
-        {
-            result = this->m_IdGenerator.fetch_add(1, std::memory_order_relaxed);
-        } while (result == 0);
-
-        return result;
-    }
-
-    TaskSchedulerStatics::TaskSchedulerStatics()
+    DefaultTaskScheduler::DefaultTaskScheduler()
     {
         //
         // Assume that main thread will contribute as well.
@@ -54,21 +49,21 @@ namespace Anemone::Internal
 
         for (uint32_t i = 0; i < workerCount; ++i)
         {
-            this->m_Workers[i] = std::make_unique<TaskWorker>(i);
+            this->m_Workers[i] = std::make_unique<DefaultTaskWorker>(i, this);
         }
 
         for (uint32_t i = 0; i < workerCount; ++i)
         {
             this->m_Threads[i] = Thread{
                 ThreadStart{
-                    .Name = fmt::format("TaskWorker {}", i),
+                    .Name = fmt::format("TaskWorker-{}", i),
                     .Priority = ThreadPriority::Normal,
                     .Callback = this->m_Workers[i].get(),
                 }};
         }
     }
 
-    TaskSchedulerStatics::~TaskSchedulerStatics()
+    DefaultTaskScheduler::~DefaultTaskScheduler()
     {
         this->m_CancellationToken.Cancel();
 
@@ -86,55 +81,38 @@ namespace Anemone::Internal
         // Stop threads.
         //
 
-        for (auto& thread : this->m_Threads)
+        for (Thread& thread : this->m_Threads)
         {
             thread.Join();
         }
 
-
         //
-        // Drain queues.
+        // Drain task queues.
         //
 
         while (Task* current = this->m_Queue.Pop())
         {
-            TaskScheduler::Execute(*current);
+            this->ExecuteInplace(*current);
         }
     }
 
-    void TaskSchedulerStatics::Dispatch(
-        Task& task,
-        AwaiterHandle const& awaiter,
-        AwaiterHandle const& dependency,
-        TaskPriority priority)
+    uint32_t DefaultTaskScheduler::GenerateTaskId()
     {
-        task.SetPriority(priority);
+        uint32_t result;
 
-        // Scheduler owns the task.
-        task.AcquireReference();
-
-        awaiter->AddDependency();
-
-        task.Dispatched(this->GenerateTaskId(), awaiter, dependency);
-
-        if (dependency->IsCompleted())
+        do
         {
-            this->m_Queue.Push(&task);
-            this->m_TasksCondition.NotifyOne();
-        }
-        else
-        {
-            task.DispatchedToPending();
-            dependency->AddWaitingTask(task);
-        }
+            result = this->m_LastTaskId.fetch_add(1, std::memory_order::relaxed);
+        } while (result == 0);
+
+        return result;
     }
 
-    void TaskSchedulerStatics::Execute(Task& task)
+    void DefaultTaskScheduler::ExecuteInplace(Task& task)
     {
         task.Execute();
 
         // Try to get list of dependent tasks to flush them to queues.
-
         if (task.GetAwaiter()->NotifyCompleted())
         {
             //
@@ -157,88 +135,11 @@ namespace Anemone::Internal
             }
         }
 
+        // Release task reference acquired in DefaultTaskScheduler::Schedule.
         task.ReleaseReference();
     }
 
-    void TaskSchedulerStatics::Wait(AwaiterHandle const& awaiter)
-    {
-        AE_ASSERT(awaiter);
-
-        WaitForCompletion(
-            [&]
-        {
-            return awaiter->IsCompleted();
-        },
-            [&]
-        {
-            if (Task* current = Internal::GTaskSchedulerStatics->m_Queue.Pop())
-            {
-                Execute(*current);
-            }
-
-            return awaiter->IsCompleted();
-        });
-    }
-
-    bool TaskSchedulerStatics::TryWait(AwaiterHandle const& awaiter, Duration timeout)
-    {
-        if (timeout < Duration{})
-        {
-            return awaiter->IsCompleted();
-        }
-
-        AE_ASSERT(awaiter);
-
-        Instant const started = Instant::Now();
-        Duration elapsed{};
-
-        WaitForCompletion(
-            [&]
-        {
-            return (elapsed >= timeout) or awaiter->IsCompleted();
-        },
-            [&]
-        {
-            if (Task* current = this->m_Queue.Pop())
-            {
-                Execute(*current);
-            }
-
-            elapsed = started.QueryElapsed();
-            return (elapsed >= timeout) or awaiter->IsCompleted();
-        });
-
-        return awaiter->IsCompleted();
-    }
-
-    void TaskSchedulerStatics::Delay(Duration timeout)
-    {
-        Instant const started = Instant::Now();
-        Duration elapsed{};
-
-        WaitForCompletion(
-            [&]
-        {
-            return elapsed >= timeout;
-        },
-            [&]
-        {
-            if (Task* current = this->m_Queue.Pop())
-            {
-                Execute(*current);
-            }
-
-            elapsed = started.QueryElapsed();
-            return elapsed >= timeout;
-        });
-    }
-
-    uint32_t TaskSchedulerStatics::GetWorkerCount() const
-    {
-        return static_cast<uint32_t>(this->m_Workers.size());
-    }
-
-    void TaskSchedulerStatics::TaskWorkerEntryPoint([[maybe_unused]] uint32_t workerId)
+    void DefaultTaskScheduler::TaskWorkerEntryPoint([[maybe_unused]] uint32_t workerId)
     {
         while (true)
         {
@@ -264,7 +165,7 @@ namespace Anemone::Internal
 
                 while (Task* task = this->m_Queue.Pop())
                 {
-                    TaskScheduler::Execute(*task);
+                    this->ExecuteInplace(*task);
                 }
             }
 
@@ -278,41 +179,123 @@ namespace Anemone::Internal
             }
         }
     }
-}
 
-namespace Anemone
-{
-    void TaskScheduler::Dispatch(
+    void DefaultTaskScheduler::Schedule(
         Task& task,
         AwaiterHandle const& awaiter,
         AwaiterHandle const& dependency,
         TaskPriority priority)
     {
-        Internal::GTaskSchedulerStatics->Dispatch(task, awaiter, dependency, priority);
+        task.SetPriority(priority);
+
+        // Scheduler takes reference to this task internally.
+        task.AcquireReference();
+
+        // Notify awaiter that there is a pending dependent task.
+        awaiter->AddDependency();
+
+        // Dispatch task.
+        task.Dispatched(this->GenerateTaskId(), awaiter, dependency);
+
+        if (dependency->IsCompleted())
+        {
+            // Dependency counter is completed, push task to the queue.
+            this->m_Queue.Push(&task);
+            this->m_TasksCondition.NotifyOne();
+        }
+        else
+        {
+            // Dependency is not completed, add task to the pending list.
+            task.DispatchedToPending();
+            dependency->AddWaitingTask(task);
+        }
     }
 
-    void TaskScheduler::Execute(Task& task)
+    void DefaultTaskScheduler::Wait(
+        AwaiterHandle const& awaiter)
     {
-        Internal::GTaskSchedulerStatics->Execute(task);
+        AE_ASSERT(awaiter);
+
+        WaitForCompletion(
+            [&]
+        {
+            return awaiter->IsCompleted();
+        },
+            [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
+            {
+                ExecuteInplace(*current);
+            }
+
+            return awaiter->IsCompleted();
+        });
     }
 
-    void TaskScheduler::Wait(AwaiterHandle const& awaiter)
+    bool DefaultTaskScheduler::TryWait(AwaiterHandle const& awaiter, Duration timeout)
     {
-        Internal::GTaskSchedulerStatics->Wait(awaiter);
+        AE_ASSERT(awaiter);
+
+        if (timeout <= Duration{})
+        {
+            return awaiter->IsCompleted();
+        }
+
+        Instant const started = Instant::Now();
+
+        Duration elapsed{};
+
+        WaitForCompletion(
+            [&]
+        {
+            return (elapsed >= timeout) or awaiter->IsCompleted();
+        },
+            [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
+            {
+                this->ExecuteInplace(*current);
+            }
+
+            elapsed = started.QueryElapsed();
+
+            return (elapsed >= timeout) or awaiter->IsCompleted();
+        });
+
+        return awaiter->IsCompleted();
     }
 
-    bool TaskScheduler::TryWait(AwaiterHandle const& awaiter, Duration timeout)
+    void DefaultTaskScheduler::Delay(Duration timeout)
     {
-        return Internal::GTaskSchedulerStatics->TryWait(awaiter, timeout);
+        if (timeout <= Duration{})
+        {
+            return;
+        }
+
+        Instant const started = Instant::Now();
+        Duration elapsed{};
+
+        WaitForCompletion(
+            [&]
+        {
+            return elapsed >= timeout;
+        },
+            [&]
+        {
+            if (Task* current = this->m_Queue.Pop())
+            {
+                this->ExecuteInplace(*current);
+            }
+
+            elapsed = started.QueryElapsed();
+
+            return elapsed >= timeout;
+        });
     }
 
-    void TaskScheduler::Delay(Duration timeout)
+    uint32_t DefaultTaskScheduler::GetThreadsCount() const
     {
-        Internal::GTaskSchedulerStatics->Delay(timeout);
+        return static_cast<uint32_t>(this->m_Workers.size());
     }
 
-    uint32_t TaskScheduler::GetWorkerCount()
-    {
-        return Internal::GTaskSchedulerStatics->GetWorkerCount();
-    }
 }

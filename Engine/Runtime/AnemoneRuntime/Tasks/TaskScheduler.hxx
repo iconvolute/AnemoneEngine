@@ -5,32 +5,31 @@
 
 namespace Anemone
 {
-    struct TaskScheduler final
+    class TaskScheduler
     {
-        TaskScheduler() = delete;
+    public:
+        TaskScheduler() = default;
+        TaskScheduler(TaskScheduler const&) = delete;
+        TaskScheduler(TaskScheduler&&) = delete;
+        TaskScheduler& operator=(TaskScheduler const&) = delete;
+        TaskScheduler& operator=(TaskScheduler&&) = delete;
+        virtual ~TaskScheduler() = default;
 
-        RUNTIME_API static void Dispatch(
+    public:
+        RUNTIME_API static TaskScheduler& Get();
+
+        virtual void Schedule(
             Task& task,
             AwaiterHandle const& awaiter,
             AwaiterHandle const& dependency,
-            TaskPriority priority);
+            TaskPriority priority) = 0;
 
-        static void Dispatch(
-            Task& task,
-            AwaiterHandle const& awaiter,
-            AwaiterHandle const& dependency)
-        {
-            Dispatch(task, awaiter, dependency, TaskPriority::Normal);
-        }
+        virtual void Wait(AwaiterHandle const& awaiter) = 0;
 
-        RUNTIME_API static void Execute(Task& task);
+        virtual bool TryWait(AwaiterHandle const& awaiter, Duration timeout) = 0;
 
-        RUNTIME_API static void Wait(AwaiterHandle const& awaiter);
+        virtual void Delay(Duration timeout) = 0;
 
-        RUNTIME_API static bool TryWait(AwaiterHandle const& awaiter, Duration timeout);
-
-        RUNTIME_API static void Delay(Duration timeout);
-
-        RUNTIME_API static uint32_t GetWorkerCount();
+        virtual uint32_t GetThreadsCount() const = 0;
     };
 }

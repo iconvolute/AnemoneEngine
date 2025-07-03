@@ -10,50 +10,52 @@
 #include <atomic>
 #include <vector>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    class TaskWorker;
-
-    class TaskSchedulerStatics final
+    class DefaultTaskScheduler final : public TaskScheduler
     {
-        friend class TaskWorker;
-
     private:
-        std::atomic_uint32_t m_IdGenerator{};
+        std::atomic_uint32_t m_LastTaskId{};
         TaskQueue m_Queue{};
         std::vector<Thread> m_Threads{};
-        std::vector<std::unique_ptr<TaskWorker>> m_Workers{};
+        std::vector<std::unique_ptr<DefaultTaskWorker>> m_Workers{};
         CriticalSection m_TasksLock{};
         ConditionVariable m_TasksCondition{};
         CancellationToken m_CancellationToken{};
 
     public:
+        DefaultTaskScheduler();
+
+        DefaultTaskScheduler(DefaultTaskScheduler const&) = delete;
+
+        DefaultTaskScheduler(DefaultTaskScheduler&&) = delete;
+
+        DefaultTaskScheduler& operator=(DefaultTaskScheduler const&) = delete;
+
+        DefaultTaskScheduler& operator=(DefaultTaskScheduler&&) = delete;
+
+        ~DefaultTaskScheduler() override;
+
+    public: // internal
         uint32_t GenerateTaskId();
 
-    public:
-        TaskSchedulerStatics();
-        TaskSchedulerStatics(TaskSchedulerStatics const&) = delete;
-        TaskSchedulerStatics(TaskSchedulerStatics&&) = delete;
-        TaskSchedulerStatics& operator=(TaskSchedulerStatics const&) = delete;
-        TaskSchedulerStatics& operator=(TaskSchedulerStatics&&) = delete;
-        ~TaskSchedulerStatics();
+        void ExecuteInplace(Task& task);
+
+        void TaskWorkerEntryPoint(uint32_t workerId);
 
     public:
-        void Dispatch(
+        void Schedule(
             Task& task,
             AwaiterHandle const& awaiter,
             AwaiterHandle const& dependency,
-            TaskPriority priority);
+            TaskPriority priority) override;
 
-        void Execute(Task& task);
-        void Wait(AwaiterHandle const& awaiter);
-        bool TryWait(AwaiterHandle const& awaiter, Duration timeout);
-        void Delay(Duration timeout);
-        uint32_t GetWorkerCount() const;
+        void Wait(AwaiterHandle const& awaiter) override;
 
-    private:
-        void TaskWorkerEntryPoint(uint32_t workerId);
+        bool TryWait(AwaiterHandle const& awaiter, Duration timeout) override;
+
+        void Delay(Duration timeout) override;
+
+        uint32_t GetThreadsCount() const override;
     };
-
-    extern UninitializedObject<TaskSchedulerStatics> GTaskSchedulerStatics;
 }

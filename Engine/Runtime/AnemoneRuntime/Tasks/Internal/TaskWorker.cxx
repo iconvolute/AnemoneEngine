@@ -4,10 +4,10 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    void TaskWorker::OnRun()
+    void DefaultTaskWorker::OnRun()
     {
-        GTaskSchedulerStatics->TaskWorkerEntryPoint(this->m_Index);
+        this->m_Scheduler->TaskWorkerEntryPoint(this->m_Index);
     }
 }

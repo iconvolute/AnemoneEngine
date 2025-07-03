@@ -485,7 +485,6 @@ test1()
         //AE_TRACE(Error, "mysin: {} = {} => {}", mysin, oursin, diff);
     }
     AE_TRACE(Error, "MaxDiff: {}", maxdiff);
-    (void)Anemone::Clipboard2::Get().SetText("testing1!");
 }
 
 anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
@@ -533,8 +532,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
     test1();
     test2();
-    (void)Anemone::Clipboard2::Get().SetText("testing1!");
-    (void)Anemone::Clipboard2::Get().SetText("testing2!");
 
 #if false
     (void)Anemone::Process::Start("DevDebugger.exe", fmt::format("--pid {}", GetCurrentProcessId()), {});

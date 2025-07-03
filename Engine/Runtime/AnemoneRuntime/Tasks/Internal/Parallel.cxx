@@ -24,6 +24,8 @@ namespace Anemone
             return;
         }
 
+        TaskScheduler& taskScheduler = TaskScheduler::Get();
+
         class Partitioner final
         {
         public:
@@ -104,7 +106,7 @@ namespace Anemone
         };
 
         // Number of worker threads in pool.
-        auto workersCount = std::max<size_t>(1, TaskScheduler::GetWorkerCount());
+        auto workersCount = std::max<size_t>(1, taskScheduler.GetThreadsCount());
 
         if (workers == 0)
         {
@@ -124,7 +126,7 @@ namespace Anemone
         constexpr auto maximumThreads = 32uz;
 
         // Adjust the number of threads to the number of slices.
-        workers = std::min<size_t>({workers, slices, maximumThreads});
+        workers = std::min<size_t>(workers, std::min<size_t>(slices, maximumThreads));
 
         // Spawn tasks to (hopefully) saturate thread pool.
         TaskHandle children[32];
@@ -145,7 +147,7 @@ namespace Anemone
         {
             children[i] = new ParallelForTask(partitioner);
 
-            TaskScheduler::Dispatch(*children[i], joinCounter, forkCounter, priority);
+            taskScheduler.Schedule(*children[i], joinCounter, forkCounter, priority);
         }
 
         // Contribute with executing tasks.
@@ -153,7 +155,7 @@ namespace Anemone
 
         // Wait for counter.
         // TODO: for diagnostic purposes, could we return number of processed tasks during awaiting?
-        TaskScheduler::Wait(joinCounter);
+        taskScheduler.Wait(joinCounter);
 
         // Finalize range.
         finalize(count);

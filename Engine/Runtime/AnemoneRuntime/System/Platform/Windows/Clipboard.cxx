@@ -5,6 +5,50 @@
 
 namespace Anemone
 {
+    namespace
+    {
+        struct ClipboardStatics final
+        {
+            UINT binaryClipboardFormat = 0;
+
+            explicit ClipboardStatics()
+            {
+                this->binaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
+            }
+
+            ClipboardStatics(ClipboardStatics const&) = delete;
+
+            ClipboardStatics(ClipboardStatics&&) = delete;
+
+            ClipboardStatics& operator=(ClipboardStatics const&) = delete;
+
+            ClipboardStatics& operator=(ClipboardStatics&&) = delete;
+
+            ~ClipboardStatics()
+            {
+                this->binaryClipboardFormat = 0;
+            }
+        };
+
+        UninitializedObject<ClipboardStatics> gClipboardStatics{};
+    }
+
+    namespace Internal
+    {
+        extern void InitializeClipboard()
+        {
+            gClipboardStatics.Create();
+        }
+
+        extern void FinalizeClipboard()
+        {
+            gClipboardStatics.Destroy();
+        }
+    }
+}
+
+namespace Anemone
+{
     void Clipboard::Clear()
     {
         if (OpenClipboard(nullptr))

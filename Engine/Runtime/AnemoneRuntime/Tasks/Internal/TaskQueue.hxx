@@ -5,7 +5,7 @@
 #include "AnemoneRuntime/Tasks/Task.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
-namespace Anemone::Internal
+namespace Anemone
 {
     class alignas(64) TaskQueue final
     {

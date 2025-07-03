@@ -12,8 +12,14 @@ namespace Anemone::Internal
     extern void InitializeEnvironment();
     extern void FinalizeEnvironment();
 
-    extern void InitializeThreading();
-    extern void FinalizeThreading();
+    extern void InitializeClipboard();
+    extern void FinalizeClipboard();
+
+    //extern void InitializeThreading();
+    //extern void FinalizeThreading();
+
+    extern void InitializeTaskScheduler();
+    extern void FinalizeTaskScheduler();
 
     //extern void InitializeApplication();
     //extern void FinalizeApplication();
@@ -33,7 +39,9 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
 
     Anemone::Internal::InitializeDiagnostics();
     Anemone::Internal::InitializeEnvironment();
-    Anemone::Internal::InitializeThreading();
+    Anemone::Internal::InitializeClipboard();
+    //Anemone::Internal::InitializeThreading();
+    Anemone::Internal::InitializeTaskScheduler();
     Anemone::Internal::InitializeProfiling();
     //Anemone::Internal::InitializeApplication();
     Anemone::Internal::InitializeInput();
@@ -44,7 +52,9 @@ extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
     Anemone::Internal::FinalizeInput();
     //Anemone::Internal::FinalizeApplication();
     Anemone::Internal::FinalizeProfiling();
-    Anemone::Internal::FinalizeThreading();
+    Anemone::Internal::FinalizeTaskScheduler();
+    //Anemone::Internal::FinalizeThreading();
+    Anemone::Internal::FinalizeClipboard();
     Anemone::Internal::FinalizeEnvironment();
     Anemone::Internal::FinalizeDiagnostics();
 }

@@ -6,7 +6,7 @@
 
 namespace Anemone
 {
-    struct TaskScheduler;
+    class TaskScheduler;
 
     enum class TaskStatus : uint8_t
     {
@@ -55,7 +55,7 @@ namespace Anemone
     {
         friend struct IntrusiveList<Task, Task>;
         friend class Reference<Task>;
-        friend struct TaskScheduler;
+        friend class TaskScheduler;
 
     private:
         AwaiterHandle m_Awaiter{};
