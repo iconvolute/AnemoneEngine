@@ -431,21 +431,177 @@ namespace Anemone::Math
     T Sin(T x)
         requires(std::is_floating_point_v<T>)
     {
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+
+        if constexpr (std::is_same_v<T, float>)
+        {
+            float quotient = x * InvPi2<float>;
+
+            if (x >= 0.0f)
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient + 0.5f));
+            }
+            else
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient - 0.5f));
+            }
+
+            float y = x - (quotient * Pi2<float>);
+
+            if (y > PiOver2<float>)
+            {
+                y = Pi<float> - y;
+            }
+            else if (y < -PiOver2<float>)
+            {
+                y = -Pi<float> - y;
+            }
+
+            float const y2 = y * y;
+
+            float resultSin = (Detail::F32_SinC5 * y2) + Detail::F32_SinC4;
+            resultSin = (resultSin * y2) + Detail::F32_SinC3;
+            resultSin = (resultSin * y2) + Detail::F32_SinC2;
+            resultSin = (resultSin * y2) + Detail::F32_SinC1;
+            resultSin = (resultSin * y2) + Detail::F32_SinC0;
+            return resultSin * y;
+        }
+        else
+        {
+            return std::sin(x);
+        }
+
+#else
+
         return std::sin(x);
+
+#endif
     }
 
     template <typename T>
     T Cos(T x)
         requires(std::is_floating_point_v<T>)
     {
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+
+        if constexpr (std::is_same_v<T, float>)
+        {
+            float quotient = x * InvPi2<float>;
+
+            if (x >= 0.0f)
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient + 0.5f));
+            }
+            else
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient - 0.5f));
+            }
+
+            float y = x - (quotient * Pi2<float>);
+
+            float sign;
+
+            if (y > PiOver2<float>)
+            {
+                y = Pi<float> - y;
+                sign = -1.0f;
+            }
+            else if (y < -PiOver2<float>)
+            {
+                y = -Pi<float> - y;
+                sign = -1.0f;
+            }
+            else
+            {
+                sign = +1.0f;
+            }
+
+            float const y2 = y * y;
+
+            float resultCos = (Detail::F32_CosC5 * y2) + Detail::F32_CosC4;
+            resultCos = (resultCos * y2) + Detail::F32_CosC3;
+            resultCos = (resultCos * y2) + Detail::F32_CosC2;
+            resultCos = (resultCos * y2) + Detail::F32_CosC1;
+            resultCos = (resultCos * y2) + Detail::F32_CosC0;
+            return resultCos * sign;
+        }
+        else
+        {
+            return std::cos(x);
+        }
+#else
+
         return std::cos(x);
+
+#endif
     }
 
     template <typename T>
     SinCosResult<T> SinCos(T x)
         requires(std::is_floating_point_v<T>)
     {
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+
+        if constexpr (std::is_same_v<T, float>)
+        {
+            float quotient = x * InvPi2<float>;
+
+            if (x >= 0.0f)
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient + 0.5f));
+            }
+            else
+            {
+                quotient = static_cast<float>(static_cast<int32_t>(quotient - 0.5f));
+            }
+
+            float y = x - (quotient * Pi2<float>);
+
+            float sign;
+
+            if (y > PiOver2<float>)
+            {
+                y = Pi<float> - y;
+                sign = -1.0f;
+            }
+            else if (y < -PiOver2<float>)
+            {
+                y = -Pi<float> - y;
+                sign = -1.0f;
+            }
+            else
+            {
+                sign = +1.0f;
+            }
+
+            float const y2 = y * y;
+
+            // 11-deg polynomial
+            float resultSin = (Detail::F32_SinC5 * y2) + Detail::F32_SinC4;
+            resultSin = (resultSin * y2) + Detail::F32_SinC3;
+            resultSin = (resultSin * y2) + Detail::F32_SinC2;
+            resultSin = (resultSin * y2) + Detail::F32_SinC1;
+            resultSin = (resultSin * y2) + Detail::F32_SinC0;
+
+            // 10-deg polynomial
+            float resultCos = (Detail::F32_CosC5 * y2) + Detail::F32_CosC4;
+            resultCos = (resultCos * y2) + Detail::F32_CosC3;
+            resultCos = (resultCos * y2) + Detail::F32_CosC2;
+            resultCos = (resultCos * y2) + Detail::F32_CosC1;
+            resultCos = (resultCos * y2) + Detail::F32_CosC0;
+
+            return {resultSin * y, resultCos * sign};
+        }
+        else
+        {
+            return {std::sin(x), std::cos(x)};
+        }
+
+#else
+
         return {std::sin(x), std::cos(x)};
+
+#endif
     }
 
     template <typename T>

@@ -602,6 +602,10 @@
 #define ANEMONE_FEATURE_PLATFORM_READABLE_ERROR_MESSAGES false
 #endif
 
+#ifndef ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+#define ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS false
+#endif
+
 //
 //--------------------------------------------------------------------------------------------------
 

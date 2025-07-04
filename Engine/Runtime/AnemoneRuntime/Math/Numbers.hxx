@@ -131,6 +131,28 @@ namespace Anemone::Math::Detail
         }
     };
 
+    // https://gist.github.com/publik-void/067f7f2fef32dbe5c27d6e215f824c91#sin-rel-error-minimized-degree-11
+
+    inline constexpr float F32_SinC0 = +0.99999999997884898600402426033768998f;
+    inline constexpr float F32_SinC1 = -0.166666666088260696413164261885310067f;
+    inline constexpr float F32_SinC2 = +0.00833333072055773645376566203656709979f;
+    inline constexpr float F32_SinC3 = -0.000198408328232619552901560108010257242f;
+    inline constexpr float F32_SinC4 = +2.75239710746326498401791551303359689e-6f;
+    inline constexpr float F32_SinC5 = -2.3868346521031027639830001794722295e-8f;
+
+    inline constexpr VectorConstant<float, 4> F32x4_SinC0123{F32_SinC0, F32_SinC1, F32_SinC2, F32_SinC3};
+    inline constexpr VectorConstant<float, 4> F32x4_SinC45nn{F32_SinC4, F32_SinC5, 0.0f, 0.0f};
+
+    // https://gist.github.com/publik-void/067f7f2fef32dbe5c27d6e215f824c91#cos-rel-error-minimized-degree-10
+    inline constexpr float F32_CosC0 = +0.99999999901810067632218592152414676f;
+    inline constexpr float F32_CosC1 = -0.49999998049253581064488831264724178f;
+    inline constexpr float F32_CosC2 = +0.0416665985274352494970529831079268818f;
+    inline constexpr float F32_CosC3 = -0.00138879697151174993540500936074733546f;
+    inline constexpr float F32_CosC4 = +0.00002474324689798977846771995314323317f;
+    inline constexpr float F32_CosC5 = -2.57924183182520559803981154578763508e-7f;
+
+    inline constexpr VectorConstant<float, 4> F32x4_CosC0123{F32_CosC0, F32_CosC1, F32_CosC2, F32_CosC3};
+    inline constexpr VectorConstant<float, 4> F32x4_CosC45nn{F32_CosC4, F32_CosC5, 0.0f, 0.0f};
 
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitX{1.0f, 0.0f, 0.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitY{0.0f, 1.0f, 0.0f, 0.0f};
@@ -154,6 +176,7 @@ namespace Anemone::Math::Detail
     inline constexpr VectorConstant<float, 4> F32x4_Pi2{Pi2<float>, Pi2<float>, Pi2<float>, Pi2<float>};
     inline constexpr VectorConstant<float, 4> F32x4_InvPi{InvPi<float>, InvPi<float>, InvPi<float>, InvPi<float>};
     inline constexpr VectorConstant<float, 4> F32x4_InvPi2{InvPi2<float>, InvPi2<float>, InvPi2<float>, InvPi2<float>};
+    inline constexpr VectorConstant<float, 4> F32x4_PiOver2{PiOver2<float>, PiOver2<float>, PiOver2<float>, PiOver2<float>};
 
     inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_XXXn{0xFFFFFFFF, 0xFFFFFFFF, 0xFFFFFFFF, 0x00000000};
     inline constexpr VectorConstant<uint32_t, 4> F32x4_SelectMask_Xnnn{0xFFFFFFFF, 0x00000000, 0x00000000, 0x00000000};

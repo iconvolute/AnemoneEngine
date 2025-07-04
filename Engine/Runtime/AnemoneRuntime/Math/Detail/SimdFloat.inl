@@ -2115,6 +2115,54 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_SVML
         sin = _mm_sincos_ps(&cos, v);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+        // Reduce range to [-pi..pi]
+        __m128 const quotient = _mm_round_ps(_mm_mul_ps(v, _mm_set_ps1(InvPi2<float>)), _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+
+        __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
+
+        __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+
+        __m128 const maskNegativeSign = _mm_or_ps(maskAbovePositivePiOver2, maskBelowNegativePiOver2);
+        __m128 const sign = _mm_blendv_ps(_mm_set_ps1(+1.0f), _mm_set_ps1(-1.0f), maskNegativeSign);
+
+        __m128 const y2 = _mm_mul_ps(y, y);
+
+        // 11-deg polynomial
+        __m128 const s0123 = _mm_load_ps(Detail::F32x4_SinC0123.Elements);
+        __m128 const s45nn = _mm_load_ps(Detail::F32x4_SinC45nn.Elements);
+
+        __m128 resultSin = Vector4F_MultiplyAdd(
+            _mm_permute_ps(s45nn, _MM_SHUFFLE(1, 1, 1, 1)),
+            y2,
+            _mm_permute_ps(s45nn, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(s0123, _MM_SHUFFLE(3, 3, 3, 3)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(s0123, _MM_SHUFFLE(2, 2, 2, 2)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(s0123, _MM_SHUFFLE(1, 1, 1, 1)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(s0123, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        sin = _mm_mul_ps(resultSin, y);
+        // 10-deg polynomial
+        __m128 const c0123 = _mm_load_ps(Detail::F32x4_CosC0123.Elements);
+        __m128 const c45nn = _mm_load_ps(Detail::F32x4_CosC45nn.Elements);
+
+        __m128 resultCos = Vector4F_MultiplyAdd(
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(1, 1, 1, 1)),
+            y2,
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(3, 3, 3, 3)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(2, 2, 2, 2)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(1, 1, 1, 1)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        cos = _mm_mul_ps(resultCos, sign);
+#else
         alignas(16) float vs[4];
         _mm_store_ps(vs, v);
 
@@ -2128,6 +2176,7 @@ namespace Anemone::Math::Detail
             Cos<float>(vs[1]),
             Cos<float>(vs[2]),
             Cos<float>(vs[3]));
+#endif
 #elif ANEMONE_FEATURE_NEON
         float const fsin[4]{
             Sin<float>(vgetq_lane_f32(v, 0)),
@@ -2158,6 +2207,35 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_SVML
         return _mm_sin_ps(v);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+        // Reduce range to [-pi..pi]
+        __m128 const quotient = _mm_round_ps(_mm_mul_ps(v, _mm_set_ps1(InvPi2<float>)), _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+
+        __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
+
+        __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+
+        __m128 const y2 = _mm_mul_ps(y, y);
+
+        // 11-deg polynomial
+        __m128 const c0123 = _mm_load_ps(Detail::F32x4_SinC0123.Elements);
+        __m128 const c45nn = _mm_load_ps(Detail::F32x4_SinC45nn.Elements);
+
+        __m128 resultSin = Vector4F_MultiplyAdd(
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(1, 1, 1, 1)),
+            y2,
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(3, 3, 3, 3)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(2, 2, 2, 2)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(1, 1, 1, 1)));
+        resultSin = Vector4F_MultiplyAdd(resultSin, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(0, 0, 0, 0)));
+        return _mm_mul_ps(resultSin, y);
+#else
         alignas(16) float xs[4];
         _mm_store_ps(xs, v);
         return _mm_setr_ps(
@@ -2165,6 +2243,7 @@ namespace Anemone::Math::Detail
             Sin<float>(xs[1]),
             Sin<float>(xs[2]),
             Sin<float>(xs[3]));
+#endif
 #elif ANEMONE_FEATURE_NEON
         float const r[4]{
             Sin<float>(vgetq_lane_f32(v, 0)),
@@ -2188,6 +2267,38 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_SVML
         return _mm_cos_ps(v);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FAST_TRIGONOMETRIC_FUNCTIONS
+        // Reduce range to [-pi..pi]
+        __m128 const quotient = _mm_round_ps(_mm_mul_ps(v, _mm_set_ps1(InvPi2<float>)), _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
+
+        __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
+
+        __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
+        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+
+        __m128 const y2 = _mm_mul_ps(y, y);
+
+        __m128 const maskNegativeSign = _mm_or_ps(maskAbovePositivePiOver2, maskBelowNegativePiOver2);
+        __m128 const sign = _mm_blendv_ps(_mm_set_ps1(+1.0f), _mm_set_ps1(-1.0f), maskNegativeSign);
+
+        // 10-deg polynomial
+        __m128 const c0123 = _mm_load_ps(Detail::F32x4_CosC0123.Elements);
+        __m128 const c45nn = _mm_load_ps(Detail::F32x4_CosC45nn.Elements);
+
+        __m128 resultCos = Vector4F_MultiplyAdd(
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(1, 1, 1, 1)),
+            y2,
+            _mm_permute_ps(c45nn, _MM_SHUFFLE(0, 0, 0, 0)));
+
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(3, 3, 3, 3)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(2, 2, 2, 2)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(1, 1, 1, 1)));
+        resultCos = Vector4F_MultiplyAdd(resultCos, y2, _mm_permute_ps(c0123, _MM_SHUFFLE(0, 0, 0, 0)));
+        return _mm_mul_ps(resultCos, sign);
+#else
         alignas(16) float xs[4];
         _mm_store_ps(xs, v);
         return _mm_setr_ps(
@@ -2195,6 +2306,7 @@ namespace Anemone::Math::Detail
             Cos<float>(xs[1]),
             Cos<float>(xs[2]),
             Cos<float>(xs[3]));
+#endif
 #elif ANEMONE_FEATURE_NEON
         float const r[4]{
             Cos<float>(vgetq_lane_f32(v, 0)),
@@ -7949,7 +8061,7 @@ namespace Anemone::Math::Detail
             _mm_setr_ps(x, y, z, 1.0f),
         };
 #elif ANEMONE_FEATURE_NEON
-        float const last[4] { x,y,z,1.0f};
+        float const last[4]{x, y, z, 1.0f};
         return SimdMatrix4x4F{
             vld1q_f32(F32x4_PositiveUnitX.As<float>()),
             vld1q_f32(F32x4_PositiveUnitY.As<float>()),
@@ -8541,7 +8653,7 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return Matrix4x4F_CreateFromPitchYawRoll(_mm_setr_ps(pitch, yaw, roll, 0.0f));
 #elif ANEMONE_FEATURE_NEON
-        float const angles[4] { pitch,yaw,roll,0.0f};
+        float const angles[4]{pitch, yaw, roll, 0.0f};
         return Matrix4x4F_CreateFromPitchYawRoll(vld1q_f32(angles));
 #endif
     }
