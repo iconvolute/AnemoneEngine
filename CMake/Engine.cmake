@@ -5,42 +5,6 @@ else()
 endif()
 
 function(_anemone_target_add_options target_name)
-    target_compile_definitions(${target_name}
-        # Platform
-        PRIVATE
-            $<$<BOOL:${ANEMONE_PLATFORM_WINDOWS}>:-DANEMONE_PLATFORM_WINDOWS=1>
-            $<$<BOOL:${ANEMONE_PLATFORM_LINUX}>:-DANEMONE_PLATFORM_LINUX=1>
-            $<$<BOOL:${ANEMONE_PLATFORM_ANDROID}>:-DANEMONE_PLATFORM_ANDROID=1>
-
-        # Architecture
-        PRIVATE
-            $<$<BOOL:${ANEMONE_ARCHITECTURE_ARM64}>:-DANEMONE_ARCHITECTURE_ARM64=1>
-            $<$<BOOL:${ANEMONE_ARCHITECTURE_X64}>:-DANEMONE_ARCHITECTURE_X64=1>
-
-        # Sanitizers
-        PRIVATE
-            $<$<BOOL:${ANEMONE_BUILD_ASAN}>:-DANEMONE_BUILD_ASAN=1>
-            $<$<BOOL:${ANEMONE_BUILD_UBSAN}>:-DANEMONE_BUILD_UBSAN=1>
-            $<$<BOOL:${ANEMONE_BUILD_TSAN}>:-DANEMONE_BUILD_TSAN=1>
-
-        # Build
-        PRIVATE
-            $<$<BOOL:${ANEMONE_BUILD_DISABLE_SIMD}>:-DANEMONE_BUILD_DISABLE_SIMD=1>
-            $<$<BOOL:${ANEMONE_BUILD_MONOLITHIC}>:-DANEMONE_BUILD_MONOLITHIC=1>
-            $<$<BOOL:${ANEMONE_BUILD_DEVELOPER}>:-DANEMONE_BUILD_DEVELOPER=1>
-            $<$<BOOL:${ANEMONE_BUILD_SHIPPING}>:-DANEMONE_BUILD_SHIPPING=1>
-            $<$<BOOL:${ANEMONE_BUILD_PROFILING}>:-DANEMONE_BUILD_PROFILING=1>
-            $<$<BOOL:${ANEMONE_BUILD_MONOLITIC}>:-DANEMONE_BUILD_MONOLITIC=1>
-
-        # Features
-        PRIVATE
-            $<$<BOOL:${ANEMONE_FEATURE_SVML}>:-DANEMONE_FEATURE_SVML=1>
-
-        # Configuration
-        PRIVATE
-            $<$<CONFIG:DEBUG>:-DANEMONE_CONFIG_DEBUG=1>
-            $<$<CONFIG:RELEASE>:-DANEMONE_CONFIG_RELEASE=1>
-    )
 
     # ASan support
     if (ANEMONE_BUILD_ASAN)
