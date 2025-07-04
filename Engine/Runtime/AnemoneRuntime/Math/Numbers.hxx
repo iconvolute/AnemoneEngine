@@ -151,6 +151,25 @@ namespace Anemone::Math::Detail
     inline constexpr float F32_CosC4 = +0.00002474324689798977846771995314323317f;
     inline constexpr float F32_CosC5 = -2.57924183182520559803981154578763508e-7f;
 
+    // 'echo "print(taylorform(tan(x),11, 0, [-pi,pi],relative));" | sollya'
+    inline constexpr float F32_TanC0 = +1.0f;
+    inline constexpr float F32_TanC1 = +0.33333333333333333333333333333333333333333333333334f;
+    inline constexpr float F32_TanC2 = +0.133333333333333333333333333333333333333333333333333f;
+    inline constexpr float F32_TanC3 = +5.3968253968253968253968253968253968253968253968254e-2f;
+    inline constexpr float F32_TanC4 = +2.1869488536155202821869488536155202821869488536156e-2f;
+    inline constexpr float F32_TanC5 = +8.8632355299021965688632355299021965688632355299022e-3f;
+
+    // 'echo "print(taylorform(tan(x),15, 0, [-pi/2,pi/2],relative));" | sollya'
+    inline constexpr float F32_ATanC0 = +1.0f;
+    inline constexpr float F32_ATanC1 = -0.33333333333333333333333333333333333333333333333334f;
+    inline constexpr float F32_ATanC2 = +0.2f;
+    inline constexpr float F32_ATanC3 = -0.14285714285714285714285714285714285714285714285714f;
+    inline constexpr float F32_ATanC4 = +0.111111111111111111111111111111111111111111111111113f;
+    inline constexpr float F32_ATanC5 = -9.0909090909090909090909090909090909090909090909093e-2f;
+    inline constexpr float F32_ATanC6 = +7.692307692307692307692307692307692307692307692308e-2f;
+    inline constexpr float F32_ATanC7 = -6.6666666666666666666666666666666666666666666666666e-2f;
+
+
     inline constexpr VectorConstant<float, 4> F32x4_CosC0123{F32_CosC0, F32_CosC1, F32_CosC2, F32_CosC3};
     inline constexpr VectorConstant<float, 4> F32x4_CosC45nn{F32_CosC4, F32_CosC5, 0.0f, 0.0f};
 
