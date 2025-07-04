@@ -20,7 +20,7 @@ namespace Anemone::Network::Detail
 #if ANEMONE_PLATFORM_WINDOWS
         return Diagnostics::WindowsDebug::TranslateErrorCodeWin32(WSAGetLastError());
 #else
-        return Diagnostics::TranslateErrorCodeErrno(errno);
+        return Diagnostics::Debug::TranslateErrorCodeErrno(errno);
 #endif
     }
 
@@ -155,7 +155,7 @@ namespace Anemone::Network
 #else
         if (handle < 0)
         {
-            return std::unexpected(Internal::TranslateErrorCodeErrno(errno));
+            return std::unexpected(Diagnostics::Debug::TranslateErrorCodeErrno(errno));
         }
 #endif
 
@@ -174,7 +174,7 @@ namespace Anemone::Network
 #else
             if (not close(this->m_native.Inner))
             {
-                return std::unexpected(Internal::TranslateErrorCodeErrno(errno));
+                return std::unexpected(Diagnostics::Debug::TranslateErrorCodeErrno(errno));
             }
 #endif
 

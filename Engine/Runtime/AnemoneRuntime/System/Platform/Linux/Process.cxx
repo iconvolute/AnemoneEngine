@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Interop/Linux/Process.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <array>
 #include <sys/time.h>

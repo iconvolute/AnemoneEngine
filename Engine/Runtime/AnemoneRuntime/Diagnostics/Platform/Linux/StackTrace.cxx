@@ -128,7 +128,7 @@ namespace Anemone::Diagnostics
                 }
             }
 
-            std::string_view const symbol{ccurrent.data(), current.size()};
+            std::string_view const symbol{current.data(), current.size()};
 
             callback(address, symbol);
 #else
@@ -139,3 +139,4 @@ namespace Anemone::Diagnostics
         }
 #endif
     }
+}

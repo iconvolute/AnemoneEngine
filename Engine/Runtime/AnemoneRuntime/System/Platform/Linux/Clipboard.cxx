@@ -1,5 +1,6 @@
 #include "AnemoneRuntime/System/Clipboard.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 namespace Anemone
 {

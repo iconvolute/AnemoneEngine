@@ -2,7 +2,7 @@
 
 #if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
 
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Interop/Linux/Threading.hxx"
 
 namespace Anemone

@@ -1,28 +1,27 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Input/Input.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 namespace Anemone
 {
-    struct InputStatics final
-    {
-    };
-
     namespace
     {
-        UninitializedObject<InputStatics> GInputStatics{};
+        struct InputStatics final
+        {
+        };
+
+        UninitializedObject<InputStatics> gInputStatics{};
     }
 }
 
-namespace Anemone
+namespace Anemone::Internal
 {
-    void Input::Initialize(Runtime::RuntimeInitializerContext const& context)
+    extern void InitializeInput()
     {
-        GInputStatics.Create();
+        gInputStatics.Create();
     }
 
-    void Input::Finalize(Runtime::RuntimeFinalizerContext const& context)
+    extern void FinalizeInput()
     {
-        GInputStatics.Destroy();
+        gInputStatics.Destroy();
     }
 }
