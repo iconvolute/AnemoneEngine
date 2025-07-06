@@ -3,6 +3,8 @@ target_sources(AnemoneRuntime
         "AES.cxx"
         "AES.hxx"
 
+        "BlockCipherPaddingMode.hxx"
+
         "HashAlgorithm.cxx"
         "HashAlgorithm.hxx"
 

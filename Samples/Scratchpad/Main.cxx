@@ -537,44 +537,6 @@ namespace Anemone::Builtins
         }
     }
 
-    constexpr float MySin(float x)
-    {
-        x = Detail::KernelReduce(x);
-
-        static constexpr float ConstFloat32_SinC0 = +1.0f;
-        static constexpr float ConstFloat32_SinC1 = -0.16666667f;
-        static constexpr float ConstFloat32_SinC2 = +0.0083333310f;
-        static constexpr float ConstFloat32_SinC3 = -0.00019840874f;
-        static constexpr float ConstFloat32_SinC4 = +2.7525562e-06f;
-        static constexpr float ConstFloat32_SinC5 = -2.3889859e-08f;
-
-        float const x2 = x * x;
-
-        float const r0 = (ConstFloat32_SinC5 * x2) + ConstFloat32_SinC4;
-        float const r1 = (r0 * x2) + ConstFloat32_SinC3;
-        float const r2 = (r1 * x2) + ConstFloat32_SinC2;
-        float const r3 = (r2 * x2) + ConstFloat32_SinC1;
-        float const r4 = (r3 * x2) + ConstFloat32_SinC0;
-        return r4 * x;
-    }
-}
-
-anemone_noinline void
-test1()
-{
-    float maxdiff = 0.0f;
-
-    for (float x = -Anemone::Math::Pi2<float>; x < Anemone::Math::Pi2<float>; x = std::nexttoward(x, 100.0f))
-    {
-        float const mysin = Anemone::Math::MySin(x);
-        float const oursin = Anemone::Math::Sin(x);
-        float const diff = Anemone::Math::Max(mysin, oursin) - Anemone::Math::Min(mysin, oursin);
-        maxdiff = Anemone::Math::Max(maxdiff, diff);
-        //AE_TRACE(Error, "mysin: {} = {} => {}", mysin, oursin, diff);
-    }
-    AE_TRACE(Error, "MaxDiff: {}", maxdiff);
-}
-
 anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
 {
     return Anemone::Math::UniformDistribution<double>{}(generator);
@@ -618,7 +580,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     //    return -1;
     //}
     //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
-    test1();
     test2();
 
 #if false
