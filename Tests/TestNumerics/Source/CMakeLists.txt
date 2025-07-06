@@ -1,6 +1,7 @@
 target_sources(TestNumerics
     PRIVATE
         "Main.cxx"
+        "Mask4F.cxx"
         "Matrix4x4F.cxx"
         "QuaternionF.cxx"
         "Rect.cxx"

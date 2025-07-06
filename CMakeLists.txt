@@ -26,11 +26,18 @@ project(AnemoneEngine VERSION 1.0.0.0)
 enable_testing()
 enable_language(C CXX)
 
-include("CMake/Options.cmake")
+# 1. Find external dependencies.
+include("CMake/Modules/FindITT.cmake")
+
+# 2. Detect toolchain and set up compiler flags.
 include("CMake/DetectToolchain.cmake")
+
+# 3. Configure build options and generate files.
+include("CMake/Options.cmake")
+
+# 4. Setup engine commands.
 include("CMake/Engine.cmake")
 
-include("CMake/Modules/FindITT.cmake")
 
 add_subdirectory("Engine")
 add_subdirectory("Samples")

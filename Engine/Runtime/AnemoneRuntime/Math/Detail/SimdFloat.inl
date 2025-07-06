@@ -2122,13 +2122,15 @@ namespace Anemone::Math::Detail
         __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
 
         __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
-        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        __m128 const positivePiMinusY = _mm_sub_ps(_mm_set_ps1(Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskAbovePositivePiOver2, y), _mm_and_ps(maskAbovePositivePiOver2, positivePiMinusY));
 
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        __m128 const negativePiMinusY = _mm_sub_ps(_mm_set_ps1(-Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskBelowNegativePiOver2, y), _mm_and_ps(maskBelowNegativePiOver2, negativePiMinusY));
 
         __m128 const maskNegativeSign = _mm_or_ps(maskAbovePositivePiOver2, maskBelowNegativePiOver2);
-        __m128 const sign = _mm_blendv_ps(_mm_set_ps1(+1.0f), _mm_set_ps1(-1.0f), maskNegativeSign);
+        __m128 const sign = _mm_xor_ps(_mm_load_ps(F32x4_PositiveOne.Elements), _mm_and_ps(maskNegativeSign, _mm_load_ps(F32x4_NegativeZero_XXXX.As<float>())));
 
         __m128 const y2 = _mm_mul_ps(y, y);
 
@@ -2214,10 +2216,12 @@ namespace Anemone::Math::Detail
         __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
 
         __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
-        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        __m128 const positivePiMinusY = _mm_sub_ps(_mm_set_ps1(Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskAbovePositivePiOver2, y), _mm_and_ps(maskAbovePositivePiOver2, positivePiMinusY));
 
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        __m128 const negativePiMinusY = _mm_sub_ps(_mm_set_ps1(-Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskBelowNegativePiOver2, y), _mm_and_ps(maskBelowNegativePiOver2, negativePiMinusY));
 
         __m128 const y2 = _mm_mul_ps(y, y);
 
@@ -2274,15 +2278,17 @@ namespace Anemone::Math::Detail
         __m128 y = Vector4F_NegateMultiplyAdd(quotient, _mm_set_ps1(Pi2<float>), v);
 
         __m128 const maskAbovePositivePiOver2 = _mm_cmpgt_ps(y, _mm_set_ps1(PiOver2<float>));
-        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
-        
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(Pi<float>), y), maskAbovePositivePiOver2);
-        y = _mm_blendv_ps(y, _mm_sub_ps(_mm_set_ps1(-Pi<float>), y), maskBelowNegativePiOver2);
+        __m128 const positivePiMinusY = _mm_sub_ps(_mm_set_ps1(Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskAbovePositivePiOver2, y), _mm_and_ps(maskAbovePositivePiOver2, positivePiMinusY));
 
-        __m128 const y2 = _mm_mul_ps(y, y);
+        __m128 const maskBelowNegativePiOver2 = _mm_cmplt_ps(y, _mm_set_ps1(-PiOver2<float>));
+        __m128 const negativePiMinusY = _mm_sub_ps(_mm_set_ps1(-Pi<float>), y);
+        y = _mm_or_ps(_mm_andnot_ps(maskBelowNegativePiOver2, y), _mm_and_ps(maskBelowNegativePiOver2, negativePiMinusY));
 
         __m128 const maskNegativeSign = _mm_or_ps(maskAbovePositivePiOver2, maskBelowNegativePiOver2);
-        __m128 const sign = _mm_blendv_ps(_mm_set_ps1(+1.0f), _mm_set_ps1(-1.0f), maskNegativeSign);
+        __m128 const sign = _mm_xor_ps(_mm_load_ps(F32x4_PositiveOne.Elements), _mm_and_ps(maskNegativeSign, _mm_load_ps(F32x4_NegativeZero_XXXX.As<float>())));
+
+        __m128 const y2 = _mm_mul_ps(y, y);
 
         // 10-deg polynomial
         __m128 const c0123 = _mm_load_ps(Detail::F32x4_CosC0123.Elements);
@@ -5466,7 +5472,9 @@ namespace Anemone::Math::Detail
             (mask.Inner[3] & whenTrue.Inner[3]) | (~mask.Inner[3] & whenFalse.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_blendv_ps(whenFalse, whenTrue, mask);
+        // Note: this approach has better performance on older CPUs.
+        // return _mm_blendv_ps(whenFalse, whenTrue, mask);
+        return _mm_or_ps(_mm_andnot_ps(mask, whenFalse), _mm_and_ps(mask, whenTrue));
 #elif ANEMONE_FEATURE_NEON
         return vbslq_u32(mask, whenTrue, whenFalse);
 #endif

@@ -379,9 +379,19 @@ namespace Anemone::Builtins
         return UInt32_ToBitwiseMask(a >= b);
     }
 
+    constexpr uint32_t UInt32_ExtractSignMask(uint32_t value)
+    {
+        return static_cast<uint32_t>(static_cast<int32_t>(value) >> 31);
+    }
+
     constexpr uint32_t UInt32_BitwiseAnd(uint32_t a, uint32_t b)
     {
         return a & b;
+    }
+
+    constexpr uint32_t UInt32_BitwiseAndNot(uint32_t a, uint32_t b)
+    {
+        return a & ~b;
     }
 
     constexpr uint32_t UInt32_BitwiseOr(uint32_t a, uint32_t b)
@@ -414,38 +424,111 @@ namespace Anemone::Builtins
         return (a > b) ? a : b;
     }
 
-
-}
-
-namespace Anemone::Math
-{
-    namespace Detail
+    constexpr uint32_t UInt32_ShiftLeft(uint32_t value, int shift)
     {
-        constexpr float KernelReduce(float x)
-        {
-            float quotient = x * InvPi2<float>;
+        return value << shift;
+    }
 
-            if (x >= 0.0f)
-            {
-                quotient = static_cast<float>(static_cast<int32_t>(quotient + 0.5f));
-            }
-            else
-            {
-                quotient = static_cast<float>(static_cast<int32_t>(quotient - 0.5f));
-            }
+    constexpr uint32_t UInt32_ShiftRight(uint32_t value, int shift)
+    {
+        return value >> shift;
+    }
 
-            float y = x - quotient * Pi2<float>;
+    constexpr uint32_t UInt32_RotateLeft(uint32_t value, int shift)
+    {
+        return (value << shift) | (value >> (32 - shift));
+    }
 
-            if (y > PiOver2<float>)
-            {
-                y = Pi<float> - y;
-            }
-            else if (y < -PiOver2<float>)
-            {
-                y = -Pi<float> - y;
-            }
+    constexpr uint32_t UInt32_RotateRight(uint32_t value, int shift)
+    {
+        return (value >> shift) | (value << (32 - shift));
+    }
 
-            return y;
+    constexpr uint32_t UInt32_Add(uint32_t a, uint32_t b)
+    {
+        return a + b;
+    }
+
+    constexpr uint32_t UInt32_Subtract(uint32_t a, uint32_t b)
+    {
+        return a - b;
+    }
+
+    constexpr uint32_t UInt32_Multiply(uint32_t a, uint32_t b)
+    {
+        return a * b;
+    }
+
+    constexpr uint32_t UInt32_Divide(uint32_t a, uint32_t b)
+    {
+        return a / b;
+    }
+
+    constexpr uint32_t UInt32_Modulus(uint32_t a, uint32_t b)
+    {
+        return a % b;
+    }
+
+    constexpr uint32_t UInt32_Increment(uint32_t x)
+    {
+        return x + 1u;
+    }
+
+    constexpr uint32_t UInt32_Decrement(uint32_t x)
+    {
+        return x - 1u;
+    }
+
+    constexpr uint32_t UInt32_Negate(uint32_t x)
+    {
+        return ~x + 1u; // Two's complement negation
+    }
+
+    //constexpr bool UInt32_HasSingleBit(uint32_t x)
+    //{
+    //    // A number has a single bit set if it is not zero and its bitwise AND with its negation is zero.
+    //    return (x != 0) && ((x & -x) == x);
+    //}
+
+    constexpr uint32_t UInt32_CountBits(uint32_t x)
+    {
+        x = (x & uint32_t{0x55555555u}) + ((x & uint32_t{0xAAAAAAAAu}) >> 1);
+        x = (x & uint32_t{0x33333333u}) + ((x & uint32_t{0xCCCCCCCCu}) >> 2);
+        x = (x & uint32_t{0x0F0F0F0Fu}) + ((x & uint32_t{0xF0F0F0F0u}) >> 4);
+        x = (x & uint32_t{0x00FF00FFu}) + ((x & uint32_t{0xFF00FF00u}) >> 8);
+        x = (x & uint32_t{0x0000FFFFu}) + ((x & uint32_t{0xFFFF0000u}) >> 16);
+        return x;
+    }
+
+    constexpr uint32_t UInt32_ReverseBits(uint32_t x)
+    {
+        x = ((x >> 1) & uint32_t{0x55555555}) | ((x << 1) & uint32_t{0xAAAAAAAA});
+        x = ((x >> 2) & uint32_t{0x33333333}) | ((x << 2) & uint32_t{0xCCCCCCCC});
+        x = ((x >> 4) & uint32_t{0x0F0F0F0F}) | ((x << 4) & uint32_t{0xF0F0F0F0});
+        x = ((x >> 8) & uint32_t{0x00FF00FF}) | ((x << 8) & uint32_t{0xFF00FF00});
+        x = ((x >> 16) & uint32_t{0x0000FFFF}) | ((x << 16) & uint32_t{0xFFFF0000});
+        return x;
+    }
+
+    constexpr uint32_t UInt32_NextPowerOf2(uint32_t value)
+    {
+        value |= (value >> 1);
+        value |= (value >> 2);
+        value |= (value >> 4);
+        value |= (value >> 8);
+        value |= (value >> 16);
+        return value + 1;
+    }
+
+    constexpr uint64_t UInt64_NextPowerOf2(uint64_t value)
+    {
+        value |= (value >> 1);
+        value |= (value >> 2);
+        value |= (value >> 4);
+        value |= (value >> 8);
+        value |= (value >> 16);
+        value |= (value >> 32);
+        return value + 1;
         }
     }
 

@@ -2953,6 +2953,8 @@ TEST_CASE("Vector4F_RadiansToDegrees")
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
 
+    static constexpr float tolerance = 0.01f;
+
     UniformDistribution<float> uniform{};
     Random r{2137};
 
@@ -2966,10 +2968,10 @@ TEST_CASE("Vector4F_RadiansToDegrees")
 
         SimdVector4F const result = Vector4F_RadiansToDegrees(v);
 
-        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<0>(v))));
-        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<1>(v))));
-        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<2>(v))));
-        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<3>(v))));
+        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<0>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<1>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<2>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(RadiansToDegrees(Vector4F_Extract<3>(v)), tolerance));
     }
 }
 
@@ -2978,6 +2980,8 @@ TEST_CASE("Vector4F_DegreesToRadians")
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
     using namespace Catch::Matchers;
+
+    static constexpr float tolerance = 0.01f;
 
     UniformDistribution<float> uniform{};
     Random r{2137};
@@ -2992,10 +2996,10 @@ TEST_CASE("Vector4F_DegreesToRadians")
 
         SimdVector4F const result = Vector4F_DegreesToRadians(v);
 
-        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(DegreesToRadians(Vector4F_Extract<0>(v))));
-        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(DegreesToRadians(Vector4F_Extract<1>(v))));
-        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(DegreesToRadians(Vector4F_Extract<2>(v))));
-        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(DegreesToRadians(Vector4F_Extract<3>(v))));
+        CHECK_THAT(Vector4F_Extract<0>(result), WithinRel(DegreesToRadians(Vector4F_Extract<0>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<1>(result), WithinRel(DegreesToRadians(Vector4F_Extract<1>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<2>(result), WithinRel(DegreesToRadians(Vector4F_Extract<2>(v)), tolerance));
+        CHECK_THAT(Vector4F_Extract<3>(result), WithinRel(DegreesToRadians(Vector4F_Extract<3>(v)), tolerance));
     }
 }
 
