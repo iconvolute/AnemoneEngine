@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 #if defined(ANEMONE_APPLICATION_CONSOLE)
     constexpr bool console = true;
 #else
-    constexpr bool isConsole = false;
+    constexpr bool console = false;
 #endif
 
     AnemoneRuntimeInitialize(argc, argv, console);

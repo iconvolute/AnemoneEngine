@@ -1,10 +1,9 @@
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
 
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
 #include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Error.hxx"
 
 #include <dirent.h>
 
@@ -174,7 +173,7 @@ namespace Anemone
 
         if (handle == nullptr)
         {
-            return std::unexpected(Internal::TranslateErrorCodeErrno(error));
+            return std::unexpected(Diagnostics::Debug::TranslateErrorCodeErrno(error));
         }
 
         while (true)
@@ -208,7 +207,7 @@ namespace Anemone
             }
             else if (error != 0)
             {
-                return std::unexpected(Internal::TranslateErrorCodeErrno(error));
+                return std::unexpected(Diagnostics::Debug::TranslateErrorCodeErrno(error));
             }
             else
             {
@@ -218,7 +217,7 @@ namespace Anemone
 
         if (closedir(handle) != 0)
         {
-            return std::unexpected(Internal::TranslateErrorCodeErrno(error));
+            return std::unexpected(Diagnostics::Debug::TranslateErrorCodeErrno(error));
         }
 
         return {};

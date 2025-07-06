@@ -3,10 +3,9 @@
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
 #include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
-#include "AnemoneRuntime/Diagnostics/Debugger.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <clocale>
@@ -33,11 +32,17 @@
 #include <asm/hwcap.h>
 #endif
 
-namespace Anemone::Environment
+namespace Anemone::Internal
+{
+    extern bool GIsConsoleApplication;
+    bool GIsConsoleApplication = false;
+}
+
+namespace Anemone
 {
     namespace
     {
-        struct Statics final
+        struct EnvironmentStatics final
         {
             DateTime startupTime;
             Uuid systemId;
@@ -87,10 +92,10 @@ namespace Anemone::Environment
             Interop::string_buffer<char, 64> processorVendor{};
         };
 
-        UninitializedObject<Statics> GStatics{};
+        UninitializedObject<EnvironmentStatics> gEnvironmentStatics{};
         pthread_mutex_t GEnvironmentLock = PTHREAD_MUTEX_INITIALIZER;
 
-        void InitializeEnvironment(Statics& statics)
+        void InitializeEnvironment(EnvironmentStatics& statics)
         {
             statics.startupTime = Environment::GetCurrentDateTime();
 
@@ -271,7 +276,7 @@ namespace Anemone::Environment
             }
         }
 
-        void InitializeProcessorProperties(Statics& statics)
+        void InitializeProcessorProperties(EnvironmentStatics& statics)
         {
             // This may not be accurate on all systems.
             statics.physicalCores = sysconf(_SC_NPROCESSORS_CONF);
@@ -304,7 +309,7 @@ namespace Anemone::Environment
 
             if (level0[0] < 1)
             {
-                Diagnostics::ReportApplicationStop("Application stop: CPU Features not available\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: CPU Features not available\n");
             }
 
             int level1[4]{-1};
@@ -312,45 +317,45 @@ namespace Anemone::Environment
 
             if (!(level1[2] & bit_CMPXCHG16B))
             {
-                Diagnostics::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
             }
 
             if (!(level1[2] & bit_POPCNT))
             {
-                Diagnostics::ReportApplicationStop("Application stop: POPCNT is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: POPCNT is not supported\n");
             }
 
 #if ANEMONE_FEATURE_AVX
             if (!(level1[2] & bit_OSXSAVE))
             {
-                Diagnostics::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
             }
 
             if (!(level1[2] & bit_SSE3))
             {
-                Diagnostics::ReportApplicationStop("Application stop: SSE3 is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: SSE3 is not supported\n");
             }
 
             if (!(level1[2] & bit_SSE4_1))
             {
-                Diagnostics::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
             }
 
             if (!(level1[2] & bit_AVX))
             {
-                Diagnostics::ReportApplicationStop("Application stop: AVX is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: AVX is not supported\n");
             }
 
 #if ANEMONE_FEATURE_AVX2
 
             if (!(level1[2] & bit_F16C))
             {
-                Diagnostics::ReportApplicationStop("Application stop: F16C is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: F16C is not supported\n");
             }
 
             if (!(level1[2] & bit_FMA))
             {
-                Diagnostics::ReportApplicationStop("Application stop: FMA is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: FMA is not supported\n");
             }
 
             int level7_0[4]{-1};
@@ -358,7 +363,7 @@ namespace Anemone::Environment
 
             if (!(level7_0[1] & bit_AVX2))
             {
-                Diagnostics::ReportApplicationStop("Application stop: AVX2 is not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: AVX2 is not supported\n");
             }
 
 #endif
@@ -374,17 +379,17 @@ namespace Anemone::Environment
 
             if ((cap & HWCAP_FP) != HWCAP_FP)
             {
-                Diagnostics::ReportApplicationStop("Application stop: NEON not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: NEON not supported\n");
             }
 
             if ((cap & HWCAP_ASIMD) != HWCAP_ASIMD)
             {
-                Diagnostics::ReportApplicationStop("Application stop: ASIMD not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: ASIMD not supported\n");
             }
 
             if ((cap & HWCAP_ATOMICS) != HWCAP_ATOMICS)
             {
-                Diagnostics::ReportApplicationStop("Application stop: ATOMICS not supported\n");
+                Diagnostics::Debug::ReportApplicationStop("Application stop: ATOMICS not supported\n");
             }
 
 #endif
@@ -392,26 +397,26 @@ namespace Anemone::Environment
     }
 }
 
-namespace Anemone::Environment
+namespace Anemone::Internal
 {
-    extern void Initialize()
+    extern void InitializeEnvironment()
     {
         VerifyRequirements();
 
-        GStatics.Create();
-        InitializeEnvironment(*GStatics);
-        InitializeProcessorProperties(*GStatics);
+        gEnvironmentStatics.Create();
+        InitializeEnvironment(*gEnvironmentStatics);
+        InitializeProcessorProperties(*gEnvironmentStatics);
     }
 
-    extern void Finalize()
+    extern void FinalizeEnvironment()
     {
-        GStatics.Destroy();
+        gEnvironmentStatics.Destroy();
     }
 }
 
-namespace Anemone::Environment
+namespace Anemone
 {
-    auto GetEnvironmentVariable(std::string& result, std::string_view name) -> bool
+    auto Environment::GetEnvironmentVariable(std::string& result, std::string_view name) -> bool
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -429,7 +434,7 @@ namespace Anemone::Environment
         return success;
     }
 
-    auto SetEnvironmentVariable(std::string name, std::string_view value) -> bool
+    auto Environment::SetEnvironmentVariable(std::string name, std::string_view value) -> bool
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -440,7 +445,7 @@ namespace Anemone::Environment
         return result;
     }
 
-    auto RemoveEnvironmentVariable(std::string_view name) -> bool
+    auto Environment::RemoveEnvironmentVariable(std::string_view name) -> bool
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
@@ -451,13 +456,13 @@ namespace Anemone::Environment
         return result;
     }
 
-    void GetDisplayMetrics(DisplayMetrics& metrics)
+    void Environment::GetDisplayMetrics(DisplayMetrics& metrics)
     {
         (void)metrics;
         AE_PANIC("Not implemented");
     }
 
-    auto GetScreenPixel(Math::PointF position, float gamma) -> ColorRef
+    auto Environment::GetScreenPixel(Math::PointF position, float gamma) -> ColorRef
     {
         (void)position;
         (void)gamma;
@@ -465,23 +470,23 @@ namespace Anemone::Environment
         return {};
     }
 
-    auto GetSystemVersion() -> std::string_view
+    auto Environment::GetSystemVersion() -> std::string_view
     {
-        return GStatics->systemVersion;
+        return gEnvironmentStatics->systemVersion;
     }
 
-    auto GetSystemId() -> Uuid
+    auto Environment::GetSystemId() -> Uuid
     {
-        return GStatics->systemId;
+        return gEnvironmentStatics->systemId;
     }
 
-    auto GetSystemName() -> std::string_view
+    auto Environment::GetSystemName() -> std::string_view
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    auto GetSystemUptime() -> Duration
+    auto Environment::GetSystemUptime() -> Duration
     {
         struct sysinfo info = {0};
         sysinfo(&info);
@@ -489,12 +494,12 @@ namespace Anemone::Environment
         return Duration::FromSeconds(info.uptime);
     }
 
-    auto GetApplicationStartupTime() -> DateTime
+    auto Environment::GetApplicationStartupTime() -> DateTime
     {
-        return GStatics->startupTime;
+        return gEnvironmentStatics->startupTime;
     }
 
-    auto GetMemoryProperties() -> MemoryProperties
+    auto Environment::GetMemoryProperties() -> MemoryProperties
     {
         // Get memory properties
         struct sysinfo info = {0};
@@ -520,7 +525,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetMemoryUsage() -> MemoryUsage
+    auto Environment::GetMemoryUsage() -> MemoryUsage
     {
         MemoryUsage result{};
 
@@ -586,13 +591,13 @@ namespace Anemone::Environment
         return result;
     }
 
-    auto GetPowerUsage() -> PowerUsage
+    auto Environment::GetPowerUsage() -> PowerUsage
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    auto GetProcessorUsage() -> ProcessorUsage
+    auto Environment::GetProcessorUsage() -> ProcessorUsage
     {
         struct rusage usage = {0};
         getrusage(RUSAGE_SELF, &usage);
@@ -603,14 +608,14 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetProcessMemoryUsage() -> ProcessMemoryUsage
+    auto Environment::GetProcessMemoryUsage() -> ProcessMemoryUsage
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
 
-    void Terminate(bool force)
+    void Environment::Terminate(bool force)
     {
         if (force)
         {
@@ -622,77 +627,82 @@ namespace Anemone::Environment
         }
     }
 
-    auto GetDeviceUniqueId() -> std::string_view
+    bool Environment::IsConsoleApplication()
     {
-        return GStatics->deviceId;
+        return Internal::GIsConsoleApplication;
     }
 
-    auto GetDeviceName() -> std::string_view
+    auto Environment::GetDeviceUniqueId() -> std::string_view
     {
-        return GStatics->deviceName;
+        return gEnvironmentStatics->deviceId;
     }
 
-    auto GetDeviceModel() -> std::string_view
+    auto Environment::GetDeviceName() -> std::string_view
     {
-        return GStatics->deviceModel;
+        return gEnvironmentStatics->deviceName;
     }
 
-    auto GetDeviceType() -> DeviceType
+    auto Environment::GetDeviceModel() -> std::string_view
     {
-        return GStatics->deviceType;
+        return gEnvironmentStatics->deviceModel;
     }
 
-    auto GetDeviceProperties() -> DeviceProperties
+    auto Environment::GetDeviceType() -> DeviceType
     {
-        return GStatics->deviceProperties;
+        return gEnvironmentStatics->deviceType;
     }
 
-    auto GetComputerName() -> std::string_view
+    auto Environment::GetDeviceProperties() -> DeviceProperties
     {
-        return GStatics->computerName;
+        return gEnvironmentStatics->deviceProperties;
     }
 
-    auto GetUserName() -> std::string_view
+    auto Environment::GetComputerName() -> std::string_view
     {
-        return GStatics->userName;
+        return gEnvironmentStatics->computerName;
     }
 
-    auto GetExecutablePath() -> std::string_view
+    auto Environment::GetUserName() -> std::string_view
     {
-        return GStatics->executablePath;
+        return gEnvironmentStatics->userName;
     }
 
-    auto GetStartupPath() -> std::string_view
+    auto Environment::GetExecutablePath() -> std::string_view
     {
-        return GStatics->startupPath;
+        return gEnvironmentStatics->executablePath;
     }
 
-    auto GetHomePath() -> std::string_view
+    auto Environment::GetStartupPath() -> std::string_view
     {
-        return GStatics->profilePath;
+        return gEnvironmentStatics->startupPath;
     }
 
-    auto GetDesktopPath() -> std::string_view
+    auto Environment::GetHomePath() -> std::string_view
     {
-        return GStatics->desktopPath;
+        return gEnvironmentStatics->profilePath;
     }
 
-    auto GetDocumentsPath() -> std::string_view
+    auto Environment::GetDesktopPath() -> std::string_view
     {
-        return GStatics->documentsPath;
+        return gEnvironmentStatics->desktopPath;
     }
 
-    auto GetDownloadsPath() -> std::string_view
+    auto Environment::GetDocumentsPath() -> std::string_view
     {
-        return GStatics->downloadsPath;
+        return gEnvironmentStatics->documentsPath;
     }
 
-    auto GetTemporaryPath() -> std::string_view
+    auto Environment::GetDownloadsPath() -> std::string_view
     {
-        return GStatics->temporaryPath;
+        return gEnvironmentStatics->downloadsPath;
     }
 
-    auto GetCurrentDateTime() -> DateTime
+    auto Environment::GetTemporaryPath() -> std::string_view
+    {
+        return gEnvironmentStatics->temporaryPath;
+    }
+
+    auto Environment::GetCurrentDateTime() -> DateTime
     {
         struct timespec ts;
 
@@ -708,7 +718,7 @@ namespace Anemone::Environment
             }};
     }
 
-    auto GetCurrentDateTimeUtc() -> DateTime
+    auto Environment::GetCurrentDateTimeUtc() -> DateTime
     {
         struct timespec ts;
 
@@ -724,7 +734,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetCurrentTimeZoneBias() -> Duration
+    auto Environment::GetCurrentTimeZoneBias() -> Duration
     {
         time_t seconds = 0;
         tm tmGMT{};
@@ -738,7 +748,7 @@ namespace Anemone::Environment
         };
     }
 
-    auto GetCurrentInstant() -> Instant
+    auto Environment::GetCurrentInstant() -> Instant
     {
 #if defined(HAVE_CLOCK_GETTIME_NSEC_NP)
 
@@ -761,7 +771,7 @@ namespace Anemone::Environment
 #endif
     }
 
-    void GetRandom(std::span<std::byte> buffer)
+    void Environment::GetRandom(std::span<std::byte> buffer)
     {
         size_t processed = 0;
 
@@ -786,7 +796,7 @@ namespace Anemone::Environment
         }
     }
 
-    void LaunchUrl(std::string_view url)
+    void Environment::LaunchUrl(std::string_view url)
     {
         Interop::string_buffer<char, 512> sUrl{url};
 
@@ -820,64 +830,64 @@ namespace Anemone::Environment
         }
     }
 
-    bool IsOnline()
+    bool Environment::IsOnline()
     {
         AE_PANIC("Not implemented");
         return false;
     }
 
-    auto GetPhysicalCoresCount() -> size_t
+    auto Environment::GetPhysicalCoresCount() -> size_t
     {
-        return GStatics->physicalCores;
+        return gEnvironmentStatics->physicalCores;
     }
 
-    auto GetLogicalCoresCount() -> size_t
+    auto Environment::GetLogicalCoresCount() -> size_t
     {
-        return GStatics->logicalCores;
+        return gEnvironmentStatics->logicalCores;
     }
 
-    auto GetPerformanceCoresCount() -> size_t
+    auto Environment::GetPerformanceCoresCount() -> size_t
     {
-        return GStatics->performanceCores;
+        return gEnvironmentStatics->performanceCores;
     }
 
-    auto GetEfficiencyCoresCount() -> size_t
+    auto Environment::GetEfficiencyCoresCount() -> size_t
     {
-        return GStatics->efficiencyCores;
+        return gEnvironmentStatics->efficiencyCores;
     }
 
-    bool IsHyperThreadingEnabled()
+    bool Environment::IsHyperThreadingEnabled()
     {
-        return GStatics->hyperThreading;
+        return gEnvironmentStatics->hyperThreading;
     }
 
-    auto GetCacheLineSize() -> size_t
+    auto Environment::GetCacheLineSize() -> size_t
     {
-        return GStatics->cacheLineSize;
+        return gEnvironmentStatics->cacheLineSize;
     }
 
-    auto GetCacheSizeLevel1() -> size_t
+    auto Environment::GetCacheSizeLevel1() -> size_t
     {
-        return GStatics->cacheSizeLevel1;
+        return gEnvironmentStatics->cacheSizeLevel1;
     }
 
-    auto GetCacheSizeLevel2() -> size_t
+    auto Environment::GetCacheSizeLevel2() -> size_t
     {
-        return GStatics->cacheSizeLevel2;
+        return gEnvironmentStatics->cacheSizeLevel2;
     }
 
-    auto GetCacheSizeLevel3() -> size_t
+    auto Environment::GetCacheSizeLevel3() -> size_t
     {
-        return GStatics->cacheSizeLevel3;
+        return gEnvironmentStatics->cacheSizeLevel3;
     }
 
-    auto GetProcessorName() -> std::string_view
+    auto Environment::GetProcessorName() -> std::string_view
     {
-        return GStatics->processorName.as_view();
+        return gEnvironmentStatics->processorName.as_view();
     }
 
-    auto GetProcessorVendor() -> std::string_view
+    auto Environment::GetProcessorVendor() -> std::string_view
     {
-        return GStatics->processorVendor.as_view();
+        return gEnvironmentStatics->processorVendor.as_view();
     }
 }

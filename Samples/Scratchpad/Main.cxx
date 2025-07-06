@@ -10,8 +10,10 @@
 
 #include <expected>
 
+#if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#endif
 #include "AnemoneRuntime/Network/Tcp.hxx"
 #include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
@@ -294,7 +296,10 @@ public:
         AE_TRACE(Error, "Window: {} is visible: {}", fmt::ptr(&window), args.Visible);
     }
 };
+
+#if ANEMONE_PLATFORM_WINDOWS
 #pragma comment(lib, "Dwmapi.lib")
+#endif
 
 #include "AnemoneRuntime/System/Environment.hxx"
 
@@ -310,9 +315,9 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
-#endif
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#endif
 
 struct V2 : Anemone::DirectoryVisitor
 {
@@ -778,7 +783,10 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
     EH eh{};
 
+#if ANEMONE_PLATFORM_WINDOWS
     AE_TRACE(Error, "Error: {}", Anemone::Diagnostics::WindowsDebug::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
+#endif
+
     Anemone::IApplication::Initialize(&eh);
     auto window1 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
     auto window2 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);

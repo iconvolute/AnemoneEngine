@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Interop/Linux/FileSystem.hxx"
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <unistd.h>
 #include <sys/file.h>

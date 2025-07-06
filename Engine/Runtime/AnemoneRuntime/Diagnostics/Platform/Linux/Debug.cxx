@@ -28,7 +28,7 @@ namespace Anemone::Diagnostics
 
             while (fgets(line.data(), line.size(), f))
             {
-                if (sscanf(line.data(), "TracerPid:\t%d") == 1)
+                if (sscanf(line.data(), "TracerPid:\t%d", &tracePid) == 1)
                 {
                     return tracePid != 0;
                 }

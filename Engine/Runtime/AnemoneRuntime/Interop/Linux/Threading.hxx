@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Linux/Headers.hxx"
 #include "AnemoneRuntime/Interop/Linux/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Base/Duration.hxx"
 
 #include <atomic>

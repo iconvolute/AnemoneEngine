@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Platform/NamedMutex.hxx"
 #include "AnemoneRuntime/Platform/Linux/LinuxNamedMutex.hxx"
 #include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 #include <fcntl.h>
 #include <sys/stat.h>
