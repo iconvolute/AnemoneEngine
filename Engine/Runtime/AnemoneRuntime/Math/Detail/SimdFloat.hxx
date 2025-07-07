@@ -133,9 +133,17 @@ namespace Anemone::Math::Detail
     template <size_t N>
     float anemone_vectorcall Vector4F_Extract(SimdVector4F v)
         requires(N < 4);
+    
+    template <size_t N>
+    void anemone_vectorcall Vector4F_Extract(SimdVector4F v, float* f)
+        requires(N < 4);
 
     template <size_t N>
     SimdVector4F anemone_vectorcall Vector4F_Insert(SimdVector4F v, float f)
+        requires(N < 4);
+
+    template <size_t N>
+    SimdVector4F anemone_vectorcall Vector4F_Insert(SimdVector4F v, float const* f)
         requires(N < 4);
 
     template <size_t N>

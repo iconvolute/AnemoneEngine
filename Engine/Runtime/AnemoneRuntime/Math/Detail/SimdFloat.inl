@@ -1053,6 +1053,26 @@ namespace Anemone::Math::Detail
     }
 
     template <size_t N>
+    void anemone_vectorcall Vector4F_Extract(SimdVector4F v, float* f)
+        requires(N < 4)
+    {
+#if ANEMONE_BUILD_DISABLE_SIMD
+        *f = v.Inner[N];
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+        if constexpr (N == 0)
+        {
+            _mm_store_ss(f, v);
+        }
+        else
+        {
+            (*reinterpret_cast<int*>(f)) = _mm_extract_ps(v, N);
+        }
+#elif ANEMONE_FEATURE_NEON
+        *f = vgetq_lane_f32(v, N);
+#endif
+    }
+
+    template <size_t N>
     SimdVector4F anemone_vectorcall Vector4F_Insert(SimdVector4F v, float f)
         requires(N < 4)
     {
@@ -1070,6 +1090,41 @@ namespace Anemone::Math::Detail
         }
 #elif ANEMONE_FEATURE_NEON
         return vsetq_lane_f32(f, v, N);
+#endif
+    }
+    
+    template <size_t N>
+    SimdVector4F anemone_vectorcall Vector4F_Insert(SimdVector4F v, float const* f)
+        requires(N < 4)
+    {
+#if ANEMONE_BUILD_DISABLE_SIMD
+        v.Inner[N] = *f;
+        return v;
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+        if constexpr (N == 0)
+        {
+            return _mm_move_ss(v, _mm_load_ss(f));
+        }
+        else if constexpr (N == 1)
+        {
+            __m128 yxzw = _mm_permute_ps(v, _MM_SHUFFLE(3,2,0,1));
+            yxzw = _mm_move_ss(yxzw, _mm_load_ss(f));
+            return _mm_permute_ps(yxzw, _MM_SHUFFLE(3,2,0,1));
+        }
+        else if constexpr (N == 2)
+        {
+            __m128 zyxw = _mm_permute_ps(v, _MM_SHUFFLE(3,0,1,2));
+            zyxw = _mm_move_ss(zyxw, _mm_load_ss(f));
+            return _mm_permute_ps(zyxw, _MM_SHUFFLE(3,0,1,2));
+        }
+        else if constexpr (N == 3)
+        {
+            __m128 wyzx = _mm_permute_ps(v, _MM_SHUFFLE(0,2,1,3));
+            wyzx = _mm_move_ss(wyzx, _mm_load_ss(f));
+            return _mm_permute_ps(wyzx, _MM_SHUFFLE(0,2,1,3));
+        }
+#elif ANEMONE_FEATURE_NEON
+        return vld1q_lane_f32(f, v, N);
 #endif
     }
 
@@ -1774,7 +1829,7 @@ namespace Anemone::Math::Detail
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         return _mm_round_ps(v, _MM_FROUND_TO_NEAREST_INT | _MM_FROUND_NO_EXC);
 #elif ANEMONE_FEATURE_NEON
-        return vrndaq_f32(v);
+        return vrndnq_f32(v);
 #endif
     }
 
