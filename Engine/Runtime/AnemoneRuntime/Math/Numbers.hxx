@@ -178,10 +178,20 @@ namespace Anemone::Math::Detail
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitZ{0.0f, 0.0f, 1.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_PositiveUnitW{0.0f, 0.0f, 0.0f, 1.0f};
 
+    inline constexpr VectorConstant<double, 4> F64x4_PositiveUnitX{1.0, 0.0, 0.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_PositiveUnitY{0.0, 1.0, 0.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_PositiveUnitZ{0.0, 0.0, 1.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_PositiveUnitW{0.0, 0.0, 0.0, 1.0};
+
     inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitX{-1.0f, 0.0f, 0.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitY{0.0f, -1.0f, 0.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitZ{0.0f, 0.0f, -1.0f, 0.0f};
     inline constexpr VectorConstant<float, 4> F32x4_NegativeUnitW{0.0f, 0.0f, 0.0f, -1.0f};
+
+    inline constexpr VectorConstant<double, 4> F64x4_NegativeUnitX{-1.0, 0.0, 0.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_NegativeUnitY{0.0, -1.0, 0.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_NegativeUnitZ{0.0, 0.0, -1.0, 0.0};
+    inline constexpr VectorConstant<double, 4> F64x4_NegativeUnitW{0.0, 0.0, 0.0, -1.0};
 
     inline constexpr VectorConstant<float, 4> F32x4_Negate_Xnnn{-1.0f, 1.0f, 1.0f, 1.0f};
     inline constexpr VectorConstant<float, 4> F32x4_Negate_nXnn{1.0f, -1.0f, 1.0f, 1.0f};
@@ -230,6 +240,13 @@ namespace Anemone::Math::Detail
         Float32::PositiveInfinityBits,
     };
 
+    inline constexpr VectorConstant<uint64_t, 4> F64x4_PositiveInfinity_XXXX{
+        Float64::PositiveInfinityBits,
+        Float64::PositiveInfinityBits,
+        Float64::PositiveInfinityBits,
+        Float64::PositiveInfinityBits,
+    };
+
     inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeInfinity_XXXX{
         Float32::NegativeInfinityBits,
         Float32::NegativeInfinityBits,
@@ -237,11 +254,25 @@ namespace Anemone::Math::Detail
         Float32::NegativeInfinityBits,
     };
 
+    inline constexpr VectorConstant<uint64_t, 4> F64x4_NegativeInfinity_XXXX{
+        Float64::NegativeInfinityBits,
+        Float64::NegativeInfinityBits,
+        Float64::NegativeInfinityBits,
+        Float64::NegativeInfinityBits,
+    };
+
     inline constexpr VectorConstant<uint32_t, 4> F32x4_PositiveQNaN_XXXX{
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
         Float32::PositiveQNaNBits,
+    };
+
+    inline constexpr VectorConstant<uint64_t, 4> F64x4_PositiveQNaN_XXXX{
+        Float64::PositiveQNaNBits,
+        Float64::PositiveQNaNBits,
+        Float64::PositiveQNaNBits,
+        Float64::PositiveQNaNBits,
     };
 
     inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeQNaN_XXXX{
@@ -293,6 +324,13 @@ namespace Anemone::Math::Detail
         std::numeric_limits<float>::epsilon(),
     };
 
+    inline constexpr VectorConstant<double, 4> F64x4_Epsilon_XXXX{
+        std::numeric_limits<double>::epsilon(),
+        std::numeric_limits<double>::epsilon(),
+        std::numeric_limits<double>::epsilon(),
+        std::numeric_limits<double>::epsilon(),
+    };
+
     inline constexpr VectorConstant<float, 4> F32x4_PositiveZero_XXXX{
         0.0f,
         0.0f,
@@ -300,11 +338,25 @@ namespace Anemone::Math::Detail
         0.0f,
     };
 
+    inline constexpr VectorConstant<uint64_t, 4> F64x4_PositiveZero_XXXX{
+        Float64::PositiveZeroBits,
+        Float64::PositiveZeroBits,
+        Float64::PositiveZeroBits,
+        Float64::PositiveZeroBits,
+    };
+
     inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeZero_XXXX{
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
         Float32::NegativeZeroBits,
+    };
+
+    inline constexpr VectorConstant<uint64_t, 4> F64x4_NegativeZero_XXXX{
+        Float64::NegativeZeroBits,
+        Float64::NegativeZeroBits,
+        Float64::NegativeZeroBits,
+        Float64::NegativeZeroBits,
     };
 
     inline constexpr VectorConstant<uint32_t, 4> F32x4_NegativeZero_XXXn{

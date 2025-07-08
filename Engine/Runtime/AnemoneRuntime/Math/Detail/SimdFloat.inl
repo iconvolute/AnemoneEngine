@@ -1369,7 +1369,9 @@ namespace Anemone::Math::Detail
             ScalarHelper_SelectBranchless(mask.Inner[3], whenFalse.Inner[3], whenTrue.Inner[3]),
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-        return _mm_blendv_ps(whenFalse, whenTrue, mask);
+        // Note: this approach has better performance on older CPUs.
+        // return _mm_blendv_ps(whenFalse, whenTrue, mask);
+        return _mm_or_ps(_mm_andnot_ps(mask, whenFalse), _mm_and_ps(mask, whenTrue));
 #elif ANEMONE_FEATURE_NEON
         return vbslq_f32(mask, whenTrue, whenFalse);
 #endif
@@ -8007,6 +8009,7 @@ namespace Anemone::Math::Detail
 #endif
     }
 
+#if !ANEMONE_BUILD_DISABLE_SIMD
 #if ANEMONE_FEATURE_NEON
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadTransposeFloat4x4(float const* source)
     {
@@ -8017,6 +8020,7 @@ namespace Anemone::Math::Detail
     {
         vst4q_f32(destination, source);
     }
+#endif
 #endif
 
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_Identity()

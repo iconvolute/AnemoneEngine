@@ -10,6 +10,7 @@
             "cacheVariables": {
                 "CMAKE_EXPORT_COMPILE_COMMANDS": true,
                 "CMAKE_UNITY_BUILD": false,
+                "ANEMONE_BUILD_DISABLE_SIMD": false,
                 "ANEMONE_BUILD_ASAN": false,
                 "ANEMONE_BUILD_UBSAN": false,
                 "ANEMONE_BUILD_TSAN": false
