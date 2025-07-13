@@ -37,6 +37,19 @@ namespace Anemone::Internal
     }
 }
 
+namespace Anemone::Internal
+{    
+    extern void InitializeFileSystem()
+    {
+
+    }
+
+    extern void FinalizeFileSystem()
+    {
+        
+    }
+}
+
 namespace Anemone
 {
     auto FileSystem::FileExists(std::string_view path) -> std::expected<bool, Status>

@@ -21,6 +21,9 @@ namespace Anemone::Internal
     extern void InitializeTaskScheduler();
     extern void FinalizeTaskScheduler();
 
+    extern void InitializeFileSystem();
+    extern void FinalizeFileSystem();
+
     //extern void InitializeApplication();
     //extern void FinalizeApplication();
 
@@ -39,6 +42,7 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
 
     Anemone::Internal::InitializeDiagnostics();
     Anemone::Internal::InitializeEnvironment();
+    Anemone::Internal::InitializeFileSystem();
     Anemone::Internal::InitializeClipboard();
     //Anemone::Internal::InitializeThreading();
     Anemone::Internal::InitializeTaskScheduler();
@@ -55,6 +59,7 @@ extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
     Anemone::Internal::FinalizeTaskScheduler();
     //Anemone::Internal::FinalizeThreading();
     Anemone::Internal::FinalizeClipboard();
+    Anemone::Internal::FinalizeFileSystem();
     Anemone::Internal::FinalizeEnvironment();
     Anemone::Internal::FinalizeDiagnostics();
 }

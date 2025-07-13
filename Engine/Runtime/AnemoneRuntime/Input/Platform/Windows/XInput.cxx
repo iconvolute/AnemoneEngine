@@ -11,20 +11,20 @@ namespace Anemone
             WORD Source;
             GamepadButton Button;
         } GWindowsXInputButtonMapping[]{
-            {XINPUT_GAMEPAD_A, GamepadButton ::A},
-            {XINPUT_GAMEPAD_B, GamepadButton ::B},
-            {XINPUT_GAMEPAD_X, GamepadButton ::X},
-            {XINPUT_GAMEPAD_Y, GamepadButton ::Y},
-            {XINPUT_GAMEPAD_LEFT_SHOULDER, GamepadButton ::LeftShoulder},
-            {XINPUT_GAMEPAD_RIGHT_SHOULDER, GamepadButton ::RightShoulder},
-            {XINPUT_GAMEPAD_DPAD_UP, GamepadButton ::DPadUp},
-            {XINPUT_GAMEPAD_DPAD_DOWN, GamepadButton ::DPadDown},
-            {XINPUT_GAMEPAD_DPAD_LEFT, GamepadButton ::DPadLeft},
-            {XINPUT_GAMEPAD_DPAD_RIGHT, GamepadButton ::DPadRight},
-            {XINPUT_GAMEPAD_START, GamepadButton ::Menu},
-            {XINPUT_GAMEPAD_BACK, GamepadButton ::View},
-            {XINPUT_GAMEPAD_LEFT_THUMB, GamepadButton ::LeftStick},
-            {XINPUT_GAMEPAD_RIGHT_THUMB, GamepadButton ::RightStick},
+            {XINPUT_GAMEPAD_A, GamepadButton::A},
+            {XINPUT_GAMEPAD_B, GamepadButton::B},
+            {XINPUT_GAMEPAD_X, GamepadButton::X},
+            {XINPUT_GAMEPAD_Y, GamepadButton::Y},
+            {XINPUT_GAMEPAD_LEFT_SHOULDER, GamepadButton::LeftShoulder},
+            {XINPUT_GAMEPAD_RIGHT_SHOULDER, GamepadButton::RightShoulder},
+            {XINPUT_GAMEPAD_DPAD_UP, GamepadButton::DPadUp},
+            {XINPUT_GAMEPAD_DPAD_DOWN, GamepadButton::DPadDown},
+            {XINPUT_GAMEPAD_DPAD_LEFT, GamepadButton::DPadLeft},
+            {XINPUT_GAMEPAD_DPAD_RIGHT, GamepadButton::DPadRight},
+            {XINPUT_GAMEPAD_START, GamepadButton::Menu},
+            {XINPUT_GAMEPAD_BACK, GamepadButton::View},
+            {XINPUT_GAMEPAD_LEFT_THUMB, GamepadButton::LeftStick},
+            {XINPUT_GAMEPAD_RIGHT_THUMB, GamepadButton::RightStick},
         };
 
         constexpr float ApplyLinearDeadzone(float value, float max, float deadzone)

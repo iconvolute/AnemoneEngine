@@ -40,6 +40,7 @@ namespace Anemone::Diagnostics
             }
         }
 
+        // Remove trailing newlines and periods.
         if (dwChars > 3)
         {
             if (szMessageBuffer[dwChars - 1] == L'\n')
