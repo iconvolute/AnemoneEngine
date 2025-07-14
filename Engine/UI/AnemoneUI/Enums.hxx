@@ -195,4 +195,83 @@ namespace Anemone::UI
         Forward,
         Backward,
     };
+
+    enum class FormState
+    {
+        Normal,
+        Minimized,
+        Maximized,
+    };
+
+    enum class FormBorderStyle
+    {
+        None,
+        Sizeable,
+        Fixed,
+        Dialog,
+        FixedToolWindow,
+        SizeableToolWindow,
+    };
+
+    enum class FormCaptionButton
+    {
+        Close,
+        Help,
+        Maximize,
+        Minimize,
+        Restore,
+    };
+
+    enum class ImageLayout
+    {
+        None,
+        Center,
+        Tile,
+        Stretch,
+        Zoom,
+    };
+
+    enum class Orientation
+    {
+        Horizontal,
+        Vertical,
+    };
+
+    enum class ScrollBars
+    {
+        None = 0u,
+        Horizontal = 1u << 0u,
+        Vertical = 1u << 1u,
+        Both = Horizontal | Vertical,
+    };
+
+    enum class ScrollBarVisibility
+    {
+        Auto,
+        Visible,
+        Hidden,
+    };
+
+    enum class ScrollButton
+    {
+        Left,
+        Right,
+        Top,
+        Bottom,
+        Min,
+        Max,
+    };
+
+    enum class ScrollEventType
+    {
+        EndScroll,
+        First,
+        Last,
+        PageUp,
+        PageDown,
+        LineUp,
+        LineDown,
+        ThumbPosition,
+        ThumbTrack,
+    };
 }
