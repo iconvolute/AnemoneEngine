@@ -6,6 +6,7 @@ namespace Anemone::Math
     struct PointF;
     struct SizeF;
     struct ThicknessF;
+    struct BoundsF;
 
     struct RectF
     {

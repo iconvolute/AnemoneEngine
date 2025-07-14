@@ -1,6 +1,7 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "Aligned.hxx"
+        "Bounds.hxx"
         "Easing.cxx"
         "Easing.hxx"
         "Fixed.hxx"

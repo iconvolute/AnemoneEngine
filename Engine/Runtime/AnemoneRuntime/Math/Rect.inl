@@ -2,6 +2,7 @@
 #include <algorithm>
 
 #include "AnemoneRuntime/Math/Point.hxx"
+#include "AnemoneRuntime/Math/Bounds.hxx"
 #include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Math/Thickness.hxx"
 #include "AnemoneRuntime/Math/Functions.hxx"
@@ -16,6 +17,11 @@ namespace Anemone::Math
     constexpr RectF RectF::FromLocationSize(float x, float y, float size)
     {
         return {x, y, size, size};
+    }
+
+    constexpr RectF RectF::FromBounds(BoundsF bounds)
+    {
+        return {bounds.Left, bounds.Top, bounds.Right - bounds.Left, bounds.Bottom - bounds.Top};
     }
 
     constexpr RectF RectF::FromBounds(float left, float top, float right, float bottom)
