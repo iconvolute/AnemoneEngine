@@ -24,7 +24,9 @@ namespace Anemone::Math::Detail
 {
     anemone_forceinline __m256d anemone_vectorcall AvxMultiplyAdd(__m256d a, __m256d b, __m256d c)
     {
-#if ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FMA4
+        return _mm256_macc_pd(a, b, c);
+#elif ANEMONE_FEATURE_AVX2
         return _mm256_fmadd_pd(a, b, c);
 #else
         // = (a * b) + c
@@ -34,7 +36,9 @@ namespace Anemone::Math::Detail
 
     anemone_forceinline __m256d anemone_vectorcall AvxMultiplySubtract(__m256d a, __m256d b, __m256d c)
     {
-#if ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FMA4
+        return _mm256_msub_pd(a, b, c);
+#elif ANEMONE_FEATURE_AVX2
         return _mm256_fmsub_pd(a, b, c);
 #else
         // = (a * b) - c
@@ -44,7 +48,9 @@ namespace Anemone::Math::Detail
 
     anemone_forceinline __m256d anemone_vectorcall AvxNegateMultiplyAdd(__m256d a, __m256d b, __m256d c)
     {
-#if ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FMA4
+        return _mm256_nmacc_pd(a, b, c);
+#elif ANEMONE_FEATURE_AVX2
         return _mm256_fnmadd_pd(a, b, c);
 #else
         // = -(a * b) + c
@@ -54,7 +60,9 @@ namespace Anemone::Math::Detail
 
     anemone_forceinline __m256d anemone_vectorcall AvxNegateMultiplySubtract(__m256d a, __m256d b, __m256d c)
     {
-#if ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_FMA4
+        return _mm256_nmsub_pd(a, b, c);
+#elif ANEMONE_FEATURE_AVX2
         return _mm256_fnmsub_pd(a, b, c);
 #else
         // = -(a * b) - c
@@ -296,7 +304,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], source[2], source[3]};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(source)};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(source)};
 #endif
@@ -307,7 +315,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], source[2], 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(source)};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(source)};
 #endif
@@ -318,7 +326,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], 0.0, 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(source)};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(source)};
 #endif
@@ -329,7 +337,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], 0.0, 0.0, 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(source)};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(source)};
 #endif
@@ -340,7 +348,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], source[2], source[3]};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_loadu_pd(source)};
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -351,7 +359,9 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], source[2], 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        __m128d const xy = _mm_loadu_pd(source);
+        __m128d const z0 = _mm_load_sd(source + 2);
+        return SimdVector4D{_mm256_insertf128_pd(_mm256_castpd128_pd256(xy), z0, 1)};
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -362,7 +372,9 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], source[1], 0.0, 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        __m128d const xy = _mm_loadu_pd(source);
+        // = [x, y, 0, 0]
+        return SimdVector4D{_mm256_insertf128_pd(_mm256_setzero_pd(), xy, 0)};
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -373,7 +385,9 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{source[0], 0.0, 0.0, 0.0};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        __m128d const x0 = _mm_load_sd(source);
+        // = [x, 0, 0, 0]
+        return SimdVector4D{_mm256_insertf128_pd(_mm256_setzero_pd(), x0, 0)};
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -387,7 +401,7 @@ namespace Anemone::Math::Detail
         destination[2] = source.Inner[2];
         destination[3] = source.Inner[3];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm256_store_pd(destination, source);
 #elif ANEMONE_FEATURE_NEON
         vst1q_f64_x2(destination, source.Inner);
 #endif
@@ -400,7 +414,7 @@ namespace Anemone::Math::Detail
         destination[1] = source.Inner[1];
         destination[2] = source.Inner[2];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm256_store_pd(destination, source);
 #elif ANEMONE_FEATURE_NEON
         vst1q_f64_x2(destination, source.Inner);
 #endif
@@ -412,7 +426,7 @@ namespace Anemone::Math::Detail
         destination[0] = source.Inner[0];
         destination[1] = source.Inner[1];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm256_store_pd(destination, source);
 #elif ANEMONE_FEATURE_NEON
         vst1q_f64_x2(destination, source.Inner);
 #endif
@@ -423,7 +437,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         destination[0] = source.Inner[0];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm256_store_pd(destination, source);
 #elif ANEMONE_FEATURE_NEON
         vst1q_f64_x2(destination, source.Inner);
 #endif
@@ -437,7 +451,7 @@ namespace Anemone::Math::Detail
         destination[2] = source.Inner[2];
         destination[3] = source.Inner[3];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm256_storeu_pd(destination, source);
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -450,7 +464,8 @@ namespace Anemone::Math::Detail
         destination[1] = source.Inner[1];
         destination[2] = source.Inner[2];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm_storeu_pd(destination, _mm256_castpd256_pd128(source));
+        _mm_storeu_pd(destination + 2, _mm256_extractf128_pd(source, 1));
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -462,7 +477,7 @@ namespace Anemone::Math::Detail
         destination[0] = source.Inner[0];
         destination[1] = source.Inner[1];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm_storeu_pd(destination, _mm256_castpd256_pd128(source));
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -473,7 +488,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         destination[0] = source.Inner[0];
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        _mm_store_sd(destination, _mm256_castpd256_pd128(source));
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -484,7 +499,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{x, y, z, w};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_setr_pd(x, y, z, w)};
 #elif ANEMONE_FEATURE_NEON
         double const r[4]{x, y, z, w};
 
@@ -497,7 +512,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{f, f, f, f};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_set1_pd(f)};
 #elif ANEMONE_FEATURE_NEON
         float64x2_t const r = vdupq_n_f64(f);
         return SimdVector4D{
@@ -514,7 +529,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveZero_XXXX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_setzero_pd()};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveZero_XXXX.As<double>())};
 #endif
@@ -525,7 +540,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveQNaN_XXXX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveQNaN_XXXX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveQNaN_XXXX.As<double>())};
 #endif
@@ -536,7 +551,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveInfinity_XXXX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveInfinity_XXXX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveInfinity_XXXX.As<double>())};
 #endif
@@ -547,7 +562,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_NegativeInfinity_XXXX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_NegativeInfinity_XXXX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_NegativeInfinity_XXXX.As<double>())};
 #endif
@@ -558,7 +573,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_Epsilon_XXXX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_Epsilon_XXXX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_Epsilon_XXXX.As<double>())};
 #endif
@@ -569,7 +584,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveUnitX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveUnitX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveUnitX.As<double>())};
 #endif
@@ -580,7 +595,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveUnitY);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveUnitY.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveUnitY.As<double>())};
 #endif
@@ -591,7 +606,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveUnitZ);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveUnitZ.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveUnitZ.As<double>())};
 #endif
@@ -602,7 +617,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_PositiveUnitW);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_PositiveUnitW.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_PositiveUnitW.As<double>())};
 #endif
@@ -613,7 +628,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_NegativeUnitX);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_NegativeUnitX.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_NegativeUnitX.As<double>())};
 #endif
@@ -624,7 +639,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_NegativeUnitY);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_NegativeUnitY.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_NegativeUnitY.As<double>())};
 #endif
@@ -635,7 +650,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_NegativeUnitZ);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_NegativeUnitZ.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_NegativeUnitZ.As<double>())};
 #endif
@@ -646,7 +661,7 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return std::bit_cast<SimdVector4D>(F64x4_NegativeUnitW);
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return SimdVector4D{_mm256_load_pd(F64x4_NegativeUnitW.As<double>())};
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{vld1q_f64_x2(F64x4_NegativeUnitW.As<double>())};
 #endif
@@ -779,7 +794,44 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4D{v.Inner[X], v.Inner[Y], v.Inner[Z], v.Inner[W]};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        if constexpr (X == 0 and Y == 1 and Z == 2 and W == 3)
+        {
+            return v;
+        }
+        else
+        {
+#if ANEMONE_FEATURE_AVX2
+            return _mm256_permute4x64_pd(v, _MM_SHUFFLE(W, Z, Y, X));
+#elif ANEMONE_FEATURE_AVX
+            // = [X, Y]
+            __m128d const v_xy = _mm256_castpd256_pd128(v);
+            // = [Z, W]
+            __m128d const v_zw = _mm256_extractf128_pd(v, 1);
+
+            double elements[4]{
+                _mm_cvtsd_f64(v_xy),
+                _mm_cvtsd_f64(_mm_unpackhi_pd(v_xy, v_xy)),
+                _mm_cvtsd_f64(v_zw),
+                _mm_cvtsd_f64(_mm_unpackhi_pd(v_zw, v_zw)),
+            };
+
+            // = [e.X, e.Y]
+            __m128d const r_xy = _mm_setr_pd(elements[X], elements[Y]);
+            // = [e.Z, e.W]
+            __m128d const r_zw = _mm_setr_pd(elements[Z], elements[W]);
+
+            // = [e.X, e.Y, e.Z, e.W]
+            return _mm256_insertf128_pd(_mm256_castpd128_pd256(r_xy), r_zw, 1);
+#else
+            // = [Z, W, X, Y]
+            __m256d const r0 = _mm256_permute2f128_pd(v, v, 0b0000'0001);
+            constexpr int permuteMask = (X & 1) | ((Y & 1) << 1u) | ((Z & 1) << 2u) | ((W & 1) << 3u);
+            __m256d const xyzw = _mm256_permute_pd(v, permuteMask);
+            __m256d const zwxy = _mm256_permute_pd(r0, permuteMask);
+            constexpr int blendMask = (static_cast<int>(X >= 2)) | (static_cast<int>(Y >= 2) << 1) | (static_cast<int>(Z < 2) << 2) | (static_cast<int>(W < 2) << 3);
+            return _mm256_blend_pd(xyzw, zwxy, blendMask);
+#endif
+        }
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -790,47 +842,41 @@ namespace Anemone::Math::Detail
         requires((X < 8) and (Y < 8) and (Z < 8) and (W < 8))
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        SimdVector4D result;
-
-        if constexpr (X < 4)
-        {
-            result.Inner[0] = a.Inner[X];
-        }
-        else
-        {
-            result.Inner[0] = b.Inner[X - 4];
-        }
-
-        if constexpr (Y < 4)
-        {
-            result.Inner[1] = a.Inner[Y];
-        }
-        else
-        {
-            result.Inner[1] = b.Inner[Y - 4];
-        }
-
-        if constexpr (Z < 4)
-        {
-            result.Inner[2] = a.Inner[Z];
-        }
-        else
-        {
-            result.Inner[2] = b.Inner[Z - 4];
-        }
-
-        if constexpr (W < 4)
-        {
-            result.Inner[3] = a.Inner[W];
-        }
-        else
-        {
-            result.Inner[3] = b.Inner[W - 4];
-        }
-
-        return result;
+        return SimdVector4D{
+            ((X >= 4) ? b.Inner : a.Inner)[X & 3],
+            ((Y >= 4) ? b.Inner : a.Inner)[Y & 3],
+            ((Z >= 4) ? b.Inner : a.Inner)[Z & 3],
+            ((W >= 4) ? b.Inner : a.Inner)[W & 3],
+        };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+
+        if constexpr (X == 0 and Y == 1 and Z == 2 and W == 3)
+        {
+            return a;
+        }
+        else if constexpr (X == 4 and Y == 5 and Z == 6 and W == 7)
+        {
+            return b;
+        }
+        else
+        {
+            constexpr int blendMask =
+                ((X >= 4) ? 0b0001 : 0b0000) |
+                ((Y >= 4) ? 0b0010 : 0b0000) |
+                ((Z >= 4) ? 0b0100 : 0b0000) |
+                ((W >= 4) ? 0b1000 : 0b0000);
+
+            constexpr size_t maskX = X & 3;
+            constexpr size_t maskY = Y & 3;
+            constexpr size_t maskZ = Z & 3;
+            constexpr size_t maskW = W & 3;
+
+            __m256d const va = Vector4D_Permute<maskX, maskY, maskZ, maskW>(a);
+            __m256d const vb = Vector4D_Permute<maskX, maskY, maskZ, maskW>(b);
+
+            return _mm256_blend_pd(va, vb, blendMask);
+        }
+
 #elif ANEMONE_FEATURE_NEON
 #error Not implemented
 #endif
@@ -847,8 +893,8 @@ namespace Anemone::Math::Detail
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         // Note: this approach has better performance on older CPUs.
-        // return _mm_blendv_ps(whenFalse, whenTrue, mask);
-        return _mm256_or_ps(_mm256_andnot_ps(mask, whenFalse), _mm256_and_ps(mask, whenTrue));
+        // return _mm256_blendv_pd(whenFalse, whenTrue, mask);
+        return _mm256_or_pd(_mm256_andnot_pd(mask, whenFalse), _mm256_and_pd(mask, whenTrue));
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{
             float64x2x2_t{
@@ -870,7 +916,12 @@ namespace Anemone::Math::Detail
             W ? whenTrue.Inner[3] : whenFalse.Inner[3],
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        constexpr int blendMask =
+            (X ? 0b0001 : 0b0000) |
+            (Y ? 0b0010 : 0b0000) |
+            (Z ? 0b0100 : 0b0000) |
+            (W ? 0b1000 : 0b0000);
+        return _mm256_blend_pd(whenFalse, whenTrue, blendMask);
 #elif ANEMONE_FEATURE_NEON
         static constexpr uint64_t maskXY[2]{
             X ? NeonMaskComponentUInt64 : 0,
@@ -901,7 +952,7 @@ namespace Anemone::Math::Detail
             (a.Inner[3] * b.Inner[3]) + c.Inner[3],
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return AvxMultiplyAdd(a, b, c);
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{
             float64x2x2_t{
@@ -922,7 +973,7 @@ namespace Anemone::Math::Detail
             (a.Inner[3] * b.Inner[3]) - c.Inner[3],
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return AvxMultiplySubtract(a, b, c);
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{
             float64x2x2_t{
@@ -943,7 +994,7 @@ namespace Anemone::Math::Detail
             -(a.Inner[3] * b.Inner[3]) + c.Inner[3],
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return AvxNegateMultiplyAdd(a, b, c);
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{
             float64x2x2_t{
@@ -964,7 +1015,7 @@ namespace Anemone::Math::Detail
             -(a.Inner[3] * b.Inner[3]) - c.Inner[3],
         };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
-#error Not implemented
+        return AvxNegateMultiplySubtract(a, b, c);
 #elif ANEMONE_FEATURE_NEON
         return SimdVector4D{
             float64x2x2_t{
@@ -974,4 +1025,116 @@ namespace Anemone::Math::Detail
         };
 #endif
     }
+
+    inline SimdVector4D anemone_vectorcall Vector4D_Add(SimdVector4D a, SimdVector4D b)
+    {
+#if ANEMONE_BUILD_DISABLE_SIMD
+        return SimdVector4D{
+            a.Inner[0] + b.Inner[0],
+            a.Inner[1] + b.Inner[1],
+            a.Inner[2] + b.Inner[2],
+            a.Inner[3] + b.Inner[3],
+        };
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+        return _mm256_add_pd(a, b);
+#elif ANEMONE_FEATURE_NEON
+        return SimdVector4D{
+            float64x2x2_t{
+                vaddq_f64(a.Inner.val[0], b.Inner.val[0]),
+                vaddq_f64(a.Inner.val[1], b.Inner.val[1]),
+            },
+        };
+#endif
+    }
+
+    inline SimdVector4D anemone_vectorcall Vector4D_Subtract(SimdVector4D a, SimdVector4D b)
+    {
+#if ANEMONE_BUILD_DISABLE_SIMD
+        return SimdVector4D{
+            a.Inner[0] - b.Inner[0],
+            a.Inner[1] - b.Inner[1],
+            a.Inner[2] - b.Inner[2],
+            a.Inner[3] - b.Inner[3],
+        };
+#elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+        return _mm256_sub_pd(a, b);
+#elif ANEMONE_FEATURE_NEON
+        return SimdVector4D{
+            float64x2x2_t{
+                vsubq_f64(a.Inner.val[0], b.Inner.val[0]),
+                vsubq_f64(a.Inner.val[1], b.Inner.val[1]),
+            },
+        };
+#endif
+    }
+
+    SimdVector4D anemone_vectorcall Vector4D_Multiply(SimdVector4D a, SimdVector4D b);
+    SimdVector4D anemone_vectorcall Vector4D_Divide(SimdVector4D a, SimdVector4D b);
+    SimdVector4D anemone_vectorcall Vector4D_Negate(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Reciprocal(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_ReciprocalEst(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Min(SimdVector4D a, SimdVector4D b);
+    SimdVector4D anemone_vectorcall Vector4D_Max(SimdVector4D a, SimdVector4D b);
+    SimdVector4D anemone_vectorcall Vector4D_Abs(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Square(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_SignedSquare(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Clamp(SimdVector4D v, SimdVector4D lower, SimdVector4D upper);
+    SimdVector4D anemone_vectorcall Vector4D_Saturate(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_SquareRoot(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_SquareRootEst(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_ReciprocalSquareRoot(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_ReciprocalSquareRootEst(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Ceil(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Floor(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Truncate(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Round(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Fraction(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Remainder(SimdVector4D x, SimdVector4D y);
+    SimdVector4D anemone_vectorcall Vector4D_Repeat(SimdVector4D v, SimdVector4D length);
+    SimdVector4D anemone_vectorcall Vector4D_Wrap(SimdVector4D v, SimdVector4D lower, SimdVector4D upper);
+    SimdVector4D anemone_vectorcall Vector4D_Power(SimdVector4D x, SimdVector4D y);
+    SimdVector4D anemone_vectorcall Vector4D_Exp(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Exp2(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Exp10(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Log(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Log(SimdVector4D x, SimdVector4D base);
+    SimdVector4D anemone_vectorcall Vector4D_Log2(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Log10(SimdVector4D v);
+    void anemone_vectorcall Vector4D_SinCos(SimdVector4D& sin, SimdVector4D& cos, SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Sin(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Cos(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Tan(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Asin(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Acos(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Atan(SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Atan2(SimdVector4D y, SimdVector4D x);
+    SimdVector4D anemone_vectorcall Vector4D_PreciseLerp(SimdVector4D a, SimdVector4D b, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_PreciseLerp(SimdVector4D a, SimdVector4D b, double t);
+    SimdVector4D anemone_vectorcall Vector4D_Lerp(SimdVector4D a, SimdVector4D b, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_Lerp(SimdVector4D a, SimdVector4D b, double t);
+    SimdVector4D anemone_vectorcall Vector4D_PreciseBilinearLerp(SimdVector4D a, SimdVector4D b, SimdVector4D c, SimdVector4D d, SimdVector4D u, SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_PreciseBilinearLerp(SimdVector4D a, SimdVector4D b, SimdVector4D c, SimdVector4D d, double u, double v);
+    SimdVector4D anemone_vectorcall Vector4D_BilinearLerp(SimdVector4D a, SimdVector4D b, SimdVector4D c, SimdVector4D d, SimdVector4D u, SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_BilinearLerp(SimdVector4D a, SimdVector4D b, SimdVector4D c, SimdVector4D d, double u, double v);
+    SimdVector4D anemone_vectorcall Vector4D_Barycentric(SimdVector4D a, SimdVector4D b, SimdVector4D c, SimdVector4D u, SimdVector4D v);
+    SimdVector4D anemone_vectorcall Vector4D_Barycentric(SimdVector4D a, SimdVector4D b, SimdVector4D c, double u, double v);
+    SimdVector4D anemone_vectorcall Vector4D_Unlerp(SimdVector4D value, SimdVector4D lower, SimdVector4D upper);
+    SimdVector4D anemone_vectorcall Vector4D_Map(SimdVector4D value, SimdVector4D sourceLower, SimdVector4D sourceUpper, SimdVector4D targetLower, SimdVector4D targetUpper);
+    SimdVector4D anemone_vectorcall Vector4D_PreciseMap(SimdVector4D value, SimdVector4D sourceLower, SimdVector4D sourceUpper, SimdVector4D targetLower, SimdVector4D targetUpper);
+    SimdVector4D anemone_vectorcall Vector4D_BezierPosition(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierPosition(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, double t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierTangent(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierTangent(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, double t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierAcceleration(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierAcceleration(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, double t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierPosition(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierPosition(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, double t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierTangent(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierTangent(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, double t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierAcceleration(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_BezierAcceleration(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, double t);
+    SimdVector4D anemone_vectorcall Vector4D_Hermite(SimdVector4D p0, SimdVector4D m0, SimdVector4D p1, SimdVector4D m1, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_Hermite(SimdVector4D p0, SimdVector4D m0, SimdVector4D p1, SimdVector4D m1, double t);
+    SimdVector4D anemone_vectorcall Vector4D_CatmullRom(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, SimdVector4D t);
+    SimdVector4D anemone_vectorcall Vector4D_CatmullRom(SimdVector4D p0, SimdVector4D p1, SimdVector4D p2, SimdVector4D p3, double t);
 }

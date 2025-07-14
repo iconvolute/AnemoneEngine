@@ -106,6 +106,10 @@
 #define ANEMONE_FEATURE_FMA3 false
 #endif
 
+#ifndef ANEMONE_FEATURE_FMA4
+#define ANEMONE_FEATURE_FMA4 false
+#endif
+
 #ifndef ANEMONE_FEATURE_F16C
 #define ANEMONE_FEATURE_F16C false
 #endif

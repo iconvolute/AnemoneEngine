@@ -527,6 +527,9 @@ namespace Anemone::Math::Detail
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateRotationY(float angle);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateRotationZ(float angle);
 
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateFromAxisAngle(SimdVector4F axis, float angle);
+    SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateFromNormalAngle(SimdVector4F axis, float angle);
+
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateFromQuaternion(SimdVector4F q);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateFromPitchYawRoll(float pitch, float yaw, float roll);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateFromPitchYawRoll(SimdVector4F pitchYawRoll);

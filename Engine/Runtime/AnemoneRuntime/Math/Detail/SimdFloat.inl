@@ -1045,7 +1045,8 @@ namespace Anemone::Math::Detail
         {
             // TODO: Reported MSVC bug, replace with `_mm_permute_ps` when fixed
             // https://developercommunity.visualstudio.com/t/MSVC-1940-vs-1939:-AVX-optimized-code/10698105
-            return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(N, N, N, N)));
+            // return _mm_cvtss_f32(_mm_shuffle_ps(v, v, _MM_SHUFFLE(N, N, N, N)));
+            return std::bit_cast<float>(_mm_extract_ps(v, N));
         }
 #elif ANEMONE_FEATURE_NEON
         return vgetq_lane_f32(v, N);
@@ -1065,7 +1066,7 @@ namespace Anemone::Math::Detail
         }
         else
         {
-            (*reinterpret_cast<int*>(f)) = _mm_extract_ps(v, N);
+            *f = std::bit_cast<float>(_mm_extract_ps(v, N));
         }
 #elif ANEMONE_FEATURE_NEON
         *f = vgetq_lane_f32(v, N);
@@ -1105,23 +1106,9 @@ namespace Anemone::Math::Detail
         {
             return _mm_move_ss(v, _mm_load_ss(f));
         }
-        else if constexpr (N == 1)
+        else
         {
-            __m128 yxzw = _mm_permute_ps(v, _MM_SHUFFLE(3,2,0,1));
-            yxzw = _mm_move_ss(yxzw, _mm_load_ss(f));
-            return _mm_permute_ps(yxzw, _MM_SHUFFLE(3,2,0,1));
-        }
-        else if constexpr (N == 2)
-        {
-            __m128 zyxw = _mm_permute_ps(v, _MM_SHUFFLE(3,0,1,2));
-            zyxw = _mm_move_ss(zyxw, _mm_load_ss(f));
-            return _mm_permute_ps(zyxw, _MM_SHUFFLE(3,0,1,2));
-        }
-        else if constexpr (N == 3)
-        {
-            __m128 wyzx = _mm_permute_ps(v, _MM_SHUFFLE(0,2,1,3));
-            wyzx = _mm_move_ss(wyzx, _mm_load_ss(f));
-            return _mm_permute_ps(wyzx, _MM_SHUFFLE(0,2,1,3));
+            return _mm_insert_ps(v, _mm_load_ss(f), N << 4);
         }
 #elif ANEMONE_FEATURE_NEON
         return vld1q_lane_f32(f, v, N);
@@ -1135,6 +1122,12 @@ namespace Anemone::Math::Detail
 #if ANEMONE_BUILD_DISABLE_SIMD
         return SimdVector4F{v.Inner[N], v.Inner[N], v.Inner[N], v.Inner[N]};
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
+#if ANEMONE_FEATURE_AVX2
+        if constexpr (N == 0)
+        {
+            return _mm_broadcastss_ps(v);
+        }
+#endif
         return _mm_shuffle_ps(v, v, _MM_SHUFFLE(N, N, N, N));
 #elif ANEMONE_FEATURE_NEON
         return vdupq_laneq_f32(v, N);
@@ -1159,45 +1152,12 @@ namespace Anemone::Math::Detail
         requires((X < 8) and (Y < 8) and (Z < 8) and (W < 8))
     {
 #if ANEMONE_BUILD_DISABLE_SIMD
-        SimdVector4F result;
-
-        if constexpr (X < 4)
-        {
-            result.Inner[0] = a.Inner[X];
-        }
-        else
-        {
-            result.Inner[0] = b.Inner[X - 4];
-        }
-
-        if constexpr (Y < 4)
-        {
-            result.Inner[1] = a.Inner[Y];
-        }
-        else
-        {
-            result.Inner[1] = b.Inner[Y - 4];
-        }
-
-        if constexpr (Z < 4)
-        {
-            result.Inner[2] = a.Inner[Z];
-        }
-        else
-        {
-            result.Inner[2] = b.Inner[Z - 4];
-        }
-
-        if constexpr (W < 4)
-        {
-            result.Inner[3] = a.Inner[W];
-        }
-        else
-        {
-            result.Inner[3] = b.Inner[W - 4];
-        }
-
-        return result;
+        return SimdVector4F{
+            ((X < 4) ? a.Inner : b.Inner)[X & 0b11],
+            ((Y < 4) ? a.Inner : b.Inner)[Y & 0b11],
+            ((Z < 4) ? a.Inner : b.Inner)[Z & 0b11],
+            ((W < 4) ? a.Inner : b.Inner)[W & 0b11],
+        };
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
         // Blending cases first
         if constexpr ((X == 0) and (Y == 1) and (Z == 2) and (W == 3))
@@ -9098,7 +9058,6 @@ namespace Anemone::Math::Detail
 #endif
     }
 
-
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_CreateLookAtLH(SimdVector4F eye, SimdVector4F focus, SimdVector4F up)
     {
         SimdVector4F const direction = Vector4F_Subtract(focus, eye);
@@ -9125,9 +9084,12 @@ namespace Anemone::Math::Detail
         SimdMatrix4x4F result;
 
 #if ANEMONE_FEATURE_NEON
-        result.val[0] = Vector4F_Select<true, true, true, false>(d0, r0);
-        result.val[1] = Vector4F_Select<true, true, true, false>(d1, r1);
-        result.val[2] = Vector4F_Select<true, true, true, false>(d2, r2);
+        result.val[0] = vcopyq_laneq_f32(d0, 3, r0, 3);
+        result.val[1] = vcopyq_laneq_f32(d1, 3, r1, 3);
+        result.val[2] = vcopyq_laneq_f32(d2, 3, r2, 3);
+        //result.val[0] = Vector4F_Select<true, true, true, false>(d0, r0);
+        //result.val[1] = Vector4F_Select<true, true, true, false>(d1, r1);
+        //result.val[2] = Vector4F_Select<true, true, true, false>(d2, r2);
         result.val[3] = Vector4F_PositiveUnitW();
 #else
         result.Inner[0] = Vector4F_Select<true, true, true, false>(d0, r0);
