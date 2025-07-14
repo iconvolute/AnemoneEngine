@@ -268,10 +268,15 @@ namespace Anemone::Graphics::Internal
         return DXGI_FORMAT_UNKNOWN;
     }
 
+    constexpr uint32_t DDS_PIXELFORMAT_ALPHAPIXELS = 0x00000001u;
     constexpr uint32_t DDS_PIXELFORMAT_FOURCC = 0x00000004u;
     constexpr uint32_t DDS_PIXELFORMAT_RGB = 0x00000040u;
+    constexpr uint32_t DDS_PIXELFORMAT_RGBA = DDS_PIXELFORMAT_RGB | DDS_PIXELFORMAT_ALPHAPIXELS;
     constexpr uint32_t DDS_PIXELFORMAT_LUMINANCE = 0x00020000u;
+    constexpr uint32_t DDS_PIXELFORMAT_LUMINANCEA = DDS_PIXELFORMAT_LUMINANCE | DDS_PIXELFORMAT_ALPHAPIXELS;
     constexpr uint32_t DDS_PIXELFORMAT_ALPHA = 0x00000002u;
+    constexpr uint32_t DDS_PIXELFORMAT_PAL8 = 0x00000020u;
+    constexpr uint32_t DDS_PIXELFORMAT_PAL8A = DDS_PIXELFORMAT_PAL8 | DDS_PIXELFORMAT_ALPHAPIXELS;
     constexpr uint32_t DDS_PIXELFORMAT_BUMPDUDV = 0x00080000u;
 
     consteval uint32_t MakeFourCC(
@@ -316,66 +321,71 @@ namespace Anemone::Graphics::Internal
             switch (format.RGBBitCount)
             {
             case 32:
-                if (format.IsBitMask(0xFFu << 0u, 0xFFu << 8u, 0xFFu << 16u, 0xFFu << 24u))
+                if (format.IsBitMask(0x000000FFu, 0x0000FF00u, 0x00FF0000u, 0xFF000000u))
                 {
                     return DXGI_FORMAT_R8G8B8A8_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFu << 16u, 0xFFu << 8u, 0xFFu << 0u, 0xFFu << 24u))
+                if (format.IsBitMask(0x00FF0000u, 0x0000FF00u, 0x000000FFu, 0xFF000000u))
                 {
                     return DXGI_FORMAT_B8G8R8A8_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFu << 16u, 0xFFu << 8u, 0xFFu << 0u, 0))
+                if (format.IsBitMask(0x00FF0000u, 0x0000FF00u, 0x000000FFu, 0x00000000u))
                 {
                     return DXGI_FORMAT_B8G8R8X8_UNORM;
                 }
 
-                if (format.IsBitMask(0x3FFu << 20u, 0x3FFu << 10u, 0x3FF << 0u, 0x3u << 30u))
+                if (format.IsBitMask(0x3FF00000u, 0x000FFC00u, 0x000003FFu, 0xC0000000u))
                 {
                     return DXGI_FORMAT_R10G10B10A2_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFFFu << 0u, 0xFFFFu << 16u, 0, 0))
+                if (format.IsBitMask(0x0000FFFFu, 0xFFFF0000u, 0x00000000u, 0x00000000u))
                 {
                     return DXGI_FORMAT_R16G16_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFFFFFFFu, 0, 0, 0))
+                if (format.IsBitMask(0xFFFFFFFFu, 0x00000000u, 0x00000000u, 0x00000000u))
                 {
                     return DXGI_FORMAT_R32_FLOAT;
                 }
                 break;
 
+            case 24:
+                {
+                    break;
+                }
+
             case 16:
-                if (format.IsBitMask(0x1Fu << 10u, 0x1Fu << 5u, 0x1Fu << 0u, 0x1u << 15u))
+                if (format.IsBitMask(0x7C00u, 0x03E0u, 0x001Fu, 0x8000u))
                 {
                     return DXGI_FORMAT_B5G5R5A1_UNORM;
                 }
 
-                if (format.IsBitMask(0x1Fu << 11u, 0x3Fu << 5u, 0x1Fu << 0u, 0))
+                if (format.IsBitMask(0xF800u, 0x07E0u, 0x001Fu, 0x0000u))
                 {
                     return DXGI_FORMAT_B5G6R5_UNORM;
                 }
 
-                if (format.IsBitMask(0xFu << 8u, 0xFu << 4u, 0xFu << 0u, 0xFu << 12u))
+                if (format.IsBitMask(0x0F00u, 0x00F0u, 0x000Fu, 0xF000u))
                 {
                     return DXGI_FORMAT_B4G4R4A4_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFu << 0u, 0, 0, 0xFFu << 8u))
+                if (format.IsBitMask(0x00FFu, 0x0000u, 0x0000u, 0xFF00u))
                 {
                     return DXGI_FORMAT_R8G8_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFFFu << 0u, 0, 0, 0))
+                if (format.IsBitMask(0xFFFFu, 0x0000u, 0x0000u, 0x0000u))
                 {
                     return DXGI_FORMAT_R16_UNORM;
                 }
                 break;
 
             case 8:
-                if (format.IsBitMask(0xFFu << 0u, 0, 0, 0))
+                if (format.IsBitMask(0xFFu, 0x00u, 0x00u, 0x00u))
                 {
                     return DXGI_FORMAT_R8_UNORM;
                 }
@@ -390,27 +400,23 @@ namespace Anemone::Graphics::Internal
             switch (format.RGBBitCount)
             {
             case 16:
-                if (format.IsBitMask(0xFFFFu << 0u, 0, 0, 0))
+                if (format.IsBitMask(0xFFFFu, 0x0000u, 0x0000u, 0x0000u))
                 {
                     return DXGI_FORMAT_R16_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFu << 0u, 0, 0, 0xFFu << 8u))
+                if (format.IsBitMask(0x00FFu, 0x0000u, 0x0000u, 0xFF00u))
                 {
                     return DXGI_FORMAT_R8G8_UNORM;
                 }
                 break;
 
             case 8:
-                if (format.IsBitMask(0xFFu << 0u, 0, 0, 0))
+                if (format.IsBitMask(0xFFu, 0x00u, 0x00u, 0x00u))
                 {
                     return DXGI_FORMAT_R8_UNORM;
                 }
 
-                if (format.IsBitMask(0xFFu << 0u, 0, 0, 0xFFu << 8u))
-                {
-                    return DXGI_FORMAT_R8G8_UNORM;
-                }
                 break;
 
             default:
@@ -429,12 +435,12 @@ namespace Anemone::Graphics::Internal
             switch (format.RGBBitCount)
             {
             case 32:
-                if (format.IsBitMask(0xFFu << 0u, 0xFFu << 8u, 0xFFu << 16u, 0xFFu << 24u))
+                if (format.IsBitMask(0x000000FFu, 0x0000FF00u, 0x00FF0000u, 0xFF000000u))
                 {
                     return DXGI_FORMAT_R8G8B8A8_SNORM;
                 }
 
-                if (format.IsBitMask(0xFFFFu << 0u, 0xFFFFu << 16u, 0, 0))
+                if (format.IsBitMask(0x0000FFFFu, 0xFFFF0000u, 0x00000000u, 0x00000000u))
                 {
                     return DXGI_FORMAT_R16G16_SNORM;
                 }
@@ -442,7 +448,7 @@ namespace Anemone::Graphics::Internal
                 break;
 
             case 16:
-                if (format.IsBitMask(0xFFu << 0u, 0xFFu << 8u, 0, 0))
+                if (format.IsBitMask(0x00FFu, 0xFF00u, 0x0000u, 0x0000u))
                 {
                     return DXGI_FORMAT_R8G8B8A8_SNORM;
                 }
@@ -862,9 +868,9 @@ namespace Anemone::Graphics::Internal
     constexpr uint32_t DDS_CUBEMAP_POSITIVEZ = 0x4200;
     constexpr uint32_t DDS_CUBEMAP_NEGATIVEZ = 0x8200;
 
-    constexpr const uint32_t DDS_CUBEMAP_ALLFACES = DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX | DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY | DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ;
+    constexpr uint32_t DDS_CUBEMAP_ALLFACES = DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX | DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY | DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ;
 
-    constexpr const uint32_t DDS_CUBEMAP_VOLUME = 0x200000;
+    constexpr uint32_t DDS_CUBEMAP_VOLUME = 0x200000;
 
     struct DDS_HEADER final
     {

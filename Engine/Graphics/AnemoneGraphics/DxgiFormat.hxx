@@ -4,6 +4,13 @@
 namespace Anemone::Graphics::Internal
 {
     // Synchronized with "Windows Kits\10\Include\10.0.22621.0\shared\dxgiformat.h"
+
+    //
+    //    Copyright (C) Microsoft Corporation.
+    //    Licensed under the MIT license
+    //
+
+
     typedef enum DXGI_FORMAT
     {
         DXGI_FORMAT_UNKNOWN = 0,
@@ -130,6 +137,8 @@ namespace Anemone::Graphics::Internal
 
         DXGI_FORMAT_SAMPLER_FEEDBACK_MIN_MIP_OPAQUE = 189,
         DXGI_FORMAT_SAMPLER_FEEDBACK_MIP_REGION_USED_OPAQUE = 190,
+
+        DXGI_FORMAT_A4B4G4R4_UNORM = 191,
 
 
         DXGI_FORMAT_FORCE_UINT = 0xffffffff
