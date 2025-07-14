@@ -26,7 +26,7 @@
 
 namespace Anemone::Internal
 {
-    extern bool GIsConsoleApplication; 
+    extern bool GIsConsoleApplication;
     bool GIsConsoleApplication = false;
 }
 
@@ -46,6 +46,8 @@ namespace Anemone
             Uuid systemId;
             DeviceType deviceType;
             DeviceProperties deviceProperties;
+
+            MemoryProperties memoryProperties;
 
             std::string systemVersion;
             std::string systemName;
@@ -127,6 +129,31 @@ namespace Anemone
                 Interop::string_buffer<char, 64> productName{};
                 (void)key.ReadString("ProductName", productName);
                 statics.systemName = productName.as_view();
+            }
+
+            // Determine memory properties.
+            {
+                MEMORYSTATUSEX memoryStatus{};
+                memoryStatus.dwLength = sizeof(memoryStatus);
+
+                if (!GlobalMemoryStatusEx(&memoryStatus))
+                {
+                    AE_PANIC("GlobalMemoryStatusEx: {}", GetLastError());
+                }
+
+                SYSTEM_INFO systemInfo{};
+                GetNativeSystemInfo(&systemInfo);
+
+                statics.memoryProperties.TotalPhysicalMemory = memoryStatus.ullTotalPhys;
+                statics.memoryProperties.TotalVirtualMemory = memoryStatus.ullTotalVirtual;
+                statics.memoryProperties.TotalPageFile = memoryStatus.ullTotalPageFile;
+                statics.memoryProperties.AvailablePhysicalMemory = memoryStatus.ullAvailPhys;
+                statics.memoryProperties.AvailableVirtualMemory = memoryStatus.ullAvailVirtual;
+                statics.memoryProperties.AvailablePageFile = memoryStatus.ullAvailPageFile;
+                statics.memoryProperties.SystemAllocationGranularity = systemInfo.dwAllocationGranularity;
+                statics.memoryProperties.PageSize = systemInfo.dwPageSize;
+                statics.memoryProperties.AddressLimitLow = reinterpret_cast<uintptr_t>(systemInfo.lpMinimumApplicationAddress);
+                statics.memoryProperties.AddressLimitHigh = reinterpret_cast<uintptr_t>(systemInfo.lpMaximumApplicationAddress);
             }
 
             // Determine system ID
@@ -763,29 +790,7 @@ namespace Anemone
 
     auto Environment::GetMemoryProperties() -> MemoryProperties
     {
-        MEMORYSTATUSEX memoryStatus{};
-        memoryStatus.dwLength = sizeof(memoryStatus);
-
-        if (!GlobalMemoryStatusEx(&memoryStatus))
-        {
-            AE_PANIC("GlobalMemoryStatusEx: {}", GetLastError());
-        }
-
-        SYSTEM_INFO systemInfo{};
-        GetNativeSystemInfo(&systemInfo);
-
-        return MemoryProperties{
-            .TotalPhysicalMemory = memoryStatus.ullTotalPhys,
-            .TotalVirtualMemory = memoryStatus.ullTotalVirtual,
-            .TotalPageFile = memoryStatus.ullTotalPageFile,
-            .AvailablePhysicalMemory = memoryStatus.ullAvailPhys,
-            .AvailableVirtualMemory = memoryStatus.ullAvailVirtual,
-            .AvailablePageFile = memoryStatus.ullAvailPageFile,
-            .SystemAllocationGranularity = systemInfo.dwAllocationGranularity,
-            .PageSize = systemInfo.dwPageSize,
-            .AddressLimitLow = reinterpret_cast<uintptr_t>(systemInfo.lpMinimumApplicationAddress),
-            .AddressLimitHigh = reinterpret_cast<uintptr_t>(systemInfo.lpMaximumApplicationAddress),
-        };
+        return gEnvironmentStatics->memoryProperties;
     }
 
     auto Environment::GetMemoryUsage() -> MemoryUsage
@@ -882,7 +887,7 @@ namespace Anemone
 
         GetProcessMemoryInfo(GetCurrentProcess(), &process_memory_counters, sizeof(process_memory_counters));
 
-        return ProcessMemoryUsage {
+        return ProcessMemoryUsage{
             .PageFaultCount = process_memory_counters.PageFaultCount,
             .PeakWorkingSetSize = process_memory_counters.PeakWorkingSetSize,
             .WorkingSetSize = process_memory_counters.WorkingSetSize,

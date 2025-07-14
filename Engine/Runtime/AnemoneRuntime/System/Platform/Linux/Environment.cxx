@@ -420,7 +420,7 @@ namespace Anemone
     {
         pthread_mutex_lock(&GEnvironmentLock);
 
-        char const* variable = getenv(std::string{name}.c_str());
+        char const* variable = secure_getenv(std::string{name}.c_str());
 
         bool const success = variable != nullptr;
 
@@ -613,7 +613,6 @@ namespace Anemone
         AE_PANIC("Not implemented");
         return {};
     }
-
 
     void Environment::Terminate(bool force)
     {

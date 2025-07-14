@@ -431,7 +431,7 @@ namespace Anemone
 
         case WM_MOUSEHWHEEL:
             return this->WmMouseHWheel(
-            window,
+                window,
                 message);
 
         default:
