@@ -224,6 +224,14 @@ namespace Anemone::Bitwise
 
         return static_cast<T>(T{1} << (std::numeric_limits<T>::digits - 1 - BitCountLeadingZeros(value)));
     }
+
+    template <typename T>
+    [[nodiscard]] constexpr T BitMsbToMask(T value)
+        requires(std::is_unsigned_v<T>)
+    {
+        using S = std::make_signed_t<T>;
+        return static_cast<T>(static_cast<S>(value) >> std::numeric_limits<S>::digits);
+    }
 }
 
 namespace Anemone::Bitwise
