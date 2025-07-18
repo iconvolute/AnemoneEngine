@@ -36,6 +36,11 @@ namespace Anemone::Math
 
         explicit Xorshiro256ss(uint64_t seed)
         {
+            this->Randomize(seed);
+        }
+
+        constexpr void Randomize(uint64_t seed)
+        {
             for (uint64_t& state : this->State)
             {
                 state = Detail::SplitMix64(seed);
@@ -105,6 +110,11 @@ namespace Anemone::Math
         }
 
         explicit Xorshiro512ss(uint64_t seed)
+        {
+            this->Randomize(seed);
+        }
+
+        constexpr void Randomize(uint64_t seed)
         {
             for (uint64_t& state : this->State)
             {
