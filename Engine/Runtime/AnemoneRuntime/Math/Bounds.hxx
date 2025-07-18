@@ -20,6 +20,7 @@ namespace Anemone::Math
 
         [[nodiscard]] constexpr static BoundsF FromLocationSize(float x, float y, float width, float height);
         [[nodiscard]] constexpr static BoundsF FromLocationSize(float x, float y, float size);
+        [[nodiscard]] constexpr static BoundsF FromRectangle(RectF rect);
         [[nodiscard]] constexpr static BoundsF FromBounds(float left, float top, float right, float bottom);
         [[nodiscard]] constexpr static BoundsF FromPoints(PointF p1, PointF p2);
         [[nodiscard]] constexpr static BoundsF FromLocationSize(PointF location, SizeF size);
