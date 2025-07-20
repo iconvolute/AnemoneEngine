@@ -16,7 +16,7 @@ namespace Anemone::Branchless
 
     constexpr uint32_t uint32_neg(uint32_t value)
     {
-        return -value;
+        return static_cast<uint32_t>(-static_cast<int32_t>(value));
     }
 
     constexpr uint32_t uint32_not(uint32_t value)
@@ -183,7 +183,7 @@ namespace Anemone::Branchless
 
     constexpr uint32_t UInt32_Negate(uint32_t x)
     {
-        return -x;
+        return static_cast<uint32_t>(-static_cast<int32_t>(x));
     }
 
     constexpr uint32_t UInt32_Not(uint32_t x)
@@ -253,13 +253,13 @@ namespace Anemone::Branchless
 
     constexpr uint32_t UInt32_IsNotZero(uint32_t x)
     {
-        return static_cast<uint32_t>(static_cast<int32_t>(x | -x) >> 31);
+        return static_cast<uint32_t>(static_cast<int32_t>(x) | -static_cast<int32_t>(x)) >> 31;
     }
 
     constexpr uint32_t UInt32_IsNotZeroBit(uint32_t x)
     {
         // returns 0
-        return static_cast<uint32_t>(static_cast<uint32_t>(x | -x) >> 31);
+        return static_cast<uint32_t>(static_cast<int32_t>(x) | -static_cast<int32_t>(x)) >> 31;
     }
 
     constexpr uint32_t UInt32_IsZero(uint32_t x)
@@ -316,12 +316,12 @@ namespace Anemone::Branchless
 
     constexpr uint32_t UInt32_Subtract(uint32_t x, uint32_t y, uint32_t& borrow)
     {
-        if (a < b)
+        if (x < y)
         {
             ++borrow;
         }
 
-        return a - b;
+        return x - y;
     }
 
     constexpr uint32_t UInt32_Multiply(uint32_t x, uint32_t y)
@@ -391,8 +391,9 @@ namespace Anemone::Branchless
         uint64_t temp;
         size_t count = uint64_read_7bit_encoded(temp, buffer);
 
+        int64_t t = static_cast<int64_t>(temp);
         // ZigZag decoding
-        result = (temp >> 1) ^ (-(temp & 1));
+        result = (t >> 1) ^ (-(t & 1));
 
         return count;
     }
