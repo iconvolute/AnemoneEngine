@@ -6,7 +6,6 @@ target_sources(AnemoneRuntime
         "CommandLine.cxx"
         "CommandLine.hxx"
         "Environment.hxx"
-        "FileHandle.hxx"
         "Process.hxx"
         "SharedLibrary.hxx"
         "SystemAllocator.hxx"

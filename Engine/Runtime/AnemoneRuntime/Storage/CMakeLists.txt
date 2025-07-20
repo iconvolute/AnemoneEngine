@@ -1,3 +1,5 @@
+add_subdirectory("Platform")
+
 target_sources(AnemoneRuntime
     PRIVATE
         "BinaryFormat.cxx"
@@ -10,6 +12,13 @@ target_sources(AnemoneRuntime
         "FileHandleReader.hxx"
         "FileHandleWriter.cxx"
         "FileHandleWriter.hxx"
+
+        "FileHandle.hxx"
+        "FileHandle.cxx"
+        
+        "FileSystem.hxx"
+        "FileSystem.cxx"
+
         "MemoryReader.cxx"
         "MemoryReader.hxx"
         "MemoryWriter.cxx"

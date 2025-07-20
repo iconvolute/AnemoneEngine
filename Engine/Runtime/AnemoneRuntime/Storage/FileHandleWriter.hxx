@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Storage/DataWriter.hxx"
-#include "AnemoneRuntime/System/FileHandle.hxx"
+#include "AnemoneRuntime/Storage/FileHandle.hxx"
 
 #include <memory>
 
@@ -9,7 +9,7 @@ namespace Anemone::Storage
     class RUNTIME_API FileHandleWriter final : public DataWriter
     {
     private:
-        FileHandle _handle;
+        std::unique_ptr<FileHandle> _handle;
         size_t _buffer_capacity{};
         size_t _buffer_position{};
         std::unique_ptr<std::byte[]> _buffer{};
@@ -19,9 +19,10 @@ namespace Anemone::Storage
 
     private:
         std::expected<void, Status> FlushBuffer();
+        std::expected<size_t, Status> WriteCore(std::span<std::byte const> buffer, int64_t position) const;
 
     public:
-        FileHandleWriter(FileHandle handle, size_t buffer_capacity = DefaultBufferCapacity);
+        FileHandleWriter(std::unique_ptr<FileHandle> handle, size_t buffer_capacity = DefaultBufferCapacity);
 
         FileHandleWriter(FileHandleWriter const&) = delete;
         FileHandleWriter(FileHandleWriter&&) = delete;

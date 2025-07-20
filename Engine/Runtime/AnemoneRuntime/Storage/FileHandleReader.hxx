@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Storage/DataReader.hxx"
-#include "AnemoneRuntime/System/FileHandle.hxx"
+#include "AnemoneRuntime/Storage/FileHandle.hxx"
 
 #include <memory>
 
@@ -9,7 +9,7 @@ namespace Anemone::Storage
     class RUNTIME_API FileHandleReader : public DataReader
     {
     private:
-        FileHandle _handle{};
+        std::unique_ptr<FileHandle> _handle{};
         size_t _buffer_size{};
         size_t _buffer_capacity{};
         size_t _buffer_position{};
@@ -19,10 +19,10 @@ namespace Anemone::Storage
 
         static constexpr size_t DefaultBufferCapacity = 8u << 10u;
 
-        std::expected<size_t, Status> ReadCore(std::span<std::byte> buffer, int64_t position);
+        std::expected<size_t, Status> ReadCore(std::span<std::byte> buffer, int64_t position) const;
 
     public:
-        FileHandleReader(FileHandle handle, size_t buffer_capacity = DefaultBufferCapacity);
+        FileHandleReader(std::unique_ptr<FileHandle> handle, size_t buffer_capacity = DefaultBufferCapacity);
 
         FileHandleReader(FileHandleReader const&) = delete;
         FileHandleReader(FileHandleReader&&) = delete;

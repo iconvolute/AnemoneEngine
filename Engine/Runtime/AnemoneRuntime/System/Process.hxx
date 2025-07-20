@@ -1,12 +1,13 @@
 #pragma once
 #include "AnemoneRuntime/System/Platform/Platform.hxx"
-#include "AnemoneRuntime/System/FileHandle.hxx"
+#include "AnemoneRuntime/Storage/FileHandle.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
 #include "AnemoneRuntime/Diagnostics/Status.hxx"
 
 #include <string_view>
 #include <expected>
 #include <optional>
+#include <memory>
 
 namespace Anemone
 {
@@ -62,9 +63,9 @@ namespace Anemone
             std::string_view path,
             std::optional<std::string_view> const& params,
             std::optional<std::string_view> const& workingDirectory,
-            FileHandle* input,
-            FileHandle* output,
-            FileHandle* error)
+            std::unique_ptr<FileHandle>* input,
+            std::unique_ptr<FileHandle>* output,
+            std::unique_ptr<FileHandle>* error)
             -> std::expected<Process, Status>;
 
         static auto Execute(

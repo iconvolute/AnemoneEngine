@@ -3,13 +3,13 @@
 
 namespace Anemone::Storage
 {
-    std::expected<size_t, Status> FileHandleReader::ReadCore(std::span<std::byte> buffer, int64_t position)
+    std::expected<size_t, Status> FileHandleReader::ReadCore(std::span<std::byte> buffer, int64_t position) const
     {
         size_t processed = 0;
 
         while (not buffer.empty())
         {
-            if (auto r = this->_handle.ReadAt(buffer, position))
+            if (auto r = this->_handle->ReadAt(buffer, position))
             {
                 if (*r == 0)
                 {
@@ -30,21 +30,22 @@ namespace Anemone::Storage
         return processed;
     }
 
-    FileHandleReader::FileHandleReader(FileHandle handle, size_t buffer_capacity)
-        : _handle(std::move(handle))
-        , _buffer_capacity(buffer_capacity)
-        , _buffer(std::make_unique<std::byte[]>(buffer_capacity))
+    FileHandleReader::FileHandleReader(std::unique_ptr<FileHandle> handle, size_t buffer_capacity)
+        : _handle{std::move(handle)}
+        , _buffer_capacity{buffer_capacity}
+        , _buffer{std::make_unique<std::byte[]>(buffer_capacity)}
     {
-        this->_file_size = this->_handle.GetLength().value_or(0);
+        this->_file_size = this->_handle->GetLength().value_or(0);
     }
 
     std::expected<size_t, Status> FileHandleReader::Read(std::span<std::byte> buffer)
     {
+        // If output buffer is large enough, do read directly there.
         if (buffer.size() > this->_buffer_capacity)
         {
             // Start transaction.
-            size_t processed = this->_buffer_size - this->_buffer_position;
-            int64_t position = this->_file_position + static_cast<int64_t>(processed);
+            size_t const processed = this->_buffer_size - this->_buffer_position;
+            int64_t const position = this->_file_position + static_cast<int64_t>(processed);
 
             if (processed != 0)
             {

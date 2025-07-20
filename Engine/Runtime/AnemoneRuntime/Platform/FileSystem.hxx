@@ -1,13 +1,12 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Diagnostics/Status.hxx"
-#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Base/DateTime.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
 
 #include <string_view>
 #include <expected>
-
+#if false
 namespace Anemone
 {
     enum class FileType
@@ -61,7 +60,7 @@ namespace Anemone
 
         RUNTIME_API static auto FileDelete(std::string_view path) -> std::expected<void, Status>;
 
-        RUNTIME_API static auto FileCreate(std::string_view path) -> std::expected<FileHandle, Status>;
+        //RUNTIME_API static auto FileCreate(std::string_view path) -> std::expected<FileHandle, Status>;
 
         RUNTIME_API static auto FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) -> std::expected<void, Status>;
 
@@ -69,7 +68,7 @@ namespace Anemone
 
         RUNTIME_API static auto GetFileInfo(std::string_view path) -> std::expected<FileInfo, Status>;
 
-        RUNTIME_API static auto GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>;
+        //RUNTIME_API static auto GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>;
 
         RUNTIME_API static auto DirectoryExists(std::string_view path) -> std::expected<bool, Status>;
 
@@ -92,3 +91,4 @@ namespace Anemone
     //
     //
 }
+#endif
