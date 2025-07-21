@@ -1,3 +1,5 @@
+if (LINUX)
+
 target_sources(AnemoneRuntime
     PRIVATE
         "FileHandle.cxx"
@@ -5,3 +7,5 @@ target_sources(AnemoneRuntime
         "FileSystem.cxx"
         "FileSystem.hxx"
 )
+
+endif()

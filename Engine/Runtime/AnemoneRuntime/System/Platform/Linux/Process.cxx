@@ -1,6 +1,7 @@
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Interop/Linux/Process.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Storage/Platform/Linux/FileHandle.hxx"
 
 #include <array>
 #include <sys/time.h>
@@ -134,9 +135,9 @@ namespace Anemone
         std::string_view path,
         std::optional<std::string_view> const& params,
         std::optional<std::string_view> const& workingDirectory,
-        FileHandle* input,
-        FileHandle* output,
-        FileHandle* error)
+        std::unique_ptr<FileHandle>* input,
+        std::unique_ptr<FileHandle>* output,
+        std::unique_ptr<FileHandle>* error)
         -> std::expected<Process, Status>
     {
 #if !ANEMONE_PLATFORM_LINUX
@@ -284,17 +285,17 @@ namespace Anemone
         {
             if (input != nullptr)
             {
-                *input = FileHandle{std::move(fhWriteInput)};
+                *input = std::make_unique<LinuxFileHandle>(std::move(fhWriteInput));
             }
 
             if (output != nullptr)
             {
-                *output = FileHandle{std::move(fhReadOutput)};
+                *output = std::make_unique<LinuxFileHandle>(std::move(fhReadOutput));
             }
 
             if (error != nullptr)
             {
-                *error = FileHandle{std::move(fhReadError)};
+                *error = std::make_unique<LinuxFileHandle>(std::move(fhReadError));
             }
 
             return Process{Internal::PlatformProcess{process_id}};
@@ -327,8 +328,8 @@ namespace Anemone
         FunctionRef<void(std::string_view)> error)
         -> std::expected<int32_t, Status>
     {
-        FileHandle pipeOutput{};
-        FileHandle pipeError{};
+        std::unique_ptr<FileHandle> pipeOutput{};
+        std::unique_ptr<FileHandle> pipeError{};
 
         if (auto process = Process::Start(path, params, workingDirectory, nullptr, &pipeOutput, &pipeError))
         {
@@ -339,7 +340,7 @@ namespace Anemone
             {
                 auto rc = process->TryWait();
 
-                while (auto processed = pipeOutput.Read(view))
+                while (auto processed = pipeOutput->Read(view))
                 {
                     if (*processed == 0)
                     {
@@ -349,7 +350,7 @@ namespace Anemone
                     output(std::string_view{buffer.data(), *processed});
                 }
 
-                while (auto processed = pipeError.Read(view))
+                while (auto processed = pipeError->Read(view))
                 {
                     if (*processed == 0)
                     {

@@ -2,7 +2,10 @@
 #include "AnemoneRuntime/Storage/FileHandle.hxx"
 #include "AnemoneRuntime/Base/DateTime.hxx"
 
+#include <vector>
+#include <string>
 #include <memory>
+#include <cstddef>
 
 namespace Anemone
 {

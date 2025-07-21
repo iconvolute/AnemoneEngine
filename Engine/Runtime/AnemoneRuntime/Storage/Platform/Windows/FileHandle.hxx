@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Storage/FileHandle.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
 
 namespace Anemone

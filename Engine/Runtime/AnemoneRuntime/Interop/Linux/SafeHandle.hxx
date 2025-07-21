@@ -26,6 +26,25 @@ namespace Anemone::Interop::Linux
     };
     using SafeFdHandle = SafeHandleT<int, SafeFdHandleTraits>;
 
+    struct SafeDirHandleTraits final
+    {
+        static DIR* Invalid()
+        {
+            return nullptr;
+        }
+
+        static bool IsValid(DIR* value)
+        {
+            return value != nullptr;
+        }
+
+        static bool Reset(DIR* value)
+        {
+            return closedir(value) == 0;
+        }
+    };
+    using SafeDirHandle = SafeHandleT<DIR*, SafeDirHandleTraits>;
+
     struct SafeNamedSemaphoreHandleTraits final
     {
         static sem_t* Invalid()

@@ -19,6 +19,8 @@
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
+#include "AnemoneRuntime/Storage/FileSystem.hxx"
+
 namespace anemone
 {
     template <typename T>
@@ -143,7 +145,7 @@ public:
             {
                 Anemone::UniqueLock scope{cs};
 
-                if (auto f = Anemone::FileSystem::GetFileInfo(ret))
+                if (auto f = Anemone::FileSystem::GetPlatformFileSystem().GetPathInfo(ret))
                 {
                     AE_TRACE(Error, "---------------");
                     AE_TRACE(Error, "File-Size:     '{}'", f->Size);
@@ -309,7 +311,6 @@ anemone_noinline void test()
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorVendor());
 }
 
-#include "AnemoneRuntime/System/FileHandle.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
@@ -319,11 +320,12 @@ anemone_noinline void test()
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #endif
 
-struct V2 : Anemone::DirectoryVisitor
+struct V2 : Anemone::FileSystemVisitor
 {
-    void Visit(std::string_view path, Anemone::FileInfo const& info) override
+    void Visit(std::string_view path, std::string_view name, Anemone::FileInfo const& info) override
     {
         AE_TRACE(Error, "Path: '{}'", path);
+        AE_TRACE(Error, "Name: '{}'", name);
         AE_TRACE(Error, "Size: '{}'", info.Size);
         AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
         AE_TRACE(Error, "Created: '{}'", info.Created);
@@ -580,7 +582,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     //    return -1;
     //}
     //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
-    test2();
+    //test2();
 
 #if false
     (void)Anemone::Process::Start("DevDebugger.exe", fmt::format("--pid {}", GetCurrentProcessId()), {});
@@ -603,11 +605,12 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         });
     }
     {
-        struct Vi : Anemone::DirectoryVisitor
+        struct Vi : Anemone::FileSystemVisitor
         {
-            void Visit(std::string_view path, Anemone::FileInfo const& info) override
+            void Visit(std::string_view path, std::string_view name, Anemone::FileInfo const& info) override
             {
                 AE_TRACE(Error, "Path: '{}'", path);
+                AE_TRACE(Error, "Name: '{}'", name);
                 AE_TRACE(Error, "Size: '{}'", info.Size);
                 AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
                 AE_TRACE(Error, "Created: '{}'", info.Created);
@@ -618,16 +621,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         };
 
         Vi vi{};
-        (void)Anemone::FileSystem::DirectoryEnumerate(Anemone::Environment::GetStartupPath(), vi);
-    }
-
-    if (auto fh = Anemone::FileHandle::Create("non-existing", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
-    {
-        AE_TRACE(Error, "Should fail");
-    }
-    else
-    {
-        AE_TRACE(Error, "Non-existing: {}", fh.error());
+        (void)Anemone::FileSystem::GetPlatformFileSystem().DirectoryEnumerate(Anemone::Environment::GetStartupPath(), vi);
     }
 
     Anemone::CurrentThread::YieldAnyThreadOnAnyProcessor();
@@ -638,7 +632,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
     Anemone::FNV1A128 original{};
 
-    if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::CreateAlways, Anemone::FileAccess::Write))
+    if (auto h = Anemone::FileSystem::GetPlatformFileSystem().CreateFileWriter("test.txt"))
     {
         std::string_view s = "Hello World!\n";
 
@@ -655,7 +649,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
     Anemone::FNV1A128 current{};
 
-    if (auto h = Anemone::FileHandle::Create("test.txt", Anemone::FileMode::OpenExisting, Anemone::FileAccess::Read))
+    if (auto h = Anemone::FileSystem::GetPlatformFileSystem().CreateFileReader("test.txt"))
     {
         std::vector<std::byte> buffer(32);
         auto sb = std::as_writable_bytes(std::span{buffer});
