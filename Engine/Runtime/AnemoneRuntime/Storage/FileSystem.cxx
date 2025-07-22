@@ -1,4 +1,6 @@
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
+
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Storage/FileHandleReader.hxx"
 
 namespace Anemone::Internal
@@ -22,36 +24,27 @@ namespace Anemone
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            if (auto length = handle->GetLength())
+            auto length = handle->GetLength();
+            std::string result;
+
+            result.resize(length);
+
+            std::span view{reinterpret_cast<std::byte*>(result.data()), result.size()};
+
+            do
             {
-                std::string result;
+                size_t processed = handle->Read(view);
 
-                result.resize(*length);
-
-                std::span view{reinterpret_cast<std::byte*>(result.data()), result.size()};
-
-                do
+                if (processed == 0)
                 {
-                    if (auto processed = handle->Read(view))
-                    {
-                        if (*processed == 0)
-                        {
-                            // End of file.
-                            break;
-                        }
+                    // End of file.
+                    break;
+                }
 
-                        // Update view to the remaining part.
-                        view = view.subspan(*processed);
-                    }
-                    else
-                    {
-                        return std::unexpected(processed.error());
-                    }
+                view = view.subspan(processed);
+            } while (true);
 
-                } while (true);
-
-                return result;
-            }
+            return result;
         }
 
         return std::unexpected(Status::FileNotFound);
@@ -61,35 +54,26 @@ namespace Anemone
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            if (auto length = handle->GetLength())
+            auto length = handle->GetLength();
+            std::vector<std::byte> result;
+            result.resize(length);
+
+            std::span view{result.data(), result.size()};
+
+            do
             {
-                std::vector<std::byte> result;
-                result.resize(*length);
-
-                std::span view{result.data(), result.size()};
-
-                do
+                auto processed = handle->Read(view);
+                if (processed == 0)
                 {
-                    if (auto processed = handle->Read(view))
-                    {
-                        if (*processed == 0)
-                        {
-                            // End of file.
-                            break;
-                        }
+                    // End of file.
+                    break;
+                }
 
-                        // Update view to the remaining part.
-                        view = view.subspan(*processed);
-                    }
-                    else
-                    {
-                        return std::unexpected(processed.error());
-                    }
+                // Update view to the remaining part.
+                view = view.subspan(processed);
+            } while (true);
 
-                } while (true);
-
-                return result;
-            }
+            return result;
         }
 
         return std::unexpected(Status::FileNotFound);
@@ -99,24 +83,15 @@ namespace Anemone
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            std::span view = std::as_bytes(std::span{content});
+            AE_ASSERT(handle->GetLength() == 0);
 
-            if (not handle->Truncate(static_cast<int64_t>(view.size())))
-            {
-                return std::unexpected(Status::IoError);
-            }
+            std::span view = std::as_bytes(std::span{content});
 
             while (not view.empty())
             {
-                if (auto processed = handle->Write(view))
-                {
-                    // Update view to the remaining part.
-                    view = view.subspan(*processed);
-                }
-                else
-                {
-                    return std::unexpected(processed.error());
-                }
+                size_t processed = handle->Write(view);
+                // Update view to the remaining part.
+                view = view.subspan(processed);
             }
 
             return {};
@@ -129,22 +104,13 @@ namespace Anemone
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            if (not handle->Truncate(static_cast<int64_t>(content.size())))
-            {
-                return std::unexpected(Status::IoError);
-            }
+            AE_ASSERT(handle->GetLength() == 0);
 
             while (not content.empty())
             {
-                if (auto processed = handle->Write(content))
-                {
-                    // Update content to the remaining part.
-                    content = content.subspan(*processed);
-                }
-                else
-                {
-                    return std::unexpected(processed.error());
-                }
+                size_t processed = handle->Write(content);
+                // Update content to the remaining part.
+                content = content.subspan(processed);
             }
 
             return {};

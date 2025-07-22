@@ -65,22 +65,22 @@ namespace Anemone
         virtual ~FileHandle() = default;
 
     public:
-        virtual std::expected<void, Status> Flush() = 0;
+        virtual void Flush() = 0;
 
-        virtual std::expected<int64_t, Status> GetLength() const = 0;
+        virtual uint64_t GetLength() const = 0;
 
-        virtual std::expected<void, Status> Truncate(int64_t length) = 0;
+        virtual void SetLength(uint64_t length) = 0;
 
-        virtual std::expected<int64_t, Status> GetPosition() const = 0;
+        virtual uint64_t GetPosition() const = 0;
 
-        virtual std::expected<void, Status> SetPosition(int64_t position) = 0;
+        virtual void SetPosition(uint64_t position) = 0;
 
-        virtual std::expected<size_t, Status> Read(std::span<std::byte> buffer) = 0;
+        virtual size_t Read(std::span<std::byte> buffer) = 0;
 
-        virtual std::expected<size_t, Status> ReadAt(std::span<std::byte> buffer, int64_t position) = 0;
+        virtual size_t ReadAt(std::span<std::byte> buffer, uint64_t position) = 0;
 
-        virtual std::expected<size_t, Status> Write(std::span<std::byte const> buffer) = 0;
+        virtual size_t Write(std::span<std::byte const> buffer) = 0;
 
-        virtual std::expected<size_t, Status> WriteAt(std::span<std::byte const> buffer, int64_t position) = 0;
+        virtual size_t WriteAt(std::span<std::byte const> buffer, uint64_t position) = 0;
     };
 }

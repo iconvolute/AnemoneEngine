@@ -9,14 +9,12 @@ namespace Anemone
 
     class WindowsFileHandle final
         : public FileHandle
-        , public IntrusiveListNode<WindowsFileHandle>
     {
     private:
         Interop::Windows::SafeFileHandle _handle{};
-        WindowsFileSystem* _owner{};
 
     public:
-        explicit WindowsFileHandle(Interop::Windows::SafeFileHandle handle, WindowsFileSystem* owner);
+        explicit WindowsFileHandle(Interop::Windows::SafeFileHandle handle);
 
         ~WindowsFileHandle() override;
 
@@ -37,22 +35,22 @@ namespace Anemone
         }
 
     public:
-        std::expected<void, Status> Flush() override;
+        void Flush() override;
 
-        std::expected<int64_t, Status> GetLength() const override;
+        uint64_t GetLength() const override;
 
-        std::expected<void, Status> Truncate(int64_t length) override;
+        void SetLength(uint64_t length) override;
 
-        std::expected<int64_t, Status> GetPosition() const override;
+        uint64_t GetPosition() const override;
 
-        std::expected<void, Status> SetPosition(int64_t position) override;
+        void SetPosition(uint64_t position) override;
 
-        std::expected<size_t, Status> Read(std::span<std::byte> buffer) override;
+        size_t Read(std::span<std::byte> buffer) override;
 
-        std::expected<size_t, Status> ReadAt(std::span<std::byte> buffer, int64_t position) override;
+        size_t ReadAt(std::span<std::byte> buffer, uint64_t position) override;
 
-        std::expected<size_t, Status> Write(std::span<std::byte const> buffer) override;
+        size_t Write(std::span<std::byte const> buffer) override;
 
-        std::expected<size_t, Status> WriteAt(std::span<std::byte const> buffer, int64_t position) override;
+        size_t WriteAt(std::span<std::byte const> buffer, uint64_t position) override;
     };
 }

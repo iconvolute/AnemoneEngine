@@ -7,7 +7,7 @@ namespace Anemone::Storage
     {
     private:
         std::span<std::byte const> _buffer{};
-        size_t _buffer_position;
+        size_t _position;
 
     public:
         MemoryReader(std::span<std::byte const> buffer);
@@ -18,8 +18,10 @@ namespace Anemone::Storage
         ~MemoryReader() override;
 
     public:
-        std::expected<size_t, Status> Read(std::span<std::byte> buffer) override;
-        std::expected<void, Status> SetPosition(int64_t position) override;
-        std::expected<int64_t, Status> GetPosition() const override;
+        size_t Read(std::span<std::byte> buffer) override;
+
+        void SetPosition(uint64_t position) override;
+
+        uint64_t GetPosition() const override;
     };
 }

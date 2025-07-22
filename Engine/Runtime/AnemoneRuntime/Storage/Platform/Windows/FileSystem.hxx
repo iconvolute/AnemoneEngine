@@ -54,14 +54,7 @@ namespace Anemone
         
         bool DirectoryEnumerateRecursive(std::string_view path, FileSystemVisitor& visitor) override;
 
-    public:
-        void RegisterHandle(WindowsFileHandle& handle);
-        void UnregisterHandle(WindowsFileHandle& handle);
-
     private:
-        // List of all opened handles.
-        IntrusiveList<WindowsFileHandle> _handles{};
-
         // Random number generator for unique file names.
         Math::Xorshiro512ss _generator{};
     };

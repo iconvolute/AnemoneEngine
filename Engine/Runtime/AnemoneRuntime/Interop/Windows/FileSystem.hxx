@@ -42,6 +42,16 @@ namespace Anemone::Interop::Windows
         return overlapped;
     }
 
+    constexpr OVERLAPPED GetOverlappedForPosition(uint64_t position)
+    {
+        LARGE_INTEGER const li = std::bit_cast<LARGE_INTEGER>(position);
+
+        OVERLAPPED overlapped{};
+        overlapped.Offset = li.LowPart;
+        overlapped.OffsetHigh = li.HighPart;
+        return overlapped;
+    }
+
     constexpr void UpdateOverlappedPosition(OVERLAPPED& overlapped, int64_t position)
     {
         LARGE_INTEGER const li = std::bit_cast<LARGE_INTEGER>(position);
@@ -52,6 +62,11 @@ namespace Anemone::Interop::Windows
     constexpr DWORD ValidateIoRequestLength(size_t value)
     {
         return static_cast<DWORD>(std::min(value, size_t{UINT32_MAX}));
+    }
+
+    constexpr uint64_t ValidateFileSize(uint64_t value)
+    {
+        return std::min<uint64_t>(value, uint64_t{INT64_MAX});
     }
 
     constexpr wchar_t DirectorySeparator = L'\\';

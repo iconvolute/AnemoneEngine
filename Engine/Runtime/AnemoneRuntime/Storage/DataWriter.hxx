@@ -20,13 +20,13 @@ namespace Anemone::Storage
         virtual ~DataWriter() = default;
 
     public:
-        [[nodiscard]] virtual std::expected<size_t, Status> Write(std::span<std::byte const> data) = 0;
+        virtual size_t Write(std::span<std::byte const> data) = 0;
 
-        [[nodiscard]] virtual std::expected<void, Status> Flush() = 0;
+        virtual void Flush() = 0;
 
-        [[nodiscard]] virtual std::expected<void, Status> SetPosition(int64_t position) = 0;
+        virtual void SetPosition(uint64_t position) = 0;
 
-        [[nodiscard]] virtual std::expected<int64_t, Status> GetPosition() const = 0;
+        virtual uint64_t GetPosition() const = 0;
     };
 }
 

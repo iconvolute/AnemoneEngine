@@ -12,51 +12,42 @@ namespace Anemone
     }
 
 
-    LinuxFileHandle::~LinuxFileHandle()
+    LinuxFileHandle::~LinuxFileHandle() = default;
+
+
+    void LinuxFileHandle::Flush()
     {
+        AE_ASSERT(this->_handle);
     }
 
-
-    std::expected<void, Status> LinuxFileHandle::Flush()
+    uint64_t LinuxFileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 
-    std::expected<int64_t, Status> LinuxFileHandle::GetLength() const
-    {
-        AE_ASSERT(this->_handle);
-
-        return std::unexpected(Status::NotImplemented);
-    }
-
-    std::expected<void, Status> LinuxFileHandle::Truncate(int64_t length)
+    void LinuxFileHandle::SetLength(uint64_t length)
     {
         AE_ASSERT(this->_handle);
 
         (void)length;
-
-        return std::unexpected(Status::NotImplemented);
     }
 
-    std::expected<int64_t, Status> LinuxFileHandle::GetPosition() const
+    uint64_t LinuxFileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
-
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 
-    std::expected<void, Status> LinuxFileHandle::SetPosition(int64_t position)
+    void LinuxFileHandle::SetPosition(uint64_t position)
     {
         AE_ASSERT(this->_handle);
 
         (void)position;
-
-        return std::unexpected(Status::NotImplemented);
     }
 
-    std::expected<size_t, Status> LinuxFileHandle::Read(std::span<std::byte> buffer)
+    size_t LinuxFileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -65,10 +56,10 @@ namespace Anemone
             return 0;
         }
 
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 
-    std::expected<size_t, Status> LinuxFileHandle::ReadAt(std::span<std::byte> buffer, int64_t position)
+    size_t LinuxFileHandle::ReadAt(std::span<std::byte> buffer, uint64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -79,10 +70,10 @@ namespace Anemone
 
         (void)position;
 
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 
-    std::expected<size_t, Status> LinuxFileHandle::Write(std::span<std::byte const> buffer)
+    size_t LinuxFileHandle::Write(std::span<std::byte const> buffer)
     {
         AE_ASSERT(this->_handle);
 
@@ -91,10 +82,10 @@ namespace Anemone
             return 0;
         }
 
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 
-    std::expected<size_t, Status> LinuxFileHandle::WriteAt(std::span<std::byte const> buffer, int64_t position)
+    size_t LinuxFileHandle::WriteAt(std::span<std::byte const> buffer, uint64_t position)
     {
         AE_ASSERT(this->_handle);
 
@@ -105,6 +96,6 @@ namespace Anemone
 
         (void)position;
 
-        return std::unexpected(Status::NotImplemented);
+        return 0;
     }
 }

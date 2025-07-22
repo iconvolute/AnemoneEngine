@@ -232,8 +232,8 @@ namespace Anemone
 
         if (::CreatePipe(&hRead, &hWrite, &sa, 0))
         {
-            reader = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hRead}, this);
-            writer = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hWrite}, this);
+            reader = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hRead});
+            writer = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hWrite});
             return true;
         }
 
@@ -293,7 +293,7 @@ namespace Anemone
 
         if (handle != INVALID_HANDLE_VALUE)
         {
-            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle}, this);
+            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
         }
 
         AE_VERIFY_WIN32(GetLastError());
@@ -352,7 +352,7 @@ namespace Anemone
 
         if (handle != INVALID_HANDLE_VALUE)
         {
-            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle}, this);
+            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
         }
 
         AE_VERIFY_WIN32(GetLastError());
@@ -805,15 +805,5 @@ namespace Anemone
 
         RecursiveVisitor recursiveVisitor{this, visitor};
         return this->DirectoryEnumerate(path, recursiveVisitor);
-    }
-
-    void WindowsFileSystem::RegisterHandle(WindowsFileHandle& handle)
-    {
-        this->_handles.PushBack(&handle);
-    }
-
-    void WindowsFileSystem::UnregisterHandle(WindowsFileHandle& handle)
-    {
-        this->_handles.Remove(&handle);
     }
 }

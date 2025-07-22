@@ -10,16 +10,16 @@ namespace Anemone::Storage
     {
     private:
         std::unique_ptr<FileHandle> _handle{};
-        size_t _buffer_size{};
-        size_t _buffer_capacity{};
-        size_t _buffer_position{};
+        size_t _bufferSize{};
+        size_t _bufferCapacity{};
+        size_t _bufferPosition{};
         std::unique_ptr<std::byte[]> _buffer{};
-        int64_t _file_position{};
-        int64_t _file_size{};
+        uint64_t _filePosition{};
+        uint64_t _fileSize{};
 
         static constexpr size_t DefaultBufferCapacity = 8u << 10u;
 
-        std::expected<size_t, Status> ReadCore(std::span<std::byte> buffer, int64_t position) const;
+        size_t ReadCore(std::span<std::byte> buffer, uint64_t position) const;
 
     public:
         FileHandleReader(std::unique_ptr<FileHandle> handle, size_t buffer_capacity = DefaultBufferCapacity);
@@ -30,12 +30,12 @@ namespace Anemone::Storage
         FileHandleReader& operator=(FileHandleReader&&) = delete;
         ~FileHandleReader() override = default;
 
-        std::expected<size_t, Status> Read(std::span<std::byte> buffer) override;
+        size_t Read(std::span<std::byte> buffer) override;
 
-        std::expected<void, Status> Skip(size_t count);
+        void Skip(size_t count);
 
-        std::expected<void, Status> SetPosition(int64_t position) override;
+        void SetPosition(uint64_t position) override;
 
-        std::expected<int64_t, Status> GetPosition() const override;
+        uint64_t GetPosition() const override;
     };
 }

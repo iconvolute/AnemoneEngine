@@ -4,55 +4,28 @@
 
 namespace Anemone::Storage
 {
-    std::expected<void, Status> FileHandleWriter::FlushBuffer()
+    void FileHandleWriter::FlushBuffer()
     {
-        if (this->_buffer_position != 0)
+        if (this->_bufferPosition != 0)
         {
             // Consume internal buffer.
-            std::span buffer{this->_buffer.get(), std::exchange(this->_buffer_position, 0)};
+            std::span buffer{this->_buffer.get(), std::exchange(this->_bufferPosition, 0)};
 
-            if (auto r = this->WriteCore(buffer, this->_file_position))
-            {
-                this->_file_position += static_cast<int64_t>(*r);
-            }
-            else
-            {
-                return std::unexpected(r.error());
-            }
-
-            //while (not buffer.empty())
-            //{
-            //    if (auto processed = this->_handle->WriteAt(buffer, this->_file_position))
-            //    {
-            //        this->_file_position += static_cast<int64_t>(*processed);
-            //        buffer = buffer.subspan(*processed);
-            //    }
-            //    else
-            //    {
-            //        return std::unexpected(processed.error());
-            //    }
-            //}
+            size_t r = this->WriteCore(buffer, this->_filePosition);
+            this->_filePosition += static_cast<int64_t>(r);
         }
-
-        return {};
     }
 
-    std::expected<size_t, Status> FileHandleWriter::WriteCore(std::span<std::byte const> buffer, int64_t position) const
+    size_t FileHandleWriter::WriteCore(std::span<std::byte const> buffer, uint64_t position) const
     {
         size_t processed = 0;
 
         while (not buffer.empty())
         {
-            if (auto r = this->_handle->WriteAt(buffer, position))
-            {
-                processed += *r;
-                position += static_cast<int64_t>(*r);
-                buffer = buffer.subspan(*r);
-            }
-            else
-            {
-                return std::unexpected(r.error());
-            }
+            size_t r = this->_handle->WriteAt(buffer, position);
+            processed += r;
+            position += r;
+            buffer = buffer.subspan(r);
         }
 
         return processed;
@@ -60,123 +33,66 @@ namespace Anemone::Storage
 
     FileHandleWriter::FileHandleWriter(std::unique_ptr<FileHandle> handle, size_t buffer_capacity)
         : _handle{std::move(handle)}
-        , _buffer_capacity{buffer_capacity}
+        , _bufferCapacity{buffer_capacity}
         , _buffer{std::make_unique<std::byte[]>(buffer_capacity)}
     {
     }
 
     FileHandleWriter::~FileHandleWriter()
     {
-        // Ignore errors?
-        if (auto result = this->Flush(); not result)
-        {
-            AE_TRACE(Fatal, "Failed to flush: '{}'", result.error());
-        }
+        this->Flush();
     }
 
-    std::expected<size_t, Status> FileHandleWriter::Write(std::span<std::byte const> buffer)
+    size_t FileHandleWriter::Write(std::span<std::byte const> buffer)
     {
-        if (buffer.size() >= this->_buffer_capacity)
+        if (buffer.size() >= this->_bufferCapacity)
         {
             // Buffer is too large, flush internal buffer first, then write directly.
-            if (auto flushed = this->FlushBuffer())
-            {
-                if (auto processed = this->WriteCore(buffer, this->_file_position))
-                {
-                    this->_file_position += static_cast<int64_t>(*processed);
-                    return *processed;
-                }
-                else
-                {
-                    return std::unexpected(processed.error());
-                }
-                //size_t processed = 0;
-                //
-                //while (not buffer.empty())
-                //{
-                //    if (auto written = this->_handle->WriteAt(buffer, this->_file_position))
-                //    {
-                //        processed += *written;
-                //        this->_file_position += static_cast<int64_t>(*written);
-                //        buffer = buffer.subspan(*written);
-                //    }
-                //    else
-                //    {
-                //        return std::unexpected(written.error());
-                //    }
-                //}
-                //
-                //return processed;
-            }
-            else
-            {
-                return std::unexpected(flushed.error());
-            }
+            this->FlushBuffer();
+
+            size_t processed = this->WriteCore(buffer, this->_filePosition);
+            this->_filePosition += processed;
+            return processed;
         }
 
         // Buffer is large enough, copy to internal buffer, flush if necessary.
-        if ((this->_buffer_position + buffer.size()) > this->_buffer_capacity)
+        if ((this->_bufferPosition + buffer.size()) > this->_bufferCapacity)
         {
             // Flush and copy to internal buffer.
-            if (auto flushed = this->FlushBuffer())
-            {
-                std::memcpy(this->_buffer.get(), buffer.data(), buffer.size());
-                this->_buffer_position = buffer.size();
+            this->FlushBuffer();
 
-                return buffer.size();
-            }
-            else
-            {
-                return std::unexpected(flushed.error());
-            }
+            std::memcpy(this->_buffer.get(), buffer.data(), buffer.size());
+            this->_bufferPosition = buffer.size();
+            return buffer.size();
         }
 
         // Copy to internal buffer.
-        std::memcpy(this->_buffer.get() + this->_buffer_position, buffer.data(), buffer.size());
-        this->_buffer_position += buffer.size();
+        std::memcpy(this->_buffer.get() + this->_bufferPosition, buffer.data(), buffer.size());
+        this->_bufferPosition += buffer.size();
 
-        AE_ASSERT(this->_buffer_position <= this->_buffer_capacity);
+        AE_ASSERT(this->_bufferPosition <= this->_bufferCapacity);
 
         return buffer.size();
     }
 
-    std::expected<void, Status> FileHandleWriter::Flush()
+    void FileHandleWriter::Flush()
     {
-        if (auto processed = this->FlushBuffer())
+        this->FlushBuffer();
+
+        // Flushed internal writer buffer.
+        this->_handle->Flush();
+    }
+
+    void FileHandleWriter::SetPosition(uint64_t position)
+    {
+        if (this->_filePosition != position)
         {
-            // Flushed internal writer buffer.
-            return this->_handle->Flush();
-        }
-        else
-        {
-            return processed;
+            this->FlushBuffer();
         }
     }
 
-    std::expected<void, Status> FileHandleWriter::SetPosition(int64_t position)
+    uint64_t FileHandleWriter::GetPosition() const
     {
-        AE_ASSERT(position >= 0, "Negative file position is not allowed");
-
-        if (0 <= position)
-        {
-            // New file position is in range of the file
-            if (auto flushed = this->FlushBuffer())
-            {
-                this->_file_position = position;
-
-                return {};
-            }
-            else
-            {
-                return flushed;
-            }
-        }
-
-        return std::unexpected(Status::InvalidArgument);
-    }
-
-    std::expected<int64_t, Status> FileHandleWriter::GetPosition() const
-    {
-        return this->_file_position;
+        return this->_filePosition;
     }
 }

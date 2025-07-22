@@ -10,16 +10,16 @@ namespace Anemone::Storage
     {
     private:
         std::unique_ptr<FileHandle> _handle;
-        size_t _buffer_capacity{};
-        size_t _buffer_position{};
+        size_t _bufferCapacity{};
+        size_t _bufferPosition{};
         std::unique_ptr<std::byte[]> _buffer{};
-        int64_t _file_position{};
+        uint64_t _filePosition{};
 
         static constexpr size_t DefaultBufferCapacity = 8u << 10u;
 
     private:
-        std::expected<void, Status> FlushBuffer();
-        std::expected<size_t, Status> WriteCore(std::span<std::byte const> buffer, int64_t position) const;
+        void FlushBuffer();
+        size_t WriteCore(std::span<std::byte const> buffer, uint64_t position) const;
 
     public:
         FileHandleWriter(std::unique_ptr<FileHandle> handle, size_t buffer_capacity = DefaultBufferCapacity);
@@ -31,12 +31,12 @@ namespace Anemone::Storage
 
         ~FileHandleWriter() override;
 
-        std::expected<size_t, Status> Write(std::span<std::byte const> buffer) override;
+        size_t Write(std::span<std::byte const> buffer) override;
 
-        std::expected<void, Status> Flush() override;
+        void Flush() override;
 
-        std::expected<void, Status> SetPosition(int64_t position) override;
+        void SetPosition(uint64_t position) override;
 
-        std::expected<int64_t, Status> GetPosition() const override;
+        uint64_t GetPosition() const override;
     };
 }

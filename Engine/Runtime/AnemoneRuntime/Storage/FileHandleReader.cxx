@@ -3,28 +3,22 @@
 
 namespace Anemone::Storage
 {
-    std::expected<size_t, Status> FileHandleReader::ReadCore(std::span<std::byte> buffer, int64_t position) const
+    size_t FileHandleReader::ReadCore(std::span<std::byte> buffer, uint64_t position) const
     {
         size_t processed = 0;
 
         while (not buffer.empty())
         {
-            if (auto r = this->_handle->ReadAt(buffer, position))
+            size_t read = this->_handle->ReadAt(buffer, position);
+            if (read == 0)
             {
-                if (*r == 0)
-                {
-                    // End of file.
-                    break;
-                }
+                // End of file.
+                break;
+            }
 
-                processed += *r;
-                position += static_cast<int64_t>(*r);
-                buffer = buffer.subspan(*r);
-            }
-            else
-            {
-                return std::unexpected(r.error());
-            }
+            processed += read;
+            position += read;
+            buffer = buffer.subspan(read);
         }
 
         return processed;
@@ -32,80 +26,66 @@ namespace Anemone::Storage
 
     FileHandleReader::FileHandleReader(std::unique_ptr<FileHandle> handle, size_t buffer_capacity)
         : _handle{std::move(handle)}
-        , _buffer_capacity{buffer_capacity}
+        , _bufferCapacity{buffer_capacity}
         , _buffer{std::make_unique<std::byte[]>(buffer_capacity)}
     {
-        this->_file_size = this->_handle->GetLength().value_or(0);
+        this->_fileSize = this->_handle->GetLength();
     }
 
-    std::expected<size_t, Status> FileHandleReader::Read(std::span<std::byte> buffer)
+    size_t FileHandleReader::Read(std::span<std::byte> buffer)
     {
         // If output buffer is large enough, do read directly there.
-        if (buffer.size() > this->_buffer_capacity)
+        if (buffer.size() > this->_bufferCapacity)
         {
             // Start transaction.
-            size_t const processed = this->_buffer_size - this->_buffer_position;
-            int64_t const position = this->_file_position + static_cast<int64_t>(processed);
+            size_t const processed = this->_bufferSize - this->_bufferPosition;
+            uint64_t const position = this->_filePosition + processed;
 
             if (processed != 0)
             {
                 // Consume data from buffer.
-                std::memcpy(buffer.data(), this->_buffer.get() + this->_buffer_position, processed);
+                std::memcpy(buffer.data(), this->_buffer.get() + this->_bufferPosition, processed);
 
                 // Update position just after buffer.
                 buffer = buffer.subspan(processed);
             }
 
-            if (auto read = this->ReadCore(buffer, position))
-            {
-                // Read succeeded. Discard internal buffers and advance file position.
-                this->_buffer_position = 0;
-                this->_buffer_size = 0;
-                this->_file_position = position + static_cast<int64_t>(*read);
-                return processed + *read;
-            }
-            else
-            {
-                // Failed to read data. Discard whole transaction.
-                return std::unexpected(read.error());
-            }
+            size_t read = this->ReadCore(buffer, position);
+            // Read succeeded. Discard internal buffers and advance file position.
+            this->_bufferPosition = 0;
+            this->_bufferSize = 0;
+            this->_filePosition = position + read;
+            return processed + read;
         }
 
         size_t processed = 0;
 
         while (not buffer.empty())
         {
-            if (size_t const remaining = this->_buffer_size - this->_buffer_position)
+            if (size_t const remaining = this->_bufferSize - this->_bufferPosition)
             {
                 // Copy data from internal buffer.
                 size_t const read = std::min<size_t>(buffer.size(), remaining);
-                std::memcpy(buffer.data(), this->_buffer.get() + this->_buffer_position, read);
+                std::memcpy(buffer.data(), this->_buffer.get() + this->_bufferPosition, read);
 
                 // Update position just after buffer.
-                this->_buffer_position += read;
-                this->_file_position += static_cast<int64_t>(read);
+                this->_bufferPosition += read;
+                this->_filePosition += read;
                 processed += read;
                 buffer = buffer.subspan(read);
             }
-            else if (this->_buffer_position == this->_buffer_size)
+            else if (this->_bufferPosition == this->_bufferSize)
             {
                 // Buffer is empty, try to read more data.
-                if (auto prefetched = this->ReadCore(std::span{this->_buffer.get(), this->_buffer_capacity}, this->_file_position))
+                size_t prefetched = this->ReadCore(std::span{this->_buffer.get(), this->_bufferCapacity}, this->_filePosition);
+                if (prefetched == 0)
                 {
-                    if (*prefetched == 0)
-                    {
-                        // End of file.
-                        break;
-                    }
+                    // End of file.
+                    break;
+                }
 
-                    this->_buffer_size = *prefetched;
-                    this->_buffer_position = 0;
-                }
-                else
-                {
-                    // Failed to prefetch data.
-                    return std::unexpected(prefetched.error());
-                }
+                this->_bufferSize = prefetched;
+                this->_bufferPosition = 0;
             }
             else
             {
@@ -116,66 +96,61 @@ namespace Anemone::Storage
         return processed;
     }
 
-    std::expected<void, Status> FileHandleReader::Skip(size_t count)
+    void FileHandleReader::Skip(size_t count)
     {
         if (count != 0)
         {
-            size_t const remaining = this->_buffer_size - this->_buffer_position;
+            size_t const remaining = this->_bufferSize - this->_bufferPosition;
 
             if (count < remaining)
             {
                 // Inside buffer.
-                this->_buffer_position += count;
+                this->_bufferPosition += count;
             }
             else
             {
                 // Outside buffer.
-                this->_buffer_size = 0;
-                this->_buffer_position = 0;
+                this->_bufferSize = 0;
+                this->_bufferPosition = 0;
             }
 
-            this->_file_position += static_cast<int64_t>(count);
+            this->_filePosition += count;
         }
-
-        return {};
     }
 
-    std::expected<void, Status> FileHandleReader::SetPosition(int64_t position)
+    void FileHandleReader::SetPosition(uint64_t position)
     {
-        int64_t const mappedBufferStart = this->_file_position - static_cast<int64_t>(this->_buffer_position);
-        int64_t const mappedBufferEnd = mappedBufferStart + static_cast<int64_t>(this->_buffer_size);
+        uint64_t const mappedBufferStart = this->_filePosition - this->_bufferPosition;
+        uint64_t const mappedBufferEnd = mappedBufferStart + this->_bufferSize;
 
         AE_ASSERT(mappedBufferStart <= mappedBufferEnd);
-        AE_ASSERT(0 <= mappedBufferStart);
-        AE_ASSERT(mappedBufferStart <= this->_file_position);
-        AE_ASSERT(this->_file_position <= mappedBufferEnd);
-        AE_ASSERT(mappedBufferEnd <= this->_file_size);
+        AE_ASSERT(mappedBufferStart <= this->_filePosition);
+        AE_ASSERT(this->_filePosition <= mappedBufferEnd);
+        AE_ASSERT(mappedBufferEnd <= this->_fileSize);
 
 
         if ((mappedBufferStart <= position) and (position <= mappedBufferEnd))
         {
             // Inside buffer.
-            this->_buffer_position = static_cast<size_t>(position - mappedBufferStart);
+            this->_bufferPosition = position - mappedBufferStart;
         }
-        else if ((0 <= position) and (position <= this->_file_size))
+        else if (position <= this->_fileSize)
         {
             // Outside buffer.
-            this->_buffer_size = 0;
-            this->_buffer_position = 0;
+            this->_bufferSize = 0;
+            this->_bufferPosition = 0;
         }
         else
         {
-            return std::unexpected(Status::InvalidArgument);
+            AE_PANIC("Invalid position. Implement truncation at the end of the file.");
         }
 
         // Update file position.
-        this->_file_position = position;
-
-        return {};
+        this->_filePosition = position;
     }
 
-    std::expected<int64_t, Status> FileHandleReader::GetPosition() const
+    uint64_t FileHandleReader::GetPosition() const
     {
-        return this->_file_position;
+        return this->_filePosition;
     }
 }

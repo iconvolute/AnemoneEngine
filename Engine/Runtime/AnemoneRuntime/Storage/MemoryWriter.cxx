@@ -12,7 +12,7 @@ namespace Anemone::Storage
 
     MemoryWriter::~MemoryWriter() = default;
 
-    std::expected<size_t, Status> MemoryWriter::Write(std::span<std::byte const> data)
+    size_t MemoryWriter::Write(std::span<std::byte const> data)
     {
         AE_ASSERT(this->_position <= this->_buffer.size());
 
@@ -45,21 +45,15 @@ namespace Anemone::Storage
         return data.size();
     }
 
-    std::expected<void, Status> MemoryWriter::Flush()
+    void MemoryWriter::Flush()
     {
-        return {};
     }
 
-    std::expected<void, Status> MemoryWriter::SetPosition(int64_t position)
+    void MemoryWriter::SetPosition(uint64_t position)
     {
         AE_ASSERT(this->_position <= this->_buffer.size());
 
-        if (position < 0)
-        {
-            return std::unexpected(Status::InvalidArgument);
-        }
-
-        this->_position = static_cast<size_t>(position);
+        this->_position = position;
 
         if (this->_position > this->_buffer.size())
         {
@@ -67,10 +61,9 @@ namespace Anemone::Storage
         }
 
         AE_ASSERT(this->_position <= this->_buffer.size());
-        return {};
     }
 
-    std::expected<int64_t, Status> MemoryWriter::GetPosition() const
+    uint64_t MemoryWriter::GetPosition() const
     {
         AE_ASSERT(this->_position <= this->_buffer.size());
         return this->_position;

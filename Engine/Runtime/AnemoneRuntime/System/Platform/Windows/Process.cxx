@@ -272,17 +272,17 @@ namespace Anemone
         {
             if (input)
             {
-                (*input) = std::make_unique<WindowsFileHandle>(std::move(fhWriteInput), nullptr);
+                (*input) = std::make_unique<WindowsFileHandle>(std::move(fhWriteInput));
             }
 
             if (output)
             {
-                (*output) = std::make_unique<WindowsFileHandle>(std::move(fhReadOutput), nullptr);
+                (*output) = std::make_unique<WindowsFileHandle>(std::move(fhReadOutput));
             }
 
             if (error)
             {
-                (*error) = std::make_unique<WindowsFileHandle>(std::move(fhReadError), nullptr);
+                (*error) = std::make_unique<WindowsFileHandle>(std::move(fhReadError));
             }
 
             CloseHandle(process_information.hThread);
@@ -326,24 +326,14 @@ namespace Anemone
             {
                 auto rc = process->TryWait();
 
-                while (auto processed = pipeOutput->Read(view))
+                while (size_t processed = pipeOutput->Read(view))
                 {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    output(std::string_view{buffer.data(), *processed});
+                    output(std::string_view{buffer.data(), processed});
                 }
 
-                while (auto processed = pipeError->Read(view))
+                while (size_t processed = pipeError->Read(view))
                 {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    error(std::string_view{buffer.data(), *processed});
+                    error(std::string_view{buffer.data(), processed});
                 }
 
                 if (rc)

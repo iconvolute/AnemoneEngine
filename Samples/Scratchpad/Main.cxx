@@ -654,21 +654,9 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         std::vector<std::byte> buffer(32);
         auto sb = std::as_writable_bytes(std::span{buffer});
 
-        while (true)
+        while (size_t r = h->Read(sb))
         {
-            if (auto r = h->Read(sb))
-            {
-                if (*r == 0)
-                {
-                    break;
-                }
-
-                current.Update(sb.subspan(0, *r));
-            }
-            else
-            {
-                break;
-            }
+            current.Update(sb.subspan(0, r));
         }
     }
 
