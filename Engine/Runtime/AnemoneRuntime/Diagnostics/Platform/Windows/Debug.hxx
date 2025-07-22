@@ -21,19 +21,24 @@ namespace Anemone::Diagnostics
     };
 }
 
-#if ANEMONE_FEATURE_ASSERTIONS
-
-#define AE_VERIFY_WIN32(error) \
+#define AE_ENSURE_WIN32(error) \
     do \
     { \
         Anemone::Diagnostics::WindowsDebug::ReportErrorWin32(error, std::source_location::current()); \
     } while (false)
 
-#define AE_VERIFY_HRESULT(error) \
+#define AE_ENSURE_HRESULT(error) \
     do \
     { \
         Anemone::Diagnostics::WindowsDebug::ReportErrorHRESULT(error, std::source_location::current()); \
     } while (false)
+
+
+#if ANEMONE_FEATURE_ASSERTIONS
+
+#define AE_VERIFY_WIN32(error) AE_ENSURE_WIN32(error)
+
+#define AE_VERIFY_HRESULT(error) AE_ENSURE_HRESULT(error)
 
 #else
 

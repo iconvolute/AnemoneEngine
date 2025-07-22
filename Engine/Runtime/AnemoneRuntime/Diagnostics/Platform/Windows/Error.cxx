@@ -64,7 +64,7 @@ namespace Anemone::Diagnostics
         Interop::string_buffer<char, 128> szMessage;
         Interop::Windows::NarrowString(szMessage, std::wstring_view{szMessageBuffer, dwChars});
 
-        Trace::Get().TraceError("{}:({}): tid: {}, error: {:#08x}, message: '{}'",
+        Trace::Get().TraceError("{}:({}): tid: {}, error: 0x{:08x}, message: '{}'",
             location.file_name(),
             location.line(),
             //location.function_name(),
@@ -73,7 +73,7 @@ namespace Anemone::Diagnostics
             szMessage.c_str());
 #else
 
-        Trace::Get().TraceError("{}:({}): tid: {}, error: {:#08x}",
+        Trace::Get().TraceError("{}:({}): tid: {}, error: 0x{:08x}",
             location.file_name(),
             location.line(),
             //location.function_name(),
