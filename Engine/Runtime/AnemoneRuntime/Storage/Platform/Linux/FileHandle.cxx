@@ -18,42 +18,98 @@ namespace Anemone
     void LinuxFileHandle::Flush()
     {
         AE_ASSERT(this->_handle);
+
+        if (fsync(this->_handle.Get()))
+        {
+            AE_VERIFY_ERRNO(errno);
+        }
     }
 
     uint64_t LinuxFileHandle::GetLength() const
     {
         AE_ASSERT(this->_handle);
 
-        return 0;
+        struct stat64 st{0};
+
+        if (fstat64(this->_handle.Get(), &st) < 0)
+        {
+            AE_VERIFY_ERRNO(errno);
+            return 0;
+        }
+
+        return static_cast<uint64_t>(st.st_size);
     }
 
     void LinuxFileHandle::SetLength(uint64_t length)
     {
         AE_ASSERT(this->_handle);
+        AE_ASSERT(length <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
 
-        (void)length;
+        if(ftruncate64(this->_handle.Get(), static_cast<off64_t>(length)) < 0)
+        {
+            AE_VERIFY_ERRNO(errno);
+        }
     }
 
     uint64_t LinuxFileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
-        return 0;
+        
+        
+        off64_t const position = lseek64(this->_handle.Get(), 0, SEEK_CUR);
+
+        if (position < 0)
+        {
+            AE_VERIFY_ERRNO(errno);
+            return 0;
+        }
+
+        return static_cast<uint64_t>(position);
     }
 
     void LinuxFileHandle::SetPosition(uint64_t position)
     {
         AE_ASSERT(this->_handle);
-
-        (void)position;
+        AE_ASSERT(position <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
+        
+        if (lseek64(this->_handle.Get(), static_cast<off64_t>(position), SEEK_SET) < 0)
+        {
+            AE_VERIFY_ERRNO(errno);
+        }
     }
 
     size_t LinuxFileHandle::Read(std::span<std::byte> buffer)
     {
         AE_ASSERT(this->_handle);
 
-        if (buffer.empty())
+        if (not buffer.empty())
         {
-            return 0;
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
+
+            while (true)
+            {
+                ssize_t const processed = read(this->_handle.Get(), buffer.data(), requested);
+
+                if (processed >= 0)
+                {
+                    return static_cast<size_t>(processed);
+                }
+
+                if (errno == EINTR)
+                {
+                    // The call was interrupted by a signal before any data was read.
+                    continue;
+                }
+
+                if ((errno == EAGAIN) or (errno == EWOULDBLOCK))
+                {
+                    // The file descriptor fd refers to a socket and has been marked nonblocking (O_NONBLOCK), and the read would block.
+                    return 0;
+                }
+
+                AE_VERIFY_ERRNO(errno);
+                return 0;
+            }
         }
 
         return 0;
@@ -62,13 +118,38 @@ namespace Anemone
     size_t LinuxFileHandle::ReadAt(std::span<std::byte> buffer, uint64_t position)
     {
         AE_ASSERT(this->_handle);
+        AE_ASSERT(position <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
 
-        if (buffer.empty())
+        if (not buffer.empty())
         {
-            return 0;
-        }
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
+            loff_t const offset = static_cast<loff_t>(position);
 
-        (void)position;
+            while (true)
+            {
+                ssize_t const processed = pread64(this->_handle.Get(), buffer.data(), requested, offset);
+
+                if (processed >= 0)
+                {
+                    return static_cast<size_t>(processed);
+                }
+
+                if (errno == EINTR)
+                {
+                    // The call was interrupted by a signal before any data was read.
+                    continue;
+                }
+
+                if ((errno == EAGAIN) or (errno == EWOULDBLOCK))
+                {
+                    // The file descriptor fd refers to a socket and has been marked nonblocking (O_NONBLOCK), and the read would block.
+                    return 0;
+                }
+
+                AE_VERIFY_ERRNO(errno);
+                return 0;
+            }
+        }
 
         return 0;
     }
@@ -77,9 +158,34 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (buffer.empty())
+        if (not buffer.empty())
         {
-            return 0;
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
+
+            while (true)
+            {
+                ssize_t const processed = write(this->_handle.Get(), buffer.data(), requested);
+
+                if (processed >= 0)
+                {
+                    return static_cast<size_t>(processed);
+                }
+
+                if (errno == EINTR)
+                {
+                    // The call was interrupted by a signal before any data was written.
+                    continue;
+                }
+
+                if ((errno == EAGAIN) or (errno == EWOULDBLOCK))
+                {
+                    // The file descriptor fd refers to a socket and has been marked nonblocking (O_NONBLOCK), and the write would block.
+                    return 0;
+                }
+
+                AE_VERIFY_ERRNO(errno);
+                return 0;
+            }
         }
 
         return 0;
@@ -89,12 +195,36 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (buffer.empty())
+        if (not buffer.empty())
         {
-            return 0;
-        }
+            size_t const requested = Interop::Linux::ValidateIoRequestLength(buffer.size());
+            loff_t const offset = static_cast<loff_t>(position);
 
-        (void)position;
+            while (true)
+            {
+                ssize_t const processed = pwrite64(this->_handle.Get(), buffer.data(), requested, offset);
+
+                if (processed >= 0)
+                {
+                    return static_cast<size_t>(processed);
+                }
+
+                if (errno == EINTR)
+                {
+                    // The call was interrupted by a signal before any data was written.
+                    continue;
+                }
+
+                if ((errno == EAGAIN) or (errno == EWOULDBLOCK))
+                {
+                    // The file descriptor fd refers to a socket and has been marked nonblocking (O_NONBLOCK), and the write would block.
+                    return 0;
+                }
+
+                AE_VERIFY_ERRNO(errno);
+                return 0;
+            }
+        }
 
         return 0;
     }

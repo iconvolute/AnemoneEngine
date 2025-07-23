@@ -340,24 +340,14 @@ namespace Anemone
             {
                 auto rc = process->TryWait();
 
-                while (auto processed = pipeOutput->Read(view))
+                while (size_t processed = pipeOutput->Read(view))
                 {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    output(std::string_view{buffer.data(), *processed});
+                    output(std::string_view{buffer.data(), processed});
                 }
 
-                while (auto processed = pipeError->Read(view))
+                while (size_t processed = pipeError->Read(view))
                 {
-                    if (*processed == 0)
-                    {
-                        break;
-                    }
-
-                    error(std::string_view{buffer.data(), *processed});
+                    error(std::string_view{buffer.data(), processed});
                 }
 
                 if (rc)
