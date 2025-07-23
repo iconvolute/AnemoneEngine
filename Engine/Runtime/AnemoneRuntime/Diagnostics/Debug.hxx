@@ -120,7 +120,7 @@ namespace Anemone::Diagnostics
 #define AE_VERIFY_ERRNO(error) \
     do \
     { \
-        Anemone::Diagnostics::ReportErrorErrno(error, std::source_location::current()); \
+        ::Anemone::Diagnostics::Debug::ReportErrorErrno(error, std::source_location::current()); \
     } while (false)
 
 #else
