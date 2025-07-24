@@ -26,9 +26,7 @@ namespace Anemone
             std::unique_ptr<FileHandle>& reader,
             std::unique_ptr<FileHandle>& writer) override;
 
-        std::unique_ptr<FileHandle> CreateFileReader(std::string_view path) override;
-        
-        std::unique_ptr<FileHandle> CreateFileWriter(std::string_view path) override;
+        std::unique_ptr<FileHandle> CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options) override;
 
         bool FileExists(std::string_view path) override;
         

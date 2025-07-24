@@ -195,46 +195,10 @@ namespace Anemone
             Flags<FileOption> options
         )
         {
-            int const flags = TranslateToOpenFlags(mode, access, options, false);
-            mode_t const fmode = TranslateToOpenMode(options);
-
-            Interop::Linux::FilePath const filePath{path};
-
-            Interop::Linux::SafeFdHandle fd{ open(filePath.c_str(), flags, fmode) };
-
-            if (fd)
-            {
-                if (flock(fd.Get(), LOCK_EX | LOCK_NB))
-                {
-                    int const error = errno;
-
-                    if ((error == EAGAIN) or (error == EWOULDBLOCK))
-                    {
-                        AE_VERIFY_ERRNO(error);
-                        return {};
-                    }
-                }
-
-                if ((mode == FileMode::TruncateExisting) or (mode == FileMode::CreateAlways))
-                {
-                    if (ftruncate64(fd.Get(), 0))
-                    {
-                        AE_VERIFY_ERRNO(errno);
-                        return {};
-                    }
-                }
-
-                return fd;
-            }
-
-            AE_VERIFY_ERRNO(errno);            
-            return {};
         }
     }
 
-    LinuxFileSystem::LinuxFileSystem()
-    {
-    }
+    LinuxFileSystem::LinuxFileSystem() = default;
 
     bool LinuxFileSystem::CreatePipe(std::unique_ptr<FileHandle>& reader, std::unique_ptr<FileHandle>& writer)
     {
@@ -252,23 +216,41 @@ namespace Anemone
         return true;
     }
 
-    auto LinuxFileSystem::CreateFileReader(std::string_view path) -> std::unique_ptr<FileHandle>
+    std::unique_ptr<FileHandle> LinuxFileSystem::CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
     {
-        if (Interop::Linux::SafeFdHandle handle = CreateFileHandle(path, FileMode::OpenExisting, FileAccess::Read, FileOption::None))
+        int const flags = TranslateToOpenFlags(mode, access, options, false);
+        mode_t const fmode = TranslateToOpenMode(options);
+
+        Interop::Linux::FilePath const filePath{path};
+
+        Interop::Linux::SafeFdHandle handle{open(filePath.c_str(), flags, fmode)};
+
+        if (handle)
         {
-            return std::make_unique<LinuxFileHandle>(std::move(handle));
+            if (flock(handle.Get(), LOCK_EX | LOCK_NB))
+            {
+                int const error = errno;
+
+                if ((error == EAGAIN) or (error == EWOULDBLOCK))
+                {
+                    AE_VERIFY_ERRNO(error);
+                    return {};
+                }
+            }
+
+            if ((mode == FileMode::TruncateExisting) or (mode == FileMode::CreateAlways))
+            {
+                if (ftruncate64(handle.Get(), 0))
+                {
+                    AE_VERIFY_ERRNO(errno);
+                    return {};
+                }
+            }
+
+            return std::make_shared<LinuxFileHandle>(std::move(handle));
         }
 
-        return {};
-    }
-
-    auto LinuxFileSystem::CreateFileWriter(std::string_view path) -> std::unique_ptr<FileHandle>
-    {
-        if (Interop::Linux::SafeFdHandle handle = CreateFileHandle(path, FileMode::CreateAlways, FileAccess::ReadWrite, FileOption::None))
-        {
-            return std::make_unique<LinuxFileHandle>(std::move(handle));
-        }
-
+        AE_TRACE(Warning, "Failed to create file: {}.", path);
         return {};
     }
 

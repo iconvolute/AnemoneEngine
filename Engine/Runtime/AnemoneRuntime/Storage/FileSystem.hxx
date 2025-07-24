@@ -74,9 +74,11 @@ namespace Anemone
     public:
         virtual bool CreatePipe(std::unique_ptr<FileHandle>& reader, std::unique_ptr<FileHandle>& writer) = 0;
 
-        virtual std::unique_ptr<FileHandle> CreateFileReader(std::string_view path) = 0;
+        virtual std::unique_ptr<FileHandle> CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options) = 0;
 
-        virtual std::unique_ptr<FileHandle> CreateFileWriter(std::string_view path) = 0;
+        virtual std::unique_ptr<FileHandle> CreateFileReader(std::string_view path);
+
+        virtual std::unique_ptr<FileHandle> CreateFileWriter(std::string_view path);
 
         // TODO: Consider returning some refcounted buffer for text and binary data. It might be helpful for custom package formats.
         virtual std::expected<std::string, Status> ReadTextFile(std::string_view path);

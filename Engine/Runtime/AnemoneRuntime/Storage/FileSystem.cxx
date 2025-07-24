@@ -20,6 +20,16 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
+    std::unique_ptr<FileHandle> FileSystem::CreateFileReader(std::string_view path)
+    {
+        return this->CreateFile(path, FileMode::OpenExisting, FileAccess::Read, FileOption::None);
+    }
+
+    std::unique_ptr<FileHandle> FileSystem::CreateFileWriter(std::string_view path)
+    {
+        return this->CreateFile(path, FileMode::CreateAlways, FileAccess::ReadWrite, FileOption::None);
+    }
+
     auto FileSystem::ReadTextFile(std::string_view path) -> std::expected<std::string, Status>
     {
         if (auto handle = this->CreateFileReader(path))

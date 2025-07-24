@@ -212,6 +212,99 @@ namespace Anemone
             }
         }
 
+        DWORD TranslateCreationDisposition(FileMode mode)
+        {
+            switch (mode)
+            {
+            case FileMode::CreateAlways:
+                return CREATE_ALWAYS;
+
+            case FileMode::CreateNew:
+                return CREATE_NEW;
+
+            case FileMode::OpenAlways:
+                return OPEN_ALWAYS;
+
+            case FileMode::OpenExisting:
+                return OPEN_EXISTING;
+
+            case FileMode::TruncateExisting:
+                return TRUNCATE_EXISTING;
+            }
+
+            return 0;
+        }
+
+        DWORD TranslateFileAccess(FileAccess access)
+        {
+            switch (access)
+            {
+            case FileAccess::Read:
+                return GENERIC_READ;
+
+            case FileAccess::Write:
+                return GENERIC_WRITE;
+
+            case FileAccess::ReadWrite:
+                return GENERIC_READ | GENERIC_WRITE;
+            }
+
+            return 0;
+        }
+
+        DWORD TranslateFileShare(Flags<FileOption> options)
+        {
+            DWORD result = 0;
+
+            if (options.Has(FileOption::ShareRead))
+            {
+                result |= FILE_SHARE_READ;
+            }
+
+            if (options.Has(FileOption::ShareWrite))
+            {
+                result |= FILE_SHARE_WRITE;
+            }
+
+            if (options.Has(FileOption::ShareDelete))
+            {
+                result |= FILE_SHARE_DELETE;
+            }
+
+            return result;
+        }
+
+        DWORD TranslateFileFlags(Flags<FileOption> options)
+        {
+            DWORD result = 0;
+
+            if (options.Has(FileOption::DeleteOnClose))
+            {
+                result |= FILE_FLAG_DELETE_ON_CLOSE;
+            }
+
+            if (options.Has(FileOption::RandomAccess))
+            {
+                result |= FILE_FLAG_RANDOM_ACCESS;
+            }
+
+            if (options.Has(FileOption::SequentialScan))
+            {
+                result |= FILE_FLAG_SEQUENTIAL_SCAN;
+            }
+
+            if (options.Has(FileOption::WriteThrough))
+            {
+                result |= FILE_FLAG_WRITE_THROUGH;
+            }
+
+            if (options.Has(FileOption::NoBuffering))
+            {
+                result |= FILE_FLAG_NO_BUFFERING;
+            }
+
+            return result;
+        }
     }
 
     WindowsFileSystem::WindowsFileSystem()
@@ -241,12 +334,12 @@ namespace Anemone
         return false;
     }
 
-    auto WindowsFileSystem::CreateFileReader(std::string_view path) -> std::unique_ptr<FileHandle>
+    std::unique_ptr<FileHandle> WindowsFileSystem::CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
     {
-        constexpr DWORD dwCreationDisposition = OPEN_EXISTING;
-        constexpr DWORD dwAccess = GENERIC_READ;
-        constexpr DWORD dwShare = 0;
-        constexpr DWORD dwFlags = 0;
+        DWORD const dwCreationDisposition = TranslateCreationDisposition(mode);
+        DWORD const dwAccess = TranslateFileAccess(access);
+        DWORD const dwShare = TranslateFileShare(options);
+        DWORD const dwFlags = TranslateFileFlags(options);
 
         SECURITY_ATTRIBUTES sa{
             .nLength = sizeof(SECURITY_ATTRIBUTES),
@@ -254,111 +347,40 @@ namespace Anemone
             .bInheritHandle = TRUE,
         };
 
-        HANDLE handle = INVALID_HANDLE_VALUE;
+        Interop::Windows::FilePathW filePath{};
+        HRESULT hr = Interop::Windows::WidenString(filePath, path);
 
-        if (GetACP() == CP_UTF8)
+        if (FAILED(hr))
         {
-            Interop::Windows::FilePathA upath{path};
-            handle = CreateFileA(upath.c_str(), dwAccess, dwShare, &sa, dwCreationDisposition, dwFlags, nullptr);
-        }
-        else
-        {
-            Interop::Windows::FilePathW wpath{};
-            HRESULT hr = Interop::Windows::WidenString(wpath, path);
-
-            if (SUCCEEDED(hr))
-            {
-                CREATEFILE2_EXTENDED_PARAMETERS cf{
-                    .dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
-                    .dwFileAttributes = FILE_ATTRIBUTE_NORMAL,
-                    .dwFileFlags = dwFlags,
-                    .dwSecurityQosFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS,
-                    .lpSecurityAttributes = &sa,
-                    .hTemplateFile = nullptr,
-                };
-
-                handle = CreateFile2(
-                    wpath.data(),
-                    dwAccess,
-                    dwShare,
-                    dwCreationDisposition,
-                    &cf);
-            }
-            else
-            {
-                AE_VERIFY_HRESULT(hr);
-                return nullptr;
-            }
+            AE_VERIFY_HRESULT(hr);
+            return nullptr;
         }
 
-        if (handle != INVALID_HANDLE_VALUE)
-        {
-            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
-        }
-
-        AE_VERIFY_WIN32(GetLastError());
-        return nullptr;
-    }
-
-    auto WindowsFileSystem::CreateFileWriter(std::string_view path) -> std::unique_ptr<FileHandle>
-    {
-        constexpr DWORD dwCreationDisposition = CREATE_ALWAYS;
-        constexpr DWORD dwAccess = GENERIC_READ | GENERIC_WRITE;
-        constexpr DWORD dwShare = 0;
-        constexpr DWORD dwFlags = 0;
-
-        SECURITY_ATTRIBUTES sa{
-            .nLength = sizeof(SECURITY_ATTRIBUTES),
-            .lpSecurityDescriptor = nullptr,
-            .bInheritHandle = TRUE,
+        CREATEFILE2_EXTENDED_PARAMETERS cf{
+            .dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
+            .dwFileAttributes = FILE_ATTRIBUTE_NORMAL,
+            .dwFileFlags = dwFlags,
+            .dwSecurityQosFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS,
+            .lpSecurityAttributes = &sa,
+            .hTemplateFile = nullptr,
         };
 
-        HANDLE handle;
-
-        if (GetACP() == CP_UTF8)
-        {
-            Interop::Windows::FilePathA upath{path};
-            handle = CreateFileA(upath.c_str(), dwAccess, dwShare, &sa, dwCreationDisposition, dwFlags, nullptr);
-        }
-        else
-        {
-            Interop::Windows::FilePathW wpath{};
-            HRESULT hr = Interop::Windows::WidenString(wpath, path);
-
-            if (SUCCEEDED(hr))
-            {
-                CREATEFILE2_EXTENDED_PARAMETERS cf{
-                    .dwSize = sizeof(CREATEFILE2_EXTENDED_PARAMETERS),
-                    .dwFileAttributes = FILE_ATTRIBUTE_NORMAL,
-                    .dwFileFlags = dwFlags,
-                    .dwSecurityQosFlags = SECURITY_SQOS_PRESENT | SECURITY_ANONYMOUS,
-                    .lpSecurityAttributes = &sa,
-                    .hTemplateFile = nullptr,
-                };
-
-                handle = CreateFile2(
-                    wpath.data(),
-                    dwAccess,
-                    dwShare,
-                    dwCreationDisposition,
-                    &cf);
-            }
-            else
-            {
-                AE_VERIFY_HRESULT(hr);
-                return nullptr;
-            }
-        }
+        HANDLE const handle = CreateFile2(
+            filePath.c_str(),
+            dwAccess,
+            dwShare,
+            dwCreationDisposition,
+            &cf);
 
         if (handle != INVALID_HANDLE_VALUE)
         {
             return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
         }
 
-        AE_VERIFY_WIN32(GetLastError());
+        AE_TRACE(Warning, "Failed to create file: {}.", path);
         return nullptr;
     }
-
+    
     bool WindowsFileSystem::FileExists(std::string_view path)
     {
         //
