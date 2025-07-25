@@ -81,7 +81,6 @@ namespace Anemone::Diagnostics
             error);
 
 #endif
-        anemone_debugbreak();
     }
 
     void WindowsDebug::ReportErrorHRESULT(HRESULT hresult, std::source_location const& location)
