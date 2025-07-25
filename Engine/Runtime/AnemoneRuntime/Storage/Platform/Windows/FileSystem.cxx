@@ -7,9 +7,14 @@
 #include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
 
+#include <system_error>
+
 namespace Anemone::Internal
 {
-    UninitializedObject<WindowsFileSystem> GPlatformFileSystem{};
+    namespace
+    {
+        UninitializedObject<WindowsFileSystem> GPlatformFileSystem{};
+    }
 
     extern void PlatformInitializeFileSystem()
     {
@@ -62,10 +67,11 @@ namespace Anemone
             destination.ReadOnly = (source.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
         }
 
-        [[maybe_unused]] bool InternalEnumerateDirectory(
+        [[maybe_unused]] auto InternalEnumerateDirectory(
             std::wstring& root,
             WIN32_FIND_DATAW& entry,
             FunctionRef<void(std::wstring& root, WIN32_FIND_DATAW& entry)> callback)
+            -> std::expected<bool, ErrorCode>
         {
             // Add search pattern to the root directory.
             Interop::Windows::PathAddDirectorySeparator(root);
@@ -96,10 +102,19 @@ namespace Anemone
                 return true;
             }
 
-            return false;
+            DWORD const dwError = GetLastError();
+
+            if ((dwError == ERROR_FILE_NOT_FOUND) or (dwError == ERROR_NO_MORE_FILES))
+            {
+                return false;
+            }
+
+            return std::unexpected(ErrorCode::Failure);
         }
 
-        bool InternalDeleteDirectoryRecursive(const std::wstring& root)
+        auto InternalDeleteDirectoryRecursive(
+            const std::wstring& root)
+            -> std::expected<void, ErrorCode>
         {
             // Create search path pattern.
             std::wstring search = root;
@@ -107,9 +122,9 @@ namespace Anemone
             search.append(L"*.*");
 
             WIN32_FIND_DATAW wfd;
-            Interop::Windows::SafeFindFileHandle hDirectory{FindFirstFileW(search.c_str(), &wfd)};
+            Interop::Windows::SafeFindFileHandle enumerator{FindFirstFileW(search.c_str(), &wfd)};
 
-            if (hDirectory)
+            if (enumerator)
             {
                 do
                 {
@@ -138,15 +153,15 @@ namespace Anemone
                             // Remove the symlink.
                             if (not RemoveDirectoryW(file.c_str()))
                             {
-                                return false;
+                                return std::unexpected(ErrorCode::Failure);
                             }
                         }
                         else
                         {
                             // Recursively delete the directory.
-                            if (not InternalDeleteDirectoryRecursive(file))
+                            if (auto result = InternalDeleteDirectoryRecursive(file); not result)
                             {
-                                return false;
+                                return std::unexpected(result.error());
                             }
                         }
                     }
@@ -155,33 +170,37 @@ namespace Anemone
                         // Clear attributes.
                         if (not SetFileAttributesW(file.c_str(), 0))
                         {
-                            return false;
+                            return std::unexpected(ErrorCode::Failure);
                         }
 
                         // Delete the file.
                         if (not DeleteFileW(file.c_str()))
                         {
-                            return false;
+                            return std::unexpected(ErrorCode::Failure);
                         }
                     }
-                } while (FindNextFileW(hDirectory.Get(), &wfd));
+                } while (FindNextFileW(enumerator.Get(), &wfd));
 
                 // Remove the directory.
                 if (not RemoveDirectoryW(root.c_str()))
                 {
-                    DWORD const dwError = GetLastError();
-
-                    return dwError == ERROR_FILE_NOT_FOUND;
+                    return std::unexpected(ErrorCode::Failure);
                 }
 
-                return true;
+                return {};
             }
 
-            return false;
+            return std::unexpected(ErrorCode::Failure);
         }
 
-        bool InternalDirectoryCreateRecursively(const std::wstring& path)
+        auto InternalDirectoryCreateRecursively(const std::wstring& path)
+            ->std::expected<void, ErrorCode>
         {
+            if (path.empty())
+            {
+                return {};
+            }
+
             DWORD const dwAttributes = GetFileAttributesW(path.c_str());
 
             if (dwAttributes == INVALID_FILE_ATTRIBUTES)
@@ -193,26 +212,35 @@ namespace Anemone
                 if (not InternalDirectoryCreateRecursively(parent))
                 {
                     // Failed to create parent directory. Propagate error.
-                    return false;
+                    return std::unexpected(ErrorCode::Failure);
                 }
 
                 // Try to create directory.
-                if (CreateDirectoryW(path.c_str(), nullptr))
+                if (not CreateDirectoryW(path.c_str(), nullptr))
                 {
-                    return true;
+                    DWORD const dwError = GetLastError();
+
+                    if (dwError == ERROR_ALREADY_EXISTS)
+                    {
+                        return {};
+                    }
+
+                    return std::unexpected(ErrorCode::Failure);
                 }
 
-                DWORD const dwError = GetLastError();
+                return {};
+            }
 
-                return dwError == ERROR_ALREADY_EXISTS;
-            }
-            else
+            if ((dwAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != 0)
             {
-                return (dwAttributes & (FILE_ATTRIBUTE_DIRECTORY | FILE_ATTRIBUTE_REPARSE_POINT)) != 0;
+                // Directory exists.
+                return {};
             }
+
+            return std::unexpected(ErrorCode::Failure);
         }
 
-        DWORD TranslateCreationDisposition(FileMode mode)
+        constexpr DWORD TranslateCreationDisposition(FileMode mode)
         {
             switch (mode)
             {
@@ -235,7 +263,7 @@ namespace Anemone
             return 0;
         }
 
-        DWORD TranslateFileAccess(FileAccess access)
+        constexpr DWORD TranslateFileAccess(FileAccess access)
         {
             switch (access)
             {
@@ -252,7 +280,7 @@ namespace Anemone
             return 0;
         }
 
-        DWORD TranslateFileShare(Flags<FileOption> options)
+        constexpr DWORD TranslateFileShare(Flags<FileOption> options)
         {
             DWORD result = 0;
 
@@ -274,7 +302,7 @@ namespace Anemone
             return result;
         }
 
-        DWORD TranslateFileFlags(Flags<FileOption> options)
+        constexpr DWORD TranslateFileFlags(Flags<FileOption> options)
         {
             DWORD result = 0;
 
@@ -312,29 +340,38 @@ namespace Anemone
         this->_generator.Randomize(42);
     }
 
-    bool WindowsFileSystem::CreatePipe(std::unique_ptr<FileHandle>& reader, std::unique_ptr<FileHandle>& writer)
+    auto WindowsFileSystem::CreatePipe(
+        std::unique_ptr<FileHandle>& outReader,
+        std::unique_ptr<FileHandle>& outWriter)
+        -> std::expected<void, ErrorCode>
     {
-        HANDLE hRead = nullptr;
-        HANDLE hWrite = nullptr;
+        using namespace Interop::Windows;
 
-        SECURITY_ATTRIBUTES sa{
-            .nLength = sizeof(SECURITY_ATTRIBUTES),
+        SafeFileHandle nativeReader{};
+        SafeFileHandle nativeWriter{};
+
+        SECURITY_ATTRIBUTES securityAttributes{
+            .nLength = sizeof(securityAttributes),
             .lpSecurityDescriptor = nullptr,
             .bInheritHandle = TRUE,
         };
 
-        if (::CreatePipe(&hRead, &hWrite, &sa, 0))
+        if (::CreatePipe(nativeReader.GetAddressOf(), nativeWriter.GetAddressOf(), &securityAttributes, 0))
         {
-            reader = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hRead});
-            writer = std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{hWrite});
-            return true;
+            outReader = std::make_unique<WindowsFileHandle>(std::move(nativeReader));
+            outWriter = std::make_unique<WindowsFileHandle>(std::move(nativeWriter));
+            return {};
         }
 
-        AE_VERIFY_WIN32(GetLastError());
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    std::unique_ptr<FileHandle> WindowsFileSystem::CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
+    auto WindowsFileSystem::CreateFile(
+        std::string_view path,
+        FileMode mode,
+        Flags<FileAccess> access,
+        Flags<FileOption> options)
+        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
     {
         DWORD const dwCreationDisposition = TranslateCreationDisposition(mode);
         DWORD const dwAccess = TranslateFileAccess(access);
@@ -347,13 +384,12 @@ namespace Anemone
             .bInheritHandle = TRUE,
         };
 
-        Interop::Windows::FilePathW filePath{};
-        HRESULT hr = Interop::Windows::WidenString(filePath, path);
+        using namespace Interop::Windows;
 
-        if (FAILED(hr))
+        FilePathW nativePath{};
+        if (FAILED(WidenString(nativePath, path)))
         {
-            AE_VERIFY_HRESULT(hr);
-            return nullptr;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
         CREATEFILE2_EXTENDED_PARAMETERS cf{
@@ -366,7 +402,7 @@ namespace Anemone
         };
 
         HANDLE const handle = CreateFile2(
-            filePath.c_str(),
+            nativePath.c_str(),
             dwAccess,
             dwShare,
             dwCreationDisposition,
@@ -377,377 +413,317 @@ namespace Anemone
             return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
         }
 
-        AE_TRACE(Warning, "Failed to create file: {}.", path);
-        return nullptr;
+        return std::unexpected(ErrorCode::Failure);
     }
-    
-    bool WindowsFileSystem::FileExists(std::string_view path)
+
+    auto WindowsFileSystem::Exists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
     {
-        //
-        // Convert paths to wide strings.
-        //
+        using namespace Interop::Windows;
 
-        Interop::Windows::FilePathW wsPath;
+        FilePathW nativePath{};
 
-        if (HRESULT hr = Interop::Windows::WidenString(wsPath, path); FAILED(hr))
+        if (FAILED(WidenString(nativePath, path)))
         {
-            AE_VERIFY_HRESULT(hr);
-            return false;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-
-        //
-        // Check if the file exists.
-        //
-
-        DWORD const dwAttributes = GetFileAttributesW(wsPath.c_str());
+        DWORD const dwAttributes = GetFileAttributesW(nativePath.c_str());
 
         if (dwAttributes != INVALID_FILE_ATTRIBUTES)
         {
-            // Do not accept directories here.
-            return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) == 0;
+            return true;
         }
 
-        AE_VERIFY_WIN32(GetLastError());
-        return false;
-    }
 
-    bool WindowsFileSystem::FileDelete(std::string_view path)
-    {
-        //
-        // Convert paths to wide strings.
-        //
+        DWORD const dwError = GetLastError();
 
-        Interop::Windows::FilePathW wsPath;
-
-        if (HRESULT hr = Interop::Windows::WidenString(wsPath, path); FAILED(hr))
+        if (dwError == ERROR_FILE_NOT_FOUND)
         {
-            AE_VERIFY_HRESULT(hr);
             return false;
         }
 
-        //
-        // Delete the file.
-        //
+        return std::unexpected(ErrorCode::Failure);
+    }
 
-        if (DeleteFileW(wsPath.c_str()))
+    auto WindowsFileSystem::FileDelete(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Windows;
+
+        FilePathW nativePath{};
+
+        if (FAILED(WidenString(nativePath, path)))
         {
-            // File was deleted successfully.
-            return true;
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        if (DeleteFileW(nativePath.c_str()))
+        {
+            return {};
         }
 
         DWORD const dwError = GetLastError();
+
         if (dwError == ERROR_FILE_NOT_FOUND)
         {
-            // File does not exist. Therefore, it's deleted.
-            return true;
+            return {};
         }
 
-        AE_VERIFY_WIN32(dwError);
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool WindowsFileSystem::FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve)
-    { //
-        // Convert paths to wide strings.
-        //
+    auto WindowsFileSystem::FileCopy(
+        std::string_view source,
+        std::string_view destination,
+        NameCollisionResolve nameCollisionResolve)
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Windows;
 
-        Interop::Windows::FilePathW wsSource;
+        FilePathW nativeSource{};
+        FilePathW nativeDestination{};
 
-        if (HRESULT hr = Interop::Windows::WidenString(wsSource, source); FAILED(hr))
+        if (FAILED(WidenString(nativeSource, source)) or
+            FAILED(WidenString(nativeDestination, destination)))
         {
-            AE_VERIFY_HRESULT(hr);
-            return false;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::Windows::FilePathW wsDestination;
+        bool destinationExists = true;
 
-        if (HRESULT hr = Interop::Windows::WidenString(wsDestination, destination); FAILED(hr))
-        {
-            AE_VERIFY_HRESULT(hr);
-            return false;
-        }
-
-
-        //
-        // Check if the destination file already exists.
-        //
-
-        bool exists;
-
-        if (DWORD const dwAttributes = GetFileAttributesW(wsDestination.c_str());
-            dwAttributes == INVALID_FILE_ATTRIBUTES)
+        if (DWORD const dwAttributes = GetFileAttributesW(nativeDestination.c_str()); dwAttributes == INVALID_FILE_ATTRIBUTES)
         {
             DWORD const dwError = GetLastError();
 
             if ((dwError == ERROR_FILE_NOT_FOUND) or (dwError == ERROR_PATH_NOT_FOUND))
             {
-                exists = false;
+                destinationExists = false;
             }
             else
             {
-                AE_VERIFY_WIN32(dwError);
-                return false;
+                return std::unexpected(ErrorCode::InvalidPath);
             }
         }
-        else
-        {
-            exists = true;
-        }
 
+        bool overwrite = false;
 
-        //
-        // Validate options.
-        //
-
-        bool failIfExists;
-
-        if (exists)
+        if (destinationExists)
         {
             switch (nameCollisionResolve)
             {
-            default:
             case NameCollisionResolve::Fail:
-                AE_TRACE(Error, "File copy failed: file already exists: {}", destination);
-                return false;
+                return std::unexpected(ErrorCode::AlreadyExists);
 
             case NameCollisionResolve::Overwrite:
-                failIfExists = false;
+                overwrite = true;
                 break;
-
-            case NameCollisionResolve::GenerateUnique:
-                // TODO: Generate unique name. Maybe try to append system time?
-                // failIfExists = false;
-                AE_TRACE(Error, "File copy failed: generating unique name is not implemented: {}", destination);
-                return false;
             }
         }
-        else
-        {
-            failIfExists = true;
-        }
 
-
-        //
-        // Prepare copying.
-        //
-
-        COPYFILE2_EXTENDED_PARAMETERS params{
-            .dwSize = sizeof(params),
+        COPYFILE2_EXTENDED_PARAMETERS copyFileParameters{
+            .dwSize = sizeof(copyFileParameters),
             .dwCopyFlags = COPY_FILE_NO_BUFFERING,
         };
 
-        if (failIfExists)
+        if (not overwrite)
         {
-            params.dwCopyFlags |= COPY_FILE_FAIL_IF_EXISTS;
+            copyFileParameters.dwCopyFlags |= COPY_FILE_FAIL_IF_EXISTS;
         }
 
-        if (FAILED(CopyFile2(wsSource.c_str(), wsDestination.c_str(), &params)))
+        switch (CopyFile2(nativeSource.c_str(), nativeDestination.c_str(), &copyFileParameters))
         {
-            return false;
+        case HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS):
+        case HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
+            return std::unexpected(ErrorCode::AlreadyExists);
+
+        case S_OK:
+            return {};
+
+        default:
+            break;
         }
 
-        return true;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool WindowsFileSystem::FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve)
+    auto WindowsFileSystem::FileMove(
+        std::string_view source,
+        std::string_view destination,
+        NameCollisionResolve nameCollisionResolve)
+        -> std::expected<void, ErrorCode>
     {
-        //
-        // Convert paths to wide strings.
-        //
+        using namespace Interop::Windows;
 
-        Interop::Windows::FilePathW wsSource;
+        FilePathW nativeSource{};
+        FilePathW nativeDestination{};
 
-        if (HRESULT hr = Interop::Windows::WidenString(wsSource, source); FAILED(hr))
+        if (FAILED(WidenString(nativeSource, source)) or
+            FAILED(WidenString(nativeDestination, destination)))
         {
-            AE_VERIFY_HRESULT(hr);
-            return false;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::Windows::FilePathW wsDestination;
+        bool destinationExists = true;
 
-        if (HRESULT hr = Interop::Windows::WidenString(wsDestination, destination); FAILED(hr))
-        {
-            AE_VERIFY_HRESULT(hr);
-            return false;
-        }
-
-
-        //
-        // Check if the destination file already exists.
-        //
-
-        bool exists;
-
-        if (DWORD const dwAttributes = GetFileAttributesW(wsDestination.c_str());
-            dwAttributes == INVALID_FILE_ATTRIBUTES)
+        if (DWORD const dwAttributes = GetFileAttributesW(nativeDestination.c_str()); dwAttributes != INVALID_FILE_ATTRIBUTES)
         {
             DWORD const dwError = GetLastError();
 
             if ((dwError == ERROR_FILE_NOT_FOUND) or (dwError == ERROR_PATH_NOT_FOUND))
             {
-                exists = false;
+                destinationExists = false;
             }
             else
             {
-                AE_VERIFY_WIN32(dwError);
-                return false;
+                return std::unexpected(ErrorCode::InvalidPath);
             }
         }
-        else
-        {
-            exists = true;
-        }
 
+        bool overwrite = false;
 
-        //
-        // Validate options.
-        //
-
-        DWORD dwFlags = 0;
-
-        if (exists)
+        if (destinationExists)
         {
             switch (nameCollisionResolve)
             {
-            default:
             case NameCollisionResolve::Fail:
-                AE_TRACE(Error, "File move failed: file already exists: {}", destination);
-                return false;
+                return std::unexpected(ErrorCode::AlreadyExists);
 
             case NameCollisionResolve::Overwrite:
-                dwFlags |= MOVEFILE_REPLACE_EXISTING;
+                overwrite = true;
                 break;
-
-            case NameCollisionResolve::GenerateUnique:
-                // TODO: Generate unique name. Maybe try to append system time?
-                // dwFlags |= MOVEFILE_REPLACE_EXISTING;
-                AE_TRACE(Error, "Not implemented: generating unique name for file move: {}", destination);
-                return false;
             }
         }
 
+        DWORD dwFlags = 0;
 
-        //
-        // Prepare move operation.
-        //
-
-        if (MoveFileExW(wsSource.c_str(), wsDestination.c_str(), dwFlags))
+        if (destinationExists)
         {
-            return true;
+            switch (nameCollisionResolve)
+            {
+            case NameCollisionResolve::Fail:
+                return std::unexpected(ErrorCode::AlreadyExists);
+
+            case NameCollisionResolve::Overwrite:
+                overwrite = true;
+                break;
+            }
         }
 
-        return false;
+        if (overwrite)
+        {
+            dwFlags |= MOVEFILE_REPLACE_EXISTING;
+        }
+
+        if (MoveFileExW(nativeSource.c_str(), nativeDestination.c_str(), dwFlags))
+        {
+            return {};
+        }
+
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    auto WindowsFileSystem::GetPathInfo(std::string_view path) -> std::optional<FileInfo>
+    auto WindowsFileSystem::GetPathInfo(
+        std::string_view path)
+        -> std::expected<FileInfo, ErrorCode>
     {
-        Interop::Windows::FilePathW wsPath;
+        using namespace Interop::Windows;
 
-        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
+        FilePathW nativePath{};
+
+        if (FAILED(WidenString(nativePath, path)))
         {
-            return std::nullopt;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        WIN32_FILE_ATTRIBUTE_DATA wfad;
+        WIN32_FILE_ATTRIBUTE_DATA nativeResult;
 
-        if (not GetFileAttributesExW(wsPath.c_str(), GetFileExInfoStandard, &wfad))
+        if (not GetFileAttributesExW(nativePath.c_str(), GetFileExInfoStandard, &nativeResult))
         {
-            return std::nullopt;
+            return std::unexpected(ErrorCode::InvalidPath);
         }
 
         FileInfo result;
-
-        FileInfoFromSystem(wfad, result);
-
+        FileInfoFromSystem(nativeResult, result);
         return result;
     }
 
-    // auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>
-    //{
-    //    BY_HANDLE_FILE_INFORMATION bhfi;
-    //
-    //    if (not GetFileInformationByHandle(handle.GetNativeHandle().Get(), &bhfi))
-    //    {
-    //        return std::unexpected(Status::InvalidHandle);
-    //    }
-    //
-    //    FileInfo result;
-    //
-    //    Internal::FileInfoFromSystem(bhfi, result);
-    //
-    //    return result;
-    //}
-
-
-    bool WindowsFileSystem::DirectoryExists(std::string_view path)
+    auto WindowsFileSystem::DirectoryDelete(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
     {
-        //
-        // Convert paths to wide strings.
-        //
+        using namespace Interop::Windows;
 
-        Interop::Windows::FilePathW wsPath;
-
-        if (FAILED(Interop::Windows::WidenString(wsPath, path)))
+        FilePathW nativePath{};
+        if (FAILED(WidenString(nativePath, path)))
         {
-            return false;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        //
-        // Check if the directory exists.
-        //
-
-        DWORD const dwAttributes = GetFileAttributesW(wsPath.c_str());
-
-        if (dwAttributes != INVALID_FILE_ATTRIBUTES)
+        if (RemoveDirectoryW(nativePath.c_str()))
         {
-            // Do not accept files here.
-            return (dwAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
-        }
-
-        return false;
-    }
-
-    bool WindowsFileSystem::DirectoryDelete(std::string_view path)
-    {
-        std::wstring wsPath;
-        Interop::Windows::WidenString(wsPath, path);
-
-        if (RemoveDirectoryW(wsPath.c_str()))
-        {
-            return true;
+            return {};
         }
 
         DWORD const dwError = GetLastError();
 
-        return dwError == ERROR_FILE_NOT_FOUND;
-    }
-
-    bool WindowsFileSystem::DirectoryDeleteRecursive(std::string_view path)
-    {
-        std::wstring wsPath;
-        Interop::Windows::WidenString(wsPath, path);
-
-        return InternalDeleteDirectoryRecursive(wsPath);
-    }
-
-    bool WindowsFileSystem::DirectoryCreate(std::string_view path)
-    {
-        std::wstring wsPath;
-        Interop::Windows::WidenString(wsPath, path);
-
-        if (CreateDirectoryW(wsPath.c_str(), nullptr))
+        if (dwError == ERROR_FILE_NOT_FOUND)
         {
-            return true;
+            return {};
+        }
+
+        return std::unexpected(ErrorCode::Failure);
+    }
+
+    auto WindowsFileSystem::DirectoryDeleteRecursive(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Windows;
+
+        std::wstring nativePath;
+
+        if (FAILED(WidenString(nativePath, path)))
+        {
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        return InternalDeleteDirectoryRecursive(nativePath);
+    }
+
+    auto WindowsFileSystem::DirectoryCreate(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Windows;
+
+        FilePathW nativePath{};
+
+        if (FAILED(WidenString(nativePath, path)))
+        {
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        if (CreateDirectoryW(nativePath.c_str(), nullptr))
+        {
+            return {};
         }
 
         DWORD const dwError = GetLastError();
 
-        // Directory already exists?
-        return dwError == ERROR_ALREADY_EXISTS;
+        if (dwError == ERROR_ALREADY_EXISTS)
+        {
+            return {};
+        }
+
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool WindowsFileSystem::DirectoryCreateRecursive(std::string_view path)
+    auto WindowsFileSystem::DirectoryCreateRecursive(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
     {
         std::wstring wsPath;
         Interop::Windows::WidenString(wsPath, path);
@@ -755,49 +731,58 @@ namespace Anemone
         return InternalDirectoryCreateRecursively(wsPath);
     }
 
-    bool WindowsFileSystem::DirectoryEnumerate(std::string_view path, FileSystemVisitor& visitor)
+    auto WindowsFileSystem::DirectoryEnumerate(
+        std::string_view path,
+        FileSystemVisitor& visitor)
+        -> std::expected<void, ErrorCode>
     {
+        using namespace Interop::Windows;
+
         std::wstring root{};
-        if (FAILED(Interop::Windows::WidenString(root, path)))
+
+        if (FAILED(WidenString(root, path)))
         {
-            return false;
+            return std::unexpected(ErrorCode::InvalidArgument);
         }
 
-        Interop::Windows::PathAddDirectorySeparator(root);
+        PathAddDirectorySeparator(root);
         root.push_back(L'*');
 
-        WIN32_FIND_DATAW wfd;
+        WIN32_FIND_DATAW nativeFileInfo;
 
-        Interop::Windows::SafeFindFileHandle hFind{FindFirstFileW(root.c_str(), &wfd)};
+        SafeFindFileHandle enumerator{FindFirstFileW(root.c_str(), &nativeFileInfo)};
 
-        if (hFind)
+        if (enumerator)
         {
             do
             {
-                if ((wfd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
+                if ((nativeFileInfo.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY) != 0)
                 {
-                    if (wcscmp(wfd.cFileName, L".") == 0 or wcscmp(wfd.cFileName, L"..") == 0)
+                    if (wcscmp(nativeFileInfo.cFileName, L".") == 0 or wcscmp(nativeFileInfo.cFileName, L"..") == 0)
                     {
                         continue;
                     }
                 }
 
                 FileInfo info;
-                FileInfoFromSystem(wfd, info);
+                FileInfoFromSystem(nativeFileInfo, info);
 
                 Interop::string_buffer<char, 128> sFileName{};
-                Interop::Windows::NarrowString(sFileName, wfd.cFileName);
+                NarrowString(sFileName, nativeFileInfo.cFileName);
 
                 visitor.Visit(path, sFileName.as_view(), info);
-            } while (FindNextFileW(hFind.Get(), &wfd));
+            } while (FindNextFileW(enumerator.Get(), &nativeFileInfo));
 
-            return true;
+            return {};
         }
 
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool WindowsFileSystem::DirectoryEnumerateRecursive(std::string_view path, FileSystemVisitor& visitor)
+    auto WindowsFileSystem::DirectoryEnumerateRecursive(
+        std::string_view path,
+        FileSystemVisitor& visitor)
+        -> std::expected<void, ErrorCode>
     {
         class RecursiveVisitor final : public FileSystemVisitor
         {

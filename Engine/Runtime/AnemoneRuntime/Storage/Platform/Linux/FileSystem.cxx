@@ -16,7 +16,10 @@
 
 namespace Anemone::Internal
 {
-    UninitializedObject<LinuxFileSystem> GPlatformFileSystem{};
+    namespace
+    {
+        UninitializedObject<LinuxFileSystem> GPlatformFileSystem{};
+    }
 
     extern void PlatformInitializeFileSystem()
     {
@@ -111,7 +114,6 @@ namespace Anemone
             destination.ReadOnly = (source.st_mode & S_IRUSR) == 0;
         }
 
-        
         constexpr mode_t TranslateToOpenMode(Flags<FileOption> options)
         {
             mode_t result = S_IRUSR | S_IWUSR;
@@ -187,43 +189,45 @@ namespace Anemone
 
             return result;
         }
-
-        Interop::Linux::SafeFdHandle CreateFileHandle(
-            std::string_view path,
-            FileMode mode,
-            Flags<FileAccess> access,
-            Flags<FileOption> options
-        )
-        {
-        }
     }
 
     LinuxFileSystem::LinuxFileSystem() = default;
 
-    bool LinuxFileSystem::CreatePipe(std::unique_ptr<FileHandle>& reader, std::unique_ptr<FileHandle>& writer)
+    auto LinuxFileSystem::CreatePipe(
+        std::unique_ptr<FileHandle>& outReader,
+        std::unique_ptr<FileHandle>& outWriter)
+        -> std::expected<void, ErrorCode>
     {
+        using namespace Interop::Linux;
+
         int fd[2];
 
         if (pipe2(fd, O_CLOEXEC | O_NONBLOCK))
         {
-            AE_VERIFY_ERRNO(errno);
-            return false;
+            return std::unexpected(ErrorCode::Failure);
         }
 
-        reader = std::make_unique<LinuxFileHandle>(Interop::Linux::SafeFdHandle{fd[0]});
-        writer = std::make_unique<LinuxFileHandle>(Interop::Linux::SafeFdHandle{fd[1]});
+        outReader = std::make_unique<LinuxFileHandle>(SafeFdHandle{fd[0]});
+        outWriter = std::make_unique<LinuxFileHandle>(SafeFdHandle{fd[1]});
 
-        return true;
+        return {};
     }
 
-    std::unique_ptr<FileHandle> LinuxFileSystem::CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options)
+    auto LinuxFileSystem::CreateFile(
+        std::string_view path,
+        FileMode mode,
+        Flags<FileAccess> access,
+        Flags<FileOption> options)
+        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
     {
+        using namespace Interop::Linux;
+
         int const flags = TranslateToOpenFlags(mode, access, options, false);
         mode_t const fmode = TranslateToOpenMode(options);
 
-        Interop::Linux::FilePath const filePath{path};
+        FilePath const filePath{path};
 
-        Interop::Linux::SafeFdHandle handle{open(filePath.c_str(), flags, fmode)};
+        SafeFdHandle handle{open(filePath.c_str(), flags, fmode)};
 
         if (handle)
         {
@@ -233,8 +237,7 @@ namespace Anemone
 
                 if ((error == EAGAIN) or (error == EWOULDBLOCK))
                 {
-                    AE_VERIFY_ERRNO(error);
-                    return {};
+                    return std::unexpected(ErrorCode::Failure);
                 }
             }
 
@@ -242,124 +245,106 @@ namespace Anemone
             {
                 if (ftruncate64(handle.Get(), 0))
                 {
-                    AE_VERIFY_ERRNO(errno);
-                    return {};
+                    return std::unexpected(ErrorCode::Failure);
                 }
             }
 
             return std::make_shared<LinuxFileHandle>(std::move(handle));
         }
 
-        AE_TRACE(Warning, "Failed to create file: {}.", path);
-        return {};
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::FileExists(std::string_view path)
+    auto LinuxFileSystem::GetPathInfo(
+        std::string_view path)
+        -> std::expected<FileInfo, ErrorCode>
     {
-        (void)path;
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::FileDelete(std::string_view path)
+    auto LinuxFileSystem::Exists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
     {
-        (void)path;
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve)
+    auto LinuxFileSystem::FileDelete(
+        std::string_view path)
+        -> std::expected<void, ErrorCode>
     {
-        (void)source;
-        (void)destination;
-        (void)nameCollisionResolve;
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve)
-    {
-        (void)source;
-        (void)destination;
-        (void)nameCollisionResolve;
-        return false;
+    auto LinuxFileSystem::FileCopy(
+        std::string_view source,
+        std::string_view destination,
+        NameCollisionResolve nameCollisionResolve)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    auto LinuxFileSystem::GetPathInfo(std::string_view path) -> std::optional<FileInfo>
-    {
-        std::string root{path};
-        return {};
+    auto LinuxFileSystem::FileMove(
+        std::string_view source,
+        std::string_view destination,
+        NameCollisionResolve nameCollisionResolve)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    // auto FileSystem::GetFileInfo(FileHandle const& handle) -> std::expected<FileInfo, Status>
-    //{
-    //    BY_HANDLE_FILE_INFORMATION bhfi;
-    //
-    //    if (not GetFileInformationByHandle(handle.GetNativeHandle().Get(), &bhfi))
-    //    {
-    //        return std::unexpected(Status::InvalidHandle);
-    //    }
-    //
-    //    FileInfo result;
-    //
-    //    Internal::FileInfoFromSystem(bhfi, result);
-    //
-    //    return result;
-    //}
-
-
-    bool LinuxFileSystem::DirectoryExists(std::string_view path)
-    {
-        (void)path;
-        return false;
+    auto LinuxFileSystem::DirectoryDelete(
+        std::string_view path)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::DirectoryDelete(std::string_view path)
-    {
-        (void)path;
-        return false;
+    auto LinuxFileSystem::DirectoryDeleteRecursive(
+        std::string_view path)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::DirectoryDeleteRecursive(std::string_view path)
-    {
-        (void)path;
-        return false;
+    auto LinuxFileSystem::DirectoryCreate(
+        std::string_view path)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::DirectoryCreate(std::string_view path)
-    {
-        (void)path;
-        return false;
+    auto LinuxFileSystem::DirectoryCreateRecursive(
+        std::string_view path)
+        -> std::expected<void, ErrorCode> {
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::DirectoryCreateRecursive(std::string_view path)
-    {
-        (void)path;
-        return false;
-    }
+    auto LinuxFileSystem::DirectoryEnumerate(
+        std::string_view path,
+        FileSystemVisitor& visitor)
+        -> std::expected<void, ErrorCode> {
 
-    bool LinuxFileSystem::DirectoryEnumerate(std::string_view path, FileSystemVisitor& visitor)
-    {
         using namespace std::literals;
+        using namespace Interop::Linux;
 
         std::string root{path};
 
         auto& error = errno;
 
-        if (Interop::Linux::SafeDirHandle handle{ opendir(root.c_str()) })
+        if (SafeDirHandle handle{opendir(root.c_str())})
         {
             while (true)
             {
                 error = 0;
-                
+
                 dirent* current = readdir(handle.Get());
 
                 if (current == nullptr)
                 {
                     if (error != 0)
                     {
-                        AE_TRACE(Error, "Failed to read directory '{}': {}", root, Diagnostics::Debug::TranslateErrorCodeErrno(error));
-                        return false;
+                        return std::unexpected(ErrorCode::Failure);
                     }
 
-                    return true;
+                    // End of directory.
+                    return {};
                 }
 
                 FileType const fileType = FileTypeFromSystem(*current);
@@ -382,17 +367,20 @@ namespace Anemone
                 {
                     FileInfoFromSystem(s, info);
                 }
-                
+
                 FilePath::PopFragment(root);
 
                 visitor.Visit(root, name, info);
             }
         }
 
-        return false;
+        return std::unexpected(ErrorCode::Failure);
     }
 
-    bool LinuxFileSystem::DirectoryEnumerateRecursive(std::string_view path, FileSystemVisitor& visitor)
+    auto LinuxFileSystem::DirectoryEnumerateRecursive(
+        std::string_view path,
+        FileSystemVisitor& visitor)
+        -> std::expected<void, ErrorCode>
     {
         class RecursiveVisitor final : public FileSystemVisitor
         {

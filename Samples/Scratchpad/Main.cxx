@@ -15,7 +15,6 @@
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #endif
 #include "AnemoneRuntime/Network/Tcp.hxx"
-#include "AnemoneRuntime/Platform/FileSystem.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
@@ -576,6 +575,63 @@ anemone_noinline void test3()
 
 anemone_noinline int AnemoneMain(int argc, char** argv)
 {
+    auto& fs = Anemone::FileSystem::GetPlatformFileSystem();
+
+    auto path = "temp/a/b/c/d/e/f";
+    if (fs.DirectoryCreateRecursive(path))
+    {
+        if (fs.DirectoryDeleteRecursive(path))
+        {
+            AE_TRACE(Error, "++");
+        }
+        else
+        {
+            AE_TRACE(Error, "+-");
+        }
+
+        path = "temp/a/b";
+
+        if (fs.DirectoryDeleteRecursive(path))
+        {
+            AE_TRACE(Error, "++");
+        }
+        else
+        {
+            AE_TRACE(Error, "+-");
+        }
+    }
+    else
+    {
+        AE_TRACE(Error, "--");
+    }
+
+    if (auto r = fs.FileCopy("d:/test.txt", "d:/test2.txt", Anemone::NameCollisionResolve::Fail))
+    {
+        AE_TRACE(Error, "1: Copy file succeeded");
+    }
+    else
+    {
+        AE_TRACE(Error, "1: Copy file failed: {}", r.error());
+    }
+
+    if (auto r = fs.FileCopy("d:/test.txt", "d:/test2.txt", Anemone::NameCollisionResolve::Fail))
+    {
+        AE_TRACE(Error, "1: Copy file succeeded");
+    }
+    else
+    {
+        AE_TRACE(Error, "1: Copy file failed: {}", r.error());
+    }
+
+    if (auto r = fs.FileCopy("d:/test.txt", "d:/test2.txt", Anemone::NameCollisionResolve::Overwrite))
+    {
+        AE_TRACE(Error, "1: Copy file succeeded");
+    }
+    else
+    {
+        AE_TRACE(Error, "1: Copy file failed: {}", r.error());
+    }
+
     //test3();
     //if (argc)
     //{
@@ -638,13 +694,13 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
         auto sb = std::as_bytes(std::span{s.data(), s.size()});
 
-        for (size_t i = 0; i < 64; ++i)
+        for (size_t i = 0; i < 63; ++i)
         {
             original.Update(sb);
-            (void)h->Write(sb);
+            (void)(*h)->Write(sb);
         }
 
-        (void)h->Flush();
+        (void)(*h)->Flush();
     }
 
     Anemone::FNV1A128 current{};
@@ -654,7 +710,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         std::vector<std::byte> buffer(32);
         auto sb = std::as_writable_bytes(std::span{buffer});
 
-        while (size_t r = h->Read(sb))
+        while (size_t r = (*h)->Read(sb))
         {
             current.Update(sb.subspan(0, r));
         }
@@ -665,6 +721,20 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
     AE_TRACE(Error, "hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], hashCurrent[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(hashCurrent[0]));
     AE_TRACE(Error, "hashes: [1]: {:016x} == {:016x} : {}", hashOriginal[1], hashCurrent[1], static_cast<int64_t>(hashOriginal[1]) - static_cast<int64_t>(hashCurrent[1]));
+
+    if (auto content = Anemone::FileSystem::GetPlatformFileSystem().ReadTextFile("test.txt"))
+    {
+        Anemone::FNV1A128 hash{};
+
+        hash.Update(*content);
+        auto r = hash.Finalize();
+
+        AE_TRACE(Error, "hashes: [0]: {:016x} == {:016x} : {}", hashOriginal[0], r[0], static_cast<int64_t>(hashOriginal[0]) - static_cast<int64_t>(r[0]));
+    }
+    else
+    {
+        
+    }
 
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
     {

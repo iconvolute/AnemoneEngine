@@ -49,7 +49,6 @@ namespace Anemone
     {
         Overwrite,
         Fail,
-        GenerateUnique,
     };
 
     class FileSystem
@@ -72,45 +71,92 @@ namespace Anemone
         RUNTIME_API static FileSystem& GetPlatformFileSystem();
 
     public:
-        virtual bool CreatePipe(std::unique_ptr<FileHandle>& reader, std::unique_ptr<FileHandle>& writer) = 0;
+        virtual auto CreatePipe(
+            std::unique_ptr<FileHandle>& outReader,
+            std::unique_ptr<FileHandle>& outWriter)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual std::unique_ptr<FileHandle> CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options) = 0;
+        virtual auto CreateFile(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access,
+            Flags<FileOption> options)
+            -> std::expected<std::unique_ptr<FileHandle>, ErrorCode> = 0;
 
-        virtual std::unique_ptr<FileHandle> CreateFileReader(std::string_view path);
+        virtual auto CreateFileReader(
+            std::string_view path)
+            -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>;
 
-        virtual std::unique_ptr<FileHandle> CreateFileWriter(std::string_view path);
+        virtual auto CreateFileWriter(
+            std::string_view path)
+            -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>;
 
-        // TODO: Consider returning some refcounted buffer for text and binary data. It might be helpful for custom package formats.
-        virtual std::expected<std::string, Status> ReadTextFile(std::string_view path);
+        virtual auto ReadTextFile(
+            std::string_view path)
+            -> std::expected<std::string, ErrorCode>;
 
-        virtual std::expected<std::vector<std::byte>, Status> ReadBinaryFile(std::string_view path);
+        virtual auto ReadBinaryFile(
+            std::string_view path)
+            -> std::expected<std::vector<std::byte>, ErrorCode>;
 
-        virtual std::expected<void, Status> WriteTextFile(std::string_view path, std::string_view content);
+        virtual auto WriteTextFile(
+            std::string_view path,
+            std::string_view content)
+            -> std::expected<void, ErrorCode>;
 
-        virtual std::expected<void, Status> WriteBinaryFile(std::string_view path, std::span<std::byte const> content);
+        virtual auto WriteBinaryFile(
+            std::string_view path,
+            std::span<std::byte const> content)
+            -> std::expected<void, ErrorCode>;
 
-        virtual bool FileExists(std::string_view path) = 0;
+        virtual auto GetPathInfo(
+            std::string_view path)
+            -> std::expected<FileInfo, ErrorCode> = 0;
 
-        virtual bool FileDelete(std::string_view path) = 0;
+        virtual auto Exists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> = 0;
 
-        virtual bool FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) = 0;
+        virtual auto FileDelete(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) = 0;
+        virtual auto FileCopy(
+            std::string_view source,
+            std::string_view destination,
+            NameCollisionResolve nameCollisionResolve)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual auto GetPathInfo(std::string_view path) -> std::optional<FileInfo> = 0;
+        virtual auto FileMove(
+            std::string_view source,
+            std::string_view destination,
+            NameCollisionResolve nameCollisionResolve)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryExists(std::string_view path) = 0;
+        virtual auto DirectoryDelete(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryDelete(std::string_view path) = 0;
+        virtual auto DirectoryDeleteRecursive(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryDeleteRecursive(std::string_view path) = 0;
+        virtual auto DirectoryCreate(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryCreate(std::string_view path) = 0;
+        virtual auto DirectoryCreateRecursive(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryCreateRecursive(std::string_view path) = 0;
+        virtual auto DirectoryEnumerate(
+            std::string_view path,
+            FileSystemVisitor& visitor)
+            -> std::expected<void, ErrorCode> = 0;
 
-        virtual bool DirectoryEnumerate(std::string_view path, FileSystemVisitor& visitor) = 0;
-
-        virtual bool DirectoryEnumerateRecursive(std::string_view path, FileSystemVisitor& visitor) = 0;
+        virtual auto DirectoryEnumerateRecursive(
+            std::string_view path,
+            FileSystemVisitor& visitor)
+            -> std::expected<void, ErrorCode> = 0;
     };
 }

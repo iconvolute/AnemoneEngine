@@ -20,21 +20,23 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    std::unique_ptr<FileHandle> FileSystem::CreateFileReader(std::string_view path)
+    auto FileSystem::CreateFileReader(std::string_view path)
+        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
     {
         return this->CreateFile(path, FileMode::OpenExisting, FileAccess::Read, FileOption::None);
     }
 
-    std::unique_ptr<FileHandle> FileSystem::CreateFileWriter(std::string_view path)
+    auto FileSystem::CreateFileWriter(std::string_view path)
+        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
     {
         return this->CreateFile(path, FileMode::CreateAlways, FileAccess::ReadWrite, FileOption::None);
     }
 
-    auto FileSystem::ReadTextFile(std::string_view path) -> std::expected<std::string, Status>
+    auto FileSystem::ReadTextFile(std::string_view path) -> std::expected<std::string, ErrorCode>
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            auto length = handle->GetLength();
+            auto length = (*handle)->GetLength();
             std::string result;
 
             result.resize(length);
@@ -43,7 +45,7 @@ namespace Anemone
 
             do
             {
-                size_t processed = handle->Read(view);
+                size_t processed = (*handle)->Read(view);
 
                 if (processed == 0)
                 {
@@ -56,15 +58,17 @@ namespace Anemone
 
             return result;
         }
-
-        return std::unexpected(Status::FileNotFound);
+        else
+        {
+            return std::unexpected(handle.error());
+        }
     }
 
-    auto FileSystem::ReadBinaryFile(std::string_view path) -> std::expected<std::vector<std::byte>, Status>
+    auto FileSystem::ReadBinaryFile(std::string_view path) -> std::expected<std::vector<std::byte>, ErrorCode>
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            auto length = handle->GetLength();
+            auto length = (*handle)->GetLength();
             std::vector<std::byte> result;
             result.resize(length);
 
@@ -72,7 +76,7 @@ namespace Anemone
 
             do
             {
-                auto processed = handle->Read(view);
+                auto processed = (*handle)->Read(view);
                 if (processed == 0)
                 {
                     // End of file.
@@ -86,20 +90,20 @@ namespace Anemone
             return result;
         }
 
-        return std::unexpected(Status::FileNotFound);
+        return std::unexpected(ErrorCode::NotFound);
     }
 
-    auto FileSystem::WriteTextFile(std::string_view path, std::string_view content) -> std::expected<void, Status>
+    auto FileSystem::WriteTextFile(std::string_view path, std::string_view content) -> std::expected<void, ErrorCode>
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            AE_ASSERT(handle->GetLength() == 0);
+            AE_ASSERT((*handle)->GetLength() == 0);
 
             std::span view = std::as_bytes(std::span{content});
 
             while (not view.empty())
             {
-                size_t processed = handle->Write(view);
+                size_t processed = (*handle)->Write(view);
                 // Update view to the remaining part.
                 view = view.subspan(processed);
             }
@@ -107,18 +111,18 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(Status::FileNotFound);
+        return std::unexpected(ErrorCode::NotFound);
     }
 
-    auto FileSystem::WriteBinaryFile(std::string_view path, std::span<std::byte const> content) -> std::expected<void, Status>
+    auto FileSystem::WriteBinaryFile(std::string_view path, std::span<std::byte const> content) -> std::expected<void, ErrorCode>
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            AE_ASSERT(handle->GetLength() == 0);
+            AE_ASSERT((*handle)->GetLength() == 0);
 
             while (not content.empty())
             {
-                size_t processed = handle->Write(content);
+                size_t processed = (*handle)->Write(content);
                 // Update content to the remaining part.
                 content = content.subspan(processed);
             }
@@ -126,6 +130,6 @@ namespace Anemone
             return {};
         }
 
-        return std::unexpected(Status::FileNotFound);
+        return std::unexpected(ErrorCode::NotFound);
     }
 }

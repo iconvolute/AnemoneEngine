@@ -10,47 +10,79 @@ namespace Anemone
     {
     public:
         WindowsFileSystem();
-        
+
         WindowsFileSystem(WindowsFileSystem const&) = delete;
-        
+
         WindowsFileSystem(WindowsFileSystem&&) = delete;
-        
+
         WindowsFileSystem& operator=(WindowsFileSystem const&) = delete;
-        
+
         WindowsFileSystem& operator=(WindowsFileSystem&&) = delete;
-        
+
         ~WindowsFileSystem() override = default;
 
     public:
-        bool CreatePipe(
-            std::unique_ptr<FileHandle>& reader,
-            std::unique_ptr<FileHandle>& writer) override;
+        auto CreatePipe(
+            std::unique_ptr<FileHandle>& outReader,
+            std::unique_ptr<FileHandle>& outWriter)
+            -> std::expected<void, ErrorCode> override;
 
-        std::unique_ptr<FileHandle> CreateFile(std::string_view path, FileMode mode, Flags<FileAccess> access, Flags<FileOption> options) override;
+        auto CreateFile(
+            std::string_view path,
+            FileMode mode,
+            Flags<FileAccess> access,
+            Flags<FileOption> options)
+            -> std::expected<std::unique_ptr<FileHandle>, ErrorCode> override;
 
-        bool FileExists(std::string_view path) override;
-        
-        bool FileDelete(std::string_view path) override;
-        
-        bool FileCopy(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) override;
-        
-        bool FileMove(std::string_view source, std::string_view destination, NameCollisionResolve nameCollisionResolve) override;
-        
-        std::optional<FileInfo> GetPathInfo(std::string_view path) override;
-        
-        bool DirectoryExists(std::string_view path) override;
-        
-        bool DirectoryDelete(std::string_view path) override;
-        
-        bool DirectoryDeleteRecursive(std::string_view path) override;
-        
-        bool DirectoryCreate(std::string_view path) override;
-        
-        bool DirectoryCreateRecursive(std::string_view path) override;
-        
-        bool DirectoryEnumerate(std::string_view path, FileSystemVisitor& visitor) override;
-        
-        bool DirectoryEnumerateRecursive(std::string_view path, FileSystemVisitor& visitor) override;
+        auto GetPathInfo(
+            std::string_view path)
+            -> std::expected<FileInfo, ErrorCode> override;
+
+        auto Exists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> override;
+
+        auto FileDelete(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> override;
+
+        auto FileCopy(
+            std::string_view source,
+            std::string_view destination,
+            NameCollisionResolve nameCollisionResolve)
+            -> std::expected<void, ErrorCode> override;
+
+        auto FileMove(
+            std::string_view source,
+            std::string_view destination,
+            NameCollisionResolve nameCollisionResolve)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryDelete(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryDeleteRecursive(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryCreate(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryCreateRecursive(
+            std::string_view path)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryEnumerate(
+            std::string_view path,
+            FileSystemVisitor& visitor)
+            -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryEnumerateRecursive(
+            std::string_view path,
+            FileSystemVisitor& visitor)
+            -> std::expected<void, ErrorCode> override;
 
     private:
         // Random number generator for unique file names.

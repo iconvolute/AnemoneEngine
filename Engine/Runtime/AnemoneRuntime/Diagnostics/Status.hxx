@@ -6,6 +6,15 @@
 
 namespace Anemone
 {
+    enum class ErrorCode
+    {
+        Failure,
+        InvalidArgument,
+        InvalidPath,
+        AlreadyExists,
+        NotFound,
+    };
+
     enum class Status : uint32_t
     {
         Success,
@@ -102,6 +111,20 @@ struct fmt::formatter<Anemone::Status> : fmt::formatter<uint32_t>
     }
 
     constexpr auto format(Anemone::Status const& value, auto& context) const
+    {
+        return fmt::format_to(context.out(), "{:08x}", static_cast<uint32_t>(value));
+    }
+};
+
+template <>
+struct fmt::formatter<Anemone::ErrorCode> : fmt::formatter<uint32_t>
+{
+    constexpr auto parse(auto& context)
+    {
+        return context.begin();
+    }
+
+    constexpr auto format(Anemone::ErrorCode const& value, auto& context) const
     {
         return fmt::format_to(context.out(), "{:08x}", static_cast<uint32_t>(value));
     }
