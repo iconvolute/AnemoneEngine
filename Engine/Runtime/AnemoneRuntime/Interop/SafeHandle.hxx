@@ -1,5 +1,6 @@
 #pragma once
 #include <span>
+#include <type_traits>
 
 namespace Anemone::Interop
 {
@@ -29,7 +30,7 @@ namespace Anemone::Interop
 
         SafeHandleT& operator=(SafeHandleT&& other) noexcept
         {
-            if (this != &other)
+            if (this != std::addressof(other))
             {
                 this->Attach(other.Detach());
             }
@@ -129,7 +130,7 @@ namespace Anemone::Interop
 
         SafeBufferT& operator=(SafeBufferT&& other) noexcept
         {
-            if (this != &other)
+            if (this != std::addressof(other))
             {
                 if (TraitsT::IsValid(this->_data))
                 {
