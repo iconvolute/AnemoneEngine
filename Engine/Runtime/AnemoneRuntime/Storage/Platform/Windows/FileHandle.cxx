@@ -13,7 +13,6 @@ namespace Anemone
     {
     }
 
-
     WindowsFileHandle::~WindowsFileHandle() = default;
 
     void WindowsFileHandle::Flush()
@@ -47,6 +46,8 @@ namespace Anemone
         AE_ASSERT(length <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
 
         LARGE_INTEGER const liLength = std::bit_cast<LARGE_INTEGER>(length);
+
+        // FIXME: Setting length of the stream leaves cursor at that position.
 
         if (not SetFilePointerEx(this->_handle.Get(), liLength, nullptr, FILE_BEGIN))
         {

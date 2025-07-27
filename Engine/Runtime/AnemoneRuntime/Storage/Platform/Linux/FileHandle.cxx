@@ -19,7 +19,14 @@ namespace Anemone
     {
         AE_ASSERT(this->_handle);
 
-        if (fsync(this->_handle.Get()))
+        int result{};
+
+        do
+        {
+            result = fsync(this->_handle.Get());
+        } while ((result < 0) and (errno == EINTR));
+
+        if (result < 0)
         {
             AE_VERIFY_ERRNO(errno);
         }
@@ -45,7 +52,14 @@ namespace Anemone
         AE_ASSERT(this->_handle);
         AE_ASSERT(length <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
 
-        if(ftruncate64(this->_handle.Get(), static_cast<off64_t>(length)) < 0)
+        // TODO: make this pattern an Interop function helper
+        int result = 0;
+        do
+        {
+            result = ftruncate64(this->_handle.Get(), static_cast<off64_t>(length));
+        } while ((result < 0) and (errno == EINTR));
+
+        if (result < 0)
         {
             AE_VERIFY_ERRNO(errno);
         }
@@ -54,25 +68,36 @@ namespace Anemone
     uint64_t LinuxFileHandle::GetPosition() const
     {
         AE_ASSERT(this->_handle);
-        
-        
-        off64_t const position = lseek64(this->_handle.Get(), 0, SEEK_CUR);
 
-        if (position < 0)
+        off64_t result;
+
+        do
+        {
+            result = lseek64(this->_handle.Get(), 0, SEEK_CUR);
+        } while ((result < 0) and (errno == EINTR));
+
+        if (result < 0)
         {
             AE_VERIFY_ERRNO(errno);
             return 0;
         }
 
-        return static_cast<uint64_t>(position);
+        return static_cast<uint64_t>(result);
     }
 
     void LinuxFileHandle::SetPosition(uint64_t position)
     {
         AE_ASSERT(this->_handle);
         AE_ASSERT(position <= static_cast<uint64_t>(std::numeric_limits<int64_t>::max()));
-        
-        if (lseek64(this->_handle.Get(), static_cast<off64_t>(position), SEEK_SET) < 0)
+
+        off64_t result;
+
+        do
+        {
+            result = lseek64(this->_handle.Get(), static_cast<off64_t>(position), SEEK_SET);
+        } while ((result < 0) and (errno == EINTR));
+
+        if (result < 0)
         {
             AE_VERIFY_ERRNO(errno);
         }

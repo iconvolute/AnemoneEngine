@@ -47,6 +47,7 @@ namespace Anemone
         WriteThrough = 1u << 6u,
         NoBuffering = 1u << 7u,
         ShareDelete = 1u << 8u,
+        Temporary = 1u << 9u,
     };
 
     class RUNTIME_API FileHandle

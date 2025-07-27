@@ -43,7 +43,9 @@ namespace Anemone
 {
     namespace
     {
-        constexpr FileType FileTypeFromSystem(dirent const& d)
+        constexpr auto FileTypeFromSystem(
+            dirent const& d)
+            -> FileType
         {
             switch (d.d_type)
             {
@@ -74,7 +76,9 @@ namespace Anemone
             }
         }
 
-        constexpr FileType FileTypeFromSystem(struct stat64 const& v)
+        constexpr auto FileTypeFromSystem(
+            struct stat64 const& v)
+            -> FileType
         {
             switch (v.st_mode & S_IFMT)
             {
@@ -104,17 +108,28 @@ namespace Anemone
             }
         }
 
-        void FileInfoFromSystem(struct stat64 const& source, FileInfo& destination)
+        void FileInfoFromSystem(
+            struct stat64 const& source,
+            FileInfo& destination)
         {
             destination.Created = Interop::Linux::ToDateTime(source.st_ctim);
-            destination.Accessed = Interop::Linux::ToDateTime(source.st_atim);
             destination.Modified = Interop::Linux::ToDateTime(source.st_mtim);
             destination.Size = static_cast<int64_t>(source.st_size);
             destination.Type = FileTypeFromSystem(source);
-            destination.ReadOnly = (source.st_mode & S_IRUSR) == 0;
+
+            if (!(source.st_mode & S_IWUSR) and !(source.st_mode & S_IWGRP) and !(source.st_mode & S_IWOTH))
+            {
+                destination.ReadOnly = true;
+            }
+            else
+            {
+                destination.ReadOnly = false;
+            }
         }
 
-        constexpr mode_t TranslateToOpenMode(Flags<FileOption> options)
+        constexpr auto TranslateToOpenMode(
+            Flags<FileOption> options)
+            -> mode_t
         {
             mode_t result = S_IRUSR | S_IWUSR;
 
@@ -136,7 +151,12 @@ namespace Anemone
             return result;
         }
 
-        constexpr int TranslateToOpenFlags(FileMode mode, Flags<FileAccess> access, Flags<FileOption> options, bool failForSymlinks)
+        constexpr auto TranslateToOpenFlags(
+            FileMode mode,
+            Flags<FileAccess> access,
+            Flags<FileOption> options,
+            bool failForSymlinks)
+            -> int
         {
             int result = O_CLOEXEC;
 
@@ -189,6 +209,83 @@ namespace Anemone
 
             return result;
         }
+
+        [[maybe_unused]]
+        auto InternalGetFileStatAndLinkStat(
+            Interop::Linux::FilePath const& path,
+            struct stat64& outFileStat,
+            struct stat64& outLinkStat)
+            -> int
+        {
+            if (not stat64(path.c_str(), &outFileStat))
+            {
+                if (errno == ENOENT)
+                {
+                    // Check if it's a dangling symlink.
+                    if (not lstat64(path.c_str(), &outFileStat))
+                    {
+                        return errno;
+                    }
+                }
+            }
+
+            if (not lstat64(path.c_str(), &outLinkStat))
+            {
+                return errno;
+            }
+
+            return 0;
+        }
+
+        inline constexpr blksize_t MinimumBlockSize = 8 << 10u;
+        inline constexpr blksize_t MaximumBlockSize = 64 << 10u;
+
+        [[maybe_unused]]
+        auto InternalCopyFile(
+            Interop::Linux::SafeFdHandle const& source,
+            Interop::Linux::SafeFdHandle const& destination,
+            struct stat64 const& sourceStat)
+            -> std::expected<void, ErrorCode>
+        {
+            // Choose block size.
+            size_t const bufferSize = std::min(std::max(sourceStat.st_blksize, MinimumBlockSize), MaximumBlockSize);
+
+            std::unique_ptr<std::byte[]> buffer = std::make_unique_for_overwrite<std::byte[]>(bufferSize);
+
+            ssize_t readBytes;
+
+            while ((readBytes = read(source.Get(), buffer.get(), bufferSize)) > 0)
+            {
+                std::byte* writeBuffer = buffer.get();
+                ssize_t writeBytes = readBytes;
+
+                while (writeBytes > 0)
+                {
+                    ssize_t const writtenBytes = write(destination.Get(), writeBuffer, writeBytes);
+
+                    if (writtenBytes < 0)
+                    {
+                        if (errno == EINTR)
+                        {
+                            continue;
+                        }
+
+                        return std::unexpected(ErrorCode::IoError);
+                    }
+
+                    writeBytes -= writtenBytes;
+                    writeBuffer += writtenBytes;
+                }
+            }
+
+            if (readBytes < 0)
+            {
+                return std::unexpected(ErrorCode::IoError);
+            }
+
+            AE_ASSERT(readBytes == 0);
+            return {};
+        }
     }
 
     LinuxFileSystem::LinuxFileSystem() = default;
@@ -220,12 +317,13 @@ namespace Anemone
         Flags<FileOption> options)
         -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
     {
+        // FIXME: DeleteOnClose -> remember in LinuxFileHandle that we need unlink file before
         using namespace Interop::Linux;
 
         int const flags = TranslateToOpenFlags(mode, access, options, false);
         mode_t const fmode = TranslateToOpenMode(options);
 
-        FilePath const filePath{path};
+        Interop::Linux::FilePath const filePath{path};
 
         SafeFdHandle handle{open(filePath.c_str(), flags, fmode)};
 
@@ -249,7 +347,18 @@ namespace Anemone
                 }
             }
 
-            return std::make_shared<LinuxFileHandle>(std::move(handle));
+            // HAVE_POSIX_FADVISE
+            if (options.Has(FileOption::SequentialScan))
+            {
+                posix_fadvise(handle.Get(), 0, 0, POSIX_FADV_SEQUENTIAL);
+            }
+
+            if (options.Has(FileOption::RandomAccess))
+            {
+                posix_fadvise(handle.Get(), 0, 0, POSIX_FADV_RANDOM);
+            }
+
+            return std::make_unique<LinuxFileHandle>(std::move(handle));
         }
 
         return std::unexpected(ErrorCode::Failure);
@@ -259,76 +368,226 @@ namespace Anemone
         std::string_view path)
         -> std::expected<FileInfo, ErrorCode>
     {
-        return std::unexpected(ErrorCode::Failure);
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        struct stat64 st{};
+
+        if (stat64(nativePath.c_str(), &st) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        FileInfo fileInfo;
+        FileInfoFromSystem(st, fileInfo);
+        return fileInfo;
     }
 
     auto LinuxFileSystem::Exists(
         std::string_view path)
         -> std::expected<bool, ErrorCode>
     {
-        return std::unexpected(ErrorCode::Failure);
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        struct stat64 st{};
+
+        if (stat64(nativePath.c_str(), &st) < 0)
+        {
+            // Check if file exists
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return S_ISREG(st.st_mode) or S_ISDIR(st.st_mode);
+    }
+
+    auto LinuxFileSystem::FileExists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        struct stat64 st{};
+
+        if (stat64(nativePath.c_str(), &st) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return S_ISREG(st.st_mode);
     }
 
     auto LinuxFileSystem::FileDelete(
         std::string_view path)
         -> std::expected<void, ErrorCode>
     {
-        return std::unexpected(ErrorCode::Failure);
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        if (unlink(nativePath.c_str()) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return {};
     }
 
     auto LinuxFileSystem::FileCopy(
         std::string_view source,
         std::string_view destination,
         NameCollisionResolve nameCollisionResolve)
-        -> std::expected<void, ErrorCode> {
-        return std::unexpected(ErrorCode::Failure);
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativeSource{source};
+        Interop::Linux::FilePath nativeDestination{destination};
+
+        SafeFdHandle handleSource{open(nativeSource.c_str(), O_RDONLY, 0)};
+
+        if (not handleSource)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        struct stat64 st;
+        if (fstat64(handleSource.Get(), &st) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        SafeFdHandle handleDestination{};
+
+        if (nameCollisionResolve == NameCollisionResolve::Fail)
+        {
+            handleDestination = SafeFdHandle{open(nativeDestination.c_str(), O_WRONLY | O_CREAT | O_EXCL, st.st_mode)};
+        }
+        else
+        {
+            handleDestination = SafeFdHandle{open(nativeDestination.c_str(), O_WRONLY | O_TRUNC, st.st_mode)};
+
+            if (not handleDestination)
+            {
+                handleDestination = SafeFdHandle{open(nativeDestination.c_str(), O_WRONLY | O_CREAT | O_TRUNC, st.st_mode)};
+            }
+        }
+
+        if (not handleDestination)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return InternalCopyFile(handleSource, handleDestination, st);
     }
 
     auto LinuxFileSystem::FileMove(
         std::string_view source,
         std::string_view destination,
         NameCollisionResolve nameCollisionResolve)
-        -> std::expected<void, ErrorCode> {
-        return std::unexpected(ErrorCode::Failure);
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativeSource{source};
+        Interop::Linux::FilePath nativeDestination{destination};
+
+        // TODO: name collision resolve strategy
+        (void)nameCollisionResolve;
+
+        if (rename(nativeSource.c_str(), nativeDestination.c_str()) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return {};
+    }
+
+    auto LinuxFileSystem::DirectoryExists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        struct stat64 st{};
+
+        if (stat64(nativePath.c_str(), &st) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return S_ISDIR(st.st_mode);
     }
 
     auto LinuxFileSystem::DirectoryDelete(
         std::string_view path)
-        -> std::expected<void, ErrorCode> {
-        return std::unexpected(ErrorCode::Failure);
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        if (rmdir(nativePath.c_str()) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return {};
     }
 
     auto LinuxFileSystem::DirectoryDeleteRecursive(
         std::string_view path)
-        -> std::expected<void, ErrorCode> {
+        -> std::expected<void, ErrorCode>
+    {
+        // not implemented
+        (void)path;
         return std::unexpected(ErrorCode::Failure);
     }
 
     auto LinuxFileSystem::DirectoryCreate(
         std::string_view path)
-        -> std::expected<void, ErrorCode> {
-        return std::unexpected(ErrorCode::Failure);
+        -> std::expected<void, ErrorCode>
+    {
+        using namespace Interop::Linux;
+
+        Interop::Linux::FilePath nativePath{path};
+
+        // or 0755?
+        if (mkdir(nativePath.c_str(), S_IRWXU | S_IRWXG | S_IRWXO) < 0)
+        {
+            return std::unexpected(ErrorCode::Failure);
+        }
+
+        return {};
     }
 
     auto LinuxFileSystem::DirectoryCreateRecursive(
         std::string_view path)
-        -> std::expected<void, ErrorCode> {
+        -> std::expected<void, ErrorCode>
+    {
+        (void)path;
+        // not implemented
         return std::unexpected(ErrorCode::Failure);
     }
 
     auto LinuxFileSystem::DirectoryEnumerate(
         std::string_view path,
         FileSystemVisitor& visitor)
-        -> std::expected<void, ErrorCode> {
-
+        -> std::expected<void, ErrorCode>
+    {
         using namespace std::literals;
-        using namespace Interop::Linux;
 
         std::string root{path};
 
         auto& error = errno;
 
-        if (SafeDirHandle handle{opendir(root.c_str())})
+        if (Interop::Linux::SafeDirHandle handle{opendir(root.c_str())})
         {
             while (true)
             {
@@ -360,17 +619,21 @@ namespace Anemone
 
                 FilePath::PushFragment(root, name);
 
-                FileInfo info{};
-                struct stat64 s{};
+                FileInfo fileInfo{};
+                struct stat64 st{};
 
-                if (stat64(root.c_str(), &s) == 0)
+                if (stat64(root.c_str(), &st) == 0)
                 {
-                    FileInfoFromSystem(s, info);
+                    FileInfoFromSystem(st, fileInfo);
+                }
+                else
+                {
+                    AE_TRACE(Warning, "Failed to access file info for {}", root);
                 }
 
                 FilePath::PopFragment(root);
 
-                visitor.Visit(root, name, info);
+                visitor.Visit(root, name, fileInfo);
             }
         }
 

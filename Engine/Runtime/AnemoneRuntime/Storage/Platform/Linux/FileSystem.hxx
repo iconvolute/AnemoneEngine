@@ -9,15 +9,15 @@ namespace Anemone
     {
     public:
         LinuxFileSystem();
-        
+
         LinuxFileSystem(LinuxFileSystem const&) = delete;
-        
+
         LinuxFileSystem(LinuxFileSystem&&) = delete;
-        
+
         LinuxFileSystem& operator=(LinuxFileSystem const&) = delete;
-        
+
         LinuxFileSystem& operator=(LinuxFileSystem&&) = delete;
-        
+
         ~LinuxFileSystem() override = default;
 
     public:
@@ -41,6 +41,10 @@ namespace Anemone
             std::string_view path)
             -> std::expected<bool, ErrorCode> override;
 
+        auto FileExists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> override;
+
         auto FileDelete(
             std::string_view path)
             -> std::expected<void, ErrorCode> override;
@@ -56,6 +60,10 @@ namespace Anemone
             std::string_view destination,
             NameCollisionResolve nameCollisionResolve)
             -> std::expected<void, ErrorCode> override;
+
+        auto DirectoryExists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> override;
 
         auto DirectoryDelete(
             std::string_view path)
@@ -82,6 +90,5 @@ namespace Anemone
             std::string_view path,
             FileSystemVisitor& visitor)
             -> std::expected<void, ErrorCode> override;
-
     };
 }

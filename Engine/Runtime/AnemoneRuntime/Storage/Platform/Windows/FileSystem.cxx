@@ -45,7 +45,6 @@ namespace Anemone
             FileInfo& destination)
         {
             destination.Created = Interop::Windows::ToDateTime(source.ftCreationTime);
-            destination.Accessed = Interop::Windows::ToDateTime(source.ftLastAccessTime);
             destination.Modified = Interop::Windows::ToDateTime(source.ftLastWriteTime);
 
             if (source.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
@@ -65,6 +64,23 @@ namespace Anemone
             }
 
             destination.ReadOnly = (source.dwFileAttributes & FILE_ATTRIBUTE_READONLY) != 0;
+        }
+
+        constexpr auto GetFileTypeFromFileAttributes(
+            DWORD dwFileAttributes)
+            -> FileType
+        {
+            if (dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
+            {
+                return FileType::Directory;
+            }
+
+            if (dwFileAttributes & FILE_ATTRIBUTE_REPARSE_POINT)
+            {
+                return FileType::SymbolicLink;
+            }
+
+            return FileType::File;
         }
 
         [[maybe_unused]] auto InternalEnumerateDirectory(
@@ -193,8 +209,9 @@ namespace Anemone
             return std::unexpected(ErrorCode::Failure);
         }
 
-        auto InternalDirectoryCreateRecursively(const std::wstring& path)
-            ->std::expected<void, ErrorCode>
+        auto InternalDirectoryCreateRecursively(
+            const std::wstring& path)
+            -> std::expected<void, ErrorCode>
         {
             if (path.empty())
             {
@@ -240,7 +257,9 @@ namespace Anemone
             return std::unexpected(ErrorCode::Failure);
         }
 
-        constexpr DWORD TranslateCreationDisposition(FileMode mode)
+        constexpr auto TranslateCreationDisposition(
+            FileMode mode)
+            -> DWORD
         {
             switch (mode)
             {
@@ -263,7 +282,9 @@ namespace Anemone
             return 0;
         }
 
-        constexpr DWORD TranslateFileAccess(FileAccess access)
+        constexpr auto TranslateFileAccess(
+            FileAccess access)
+            -> DWORD
         {
             switch (access)
             {
@@ -280,7 +301,9 @@ namespace Anemone
             return 0;
         }
 
-        constexpr DWORD TranslateFileShare(Flags<FileOption> options)
+        constexpr auto TranslateFileShare(
+            Flags<FileOption> options)
+            -> DWORD
         {
             DWORD result = 0;
 
@@ -302,9 +325,11 @@ namespace Anemone
             return result;
         }
 
-        constexpr DWORD TranslateFileFlags(Flags<FileOption> options)
+        constexpr auto TranslateFileFlags(
+            Flags<FileOption> options)
+            -> DWORD
         {
-            DWORD result = 0;
+            DWORD result = FILE_ATTRIBUTE_NORMAL;
 
             if (options.Has(FileOption::DeleteOnClose))
             {
@@ -331,7 +356,68 @@ namespace Anemone
                 result |= FILE_FLAG_NO_BUFFERING;
             }
 
+            if (options.Has(FileOption::Temporary))
+            {
+                result |= FILE_ATTRIBUTE_TEMPORARY;
+            }
+
             return result;
+        }
+
+        [[maybe_unused]]
+        constexpr auto TranslateWin32ErrorCode(
+            DWORD error)
+            -> ErrorCode
+        {
+            switch (error)
+            {
+            case ERROR_FILE_NOT_FOUND:
+                return ErrorCode::FileNotFound;
+
+            case ERROR_PATH_NOT_FOUND:
+            case ERROR_BAD_NETPATH:
+            case ERROR_CANT_RESOLVE_FILENAME:
+            case ERROR_INVALID_DRIVE:
+                return ErrorCode::PathNotFound;
+
+            case ERROR_ACCESS_DENIED:
+                return ErrorCode::AccessDenied;
+
+            case ERROR_ALREADY_EXISTS:
+            case ERROR_FILE_EXISTS:
+                return ErrorCode::AlreadyExists;
+
+            case ERROR_INVALID_NAME:
+            case ERROR_DIRECTORY:
+            case ERROR_FILENAME_EXCED_RANGE:
+            case ERROR_BAD_PATHNAME:
+                return ErrorCode::InvalidPath;
+
+            case ERROR_FILE_READ_ONLY:
+                return ErrorCode::AccessDenied;
+
+            case ERROR_CANNOT_MAKE:
+                return ErrorCode::InvalidOperation;
+
+            case ERROR_DIR_NOT_EMPTY:
+                return ErrorCode::DirectoryNotEmpty;
+
+            case ERROR_WRITE_FAULT:
+            case ERROR_READ_FAULT:
+                return ErrorCode::IoError;
+
+            case ERROR_LOCK_VIOLATION:
+            case ERROR_SHARING_VIOLATION:
+                return ErrorCode::InvalidOperation;
+
+            case ERROR_HANDLE_EOF:
+            case ERROR_HANDLE_DISK_FULL:
+            case ERROR_DISK_FULL:
+                return ErrorCode::Failure;
+
+            default:
+                return ErrorCode::Failure;
+            }
         }
     }
 
@@ -410,7 +496,13 @@ namespace Anemone
 
         if (handle != INVALID_HANDLE_VALUE)
         {
-            return std::make_unique<WindowsFileHandle>(Interop::Windows::SafeFileHandle{handle});
+            return std::make_unique<WindowsFileHandle>(SafeFileHandle{handle});
+        }
+
+        switch (GetLastError())
+        {
+        case ERROR_FILE_EXISTS:
+            return std::unexpected(ErrorCode::AlreadyExists);
         }
 
         return std::unexpected(ErrorCode::Failure);
@@ -436,12 +528,60 @@ namespace Anemone
             return true;
         }
 
+        DWORD const dwError = GetLastError();
+
+        switch (dwError)
+        {
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+        case ERROR_NOT_READY:
+        case ERROR_INVALID_DRIVE:
+            return false;
+
+        default:
+            break;
+        }
+
+        return std::unexpected(ErrorCode::Failure);
+    }
+
+    auto WindowsFileSystem::FileExists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
+    {
+        using namespace Interop::Windows;
+
+        FilePathW nativePath{};
+
+        if (FAILED(WidenString(nativePath, path)))
+        {
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        DWORD const dwAttributes = GetFileAttributesW(nativePath.c_str());
+
+        if (dwAttributes != INVALID_FILE_ATTRIBUTES)
+        {
+            if (GetFileTypeFromFileAttributes(dwAttributes) == FileType::File)
+            {
+                return true;
+            }
+
+            return std::unexpected(ErrorCode::InvalidFile);
+        }
 
         DWORD const dwError = GetLastError();
 
-        if (dwError == ERROR_FILE_NOT_FOUND)
+        switch (dwError)
         {
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+        case ERROR_NOT_READY:
+        case ERROR_INVALID_DRIVE:
             return false;
+
+        default:
+            break;
         }
 
         return std::unexpected(ErrorCode::Failure);
@@ -625,6 +765,48 @@ namespace Anemone
         return std::unexpected(ErrorCode::Failure);
     }
 
+    auto WindowsFileSystem::DirectoryExists(
+        std::string_view path)
+        -> std::expected<bool, ErrorCode>
+    {
+        using namespace Interop::Windows;
+
+        FilePathW nativePath{};
+
+        if (FAILED(WidenString(nativePath, path)))
+        {
+            return std::unexpected(ErrorCode::InvalidArgument);
+        }
+
+        DWORD const dwAttributes = GetFileAttributesW(nativePath.c_str());
+
+        if (dwAttributes != INVALID_FILE_ATTRIBUTES)
+        {
+            if (GetFileTypeFromFileAttributes(dwAttributes) == FileType::Directory)
+            {
+                return true;
+            }
+
+            return std::unexpected(ErrorCode::InvalidDirectory);
+        }
+
+        DWORD const dwError = GetLastError();
+
+        switch (dwError)
+        {
+        case ERROR_FILE_NOT_FOUND:
+        case ERROR_PATH_NOT_FOUND:
+        case ERROR_NOT_READY:
+        case ERROR_INVALID_DRIVE:
+            return false;
+
+        default:
+            break;
+        }
+
+        return std::unexpected(ErrorCode::Failure);
+    }
+
     auto WindowsFileSystem::GetPathInfo(
         std::string_view path)
         -> std::expected<FileInfo, ErrorCode>
@@ -640,14 +822,21 @@ namespace Anemone
 
         WIN32_FILE_ATTRIBUTE_DATA nativeResult;
 
-        if (not GetFileAttributesExW(nativePath.c_str(), GetFileExInfoStandard, &nativeResult))
+        if (GetFileAttributesExW(nativePath.c_str(), GetFileExInfoStandard, &nativeResult))
         {
-            return std::unexpected(ErrorCode::InvalidPath);
+            FileInfo result;
+            FileInfoFromSystem(nativeResult, result);
+            return result;
         }
 
-        FileInfo result;
-        FileInfoFromSystem(nativeResult, result);
-        return result;
+        DWORD const dwError = GetLastError();
+
+        if (dwError == ERROR_FILE_NOT_FOUND)
+        {
+            return std::unexpected(ErrorCode::NotFound);
+        }
+
+        return std::unexpected(ErrorCode::Failure);
     }
 
     auto WindowsFileSystem::DirectoryDelete(

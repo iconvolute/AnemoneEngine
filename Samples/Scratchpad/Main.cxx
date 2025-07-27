@@ -149,7 +149,6 @@ public:
                     AE_TRACE(Error, "---------------");
                     AE_TRACE(Error, "File-Size:     '{}'", f->Size);
                     AE_TRACE(Error, "File-Created:  '{}'", f->Created);
-                    AE_TRACE(Error, "File-Accessed: '{}'", f->Accessed);
                     AE_TRACE(Error, "File-Modified: '{}'", f->Modified);
                     AE_TRACE(Error, "File-ReadOnly: '{}'", f->ReadOnly);
                     AE_TRACE(Error, "File-Type:     '{}'", std::to_underlying(f->Type));
@@ -328,7 +327,6 @@ struct V2 : Anemone::FileSystemVisitor
         AE_TRACE(Error, "Size: '{}'", info.Size);
         AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
         AE_TRACE(Error, "Created: '{}'", info.Created);
-        AE_TRACE(Error, "Accessed: '{}'", info.Accessed);
         AE_TRACE(Error, "Modified: '{}'", info.Modified);
         AE_TRACE(Error, "ReadOnly: '{}'", info.ReadOnly);
     }
@@ -670,7 +668,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
                 AE_TRACE(Error, "Size: '{}'", info.Size);
                 AE_TRACE(Error, "Type: '{}'", std::to_underlying(info.Type));
                 AE_TRACE(Error, "Created: '{}'", info.Created);
-                AE_TRACE(Error, "Accessed: '{}'", info.Accessed);
                 AE_TRACE(Error, "Modified: '{}'", info.Modified);
                 AE_TRACE(Error, "ReadOnly: '{}'", info.ReadOnly);
             }

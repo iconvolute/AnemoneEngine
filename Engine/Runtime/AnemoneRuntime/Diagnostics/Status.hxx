@@ -13,6 +13,14 @@ namespace Anemone
         InvalidPath,
         AlreadyExists,
         NotFound,
+        InvalidFile,
+        InvalidDirectory,
+        FileNotFound,
+        PathNotFound,
+        AccessDenied,
+        InvalidOperation,
+        DirectoryNotEmpty,
+        IoError,
     };
 
     enum class Status : uint32_t

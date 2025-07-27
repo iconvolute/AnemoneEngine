@@ -21,7 +21,17 @@ namespace Anemone::Interop::Linux
 
         static bool Reset(int value)
         {
-            return close(value) == 0;
+            int rv;
+
+            while ((rv = close(value)) < 0)
+            {
+                if (errno != EINTR)
+                {
+                    break;
+                }
+            }
+
+            return rv == 0;
         }
     };
     using SafeFdHandle = SafeHandleT<int, SafeFdHandleTraits>;

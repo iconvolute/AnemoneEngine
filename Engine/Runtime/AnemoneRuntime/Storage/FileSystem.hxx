@@ -24,7 +24,6 @@ namespace Anemone
     struct FileInfo
     {
         DateTime Created;
-        DateTime Accessed;
         DateTime Modified;
         int64_t Size;
         FileType Type;
@@ -42,7 +41,10 @@ namespace Anemone
         virtual ~FileSystemVisitor() = default;
 
     public:
-        virtual void Visit(std::string_view path, std::string_view name, FileInfo const& info) = 0;
+        virtual void Visit(
+            std::string_view path,
+            std::string_view name,
+            FileInfo const& info) = 0;
     };
 
     enum class NameCollisionResolve
@@ -117,6 +119,10 @@ namespace Anemone
             std::string_view path)
             -> std::expected<bool, ErrorCode> = 0;
 
+        virtual auto FileExists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> = 0;
+
         virtual auto FileDelete(
             std::string_view path)
             -> std::expected<void, ErrorCode> = 0;
@@ -125,13 +131,17 @@ namespace Anemone
             std::string_view source,
             std::string_view destination,
             NameCollisionResolve nameCollisionResolve)
-            -> std::expected<void, ErrorCode> = 0;
+            -> std::expected<void, ErrorCode>;
 
         virtual auto FileMove(
             std::string_view source,
             std::string_view destination,
             NameCollisionResolve nameCollisionResolve)
             -> std::expected<void, ErrorCode> = 0;
+
+        virtual auto DirectoryExists(
+            std::string_view path)
+            -> std::expected<bool, ErrorCode> = 0;
 
         virtual auto DirectoryDelete(
             std::string_view path)
