@@ -1,4 +1,4 @@
-# https://github.com/catchorg/Catch2/releases/tag/v3.7.0
+# https://github.com/catchorg/Catch2/releases/tag/v3.10.0
 anemone_add_sdk(SdkCatch2 STATIC)
 
 if(MSVC)
