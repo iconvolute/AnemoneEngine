@@ -1,5 +1,6 @@
 #=============================================================================
-# Copyright (c) 2022, NVIDIA CORPORATION.
+# SPDX-FileCopyrightText: Copyright (c) 2022-2025 NVIDIA CORPORATION & AFFILIATES. All rights reserved.
+# SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,10 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+#
+# Licensed under the Apache License v2.0 with LLVM Exceptions.
+# See https://nvidia.github.io/NVTX/LICENSE.txt for license information.
 #=============================================================================
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.19)
 
-set(NVTX3_VERSION 3.1.0)
+set(NVTX3_VERSION 3.3.0)
 
 # This CMake script defines targets the NVTX C and C++ APIs.
 # By default, these targets are defined as IMPORTED, so libraries can include
@@ -32,7 +36,7 @@ set(NVTX3_VERSION 3.1.0)
 if (NVTX3_TARGETS_NOT_USING_IMPORTED)
     set(OPTIONALLY_IMPORTED "")
 else()
-    set(OPTIONALLY_IMPORTED "IMPORTED")
+    set(OPTIONALLY_IMPORTED "IMPORTED" "GLOBAL")
 endif()
 
 if (TARGET nvtx3-c AND NVTX3_TARGETS_NOT_USING_IMPORTED)
@@ -51,16 +55,18 @@ else()
     #-------------------------------------------------------
     # Define "nvtx3-c" library for the NVTX v3 C API
     add_library(nvtx3-c INTERFACE ${OPTIONALLY_IMPORTED})
+    add_library(nvtx3::nvtx3-c ALIAS nvtx3-c)
     set_target_properties(nvtx3-c PROPERTIES VERSION ${NVTX3_VERSION})
     target_include_directories(nvtx3-c INTERFACE
         "$<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>"
-        "$<INSTALL_INTERFACE:include>")
+        "$<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>")
     target_link_libraries(nvtx3-c INTERFACE ${CMAKE_DL_LIBS})
 
     #-------------------------------------------------------
     # Define "nvtx3-cpp" library for the NVTX v3 C++ API
     # Separate target allows attaching independent compiler requirements if needed
     add_library(nvtx3-cpp INTERFACE ${OPTIONALLY_IMPORTED})
+    add_library(nvtx3::nvtx3-cpp ALIAS nvtx3-cpp)
     set_target_properties(nvtx3-cpp PROPERTIES VERSION ${NVTX3_VERSION})
     target_link_libraries(nvtx3-cpp INTERFACE nvtx3-c)
 endif()

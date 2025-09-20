@@ -37,7 +37,7 @@ Normally, this program waits for 6 seconds, and does nothing else.
 
 Launch it from **NVIDIA Nsight Systems**, and you'll see this execution on a timeline:
 
-![alt text](https://raw.githubusercontent.com/jrhemstad/nvtx_wrappers/master/docs/example_range.png "Example NVTX Ranges in Nsight Systems")
+![Example NVTX Ranges in Nsight Systems](https://raw.githubusercontent.com/NVIDIA/NVTX/release-v3/docs/images/example_range.png "Example NVTX Ranges in Nsight Systems")
 
 The NVTX row shows the function's name "some_function" in the top-level range and the "loop range" message in the nested ranges.  The loop iterations each last for the expected one second.
 
@@ -227,3 +227,13 @@ The NVTX C++ API is a header-only library, implemented as a wrapper over the NVT
 - Microsoft Visual C++ (VS 2015 to VS 2022)
     - On VS 2017.7 and newer, NVTX enables better error message output
 - NVIDIA nvcc (CUDA 7.0 and newer)
+
+### C++ version compatibility notes
+
+Minor versions of NVTX releases may introduce new features into the `nvtx3::v1` namespace.
+To use these features, ensure that within each compilation unit, the first inclusion of `nvtx3.hpp` is based at least on this release.
+If an older version is included first, the new features will not be available.
+
+### C++ version history
+
+- v3.3: Add `payload_data` wrapper for `nvtxPayloadData_t` in support of extended payloads.
