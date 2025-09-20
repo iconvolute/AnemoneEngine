@@ -1,7 +1,7 @@
 if (WIN32)
 
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
         "DateTime.hxx"
         "Debugger.hxx"
         "Dwm.hxx"

@@ -1,3 +1,10 @@
+target_sources(AnemoneRuntime
+    PRIVATE
+        "MemoryBuffer.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "MemoryBuffer.hxx"
+)
+
 add_subdirectory("App")
 add_subdirectory("Base")
 add_subdirectory("Diagnostics")

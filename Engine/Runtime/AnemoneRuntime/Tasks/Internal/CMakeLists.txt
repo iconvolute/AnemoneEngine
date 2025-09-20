@@ -4,9 +4,10 @@ target_sources(AnemoneRuntime
         "Parallel.cxx"
         "Task.cxx"
         "TaskQueue.cxx"
-        "TaskQueue.hxx"
         "TaskScheduler.cxx"
-        "TaskScheduler.hxx"
         "TaskWorker.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "TaskQueue.hxx"
+        "TaskScheduler.hxx"
         "TaskWorker.hxx"
 )

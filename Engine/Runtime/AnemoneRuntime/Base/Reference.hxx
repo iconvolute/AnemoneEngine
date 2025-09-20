@@ -1,187 +1,293 @@
 #pragma once
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+
 #include <concepts>
-#include <utility>
+#include <type_traits>
+#include <cstddef>
 #include <atomic>
+#include <utility>
+
+// Ideas:
+// - Use special callback "OnLastReference" instead calling delete directly.
+
+namespace Anemone
+{
+    template <typename Derived>
+    class ReferenceCounted
+    {
+    private:
+        mutable int32_t m_ReferenceCount{0};
+
+    public:
+        ReferenceCounted() = default;
+
+        ReferenceCounted(ReferenceCounted const&) = delete;
+
+        ReferenceCounted(ReferenceCounted&&) = delete;
+
+        ReferenceCounted& operator=(ReferenceCounted const&) = delete;
+
+        ReferenceCounted& operator=(ReferenceCounted&&) = delete;
+
+#ifndef NDEBUG
+        ~ReferenceCounted()
+        {
+            AE_ASSERT(this->m_ReferenceCount == 0, "Reference count must be zero on destruction");
+        }
+#else
+        ~ReferenceCounted() = default;
+#endif
+
+    public:
+        [[nodiscard]] constexpr size_t GetReferenceCount() const
+        {
+            return this->m_ReferenceCount;
+        }
+
+        constexpr void AcquireReference() const
+        {
+            ++this->m_ReferenceCount;
+        }
+
+        constexpr void ReleaseReference() const
+        {
+            AE_ASSERT(this->m_ReferenceCount > 0);
+
+            if (--this->m_ReferenceCount == 0)
+            {
+                delete static_cast<Derived const*>(this);
+            }
+        }
+    };
+
+    template <typename Derived>
+    class ThreadsafeReferenceCounted
+    {
+    private:
+        mutable std::atomic<int32_t> m_ReferenceCount{0};
+
+    public:
+        ThreadsafeReferenceCounted() = default;
+
+        ThreadsafeReferenceCounted(ThreadsafeReferenceCounted const&) = delete;
+
+        ThreadsafeReferenceCounted(ThreadsafeReferenceCounted&&) = delete;
+
+        ThreadsafeReferenceCounted& operator=(ThreadsafeReferenceCounted const&) = delete;
+
+        ThreadsafeReferenceCounted& operator=(ThreadsafeReferenceCounted&&) = delete;
+
+#ifndef NDEBUG
+        ~ThreadsafeReferenceCounted()
+        {
+            AE_ASSERT(this->m_ReferenceCount.load() == 0, "Reference count must be zero on destruction");
+        }
+#else
+        ~ThreadsafeReferenceCounted() = default;
+#endif
+
+    public:
+        [[nodiscard]] constexpr size_t GetReferenceCount() const
+        {
+            return this->m_ReferenceCount.load(std::memory_order::relaxed);
+        }
+
+        constexpr void AcquireReference() const
+        {
+            this->m_ReferenceCount.fetch_add(1, std::memory_order::relaxed);
+        }
+
+        constexpr void ReleaseReference() const
+        {
+            int32_t const expected = this->m_ReferenceCount.fetch_sub(1, std::memory_order::acq_rel) - 1;
+
+            AE_ASSERT(expected >= 0);
+
+            if (expected == 0)
+            {
+                delete static_cast<Derived const*>(this);
+            }
+        }
+    };
+}
 
 namespace Anemone
 {
     template <typename T>
-    class ReferenceTracker
+    class [[nodiscard]] Reference final
     {
-    private:
-        std::atomic_uint32_t mutable m_ReferenceCount{0};
+        template <typename U>
+        friend class Reference;
 
     private:
-        ReferenceTracker() = default;
-        ReferenceTracker(ReferenceTracker const&) = delete;
-        ReferenceTracker(ReferenceTracker&&) = delete;
-        ReferenceTracker& operator=(ReferenceTracker const&) = delete;
-        ReferenceTracker& operator=(ReferenceTracker&&) = delete;
-        ~ReferenceTracker() = default;
+        T* m_Object{};
+
+    private:
+        constexpr void AcquireReference()
+        {
+            if (this->m_Object)
+            {
+                this->m_Object->AcquireReference();
+            }
+        }
+
+        constexpr void ReleaseReference()
+        {
+            if (this->m_Object)
+            {
+                this->m_Object->ReleaseReference();
+            }
+        }
 
     public:
-        uint32_t AcquireReference() const
+        constexpr Reference() = default;
+
+        constexpr Reference(T* object)
+            : m_Object{object}
         {
-            return this->m_ReferenceCount.fetch_add(1, std::memory_order_relaxed);
+            this->AcquireReference();
         }
 
-        uint32_t ReleaseReference() const
+        constexpr Reference(Reference const& other)
+            : m_Object{other.m_Object}
         {
-            uint32_t const count = this->m_ReferenceCount.fetch_sub(1, std::memory_order_acq_rel) - 1u;
-
-            if (count == 0)
-            {
-                // The last reference is being released, delete the object
-                // We use a static_cast here to avoid the need for a virtual destructor
-                // This is safe because we know that T is derived from ReferenceTracker<T>
-                // and thus has the same layout as T.
-                // Note: This assumes that T does not have a virtual destructor.
-                // If T does have a virtual destructor, this will not work correctly.
-                // In that case, you should use a smart pointer or similar mechanism.
-
-                delete static_cast<const T*>(this);
-                return 0;
-            }
-
-            return count;
+            this->AcquireReference();
         }
 
-        friend T;
-    };
-
-    template <typename T>
-    class Reference
-    {
-        friend class ReferenceTracker<T>;
-
-    private:
-        T* m_Instance{};
-
-    public:
-        Reference() = default;
-
-        Reference(T* instance)
-            : m_Instance{instance}
+        constexpr Reference(Reference&& other) noexcept
+            : m_Object{other.m_Object}
         {
-            if (this->m_Instance)
-            {
-                this->m_Instance->AcquireReference();
-            }
+            other.m_Object = nullptr;
         }
 
-        Reference(Reference const& other)
-            : m_Instance{other.m_Instance}
+        template <typename U>
+            requires(std::is_convertible_v<U*, T*>)
+        constexpr Reference(Reference<U> other)
+            : m_Object{other.m_Object}
         {
-            if (this->m_Instance)
-            {
-                this->m_Instance->AcquireReference();
-            }
+            other.m_Object = nullptr;
         }
 
-        Reference(Reference&& other) noexcept
-            : m_Instance{std::exchange(other.m_Instance, nullptr)}
+        constexpr ~Reference()
         {
+            this->ReleaseReference();
         }
 
-        Reference& operator=(Reference const& other)
+        constexpr Reference& operator=(Reference const& other)
         {
             if (this != std::addressof(other))
             {
-                if (this->m_Instance != other.m_Instance)
-                {
-                    if (other.m_Instance)
-                    {
-                        other.m_Instance->AcquireReference();
-                    }
-
-                    if (this->m_Instance)
-                    {
-                        this->m_Instance->ReleaseReference();
-                    }
-
-                    this->m_Instance = other.m_Instance;
-                }
+                this->ReleaseReference();
+                this->m_Object = other.m_Object;
+                this->AcquireReference();
             }
 
             return *this;
         }
 
-        Reference& operator=(Reference&& other) noexcept
+        constexpr Reference& operator=(Reference&& other) noexcept
         {
             if (this != std::addressof(other))
             {
-                if (this->m_Instance)
-                {
-                    this->m_Instance->ReleaseReference();
-                }
-
-                this->m_Instance = std::exchange(other.m_Instance, nullptr);
+                this->ReleaseReference();
+                this->m_Object = other.m_Object;
+                other.m_Object = nullptr;
             }
 
             return *this;
         }
 
-        ~Reference()
+        [[nodiscard]] constexpr T& operator*() const
         {
-            if (this->m_Instance)
-            {
-                this->m_Instance->ReleaseReference();
-            }
+            AE_ASSERT(this->m_Object != nullptr, "Dereferencing a null reference");
+            return *this->m_Object;
         }
 
-        [[nodiscard]] friend constexpr bool operator==(Reference const& self, Reference const& other)
+        [[nodiscard]] constexpr T* operator->() const
         {
-            return self.m_Instance == other.m_Instance;
+            AE_ASSERT(this->m_Object != nullptr, "Dereferencing a null reference");
+            return this->m_Object;
         }
 
-        [[nodiscard]] friend constexpr bool operator!=(Reference const& self, Reference const& other)
+        [[nodiscard]] constexpr T* Get() const
         {
-            return !(self == other);
+            return this->m_Object;
         }
 
-        [[nodiscard]] friend constexpr bool operator==(Reference const& self, std::nullptr_t)
+        [[nodiscard]] constexpr T** GetAddressOf() const
         {
-            return self.m_Instance == nullptr;
+            return std::addressof(this->m_Object);
         }
 
-        [[nodiscard]] friend constexpr bool operator!=(Reference const& self, std::nullptr_t)
+        [[nodiscard]] constexpr explicit operator bool() const
         {
-            return self.m_Instance != nullptr;
-        }
-
-        [[nodiscard]] friend constexpr bool operator==(std::nullptr_t, Reference const& other)
-        {
-            return other.m_Instance == nullptr;
-        }
-
-        [[nodiscard]] friend constexpr bool operator!=(std::nullptr_t, Reference const& other)
-        {
-            return other.m_Instance != nullptr;
-        }
-
-        [[nodiscard]] T* operator->() const
-        {
-            return this->m_Instance;
-        }
-
-        [[nodiscard]] T& operator*() const
-        {
-            return *this->m_Instance;
-        }
-
-        [[nodiscard]] explicit operator bool() const
-        {
-            return this->m_Instance != nullptr;
-        }
-
-        [[nodiscard]] T* Get() const
-        {
-            return this->m_Instance;
-        }
-
-        [[nodiscard]] T* Detach()
-        {
-            return std::exchange(this->m_Instance, nullptr);
+            return this->m_Object != nullptr;
         }
     };
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator==(Reference<T> const& left, Reference<U> const& right)
+    {
+        return left.Get() == right.Get();
+    }
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator!=(Reference<T> const& left, Reference<U> const& right)
+    {
+        return left.Get() != right.Get();
+    }
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator==(Reference<T> const& left, U* right)
+    {
+        return left.Get() == right;
+    }
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator!=(Reference<T> const& left, U* right)
+    {
+        return left.Get() != right;
+    }
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator==(T* left, Reference<U> const& right)
+    {
+        return left == right.Get();
+    }
+
+    template <class T, class U>
+    [[nodiscard]] constexpr bool operator!=(T* left, Reference<U> const& right)
+    {
+        return left != right.Get();
+    }
+
+    template <class T>
+    [[nodiscard]] constexpr bool operator==(std::nullptr_t left, Reference<T> const& right)
+    {
+        return left == right.Get();
+    }
+
+    template <class T>
+    [[nodiscard]] constexpr bool operator==(Reference<T> const& left, std::nullptr_t right)
+    {
+        return left.Get() == right;
+    }
+
+    template <class T>
+    [[nodiscard]] constexpr bool operator!=(std::nullptr_t left, Reference<T> const& right)
+    {
+        return !(left == right);
+    }
+
+    template <class T>
+    [[nodiscard]] constexpr bool operator!=(Reference<T> const& left, std::nullptr_t right)
+    {
+        return !(left == right);
+    }
+
+    template <typename T, typename... Args>
+    [[nodiscard]] Reference<T> MakeReference(Args&&... args)
+    {
+        return Reference<T>(new T(std::forward<Args>(args)...));
+    }
 }

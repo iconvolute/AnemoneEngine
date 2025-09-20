@@ -2,3 +2,4 @@
 anemone_add_sdk(SdkLZ4 STATIC)
 
 add_subdirectory("source")
+add_subdirectory("include")

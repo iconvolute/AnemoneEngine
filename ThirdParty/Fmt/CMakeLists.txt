@@ -9,3 +9,4 @@ target_compile_definitions(SdkFmt
 )
 
 add_subdirectory("source")
+add_subdirectory("include")

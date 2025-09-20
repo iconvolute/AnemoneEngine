@@ -1,5 +1,5 @@
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
         "AutoResetEvent.hxx"
         "CancellationToken.hxx"
         "ConcurrentAccess.hxx"

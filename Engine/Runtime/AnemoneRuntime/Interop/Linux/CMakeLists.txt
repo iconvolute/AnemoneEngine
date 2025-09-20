@@ -1,7 +1,7 @@
 if (ANDROID OR LINUX)
 
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
         "DateTime.hxx"
         "FileSystem.hxx"
         "Headers.hxx"

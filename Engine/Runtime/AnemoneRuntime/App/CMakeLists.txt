@@ -1,12 +1,14 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "IApplication.cxx"
-        "IApplication.hxx"
         "IApplicationEvents.cxx"
-        "IApplicationEvents.hxx"
         "ISplashScreen.cxx"
-        "ISplashScreen.hxx"
         "IWindow.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "Dialogs.hxx"
+        "IApplication.hxx"
+        "IApplicationEvents.hxx"
+        "ISplashScreen.hxx"
         "IWindow.hxx"
 )
 

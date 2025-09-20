@@ -1,6 +1,6 @@
 add_subdirectory("Platform")
 
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
         "Types.hxx"
 )

@@ -244,7 +244,7 @@ function(_anemone_target_enable_warnings target_name)
 endfunction()
 
 function(_anemone_target_add_includes target_name)
-    target_include_directories(${target_name} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+    target_sources(${target_name} PUBLIC FILE_SET HEADERS BASE_DIRS .)
 endfunction()
 
 function(_anemone_target_install target_name)
@@ -380,9 +380,9 @@ function(anemone_add_sdk target_name target_kind)
     add_library(${target_name} ${target_kind})
 
     if(${target_kind} MATCHES "INTERFACE")
-        target_include_directories(${target_name} INTERFACE "include")
+        target_sources(${target_name} INTERFACE FILE_SET HEADERS BASE_DIRS "include")
     else()
-        target_include_directories(${target_name} PUBLIC "include")
+        target_sources(${target_name} PUBLIC FILE_SET HEADERS BASE_DIRS "include")
 
         if (WIN32 OR MSVC)
             target_compile_definitions(${target_name} PRIVATE "_CRT_SECURE_NO_WARNINGS")

@@ -133,4 +133,26 @@ namespace Anemone::Interop::Linux
     };
 
     using PthreadThreadHandle = SafeHandleT<pthread_t, PthreadThreadHandleTraits>;
+
+    struct SafeMemoryMappedViewHandleTraits final
+    {
+        static void* Invalid()
+        {
+            return MAP_FAILED;
+        }
+        static bool IsValid(
+            void* value
+        )
+        {
+            return value != MAP_FAILED;
+        }
+        static bool Reset(
+            void* value,
+            size_t size
+        )
+        {
+            return ::munmap(value, size) == 0;
+        }
+    };
+    using SafeMemoryMappedViewHandle = SafeBufferT<void, SafeMemoryMappedViewHandleTraits>;
 }

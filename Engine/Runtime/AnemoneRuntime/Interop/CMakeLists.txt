@@ -1,5 +1,6 @@
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
+        "DynamicArray.hxx"
         "Headers.hxx"
         "MemoryBuffer.hxx"
         "RingBuffer.hxx"

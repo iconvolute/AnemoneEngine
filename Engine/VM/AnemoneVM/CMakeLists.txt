@@ -1,9 +1,10 @@
 target_sources(AnemoneVM
     PRIVATE
         "CodeGenerator.cxx"
-        "CodeGenerator.hxx"
         "Label.cxx"
-        "Label.hxx"
         "OpCode.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "CodeGenerator.hxx"
+        "Label.hxx"
         "OpCode.hxx"
 )

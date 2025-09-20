@@ -1,16 +1,17 @@
 target_sources(AnemoneRuntime
     PRIVATE
-        "Detail.hxx"
         "IpAddress.cxx"
-        "IpAddress.hxx"
         "IpEndPoint.cxx"
-        "IpEndPoint.hxx"
         "Local.cxx"
-        "Local.hxx"
         "Socket.cxx"
-        "Socket.hxx"
         "Tcp.cxx"
-        "Tcp.hxx"
         "Udp.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "Detail.hxx"
+        "IpAddress.hxx"
+        "IpEndPoint.hxx"
+        "Local.hxx"
+        "Socket.hxx"
+        "Tcp.hxx"
         "Udp.hxx"
 )

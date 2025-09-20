@@ -9,3 +9,4 @@ endif()
 target_compile_definitions(SdkCatch2 PUBLIC "CATCH_AMALGAMATED_CUSTOM_MAIN")
 
 add_subdirectory("source")
+add_subdirectory("include")

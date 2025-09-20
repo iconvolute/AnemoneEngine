@@ -8,8 +8,9 @@ target_sources(AnemoneRuntime
         "UnixReaderWriterLock.cxx"
         "UnixSemaphore.cxx"
         "UnixThread.cxx"
-        "UnixThreading.hxx"
         "UnixMonitor.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "UnixThreading.hxx"
 )
 
 endif()

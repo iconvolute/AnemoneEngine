@@ -8,8 +8,9 @@ target_sources(AnemoneRuntime
         "WindowsReaderWriterLock.cxx"
         "WindowsSemaphore.cxx"
         "WindowsThread.cxx"
-        "WindowsThreading.hxx"
         "WindowsMonitor.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "WindowsThreading.hxx"
 )
 
 endif()

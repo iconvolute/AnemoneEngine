@@ -158,3 +158,99 @@ namespace Anemone::Interop::Linux
         }
     }
 }
+
+namespace Anemone::Interop::Linux
+{
+    class PthreadMutexLock final
+    {
+    private:
+        pthread_mutex_t& _lock;
+
+    public:
+        PthreadMutexLock() = delete;
+
+        PthreadMutexLock(
+            pthread_mutex_t& lock)
+            : _lock{lock}
+        {
+            pthread_mutex_lock(&this->_lock);
+        }
+
+        ~PthreadMutexLock()
+        {
+            pthread_mutex_unlock(&this->_lock);
+        }
+
+        auto operator=(
+            PthreadMutexLock const&) = delete;
+
+        auto operator=(
+            PthreadMutexLock&&) = delete;
+    };
+
+    class PthreadRwlockReadLock final
+    {
+    private:
+        pthread_rwlock_t& _lock;
+
+    public:
+        PthreadRwlockReadLock() = delete;
+
+        PthreadRwlockReadLock(
+            pthread_rwlock_t& lock)
+            : _lock{lock}
+        {
+            pthread_rwlock_rdlock(&this->_lock);
+        }
+
+        PthreadRwlockReadLock(
+            PthreadRwlockReadLock const&) = delete;
+
+        PthreadRwlockReadLock(
+            PthreadRwlockReadLock&&) = delete;
+
+        ~PthreadRwlockReadLock()
+        {
+            pthread_rwlock_unlock(&this->_lock);
+        }
+
+        auto operator=(
+            PthreadRwlockReadLock const&) -> PthreadRwlockReadLock& = delete;
+
+        auto operator=(
+            PthreadRwlockReadLock&&) -> PthreadRwlockReadLock& = delete;
+    };
+
+    class PthreadRwlockWriteLock final
+    {
+    private:
+        pthread_rwlock_t& _lock;
+
+    public:
+        PthreadRwlockWriteLock() = delete;
+
+        PthreadRwlockWriteLock(
+            pthread_rwlock_t& lock)
+            : _lock{lock}
+        {
+            pthread_rwlock_wrlock(&this->_lock);
+        }
+
+        PthreadRwlockWriteLock(
+            PthreadRwlockWriteLock const&) = delete;
+
+        PthreadRwlockWriteLock(
+            PthreadRwlockWriteLock&&) = delete;
+
+        ~PthreadRwlockWriteLock()
+        {
+            pthread_rwlock_unlock(&this->_lock);
+        }
+
+        auto operator=(
+            PthreadRwlockWriteLock const&) -> PthreadRwlockWriteLock& = delete;
+
+        auto operator=(
+            PthreadRwlockWriteLock&&) -> PthreadRwlockWriteLock& = delete;
+    };
+}

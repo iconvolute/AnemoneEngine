@@ -5,7 +5,7 @@ add_subdirectory("Posix")
 endif()
 
 target_sources(AnemoneRuntime
-    PRIVATE
+    PUBLIC FILE_SET HEADERS FILES
         "Allocator.hxx"
         "SlabAllocator.hxx"
         "SystemAllocator.hxx"

@@ -6,6 +6,7 @@ target_sources(AnemoneRuntime
         "Environment.cxx"
         "Process.cxx"
         "SharedLibrary.cxx"
+        "SystemAllocator.cxx"
 )
 
 endif()

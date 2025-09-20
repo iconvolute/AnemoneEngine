@@ -1,21 +1,16 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "Debug.cxx"
-        "Debug.hxx"
-
         "Error.cxx"
-
         "Runtime.cxx"
-
-        "Status.hxx"
-
         "Trace.cxx"
-        "Trace.hxx"
-
         "TraceDispatcher.cxx"
-        "TraceDispatcher.hxx"
-
         "TraceListener.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "Debug.hxx"
+        "Status.hxx"
+        "Trace.hxx"
+        "TraceDispatcher.hxx"
         "TraceListener.hxx"
 )
 

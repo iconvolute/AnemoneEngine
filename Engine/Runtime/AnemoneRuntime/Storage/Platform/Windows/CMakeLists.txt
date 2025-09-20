@@ -3,8 +3,9 @@ if (WIN32)
 target_sources(AnemoneRuntime
     PRIVATE
         "FileHandle.cxx"
-        "FileHandle.hxx"
         "FileSystem.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "FileHandle.hxx"
         "FileSystem.hxx"
 )
 
