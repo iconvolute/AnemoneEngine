@@ -3,12 +3,6 @@
 
 #include <atomic>
 
-namespace Anemone
-{
-    using ThreadId = DWORD;
-    using ThreadHandle = Interop::Windows::SafeHandle;
-}
-
 namespace Anemone::Internal
 {
     using PlatformSemaphore = Interop::Windows::SafeHandle;

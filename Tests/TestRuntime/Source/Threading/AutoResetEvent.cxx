@@ -60,15 +60,15 @@ TEST_CASE("Threading / UserAutoResetEvent")
 
 
     SharedState state;
-    Worker w1{state, 23, 0x1};
-    Worker w2{state, 24, 0x1'0000};
-    Worker w3{state, 25, 0x1'0000'0000};
+    Reference<Worker> w1 = MakeReference<Worker>(state, 23, 0x1);
+    Reference<Worker> w2 = MakeReference<Worker>(state, 24, 0x1'0000);
+    Reference<Worker> w3 = MakeReference<Worker>(state, 25, 0x1'0000'0000);
 
-    Thread t1{ThreadStart{.Callback = &w1}};
-    Thread t2{ThreadStart{.Callback = &w2}};
-    Thread t3{ThreadStart{.Callback = &w3}};
+    Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
+    Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});
+    Reference<Thread> t3 = Thread::Start(ThreadStart{.Callback = w3});
 
-    size_t const totalCount = w1.Count + w2.Count + w3.Count;
+    size_t const totalCount = w1->Count + w2->Count + w3->Count;
 
     for (size_t i = 0; i < totalCount; ++i)
     {
@@ -81,11 +81,11 @@ TEST_CASE("Threading / UserAutoResetEvent")
         state.Pop.Wait();
     }
 
-    t1.Join();
-    t2.Join();
-    t3.Join();
+    t1->Join();
+    t2->Join();
+    t3->Join();
 
-    uint64_t const expectedChecksum = (w1.Count * w1.Index) + (w2.Count * w2.Index) + (w3.Count * w3.Index);
+    uint64_t const expectedChecksum = (w1->Count * w1->Index) + (w2->Count * w2->Index) + (w3->Count * w3->Index);
 
     CHECK(expectedChecksum == state.Checksum.load());
 
@@ -149,15 +149,15 @@ TEST_CASE("Threading / AutoResetEvent")
 
 
     SharedState state;
-    Worker w1{state, 23, 0x1};
-    Worker w2{state, 24, 0x1'0000};
-    Worker w3{state, 25, 0x1'0000'0000};
+    Reference<Worker> w1 = MakeReference<Worker>(state, 23, 0x1);
+    Reference<Worker> w2 = MakeReference<Worker>(state, 24, 0x1'0000);
+    Reference<Worker> w3 = MakeReference<Worker>(state, 25, 0x1'0000'0000);
 
-    Thread t1{ThreadStart{.Callback = &w1}};
-    Thread t2{ThreadStart{.Callback = &w2}};
-    Thread t3{ThreadStart{.Callback = &w3}};
+    Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
+    Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});
+    Reference<Thread> t3 = Thread::Start(ThreadStart{.Callback = w3});
 
-    size_t const totalCount = w1.Count + w2.Count + w3.Count;
+    size_t const totalCount = w1->Count + w2->Count + w3->Count;
 
     for (size_t i = 0; i < totalCount; ++i)
     {
@@ -170,11 +170,11 @@ TEST_CASE("Threading / AutoResetEvent")
         state.Pop.Wait();
     }
 
-    t1.Join();
-    t2.Join();
-    t3.Join();
+    t1->Join();
+    t2->Join();
+    t3->Join();
 
-    uint64_t const expectedChecksum = (w1.Count * w1.Index) + (w2.Count * w2.Index) + (w3.Count * w3.Index);
+    uint64_t const expectedChecksum = (w1->Count * w1->Index) + (w2->Count * w2->Index) + (w3->Count * w3->Index);
 
     CHECK(expectedChecksum == state.Checksum.load());
 

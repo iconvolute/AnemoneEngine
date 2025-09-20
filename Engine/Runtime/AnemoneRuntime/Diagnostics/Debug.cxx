@@ -1,17 +1,23 @@
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 #include <iterator>
 
+
 namespace Anemone::Diagnostics
 {
+    static CriticalSection gDebugLock{};
+
     bool Debug::ReportAssertionFormatted(
         std::source_location const& location,
         std::string_view expression,
         std::string_view format,
         fmt::format_args args)
     {
+        UniqueLock lock{gDebugLock};
+
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
         TraceDispatcher& dispatcher = Trace::Get();
 
@@ -53,6 +59,8 @@ namespace Anemone::Diagnostics
         std::string_view format,
         fmt::format_args args)
     {
+        UniqueLock lock{gDebugLock};
+
         TraceDispatcher& dispatcher = Trace::Get();
 
         fmt::memory_buffer message{};

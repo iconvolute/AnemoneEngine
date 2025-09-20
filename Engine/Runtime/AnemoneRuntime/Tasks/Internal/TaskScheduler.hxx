@@ -17,8 +17,8 @@ namespace Anemone
     private:
         std::atomic_uint32_t m_LastTaskId{};
         TaskQueue m_Queue{};
-        std::vector<Thread> m_Threads{};
-        std::vector<std::unique_ptr<DefaultTaskWorker>> m_Workers{};
+        std::vector<Reference<Thread>> m_Threads{};
+        std::vector<Reference<DefaultTaskWorker>> m_Workers{};
         CriticalSection m_TasksLock{};
         ConditionVariable m_TasksCondition{};
         CancellationToken m_CancellationToken{};

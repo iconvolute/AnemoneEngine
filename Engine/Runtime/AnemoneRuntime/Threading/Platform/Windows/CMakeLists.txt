@@ -10,6 +10,7 @@ target_sources(AnemoneRuntime
         "WindowsThread.cxx"
         "WindowsMonitor.cxx"
     PUBLIC FILE_SET HEADERS FILES
+        "WindowsThread.hxx"
         "WindowsThreading.hxx"
 )
 

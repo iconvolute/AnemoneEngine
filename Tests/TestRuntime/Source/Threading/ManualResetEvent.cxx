@@ -65,13 +65,13 @@ TEST_CASE("Threading / UserManualResetEvent")
 
 
     SharedState state;
-    Worker w1{state};
-    Worker w2{state};
-    Worker w3{state};
+    Reference<Worker> w1 = MakeReference<Worker>(state);
+    Reference<Worker> w2 = MakeReference<Worker>(state);
+    Reference<Worker> w3 = MakeReference<Worker>(state);
 
-    Thread t1{ThreadStart{.Callback = &w1}};
-    Thread t2{ThreadStart{.Callback = &w2}};
-    Thread t3{ThreadStart{.Callback = &w3}};
+    Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
+    Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});
+    Reference<Thread> t3 = Thread::Start(ThreadStart{.Callback = w3});
 
     CHECK(state.BeforeWait == 0);
     CHECK(state.MiddleWait == 0);
@@ -79,9 +79,9 @@ TEST_CASE("Threading / UserManualResetEvent")
 
     state.Start.Set();
 
-    w1.BeforeWait.Wait();
-    w2.BeforeWait.Wait();
-    w3.BeforeWait.Wait();
+    w1->BeforeWait.Wait();
+    w2->BeforeWait.Wait();
+    w3->BeforeWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 0);
@@ -89,9 +89,9 @@ TEST_CASE("Threading / UserManualResetEvent")
 
     state.Middle1.Set();
 
-    w1.MiddleWait.Wait();
-    w2.MiddleWait.Wait();
-    w3.MiddleWait.Wait();
+    w1->MiddleWait.Wait();
+    w2->MiddleWait.Wait();
+    w3->MiddleWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);
@@ -99,9 +99,9 @@ TEST_CASE("Threading / UserManualResetEvent")
 
     state.Middle2.Set();
 
-    w1.AfterWait.Wait();
-    w2.AfterWait.Wait();
-    w3.AfterWait.Wait();
+    w1->AfterWait.Wait();
+    w2->AfterWait.Wait();
+    w3->AfterWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);
@@ -109,9 +109,9 @@ TEST_CASE("Threading / UserManualResetEvent")
 
     state.End.Set();
 
-    t1.Join();
-    t2.Join();
-    t3.Join();
+    t1->Join();
+    t2->Join();
+    t3->Join();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);
@@ -174,13 +174,13 @@ TEST_CASE("Threading / ManualResetEvent")
 
 
     SharedState state;
-    Worker w1{state};
-    Worker w2{state};
-    Worker w3{state};
+    Reference<Worker> w1 = MakeReference<Worker>(state);
+    Reference<Worker> w2 = MakeReference<Worker>(state);
+    Reference<Worker> w3 = MakeReference<Worker>(state);
 
-    Thread t1{ThreadStart{.Callback = &w1}};
-    Thread t2{ThreadStart{.Callback = &w2}};
-    Thread t3{ThreadStart{.Callback = &w3}};
+    Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
+    Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});
+    Reference<Thread> t3 = Thread::Start(ThreadStart{.Callback = w3});
 
     CHECK(state.BeforeWait == 0);
     CHECK(state.MiddleWait == 0);
@@ -188,9 +188,9 @@ TEST_CASE("Threading / ManualResetEvent")
 
     state.Start.Set();
 
-    w1.BeforeWait.Wait();
-    w2.BeforeWait.Wait();
-    w3.BeforeWait.Wait();
+    w1->BeforeWait.Wait();
+    w2->BeforeWait.Wait();
+    w3->BeforeWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 0);
@@ -198,9 +198,9 @@ TEST_CASE("Threading / ManualResetEvent")
 
     state.Middle1.Set();
 
-    w1.MiddleWait.Wait();
-    w2.MiddleWait.Wait();
-    w3.MiddleWait.Wait();
+    w1->MiddleWait.Wait();
+    w2->MiddleWait.Wait();
+    w3->MiddleWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);
@@ -208,9 +208,9 @@ TEST_CASE("Threading / ManualResetEvent")
 
     state.Middle2.Set();
 
-    w1.AfterWait.Wait();
-    w2.AfterWait.Wait();
-    w3.AfterWait.Wait();
+    w1->AfterWait.Wait();
+    w2->AfterWait.Wait();
+    w3->AfterWait.Wait();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);
@@ -218,9 +218,9 @@ TEST_CASE("Threading / ManualResetEvent")
 
     state.End.Set();
 
-    t1.Join();
-    t2.Join();
-    t3.Join();
+    t1->Join();
+    t2->Join();
+    t3->Join();
 
     CHECK(state.BeforeWait == 3);
     CHECK(state.MiddleWait == 3);

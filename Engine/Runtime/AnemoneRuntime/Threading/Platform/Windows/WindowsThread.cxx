@@ -1,16 +1,9 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-
-#if ANEMONE_PLATFORM_WINDOWS
-
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Threading/Platform/Windows/WindowsThread.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Interop/Windows/Environment.hxx"
 
-#include <cmath>
-
-#include <objbase.h>
-
-namespace Anemone::Internal
+namespace Anemone
 {
     namespace
     {
@@ -36,141 +29,137 @@ namespace Anemone::Internal
 
             return THREAD_PRIORITY_NORMAL;
         }
-
-        DWORD WINAPI ThreadEntryPoint(LPVOID lpThreadParameter)
-        {
-            if (lpThreadParameter == nullptr)
-            {
-                AE_PANIC("Thread started without context.");
-            }
-
-            CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-
-            {
-                Runnable* const runnable = static_cast<Runnable*>(lpThreadParameter);
-                runnable->Run();
-            }
-
-            CoUninitialize();
-
-            return 0;
-        }
     }
-}
 
-namespace Anemone
-{
-    Thread::Thread(ThreadStart const& start)
+    WindowsThread::~WindowsThread()
     {
-        if (start.Callback == nullptr)
+        if (this->_handle)
         {
-            AE_PANIC("Cannot create thread without runnable object");
-        }
-
-        size_t const stackSize = start.StackSize.value_or(0);
-
-        // Create thread suspended so we can update internal structs before starting the thread.
-        DWORD dwCreationFlags = CREATE_SUSPENDED;
-
-        if (start.StackSize)
-        {
-            dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
-        }
-
-        this->_handle.Attach(CreateThread(
-            nullptr,
-            stackSize,
-            Internal::ThreadEntryPoint,
-            start.Callback,
-            dwCreationFlags,
-            &this->_id));
-
-        if (not this->_handle)
-        {
-            AE_PANIC("Cannot create thread");
-        }
-
-        if (start.Name)
-        {
-            Interop::string_buffer<wchar_t, 128> wname{};
-            Interop::Windows::WidenString(wname, *start.Name);
-
-            SetThreadDescription(this->_handle.Get(), wname);
-        }
-
-        if (start.Priority)
-        {
-            SetThreadPriority(this->_handle.Get(), Internal::ConvertThreadPriority(*start.Priority));
-        }
-
-        if (ResumeThread(this->_handle.Get()) == static_cast<DWORD>(-1))
-        {
-            AE_PANIC("Cannot resume thread");
+            AE_PANIC("Destroying joinable thread. Did you forget to call Join or Detach?");
         }
     }
 
-    Thread::Thread(Thread&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-        , _id{std::exchange(other._id, {})}
+    ThreadId WindowsThread::Id() const
     {
+        return ThreadId{this->_id};
     }
 
-    Thread& Thread::operator=(Thread&& other) noexcept
+    void WindowsThread::Join()
     {
-        if (this != std::addressof(other))
-        {
-            if (this->IsJoinable())
-            {
-                this->Join();
-            }
+        AE_ASSERT(this->_handle);
+        AE_ASSERT(this->_id != GetCurrentThreadId());
 
-            this->_handle = std::exchange(other._handle, {});
-            this->_id = std::exchange(other._id, {});
-        }
-
-        return *this;
-    }
-
-    Thread::~Thread()
-    {
-        if (this->IsJoinable())
-        {
-            this->Join();
-        }
-    }
-
-    void Thread::Join()
-    {
-        if (not this->_handle)
+        if (WaitForSingleObject(this->_handle.Get(), INFINITE) != WAIT_OBJECT_0)
         {
             AE_PANIC("Failed to join thread");
-        }
-
-        if (this->_id == GetCurrentThreadId())
-        {
-            AE_PANIC("Joining thread from itself");
-        }
-
-        WaitForSingleObject(this->_handle.Get(), INFINITE);
-
-        this->_handle = {};
-    }
-
-    bool Thread::IsJoinable() const
-    {
-        return this->_handle.IsValid();
-    }
-
-    void Thread::Detach()
-    {
-        if (not this->_handle)
-        {
-            AE_PANIC("Thread already detached");
         }
 
         this->_handle = {};
         this->_id = {};
     }
+
+    bool WindowsThread::IsJoinable() const
+    {
+        return this->_handle.IsValid();
+    }
+
+    void WindowsThread::Detach()
+    {
+        AE_ASSERT(this->_handle);
+        AE_ASSERT(this->_id != GetCurrentThreadId());
+
+        if (this->_handle)
+        {
+            this->_handle = {};
+            this->_id = {};
+        }
+    }
+
+    Reference<WindowsThread> WindowsThread::Start(ThreadStart const& start)
+    {
+        if (not start.Callback)
+        {
+            AE_PANIC("Cannot create thread without runnable object");
+        }
+
+        Reference<WindowsThread> result = MakeReference<WindowsThread>();
+
+        if (result)
+        {
+            // Bump refcount so the thread can hold a reference to itself.
+            result->AcquireReference();
+
+            // Store runnable object.
+            result->_runnable = start.Callback;
+
+            // CreateThread parameters.
+            DWORD dwCreationFlags = CREATE_SUSPENDED;
+
+            size_t stackSize = start.StackSize.value_or(0);
+
+            if (start.StackSize)
+            {
+                dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
+            }
+
+            result->_handle.Attach(
+                CreateThread(
+                    nullptr,
+                    stackSize,
+                    &EntryPoint,
+                    result.Get(),
+                    dwCreationFlags,
+                    &result->_id));
+
+            AE_ASSERT(result->_handle, "Failed to spawn thread");
+
+
+            if (start.Priority)
+            {
+                SetThreadPriority(
+                    result->_handle.Get(),
+                    ConvertThreadPriority(*start.Priority));
+            }
+
+
+            if (start.Name)
+            {
+                Interop::string_buffer<wchar_t, 128> wName{};
+                Interop::Windows::WidenString(wName, *start.Name);
+
+                SetThreadDescription(result->_handle.Get(), wName);
+            }
+
+            ResumeThread(result->_handle.Get());
+        }
+
+        return result;
+    }
+
+    DWORD WINAPI WindowsThread::EntryPoint(LPVOID lpThreadParameter)
+    {
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        {
+            AE_ASSERT(lpThreadParameter);
+
+            WindowsThread* self = static_cast<WindowsThread*>(lpThreadParameter);
+
+            self->_runnable->Run();
+
+            std::atomic_thread_fence(std::memory_order::seq_cst);
+
+            self->ReleaseReference();
+        }
+        CoUninitialize();
+
+        return 0;
+    }
 }
 
-#endif
+namespace Anemone
+{
+    Reference<Thread> Thread::Start(ThreadStart const& threadStart)
+    {
+        return WindowsThread::Start(threadStart);
+    }
+}

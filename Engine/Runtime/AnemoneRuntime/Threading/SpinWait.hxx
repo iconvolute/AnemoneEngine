@@ -1,6 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 
+#include <atomic>
+
 namespace Anemone
 {
     class SpinWait final
@@ -47,6 +49,16 @@ namespace Anemone
     }
 
     inline constexpr size_t YieldThreadThreshold = 0xFF;
+
+    anemone_forceinline void WaitForCompletion(std::atomic_flag const& flag)
+    {
+        SpinWait spinner{};
+
+        while (!flag.test(std::memory_order_acquire))
+        {
+            spinner.SpinOnce();
+        }
+    }
 
     template <typename PredicateT = bool()>
     anemone_forceinline void WaitForCompletion(PredicateT predicate)

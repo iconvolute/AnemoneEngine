@@ -4,7 +4,7 @@ namespace Anemone
 {
     std::expected<Reference<MemoryBuffer>, Status> MemoryBuffer::CreateView(std::span<std::byte> buffer)
     {
-        return new (std::nothrow) MemoryBuffer(buffer.data(), buffer.size(), buffer.size(), false);
+        return Reference{new (std::nothrow) MemoryBuffer(buffer.data(), buffer.size(), buffer.size(), false)};
     }
 
     std::expected<Reference<MemoryBuffer>, Status> MemoryBuffer::Create(std::span<std::byte const> content)
@@ -23,7 +23,7 @@ namespace Anemone
             std::memcpy(data, content.data(), content.size());
         }
 
-        return new (std::nothrow) MemoryBuffer(data, content.size(), content.size(), true);
+        return Reference{new (std::nothrow) MemoryBuffer(data, content.size(), content.size(), true)};
     }
 
     std::expected<Reference<MemoryBuffer>, Status> MemoryBuffer::Create(size_t size)
@@ -42,7 +42,7 @@ namespace Anemone
             std::memset(data, 0, size);
         }
 
-        return new (std::nothrow) MemoryBuffer(data, size, size, true);
+        return Reference{new (std::nothrow) MemoryBuffer(data, size, size, true)};
     }
 
     std::size_t MemoryBuffer::CalculateGrowth(std::size_t current,std::size_t requested)

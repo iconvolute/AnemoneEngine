@@ -142,7 +142,7 @@ namespace Anemone
     public:
         constexpr Reference() = default;
 
-        constexpr Reference(T* object)
+        explicit constexpr Reference(T* object)
             : m_Object{object}
         {
             this->AcquireReference();

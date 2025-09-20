@@ -47,27 +47,32 @@ TEST_CASE("Threading / Semaphore")
         Semaphore semaphore{1};
         int counter{0};
 
-        Worker workers[8]{
-            {semaphore, counter, 1},
-            {semaphore, counter, 2},
-            {semaphore, counter, 3},
-            {semaphore, counter, 4},
-            {semaphore, counter, 5},
-            {semaphore, counter, 6},
-            {semaphore, counter, 7},
-            {semaphore, counter, 8},
+        Reference<Worker> workers[8]{
+            MakeReference<Worker>(semaphore, counter, 1),
+            MakeReference<Worker>(semaphore, counter, 2),
+            MakeReference<Worker>(semaphore, counter, 3),
+            MakeReference<Worker>(semaphore, counter, 4),
+            MakeReference<Worker>(semaphore, counter, 5),
+            MakeReference<Worker>(semaphore, counter, 6),
+            MakeReference<Worker>(semaphore, counter, 7),
+            MakeReference<Worker>(semaphore, counter, 8),
         };
         {
-            Thread threads[8]{
-                Thread{ThreadStart{{}, {}, {}, &workers[0]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[1]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[2]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[3]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[4]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[5]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[6]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[7]}},
+            Reference<Thread> threads[8]{
+                Thread::Start(ThreadStart{{}, {}, {}, workers[0]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[1]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[2]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[3]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[4]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[5]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[6]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[7]}),
             };
+
+            for (Reference<Thread>& thread : threads)
+            {
+                thread->Join();
+            }
         }
 
         constexpr int expected = 1000 * (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8);
@@ -110,27 +115,32 @@ TEST_CASE("Threading / Semaphore")
         UserSemaphore semaphore{1};
         int counter{0};
 
-        Worker workers[8]{
-            {semaphore, counter, 1},
-            {semaphore, counter, 2},
-            {semaphore, counter, 3},
-            {semaphore, counter, 4},
-            {semaphore, counter, 5},
-            {semaphore, counter, 6},
-            {semaphore, counter, 7},
-            {semaphore, counter, 8},
+        Reference<Worker> workers[8]{
+            MakeReference<Worker>(semaphore, counter, 1),
+            MakeReference<Worker>(semaphore, counter, 2),
+            MakeReference<Worker>(semaphore, counter, 3),
+            MakeReference<Worker>(semaphore, counter, 4),
+            MakeReference<Worker>(semaphore, counter, 5),
+            MakeReference<Worker>(semaphore, counter, 6),
+            MakeReference<Worker>(semaphore, counter, 7),
+            MakeReference<Worker>(semaphore, counter, 8),
         };
         {
-            Thread threads[8]{
-                Thread{ThreadStart{{}, {}, {}, &workers[0]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[1]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[2]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[3]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[4]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[5]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[6]}},
-                Thread{ThreadStart{{}, {}, {}, &workers[7]}},
+            Reference<Thread> threads[8]{
+                Thread::Start(ThreadStart{{}, {}, {}, workers[0]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[1]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[2]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[3]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[4]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[5]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[6]}),
+                Thread::Start(ThreadStart{{}, {}, {}, workers[7]}),
             };
+
+            for (Reference<Thread>& thread : threads)
+            {
+                thread->Join();
+            }
         }
 
         constexpr int expected = 1000 * (1 + 2 + 3 + 4 + 5 + 6 + 7 + 8);

@@ -139,13 +139,13 @@ namespace Anemone
         };
 
         // Fork/Join awaiter.
-        AwaiterHandle joinCounter = new Awaiter{};
-        AwaiterHandle forkCounter = new Awaiter{};
+        AwaiterHandle joinCounter = MakeReference<Awaiter>();
+        AwaiterHandle forkCounter = MakeReference<Awaiter>();
 
         // Spawn tasks.
         for (auto i = 0uz; i < workers; ++i)
         {
-            children[i] = new ParallelForTask(partitioner);
+            children[i] = MakeReference<ParallelForTask>(partitioner);
 
             taskScheduler.Schedule(*children[i], joinCounter, forkCounter, priority);
         }

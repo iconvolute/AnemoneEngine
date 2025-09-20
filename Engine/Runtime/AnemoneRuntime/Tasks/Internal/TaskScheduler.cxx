@@ -49,17 +49,17 @@ namespace Anemone
 
         for (uint32_t i = 0; i < workerCount; ++i)
         {
-            this->m_Workers[i] = std::make_unique<DefaultTaskWorker>(i, this);
+            this->m_Workers[i] = MakeReference<DefaultTaskWorker>(i, this);
         }
 
         for (uint32_t i = 0; i < workerCount; ++i)
         {
-            this->m_Threads[i] = Thread{
+            this->m_Threads[i] = Thread::Start(
                 ThreadStart{
                     .Name = fmt::format("TaskWorker-{}", i),
                     .Priority = ThreadPriority::Normal,
-                    .Callback = this->m_Workers[i].get(),
-                }};
+                    .Callback = Reference{this->m_Workers[i].Get()},
+                });
         }
     }
 
@@ -81,9 +81,9 @@ namespace Anemone
         // Stop threads.
         //
 
-        for (Thread& thread : this->m_Threads)
+        for (Reference<Thread>& thread : this->m_Threads)
         {
-            thread.Join();
+            thread->Join();
         }
 
         //
