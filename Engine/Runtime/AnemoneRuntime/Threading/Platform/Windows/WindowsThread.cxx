@@ -1,7 +1,10 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
 #include "AnemoneRuntime/Threading/Platform/Windows/WindowsThread.hxx"
+#include "AnemoneRuntime/Base/Instant.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
+#include "AnemoneRuntime/Threading/SpinWait.hxx"
 
 namespace Anemone
 {
@@ -37,12 +40,14 @@ namespace Anemone
         {
             AE_ASSERT(lpThreadParameter);
 
-            WindowsThread* const self = static_cast<WindowsThread*>(lpThreadParameter);
+            StartupContext& context = *static_cast<StartupContext*>(lpThreadParameter);
+
+            WindowsThread* self = context.thread.load(std::memory_order::acquire);
+            AE_ASSERT(self);
+
+            context.initialized.store(true, std::memory_order::release);
 
             self->_runnable->Run();
-
-            std::atomic_thread_fence(std::memory_order::seq_cst);
-
             self->ReleaseReference();
         }
         CoUninitialize();
@@ -58,15 +63,10 @@ namespace Anemone
         }
     }
 
-    ThreadId WindowsThread::Id() const
-    {
-        return ThreadId{this->_id};
-    }
-
     void WindowsThread::Join()
     {
         AE_ASSERT(this->_handle);
-        AE_ASSERT(this->_id != GetCurrentThreadId());
+        AE_ASSERT(this->_id != ThreadId{GetCurrentThreadId()});
 
         if (WaitForSingleObject(this->_handle.Get(), INFINITE) != WAIT_OBJECT_0)
         {
@@ -85,7 +85,7 @@ namespace Anemone
     void WindowsThread::Detach()
     {
         AE_ASSERT(this->_handle);
-        AE_ASSERT(this->_id != GetCurrentThreadId());
+        AE_ASSERT(this->_id != ThreadId{GetCurrentThreadId()});
 
         if (this->_handle)
         {
@@ -111,6 +111,11 @@ namespace Anemone
             // Store runnable object.
             result->_runnable = start.Callback;
 
+            StartupContext context{
+                .thread = result.Get(),
+                .start = &start,
+            };
+
             // CreateThread parameters.
             DWORD dwCreationFlags = CREATE_SUSPENDED;
 
@@ -121,17 +126,19 @@ namespace Anemone
                 dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
             }
 
+            DWORD dwThreadId{};
             result->_handle.Attach(
                 CreateThread(
                     nullptr,
                     stackSize,
                     &EntryPoint,
-                    result.Get(),
+                    &context,
                     dwCreationFlags,
-                    &result->_id));
+                    &dwThreadId));
+
+            result->_id = ThreadId{dwThreadId};
 
             AE_ASSERT(result->_handle, "Failed to spawn thread");
-
 
             if (start.Priority)
             {
@@ -150,6 +157,8 @@ namespace Anemone
             }
 
             ResumeThread(result->_handle.Get());
+
+            WaitForCompletion(context.initialized);
         }
 
         return result;

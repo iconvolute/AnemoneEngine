@@ -8,7 +8,14 @@ namespace Anemone
     {
     private:
         Interop::Windows::SafeHandle _handle{};
-        DWORD _id{};
+
+    private:
+        struct StartupContext final
+        {
+            std::atomic<WindowsThread*> thread{};
+            ThreadStart const* start{};
+            std::atomic<bool> initialized{false};
+        };
 
     private:
         static DWORD WINAPI EntryPoint(LPVOID lpThreadParameter);
@@ -19,8 +26,6 @@ namespace Anemone
         ~WindowsThread() override;
 
     public:
-        ThreadId Id() const override;
-
         void Join() override;
 
         bool IsJoinable() const override;

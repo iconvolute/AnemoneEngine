@@ -62,6 +62,7 @@ namespace Anemone
     {
     protected:
         Reference<Runnable> _runnable{};
+        ThreadId _id{};
 
     protected:
         Thread() = default;
@@ -78,7 +79,10 @@ namespace Anemone
         virtual ~Thread();
 
     public:
-        virtual ThreadId Id() const = 0;
+        ThreadId Id() const
+        {
+            return this->_id;
+        }
 
         virtual void Join() = 0;
 

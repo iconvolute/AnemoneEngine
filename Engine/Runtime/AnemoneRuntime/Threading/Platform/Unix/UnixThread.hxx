@@ -8,10 +8,9 @@ namespace Anemone
     {
     private:
         Interop::Linux::SafePthreadThreadHandle _handle;
-        ThreadId _id{};
 
     private:
-        struct StartupContext
+        struct StartupContext final
         {
             std::atomic<UnixThread*> thread{};
             ThreadStart const* start{};
@@ -27,8 +26,6 @@ namespace Anemone
         ~UnixThread() override;
 
     public:
-        ThreadId Id() const override;
-
         void Join() override;
 
         bool IsJoinable() const override;

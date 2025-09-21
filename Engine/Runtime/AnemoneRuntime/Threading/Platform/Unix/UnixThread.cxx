@@ -73,7 +73,6 @@ namespace Anemone
         context.initialized.store(true, std::memory_order::release);
 
         self->_runnable->Run();
-
         self->ReleaseReference();
 
         pthread_exit(nullptr);
@@ -86,12 +85,6 @@ namespace Anemone
         {
             AE_PANIC("Destroying joinable thread. Did you forget to call Join or Detach?");
         }
-    }
-
-    ThreadId UnixThread::Id() const
-    {
-        AE_ASSERT(this->_handle);
-        return this->_id;
     }
 
     void UnixThread::Join()
@@ -157,13 +150,14 @@ namespace Anemone
 
             AE_UNIX_HANDLE_RESULT(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE));
 
-            AE_UNIX_HANDLE_RESULT(pthread_create(result->_handle.GetAddressOf(), &attr, &UnixThread::EntryPoint, &context));
+            pthread_t handle{};
+            AE_UNIX_HANDLE_RESULT(pthread_create(&handle, &attr, &UnixThread::EntryPoint, &context));
 
             AE_UNIX_HANDLE_RESULT(pthread_attr_destroy(&attr));
 
             WaitForCompletion(context.initialized);
 
-            if (not result->_handle)
+            if (not handle)
             {
                 AE_PANIC("Failed to spawn thread");
             }
