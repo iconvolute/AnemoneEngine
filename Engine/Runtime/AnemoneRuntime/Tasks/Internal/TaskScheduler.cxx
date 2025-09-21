@@ -58,7 +58,7 @@ namespace Anemone
                 ThreadStart{
                     .Name = fmt::format("TaskWorker-{}", i),
                     .Priority = ThreadPriority::Normal,
-                    .Callback = Reference{this->m_Workers[i].Get()},
+                    .Callback = this->m_Workers[i],
                 });
         }
     }

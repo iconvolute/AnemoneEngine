@@ -1,205 +1,183 @@
 #include "AnemoneRuntime/Threading/Thread.hxx"
-
-#if ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
-
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Threading/SpinWait.hxx"
+#include "AnemoneRuntime/Threading/Platform/Unix/UnixThread.hxx"
+#include "AnemoneRuntime/Interop/Linux/Error.hxx"
 #include "AnemoneRuntime/Interop/Linux/Process.hxx"
+#include "AnemoneRuntime/Interop/Linux/Threading.hxx"
+#include "AnemoneRuntime/Interop/StringBuffer.hxx"
+#include "AnemoneRuntime/Base/Bitwise.hxx"
 
 #include <cmath>
 #include <utility>
 
-namespace Anemone::Internal
+namespace Anemone
 {
-    constexpr int ConvertThreadPriority(ThreadPriority priority) noexcept
+    namespace
     {
-        switch (priority)
+        constexpr int ConvertThreadPriority(ThreadPriority priority) noexcept
         {
-        case ThreadPriority::TimeCritical:
-        case ThreadPriority::Highest:
-            return 30;
-        case ThreadPriority::AboveNormal:
-            return 25;
-        case ThreadPriority::Normal:
-            return 15;
-        case ThreadPriority::BelowNormal:
-            return 5;
-        case ThreadPriority::Lower:
-            return 14;
-        case ThreadPriority::Lowest:
-            return 1;
-        }
+            switch (priority)
+            {
+            case ThreadPriority::TimeCritical:
+            case ThreadPriority::Highest:
+                return 30;
+            case ThreadPriority::AboveNormal:
+                return 25;
+            case ThreadPriority::Normal:
+                return 15;
+            case ThreadPriority::BelowNormal:
+                return 5;
+            case ThreadPriority::Lower:
+                return 14;
+            case ThreadPriority::Lowest:
+                return 1;
+            }
 
-        return 5;
+            return 5;
+        }
     }
 
-    static void* ThreadEntryPoint(void* context)
+    void* UnixThread::EntryPoint(void* param)
     {
-        if (context == nullptr)
+        AE_ASSERT(param);
+
+        StartupContext& context = *static_cast<StartupContext*>(param);
+
+        UnixThread* self = context.thread.load(std::memory_order::acquire);
+        AE_ASSERT(self != nullptr);
+        
+        self->_handle.Attach(pthread_self());
+        self->_id = ThreadId{static_cast<uintptr_t>(Interop::Linux::GetThreadId())};
+
+        // Set thread name
+        if (context.start->Name)
         {
-            AE_PANIC("Thread started without context.");
+            Interop::string_buffer<char, 64> name{*context.start->Name};
+            pthread_setname_np(self->_handle.Get(), name.c_str());
         }
 
-        Runnable* const runnable = static_cast<Runnable*>(context);
-        runnable->Run();
+        // Set thread priority
+        if (context.start->Priority)
+        {
+            sched_param sched{};
+            int32_t policy = SCHED_RR;
+
+            if (pthread_getschedparam(self->_handle.Get(), &policy, &sched) == 0)
+            {
+                sched.sched_priority = ConvertThreadPriority(*context.start->Priority);
+
+                pthread_setschedparam(self->_handle.Get(), policy, &sched);
+            }
+        }
+
+        context.initialized.store(true, std::memory_order::release);
+
+        self->_runnable->Run();
+
+        self->ReleaseReference();
 
         pthread_exit(nullptr);
         return nullptr;
     }
 
-}
-
-namespace Anemone
-{
-    Thread::Thread(ThreadStart const& start)
-    {
-        if (start.Callback == nullptr)
-        {
-            AE_PANIC("Thread started without callback.");
-        }
-
-        pthread_attr_t attr{};
-
-        if (int const rc = pthread_attr_init(&attr); rc != 0)
-        {
-            AE_PANIC("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
-        }
-
-        if (start.StackSize)
-        {
-            if (int const rc = pthread_attr_setstacksize(&attr, *start.StackSize); rc != 0)
-            {
-                AE_PANIC("pthread_attr_init (rc: {}, `{}`)", rc, strerror(rc));
-            }
-        }
-
-        if (int const rc = pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); rc != 0)
-        {
-            AE_PANIC("pthread_attr_setdetachstate (rc: {}, `{}`)", rc, strerror(rc));
-        }
-
-        if (int const rc = pthread_create(this->_handle.GetAddressOf(), &attr, Internal::ThreadEntryPoint, start.Callback); rc != 0)
-        {
-            AE_PANIC("pthread_create (rc: {}, `{}`)", rc, strerror(rc));
-        }
-
-        if (int const rc = pthread_attr_destroy(&attr); rc != 0)
-        {
-            AE_PANIC("pthread_attr_destroy (rc: {}, `{}`)", rc, strerror(rc));
-        }
-
-        if (not this->_handle)
-        {
-            AE_PANIC("Failed to start thread");
-        }
-
-        this->_id = ThreadId{Interop::Linux::GetThreadId()};
-
-
-        //
-        // FIXME:
-        //     Thread is started immediately in pthread_create. It is possible that the thread will
-        //     finish before we set the name and priority.
-        //
-        //     In that case, either ignore errors in reported by further pthread calls or notify
-        //     thread callback that we finished initialization process so it can continue.
-        //
-        //     This is not a problem in Windows implementation because thread is started in suspended
-        //     state.
-        //
-        //     Alternatively we can set these properties in the thread callback.
-        //
-
-        if (start.Name)
-        {
-            std::string const name{*start.Name};
-            pthread_setname_np(this->_handle.Get(), name.c_str());
-        }
-
-        if (start.Priority)
-        {
-            sched_param sched{};
-            int32_t policy = SCHED_RR;
-
-            if (pthread_getschedparam(this->_handle.Get(), &policy, &sched) == 0)
-            {
-                sched.sched_priority = Internal::ConvertThreadPriority(*start.Priority);
-
-                pthread_setschedparam(this->_handle.Get(), policy, &sched);
-            }
-        }
-    }
-
-    Thread::Thread(Thread&& other) noexcept
-        : _handle{std::exchange(other._handle, {})}
-        , _id{std::exchange(other._id, {})}
-    {
-    }
-
-    Thread& Thread::operator=(Thread&& other) noexcept
-    {
-        if (this != std::addressof(other))
-        {
-            if (this->IsJoinable())
-            {
-                this->Join();
-            }
-
-            this->_handle = std::exchange(other._handle, {});
-            this->_id = std::exchange(other._id, {});
-        }
-
-        return *this;
-    }
-
-    Thread::~Thread()
+    UnixThread::~UnixThread()
     {
         if (this->IsJoinable())
         {
-            this->Join();
+            AE_PANIC("Destroying joinable thread. Did you forget to call Join or Detach?");
         }
     }
 
-    void Thread::Join()
+    ThreadId UnixThread::Id() const
     {
-        if (not this->_handle)
-        {
-            AE_PANIC("Cannot join non-started thread.");
-        }
+        AE_ASSERT(this->_handle);
+        return this->_id;
+    }
 
-        if (this->_handle.Get() == pthread_self())
-        {
-            AE_PANIC("Joining thread from itself");
-        }
+    void UnixThread::Join()
+    {
+        AE_ASSERT(this->_handle);
+        AE_ASSERT(this->_handle.Get() != pthread_self());
 
-        if (int const rc = pthread_join(this->_handle.Get(), nullptr); rc != 0)
-        {
-            AE_PANIC("pthread_join (rc: {}, `{}`)", rc, strerror(rc));
-        }
+        AE_UNIX_HANDLE_RESULT(pthread_join(this->_handle.Get(), nullptr));
 
         this->_handle = {};
         this->_id = {};
     }
 
-    bool Thread::IsJoinable() const
+    bool UnixThread::IsJoinable() const
     {
         return this->_handle.IsValid();
     }
 
-    void Thread::Detach()
+    void UnixThread::Detach()
     {
-        if (not this->_handle)
-        {
-            AE_PANIC("Failed to detach from thread");
-        }
+        AE_ASSERT(this->_handle);
 
-        if (int const rc = pthread_detach(this->_handle.Get()); rc != 0)
-        {
-            AE_PANIC("pthread_detach (rc: {}, `{}`)", rc, strerror(rc));
-        }
+        AE_UNIX_HANDLE_RESULT(pthread_detach(this->_handle.Get()));
 
         this->_handle = {};
         this->_id = {};
     }
+
+    Reference<UnixThread> UnixThread::Start(ThreadStart const& start)
+    {
+        if (not start.Callback)
+        {
+            AE_PANIC("Cannot create thread without runnable object");
+        }
+
+        Reference<UnixThread> result{new UnixThread{}};
+
+        if (result)
+        {
+            // Bump refcount so the thread can hold a reference to itself.
+            result->AcquireReference();
+
+            // Store runnable object.
+            result->_runnable = start.Callback;
+            
+            StartupContext context{
+                .thread = result.Get(),
+                .start = &start,
+            };
+
+            // Initialize thread attributes.
+            pthread_attr_t attr{};
+
+            AE_UNIX_HANDLE_RESULT(pthread_attr_init(&attr));
+
+            if (start.StackSize)
+            {
+                size_t const pageSize = static_cast<size_t>(sysconf(_SC_PAGESIZE));
+                size_t const stackSize = std::max<size_t>(*start.StackSize, PTHREAD_STACK_MIN);
+                size_t const alignedStackSize = Bitwise::AlignUp(stackSize, pageSize);
+                AE_UNIX_HANDLE_RESULT(pthread_attr_setstacksize(&attr, alignedStackSize));
+            }
+
+            AE_UNIX_HANDLE_RESULT(pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE));
+
+            AE_UNIX_HANDLE_RESULT(pthread_create(result->_handle.GetAddressOf(), &attr, &UnixThread::EntryPoint, &context));
+
+            AE_UNIX_HANDLE_RESULT(pthread_attr_destroy(&attr));
+
+            WaitForCompletion(context.initialized);
+
+            if (not result->_handle)
+            {
+                AE_PANIC("Failed to spawn thread");
+            }
+
+        }
+
+        return result;
+    }
 }
 
-#endif
+namespace Anemone
+{
+    Reference<Thread> Thread::Start(ThreadStart const& threadStart)
+    {
+        return UnixThread::Start(threadStart);
+    }
+}

@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/System/SystemAllocator.hxx"
-#include "AnemoneRuntime/Platform/Unix/UnixInterop.hxx"
-#include "AnemoneRuntime/Diagnostics/Assert.hxx"
+#include "AnemoneRuntime/Interop/Linux/Headers.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone::SystemAllocator::Internal
 {

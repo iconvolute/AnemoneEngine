@@ -31,6 +31,25 @@ namespace Anemone
         }
     }
 
+    DWORD WINAPI WindowsThread::EntryPoint(LPVOID lpThreadParameter)
+    {
+        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        {
+            AE_ASSERT(lpThreadParameter);
+
+            WindowsThread* const self = static_cast<WindowsThread*>(lpThreadParameter);
+
+            self->_runnable->Run();
+
+            std::atomic_thread_fence(std::memory_order::seq_cst);
+
+            self->ReleaseReference();
+        }
+        CoUninitialize();
+
+        return 0;
+    }
+
     WindowsThread::~WindowsThread()
     {
         if (this->_handle)
@@ -134,25 +153,6 @@ namespace Anemone
         }
 
         return result;
-    }
-
-    DWORD WINAPI WindowsThread::EntryPoint(LPVOID lpThreadParameter)
-    {
-        CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
-        {
-            AE_ASSERT(lpThreadParameter);
-
-            WindowsThread* self = static_cast<WindowsThread*>(lpThreadParameter);
-
-            self->_runnable->Run();
-
-            std::atomic_thread_fence(std::memory_order::seq_cst);
-
-            self->ReleaseReference();
-        }
-        CoUninitialize();
-
-        return 0;
     }
 }
 

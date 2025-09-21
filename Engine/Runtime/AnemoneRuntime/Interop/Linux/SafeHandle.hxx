@@ -113,7 +113,7 @@ namespace Anemone::Interop::Linux
     };
     using SafeSharedLibraryHandle = SafeHandleT<void*, SafeSharedLibraryHandleTraits>;
 
-    struct PthreadThreadHandleTraits final
+    struct SafePthreadThreadHandleTraits final
     {
         static pthread_t Invalid()
         {
@@ -132,7 +132,7 @@ namespace Anemone::Interop::Linux
         }
     };
 
-    using PthreadThreadHandle = SafeHandleT<pthread_t, PthreadThreadHandleTraits>;
+    using SafePthreadThreadHandle = SafeHandleT<pthread_t, SafePthreadThreadHandleTraits>;
 
     struct SafeMemoryMappedViewHandleTraits final
     {

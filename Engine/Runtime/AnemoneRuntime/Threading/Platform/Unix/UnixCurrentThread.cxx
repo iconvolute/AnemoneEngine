@@ -63,7 +63,7 @@ namespace Anemone
 
     ThreadId CurrentThread::Id()
     {
-        return ThreadId{Interop::Linux::GetThreadId()};
+        return ThreadId{static_cast<uintptr_t>(Interop::Linux::GetThreadId())};
     }
 }
 

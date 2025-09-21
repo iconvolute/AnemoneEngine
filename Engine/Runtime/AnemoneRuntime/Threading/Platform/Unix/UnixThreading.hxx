@@ -6,12 +6,6 @@
 
 #include <atomic>
 
-namespace Anemone
-{
-    using ThreadId = pid_t;
-    using ThreadHandle = Interop::Linux::PthreadThreadHandle;
-}
-
 namespace Anemone::Internal
 {
     using PlatformSemaphore = sem_t;

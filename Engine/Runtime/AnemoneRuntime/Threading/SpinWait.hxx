@@ -54,7 +54,17 @@ namespace Anemone
     {
         SpinWait spinner{};
 
-        while (!flag.test(std::memory_order_acquire))
+        while (flag.test(std::memory_order::acquire))
+        {
+            spinner.SpinOnce();
+        }
+    }
+
+    anemone_forceinline void WaitForCompletion(std::atomic<bool> const& value)
+    {
+        SpinWait spinner{};
+
+        while (not value.load(std::memory_order::acquire))
         {
             spinner.SpinOnce();
         }
