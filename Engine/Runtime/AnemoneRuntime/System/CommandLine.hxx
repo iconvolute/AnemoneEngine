@@ -31,5 +31,33 @@ namespace Anemone
         RUNTIME_API static void Build(
             const char* const* argv,
             std::string& result);
+
+        RUNTIME_API static void Append(
+            std::string& result,
+            std::string_view part);
+
+        template <typename Container>
+        static std::string Combine(
+            std::string_view app,
+            Container const& container);
     };
+}
+
+namespace Anemone
+{
+    template <typename Container>
+    std::string CommandLine::Combine(
+        std::string_view app,
+        Container const& container)
+    {
+        std::string result{app};
+
+        for (std::string_view arg : container)
+        {
+            result.push_back(' ');
+            CommandLine::Append(result, arg);
+        }
+
+        return result;
+    }
 }

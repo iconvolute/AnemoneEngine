@@ -8,7 +8,7 @@ target_sources(AnemoneRuntime
         "TraceListener.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Debug.hxx"
-        "Status.hxx"
+        "Error.hxx"
         "Trace.hxx"
         "TraceDispatcher.hxx"
         "TraceListener.hxx"

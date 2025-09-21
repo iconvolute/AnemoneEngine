@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Base/Reference.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <algorithm>
 #include <cstring>
@@ -50,12 +50,12 @@ namespace Anemone
 
     public:
         // creates memory buffer abstraction over non-owned memory block
-        static std::expected<Reference<MemoryBuffer>, Status> CreateView(std::span<std::byte> buffer);
+        static std::expected<Reference<MemoryBuffer>, Error> CreateView(std::span<std::byte> buffer);
 
         // creates memory buffer with copy of the contents
-        static std::expected<Reference<MemoryBuffer>, Status> Create(std::span<std::byte const> content);
+        static std::expected<Reference<MemoryBuffer>, Error> Create(std::span<std::byte const> content);
 
-        static std::expected<Reference<MemoryBuffer>, Status> Create(std::size_t size);
+        static std::expected<Reference<MemoryBuffer>, Error> Create(std::size_t size);
 
     private:
         // Growth policy: 1.5x current capacity or requested, whichever is larger.
@@ -63,14 +63,14 @@ namespace Anemone
 
     public:
         // Reserve at least the specified capacity, preserving size and contents.
-        std::expected<void, Status> Reserve(std::size_t capacity);
+        std::expected<void, Error> Reserve(std::size_t capacity);
 
-        std::expected<void, Status> Resize(std::size_t size);
+        std::expected<void, Error> Resize(std::size_t size);
 
-        std::expected<void, Status> Clear();
+        std::expected<void, Error> Clear();
 
         // Reduce capacity to match current size (if owned). Frees unused memory.
-        std::expected<void, Status> ShrinkToFit();
+        std::expected<void, Error> ShrinkToFit();
 
         // Gets view for whole memory buffer. Use spans for that
         [[nodiscard]] std::span<std::byte> GetView()
@@ -108,8 +108,8 @@ namespace Anemone
             return this->_owned;
         }
 
-        std::expected<void, Status> EnsureOwned();
+        std::expected<void, Error> EnsureOwned();
 
-        std::expected<Reference<MemoryBuffer>, Status> Clone() const;
+        std::expected<Reference<MemoryBuffer>, Error> Clone() const;
     };
 }

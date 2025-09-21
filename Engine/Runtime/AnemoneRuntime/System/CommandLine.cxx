@@ -3,6 +3,7 @@
 #include "AnemoneRuntime/Interop/StringBuffer.hxx"
 
 #include <algorithm>
+#include <iterator>
 
 namespace Anemone::Internal
 {
@@ -153,8 +154,7 @@ namespace Anemone
 
 namespace Anemone
 {
-    auto CommandLine::GetOption(
-        std::string_view name) -> std::optional<std::string_view>
+    auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
     {
         std::optional<std::string_view> result{};
 
@@ -173,9 +173,7 @@ namespace Anemone
         return result;
     }
 
-    void CommandLine::GetOption(
-        std::string_view name,
-        std::vector<std::string_view>& values)
+    void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
     {
         for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
@@ -188,8 +186,7 @@ namespace Anemone
         }
     }
 
-    void CommandLine::GetPositional(
-        std::vector<std::string_view>& positional)
+    void CommandLine::GetPositional(std::vector<std::string_view>& positional)
     {
         for (int i = 1; i < Internal::GCommandLineArgC; ++i)
         {
@@ -205,11 +202,7 @@ namespace Anemone
         }
     }
 
-    void CommandLine::Parse(
-        std::string_view commandLine,
-        std::vector<std::string_view>& positional,
-        std::vector<std::string_view>& switches,
-        std::vector<std::pair<std::string_view, std::string_view>>& options)
+    void CommandLine::Parse(std::string_view commandLine, std::vector<std::string_view>& positional, std::vector<std::string_view>& switches, std::vector<std::pair<std::string_view, std::string_view>>& options)
     {
         while (not commandLine.empty())
         {
@@ -364,5 +357,79 @@ namespace Anemone
         size_t const length = out - buffer.data();
         buffer.trim(length);
         result = buffer.as_view();
+    }
+
+    void CommandLine::Append(std::string& result, std::string_view part)
+    {
+        std::back_insert_iterator out{result};
+
+        bool quoted = false;
+
+        if (part.empty() or (part.find_first_of("()*<>&`^| \f\n\r\t\v\"\'\\") != std::string_view::npos))
+        {
+            quoted = true;
+        }
+
+        if (quoted)
+        {
+            *out++ = '"';
+        }
+
+        size_t backslashes = 0;
+
+        for (char const ch : part)
+        {
+            if (ch == '\\')
+            {
+                ++backslashes;
+            }
+            else if (ch == '"')
+            {
+                if (backslashes)
+                {
+                    for (size_t i = 0; i < (2 * backslashes); ++i)
+                    {
+                        (*out++) = '\\';
+                    }
+
+                    backslashes = 0;
+                }
+
+                *out++ = '\\';
+                *out++ = ch;
+            }
+            else
+            {
+                if (backslashes)
+                {
+                    for (size_t i = 0; i < backslashes; ++i)
+                    {
+                        (*out++) = '\\';
+                    }
+
+                    backslashes = 0;
+                }
+
+                *out++ = ch;
+            }
+        }
+
+        if (backslashes)
+        {
+            if (quoted)
+            {
+                backslashes *= 2;
+            }
+
+            for (size_t i = 0; i < backslashes; ++i)
+            {
+                *out++ = '\\';
+            }
+        }
+
+        if (quoted)
+        {
+            *out = '"';
+        }
     }
 }

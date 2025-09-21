@@ -2,11 +2,13 @@ if (LINUX)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "FileHandle.cxx"
-        "FileSystem.cxx"
+        "LinuxFileHandle.cxx"
+        "LinuxFileSystem.cxx"
+        "LinuxMemoryMappedFile.cxx"
     PUBLIC FILE_SET HEADERS FILES
-        "FileHandle.hxx"
-        "FileSystem.hxx"
+        "LinuxFileHandle.hxx"
+        "LinuxFileSystem.hxx"
+        "LinuxMemoryMappedFile.hxx"
 )
 
 endif()

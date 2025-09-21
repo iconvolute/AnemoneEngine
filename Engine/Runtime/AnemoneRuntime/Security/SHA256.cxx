@@ -141,7 +141,7 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    std::expected<void, Status> SHA256::Initialize()
+    std::expected<void, Error> SHA256::Initialize()
     {
         this->_count = 0;
         this->_buffer = {};
@@ -159,7 +159,7 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, Status> SHA256::Update(std::span<std::byte const> buffer)
+    std::expected<void, Error> SHA256::Update(std::span<std::byte const> buffer)
     {
         if (not buffer.empty())
         {
@@ -194,11 +194,11 @@ namespace Anemone
         return {};
     }
 
-    std::expected<void, Status> SHA256::Finalize(std::span<std::byte> hash)
+    std::expected<void, Error> SHA256::Finalize(std::span<std::byte> hash)
     {
         if (hash.size() < 32)
         {
-            return std::unexpected(Status::InvalidArgument);
+            return std::unexpected(Error::InvalidArgument);
         }
 
         size_t used = this->_count & 0x3Fu;

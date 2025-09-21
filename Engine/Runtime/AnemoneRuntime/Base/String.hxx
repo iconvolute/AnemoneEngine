@@ -329,3 +329,55 @@ namespace Anemone
         }
     }
 }
+
+namespace Anemone
+{
+    template <typename T>
+    typename T::size_type EditDistance(
+        T const& source,
+        T const& target,
+        typename T::size_type insertCost = 1,
+        typename T::size_type deleteCost = 1,
+        typename T::size_type replaceCost = 1)
+    {
+        if (source.size() > target.size())
+        {
+            return EditDistance(target, source, deleteCost, insertCost, replaceCost);
+        }
+
+        typename T::size_type const minSize = source.size();
+        typename T::size_type const maxSize = target.size();
+
+        std::vector<typename T::size_type> distance(minSize + 1);
+
+        distance[0] = 0;
+        for (typename T::size_type i = 1; i <= minSize; ++i)
+        {
+            distance[i] = distance[i - 1] + deleteCost;
+        }
+
+        for (typename T::size_type j = 1; j <= maxSize; ++j)
+        {
+            typename T::size_type previousDiagonal = distance[0], previousDiagonalSave;
+            distance[0] += insertCost;
+
+            for (typename T::size_type i = 1; i <= minSize; ++i)
+            {
+                previousDiagonalSave = distance[i];
+
+                if (source[i - 1] == target[j - 1])
+                {
+                    distance[i] = previousDiagonal;
+                }
+                else
+                {
+                    distance[i] = std::min(std::min(distance[i - 1] + deleteCost, distance[i] + insertCost), previousDiagonal + replaceCost);
+                }
+
+                previousDiagonal = previousDiagonalSave;
+            }
+        }
+
+        return distance[minSize];
+    }
+}

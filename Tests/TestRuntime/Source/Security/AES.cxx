@@ -20,13 +20,13 @@ TEST_CASE("Cryptography AES")
         std::byte{0x08}, std::byte{0x09}, std::byte{0x0A}, std::byte{0x0B},
         std::byte{0x0C}, std::byte{0x0D}, std::byte{0x0E}, std::byte{0x0F}};
 
-    REQUIRE(aes.Initialize(key) == Status::Success);
+    REQUIRE(aes.Initialize(key) == Error::Success);
 
     std::array<std::byte, 16> encrypted{};
-    REQUIRE(aes.Encrypt(input, encrypted) == Status::Success);
+    REQUIRE(aes.Encrypt(input, encrypted) == Error::Success);
 
     std::array<std::byte, 16> decrypted{};
-    REQUIRE(aes.Decrypt(encrypted, decrypted) == Status::Success);
+    REQUIRE(aes.Decrypt(encrypted, decrypted) == Error::Success);
 
     REQUIRE(input == decrypted);
 }

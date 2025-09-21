@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Interop/Linux/SafeHandle.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <string_view>
 #include <expected>
@@ -23,7 +23,7 @@ namespace Anemone
         LinuxNamedMutex() = default;
 
     public:
-        static std::expected<LinuxNamedMutex, Status> Create(std::string_view name);
+        static std::expected<LinuxNamedMutex, Error> Create(std::string_view name);
 
     public:
         void Lock();

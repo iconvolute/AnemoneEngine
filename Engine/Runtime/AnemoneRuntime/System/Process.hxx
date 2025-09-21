@@ -1,85 +1,72 @@
 #pragma once
-#include "AnemoneRuntime/System/Platform/Platform.hxx"
-#include "AnemoneRuntime/Storage/FileHandle.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
+#include "AnemoneRuntime/Storage/FileHandle.hxx"
+#include "AnemoneRuntime/Storage/StreamReader.hxx"
+#include "AnemoneRuntime/Storage/StreamWriter.hxx"
 
 #include <string_view>
-#include <expected>
 #include <optional>
-#include <memory>
 
 namespace Anemone
 {
-    class RUNTIME_API Process final
+    struct ProcessStartInfo final
     {
-    private:
-        Internal::PlatformProcess _handle;
+        std::string FileName{};
+
+        std::optional<std::string> StartupDirectory = std::nullopt;
+
+        std::vector<std::string> Parameters{};
+
+        bool RedirectStandardInput = false;
+        bool RedirectStandardOutput = false;
+        bool RedirectStandardError = false;
+    };
+
+    class Process : public ReferenceCounted<Process>
+    {
+    protected:
+        Reference<StreamReader> _standardOutputReader{};
+        Reference<StreamReader> _standardErrorReader{};
+        Reference<StreamWriter> _standardInputWriter{};
 
     public:
-        Process() = default;
+        Process();
+
         Process(Process const&) = delete;
-        Process(Process&&) noexcept = default;
+
+        Process(Process&&) noexcept = delete;
+
+        virtual ~Process();
+
         Process& operator=(Process const&) = delete;
-        Process& operator=(Process&&) noexcept = default;
-        ~Process() = default;
 
-        explicit Process(Internal::PlatformProcess handle)
-            : _handle{std::move(handle)}
+        Process& operator=(Process&&) noexcept = delete;
+
+    public:
+        virtual std::expected<int32_t, Error> Wait() = 0;
+
+        virtual std::expected<int32_t, Error> TryWait(Duration timeout) = 0;
+
+        virtual std::expected<int32_t, Error> TryWait() = 0;
+
+        [[nodiscard]] Reference<StreamReader> const& GetStandardOutputReader() const
         {
+            return this->_standardOutputReader;
+        }
+
+        [[nodiscard]] Reference<StreamReader> const& GetStandardErrorReader() const
+        {
+            return this->_standardErrorReader;
+        }
+
+        [[nodiscard]] Reference<StreamWriter> const& GetStandardInputWriter() const
+        {
+            return this->_standardInputWriter;
         }
 
     public:
-        [[nodiscard]] explicit operator bool() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] bool IsValid() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] Internal::PlatformProcess const& GetNativeHandle() const
-        {
-            return this->_handle;
-        }
-
-    public:
-        std::expected<int32_t, Status> Wait();
-
-        std::expected<int32_t, Status> TryWait();
-
-        std::expected<void, Status> Terminate();
-
-    public:
-        static auto Start(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory)
-            -> std::expected<Process, Status>;
-
-        static auto Start(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory,
-            std::unique_ptr<FileHandle>* input,
-            std::unique_ptr<FileHandle>* output,
-            std::unique_ptr<FileHandle>* error)
-            -> std::expected<Process, Status>;
-
-        static auto Execute(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory)
-            -> std::expected<int32_t, Status>;
-
-        static auto Execute(
-            std::string_view path,
-            std::optional<std::string_view> const& params,
-            std::optional<std::string_view> const& workingDirectory,
-            FunctionRef<void(std::string_view)> output,
-            FunctionRef<void(std::string_view)> error)
-            -> std::expected<int32_t, Status>;
+        static Reference<Process> Start(ProcessStartInfo const& processStartInfo);
     };
 }

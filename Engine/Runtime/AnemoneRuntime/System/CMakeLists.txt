@@ -3,6 +3,7 @@ add_subdirectory("Platform")
 target_sources(AnemoneRuntime
     PRIVATE
         "CommandLine.cxx"
+        "Process.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Clipboard.hxx"
         "CommandLine.hxx"

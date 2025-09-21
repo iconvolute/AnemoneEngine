@@ -1,7 +1,5 @@
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
-
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Storage/FileHandleReader.hxx"
 
 namespace Anemone::Internal
 {
@@ -20,55 +18,44 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    auto FileSystem::CreateFileReader(
-        std::string_view path)
-        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
-    {
-        return this->CreateFile(
-            path,
-            FileMode::OpenExisting,
-            FileAccess::Read,
-            FileOption::None);
-    }
-
-    auto FileSystem::CreateFileWriter(
-        std::string_view path)
-        -> std::expected<std::unique_ptr<FileHandle>, ErrorCode>
-    {
-        return this->CreateFile(
-            path,
-            FileMode::CreateAlways,
-            FileAccess::ReadWrite,
-            FileOption::None);
-    }
-
     auto FileSystem::ReadTextFile(
         std::string_view path)
-        -> std::expected<std::string, ErrorCode>
+        -> std::expected<std::string, Error>
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            auto length = (*handle)->GetLength();
-            std::string result;
-
-            result.resize(length);
-
-            std::span view{reinterpret_cast<std::byte*>(result.data()), result.size()};
-
-            do
+            if (auto length = (*handle)->GetLength())
             {
-                size_t processed = (*handle)->Read(view);
+                std::string result;
 
-                if (processed == 0)
+                result.resize(*length);
+
+                std::span view{reinterpret_cast<std::byte*>(result.data()), result.size()};
+
+                do
                 {
-                    // End of file.
-                    break;
-                }
+                    if (auto processed = (*handle)->Read(view))
+                    {
+                        if (*processed == 0)
+                        {
+                            // End of file.
+                            break;
+                        }
 
-                view = view.subspan(processed);
-            } while (true);
+                        view = view.subspan(*processed);
+                    }
+                    else
+                    {
+                        return std::unexpected(processed.error());
+                    }
+                } while (true);
 
-            return result;
+                return result;
+            }
+            else
+            {
+                return std::unexpected(length.error());
+            }
         }
         else
         {
@@ -78,86 +65,112 @@ namespace Anemone
 
     auto FileSystem::ReadBinaryFile(
         std::string_view path)
-        -> std::expected<std::vector<std::byte>, ErrorCode>
+        -> std::expected<std::vector<std::byte>, Error>
     {
         if (auto handle = this->CreateFileReader(path))
         {
-            auto length = (*handle)->GetLength();
-            std::vector<std::byte> result;
-            result.resize(length);
-
-            std::span view{result.data(), result.size()};
-
-            do
+            if (auto length = (*handle)->GetLength())
             {
-                auto processed = (*handle)->Read(view);
-                if (processed == 0)
+                std::vector<std::byte> result;
+                result.resize(*length);
+
+                std::span view{result.data(), result.size()};
+
+                do
                 {
-                    // End of file.
-                    break;
-                }
+                    if (auto processed = (*handle)->Read(view))
+                    {
+                        if (*processed == 0)
+                        {
+                            // End of file.
+                            break;
+                        }
 
-                // Update view to the remaining part.
-                view = view.subspan(processed);
-            } while (true);
+                        // Update view to the remaining part.
+                        view = view.subspan(*processed);
+                    }
+                    else
+                    {
+                        return std::unexpected(processed.error());
+                    }
+                } while (true);
 
-            return result;
+                return result;
+            }
+            else
+            {
+                return std::unexpected(length.error());
+            }
         }
-
-        return std::unexpected(ErrorCode::NotFound);
+        else
+        {
+            return std::unexpected(handle.error());
+        }
     }
 
     auto FileSystem::WriteTextFile(
         std::string_view path,
         std::string_view content)
-        -> std::expected<void, ErrorCode>
+        -> std::expected<void, Error>
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            AE_ASSERT((*handle)->GetLength() == 0);
-
             std::span view = std::as_bytes(std::span{content});
 
             while (not view.empty())
             {
-                size_t processed = (*handle)->Write(view);
-                // Update view to the remaining part.
-                view = view.subspan(processed);
+                if (auto processed = (*handle)->Write(view))
+                {
+                    // Update view to the remaining part.
+                    view = view.subspan(*processed);
+                }
+                else
+                {
+                    return std::unexpected(processed.error());
+                }
             }
 
             return {};
         }
-
-        return std::unexpected(ErrorCode::NotFound);
+        else
+        {
+            return std::unexpected(handle.error());
+        }
     }
 
     auto FileSystem::WriteBinaryFile(
         std::string_view path,
         std::span<std::byte const> content)
-        -> std::expected<void, ErrorCode>
+        -> std::expected<void, Error>
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            AE_ASSERT((*handle)->GetLength() == 0);
-
             while (not content.empty())
             {
-                size_t processed = (*handle)->Write(content);
-                // Update content to the remaining part.
-                content = content.subspan(processed);
+                if (auto processed = (*handle)->Write(content))
+                {
+                    // Update content to the remaining part.
+                    content = content.subspan(*processed);
+                }
+                else
+                {
+                    return std::unexpected(processed.error());
+                }
             }
 
             return {};
         }
-
-        return std::unexpected(ErrorCode::NotFound);
+        else
+        {
+            return std::unexpected(handle.error());
+        }
     }
 
     auto FileSystem::FileCopy(
         std::string_view source,
         std::string_view destination,
         NameCollisionResolve nameCollisionResolve)
-        -> std::expected<void, ErrorCode>
+        -> std::expected<void, Error>
     {
         auto reader = this->CreateFileReader(source);
 
@@ -170,7 +183,7 @@ namespace Anemone
         {
             if (nameCollisionResolve == NameCollisionResolve::Fail)
             {
-                return std::unexpected(ErrorCode::AlreadyExists);
+                return std::unexpected(Error::AlreadyExists);
             }
         }
 
@@ -188,29 +201,33 @@ namespace Anemone
 
         while (true)
         {
-            size_t const readerProcessed = (*reader)->Read(bufferView);
-
-            if (readerProcessed == 0)
+            if (auto readerProcessed = (*reader)->Read(bufferView))
             {
-                // End of file.
-                return {};
-            }
-
-            // Get part of buffer to write.
-            std::span toWrite = bufferView.subspan(0, readerProcessed);
-
-            // Write view back to destination.
-            while (not toWrite.empty())
-            {
-                size_t const writerProcessed = (*writer)->Write(bufferView.subspan(0, readerProcessed));
-
-                if (!writerProcessed)
+                if (*readerProcessed == 0)
                 {
-                    // Failed to write
-                    return std::unexpected(ErrorCode::IoError);
+                    // End of file.
+                    return {};
                 }
 
-                toWrite = toWrite.subspan(writerProcessed);
+                // Get part of buffer to write.
+                std::span toWrite = bufferView.subspan(0, *readerProcessed);
+
+                // Write view back to destination.
+                while (not toWrite.empty())
+                {
+                    if (auto writerProcessed = (*writer)->Write(bufferView.subspan(0, *readerProcessed)))
+                    {
+                        toWrite = toWrite.subspan(*writerProcessed);
+                    }
+                    else
+                    {
+                        return std::unexpected(writerProcessed.error());
+                    }
+                }
+            }
+            else
+            {
+                return std::unexpected(readerProcessed.error());
             }
         }
     }

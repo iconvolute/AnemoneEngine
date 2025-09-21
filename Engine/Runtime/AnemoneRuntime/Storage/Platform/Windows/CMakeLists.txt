@@ -2,11 +2,13 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "FileHandle.cxx"
-        "FileSystem.cxx"
+        "WindowsFileHandle.cxx"
+        "WindowsFileSystem.cxx"
+        "WindowsMemoryMappedFile.cxx"
     PUBLIC FILE_SET HEADERS FILES
-        "FileHandle.hxx"
-        "FileSystem.hxx"
+        "WindowsFileHandle.hxx"
+        "WindowsFileSystem.hxx"
+        "WindowsMemoryMappedFile.hxx"
 )
 
 endif()

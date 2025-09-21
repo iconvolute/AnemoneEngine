@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <string_view>
 #include <source_location>
@@ -87,7 +87,7 @@ namespace Anemone::Diagnostics
 
         RUNTIME_API static void ReportErrorErrno(int error, std::source_location const& location);
 
-        RUNTIME_API static Status TranslateErrorCodeErrno(int error);
+        RUNTIME_API static Error TranslateErrorCodeErrno(int error);
     };
 }
 

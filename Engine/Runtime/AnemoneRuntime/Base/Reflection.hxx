@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <cstdint>
 #include <string_view>
@@ -106,8 +106,8 @@ namespace Anemone::Reflection
         }
     };
 
-    using PropertyGetter = Status(const void* instance, void* value);
-    using PropertySetter = Status(void* instance, const void* value);
+    using PropertyGetter = Error(const void* instance, void* value);
+    using PropertySetter = Error(void* instance, const void* value);
 
     struct PropertyDescriptor final
     {
@@ -118,7 +118,7 @@ namespace Anemone::Reflection
         PropertySetter* Setter;
 
         template <typename T>
-        Status InvokeGetter(void* instance, T& result)
+        Error InvokeGetter(void* instance, T& result)
         {
             if (this->Getter)
             {
@@ -127,14 +127,14 @@ namespace Anemone::Reflection
                     return this->Getter(instance, &result);
                 }
 
-                return Status::InvalidOperation;
+                return Error::InvalidOperation;
             }
 
-            return Status::NotSupported;
+            return Error::NotSupported;
         }
 
         template <typename T>
-        Status InvokeSetter(void* instance, T const& value)
+        Error InvokeSetter(void* instance, T const& value)
         {
             if (this->Setter)
             {
@@ -143,10 +143,10 @@ namespace Anemone::Reflection
                     return this->Setter(instance, &value);
                 }
 
-                return Status::InvalidOperation;
+                return Error::InvalidOperation;
             }
 
-            return Status::NotSupported;
+            return Error::NotSupported;
         }
     };
 
@@ -165,18 +165,18 @@ namespace Anemone::Reflection
         {
         }
 
-        Status Get(void* instance, T& result)
+        Error Get(void* instance, T& result)
         {
             return this->m_Getter(instance, &result);
         }
 
-        Status Set(void* instance, T const& value)
+        Error Set(void* instance, T const& value)
         {
             return this->m_Setter(instance, &value);
         }
     };
 
-    using EventHandlerMethod = Status(void* instance, void* value);
+    using EventHandlerMethod = Error(void* instance, void* value);
 
     struct EventHandlerDescriptor
     {
@@ -186,7 +186,7 @@ namespace Anemone::Reflection
         EventHandlerMethod* Method;
 
         template <typename T>
-        Status Invoke(void* instance, void* value)
+        Error Invoke(void* instance, void* value)
         {
             if (this->Method)
             {
@@ -195,10 +195,10 @@ namespace Anemone::Reflection
                     return this->Method(instance, value);
                 }
 
-                return Status::InvalidOperation;
+                return Error::InvalidOperation;
             }
 
-            return Status::NotSupported;
+            return Error::NotSupported;
         }
     };
 
@@ -454,13 +454,13 @@ namespace Example
                 .Property(
                     "Value",
                     AnemoneReflection_ToTypeId<decltype(_field_int)>::Id,
-                    [](const void* instance, void* value) -> Anemone::Status
+                    [](const void* instance, void* value) -> Anemone::Error
                     {
                         auto self = static_cast<const MyClass*>(instance);
                         *static_cast<int32_t*>(value) = self->GetValue();
                         return {};
                     },
-                    [](void* instance, const void* value) -> Anemone::Status
+                    [](void* instance, const void* value) -> Anemone::Error
                     {
                         auto self = static_cast<MyClass*>(instance);
                         self->SetValue(*static_cast<const int32_t*>(value));
@@ -469,13 +469,13 @@ namespace Example
                 .Property(
                     "FieldString",
                     AnemoneReflection_ToTypeId<decltype(FieldString)>::Id,
-                    [](const void* instance, void* value) -> Anemone::Status
+                    [](const void* instance, void* value) -> Anemone::Error
                     {
                         auto self = static_cast<const MyClass*>(instance);
                         *static_cast<std::string*>(value) = self->FieldString;
                         return {};
                     },
-                    [](void* instance, const void* value) -> Anemone::Status
+                    [](void* instance, const void* value) -> Anemone::Error
                     {
                         auto self = static_cast<MyClass*>(instance);
                         self->FieldString = *static_cast<const std::string*>(value);
@@ -484,7 +484,7 @@ namespace Example
                 .EventHandler(
                     "OnEvent",
                     AnemoneReflection_ToTypeId<MyEventArgs>::Id,
-                    [](void* instance, void* value) -> Anemone::Status
+                    [](void* instance, void* value) -> Anemone::Error
                     {
                         auto self = static_cast<MyClass*>(instance);
                         auto args = static_cast<MyEventArgs*>(value);

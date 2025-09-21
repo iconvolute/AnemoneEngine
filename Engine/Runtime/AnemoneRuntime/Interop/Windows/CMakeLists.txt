@@ -10,7 +10,6 @@ target_sources(AnemoneRuntime
         "Graphics.hxx"
         "Headers.hxx"
         "MemoryBuffer.hxx"
-        "MemoryMappedFile.hxx"
         "Process.hxx"
         "Registry.hxx"
         "SafeHandle.hxx"

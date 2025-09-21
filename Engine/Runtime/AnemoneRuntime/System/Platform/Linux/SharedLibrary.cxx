@@ -7,7 +7,7 @@
 
 namespace Anemone
 {
-    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, Status>
+    auto SharedLibrary::Load(std::string_view path) -> std::expected<SharedLibrary, Error>
     {
         Interop::Linux::FilePath uPath{path};
 
@@ -18,10 +18,10 @@ namespace Anemone
             return SharedLibrary{std::move(h)};
         }
 
-        return std::unexpected(Status::InvalidArgument);
+        return std::unexpected(Error::InvalidArgument);
     }
 
-    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, Status>
+    auto SharedLibrary::GetSymbol(const char* name) const -> std::expected<void*, Error>
     {
         if (this->_handle)
         {
@@ -30,9 +30,9 @@ namespace Anemone
                 return symbol;
             }
 
-            return std::unexpected(Status::NotFound);
+            return std::unexpected(Error::NotFound);
         }
 
-        return std::unexpected(Status::InvalidHandle);
+        return std::unexpected(Error::InvalidHandle);
     }
 }

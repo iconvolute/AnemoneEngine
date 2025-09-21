@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <span>
 #include <array>
@@ -23,11 +23,11 @@ namespace Anemone
         virtual ~SymmetricAlgorithm() = default;
 
     public:
-        virtual Status Initialize(std::span<std::byte const> key) = 0;
+        virtual Error Initialize(std::span<std::byte const> key) = 0;
 
-        virtual Status Encrypt(std::span<std::byte const> input, std::span<std::byte> output) = 0;
+        virtual Error Encrypt(std::span<std::byte const> input, std::span<std::byte> output) = 0;
 
-        virtual Status Decrypt(std::span<std::byte const> input, std::span<std::byte> output) = 0;
+        virtual Error Decrypt(std::span<std::byte const> input, std::span<std::byte> output) = 0;
     };
 
     class RUNTIME_API AES final : public SymmetricAlgorithm
@@ -41,11 +41,11 @@ namespace Anemone
         ~AES() override = default;
 
     public:
-        Status Initialize(std::span<std::byte const> key) override;
+        Error Initialize(std::span<std::byte const> key) override;
 
-        Status Encrypt(std::span<std::byte const> input, std::span<std::byte> output) override;
+        Error Encrypt(std::span<std::byte const> input, std::span<std::byte> output) override;
 
-        Status Decrypt(std::span<std::byte const> input, std::span<std::byte> output) override;
+        Error Decrypt(std::span<std::byte const> input, std::span<std::byte> output) override;
 
     private:
         size_t _rounds{};

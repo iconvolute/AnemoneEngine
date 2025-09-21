@@ -5,7 +5,7 @@
 #include <string>
 #include <string_view>
 
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 
 #include <expected>
@@ -77,11 +77,11 @@ namespace Anemone::inline FileSystemX
                                           "0123456789+/";
 
 
-        static std::expected<size_t, Status> GetEncodedSize(size_t size);
-        static std::expected<size_t, Status> GetDecodedSize(std::string_view encoded);
+        static std::expected<size_t, Error> GetEncodedSize(size_t size);
+        static std::expected<size_t, Error> GetDecodedSize(std::string_view encoded);
 
-        static std::expected<size_t, Status> Encode(std::span<std::byte const> input, std::span<char> output);
-        static std::expected<size_t, Status> Decode(std::string_view encoded, std::span<std::byte> data);
+        static std::expected<size_t, Error> Encode(std::span<std::byte const> input, std::span<char> output);
+        static std::expected<size_t, Error> Decode(std::string_view encoded, std::span<std::byte> data);
     };
 }*/
 
@@ -707,9 +707,9 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         std::vector<std::byte> buffer(32);
         auto sb = std::as_writable_bytes(std::span{buffer});
 
-        while (size_t r = (*h)->Read(sb))
+        while (auto r = (*h)->Read(sb))
         {
-            current.Update(sb.subspan(0, r));
+            current.Update(sb.subspan(0, *r));
         }
     }
 
@@ -944,7 +944,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 #include <atomic>
 
 #include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/Status.hxx"
+#include "AnemoneRuntime/Error.hxx"
 #include "AnemoneRuntime/Unicode.hxx"
 #include "AnemoneRuntime/Hash/FNV.hxx"
 
@@ -1121,7 +1121,7 @@ public:
         this->Close();
     }
 
-    static std::expected<UnixSocket, Anemone::Status> Create()
+    static std::expected<UnixSocket, Anemone::Error> Create()
     {
         UnixSocket h{socket(AF_UNIX, SOCK_STREAM, 0)};
         return h;
@@ -1159,7 +1159,7 @@ public:
         return result;
     }
 
-    std::expected<void, Anemone::Status> Bind(std::string_view path)
+    std::expected<void, Anemone::Error> Bind(std::string_view path)
     {
         AE_TRACE(Info, "Binding socket to '{}'", path);
         sockaddr_un addr = CreateSocketAddress(path);
@@ -1174,7 +1174,7 @@ public:
         return {};
     }
 
-    std::expected<void, Anemone::Status> Connect(std::string_view path)
+    std::expected<void, Anemone::Error> Connect(std::string_view path)
     {
         AE_TRACE(Info, "Connecting socket to '{}'", path);
         sockaddr_un addr = CreateSocketAddress(path);
@@ -1188,7 +1188,7 @@ public:
         return {};
     }
 
-    std::expected<void, Anemone::Status> Listen(int backlog)
+    std::expected<void, Anemone::Error> Listen(int backlog)
     {
         AE_TRACE(Info, "Listening on socket with backlog '{}'", backlog);
         if (listen(this->m_handle, backlog) != 0)
@@ -1199,7 +1199,7 @@ public:
         return {};
     }
 
-    std::expected<UnixSocket, Anemone::Status> Accept()
+    std::expected<UnixSocket, Anemone::Error> Accept()
     {
         AE_TRACE(Info, "Accepting connection on socket");
         sockaddr_un addr{};
@@ -1216,7 +1216,7 @@ public:
         return UnixSocket{client};
     }
 
-    std::expected<size_t, Anemone::Status> Send(std::span<std::byte const> data)
+    std::expected<size_t, Anemone::Error> Send(std::span<std::byte const> data)
     {
         AE_TRACE(Info, "Sending data of size '{}'", data.size());
         int const result = send(this->m_handle, reinterpret_cast<char const*>(data.data()), static_cast<int>(data.size()), 0);
@@ -1230,7 +1230,7 @@ public:
         return static_cast<size_t>(result);
     }
 
-    std::expected<size_t, Anemone::Status> Receive(std::span<std::byte> data)
+    std::expected<size_t, Anemone::Error> Receive(std::span<std::byte> data)
     {
         AE_TRACE(Info, "Receiving data of size '{}'", data.size());
         int const result = recv(this->m_handle, reinterpret_cast<char*>(data.data()), static_cast<int>(data.size()), 0);
@@ -1245,7 +1245,7 @@ public:
     }
 
     // gets local address
-    std::expected<sockaddr_storage, Anemone::Status> GetLocalAddress()
+    std::expected<sockaddr_storage, Anemone::Error> GetLocalAddress()
     {
         sockaddr_storage addr{};
         int len = sizeof(addr);
@@ -1259,7 +1259,7 @@ public:
     }
 
     // gets remote address
-    std::expected<sockaddr_storage, Anemone::Status> GetRemoteAddress()
+    std::expected<sockaddr_storage, Anemone::Error> GetRemoteAddress()
     {
         sockaddr_storage addr{};
         int len = sizeof(addr);

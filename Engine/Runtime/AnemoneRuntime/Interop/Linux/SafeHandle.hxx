@@ -94,6 +94,25 @@ namespace Anemone::Interop::Linux
     };
     using SafePidHandle = SafeHandleT<pid_t, SafePidHandleTraits>;
 
+    struct SafePidFdHandleTraits final
+    {
+        static int Invalid()
+        {
+            return -1;
+        }
+        static bool IsValid(
+            int value)
+        {
+            return value >= 0;
+        }
+        static bool Reset(
+            int value)
+        {
+            return close(value) == 0;
+        }
+    };
+    using SafePidFdHandle = SafeHandleT<int, SafePidFdHandleTraits>;
+
     struct SafeSharedLibraryHandleTraits
     {
         static void* Invalid()

@@ -4,7 +4,7 @@
 #include "AnemoneRuntime/Math/Point.hxx"
 #include "AnemoneRuntime/Math/Rect.hxx"
 #include "AnemoneRuntime/Math/Thickness.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 #include "AnemoneRuntime/Base/Intrusive.hxx"
 
 #include <expected>

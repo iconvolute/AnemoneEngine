@@ -4,9 +4,11 @@ target_sources(AnemoneRuntime
     PRIVATE
         "Clipboard.cxx"
         "Environment.cxx"
-        "Process.cxx"
+        "WindowsProcess.cxx"
         "SharedLibrary.cxx"
         "SystemAllocator.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "WindowsProcess.hxx"
 )
 
 endif()

@@ -2,9 +2,9 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
 #include "AnemoneRuntime/Base/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Status.hxx"
-#include "AnemoneRuntime/Storage/DataWriter.hxx"
-#include "AnemoneRuntime/Storage/DataReader.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
+#include "AnemoneRuntime/Storage/BinaryWriter.hxx"
+#include "AnemoneRuntime/Storage/BinaryReader.hxx"
 
 #include <cstdint>
 #include <cstddef>
@@ -343,6 +343,6 @@ namespace Anemone::Graphics
 
 namespace Anemone::Graphics
 {
-    GRAPHICS_API std::expected<std::unique_ptr<Image>, Status> ImageDecoder_DDS(std::span<std::byte> buffer);
-    GRAPHICS_API std::expected<void, Status> ImageEncoder_DDS(Storage::DataWriter& writer, Image const& image);
+    GRAPHICS_API std::expected<std::unique_ptr<Image>, Error> ImageDecoder_DDS(std::span<std::byte> buffer);
+    GRAPHICS_API std::expected<void, Error> ImageEncoder_DDS(BinaryWriter& writer, Image const& image);
 }

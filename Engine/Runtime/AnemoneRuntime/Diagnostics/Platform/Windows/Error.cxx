@@ -92,113 +92,107 @@ namespace Anemone::Diagnostics
         ReportErrorWin32(static_cast<DWORD>(hresult), location);
     }
 
-    Status WindowsDebug::TranslateErrorCodeHRESULT(HRESULT hr)
+    Error WindowsDebug::TranslateErrorCodeHRESULT(HRESULT hr)
     {
         if (SUCCEEDED(hr))
         {
-            return Status::Success;
+            return Error::Success;
         }
-        else
+
+        switch (hr)
         {
-            switch (hr)
-            {
-            case __HRESULT_FROM_WIN32(ERROR_SUCCESS):
-                return Status::Success;
+        case __HRESULT_FROM_WIN32(ERROR_SUCCESS):
+            return Error::Success;
 
-            case E_INVALIDARG:
-            case E_POINTER:
-                // case __HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER):
-                return Status::InvalidArgument;
+        case E_INVALIDARG:
+        case E_POINTER:
+            // case __HRESULT_FROM_WIN32(ERROR_INVALID_PARAMETER):
+            return Error::InvalidArgument;
 
-            case E_ILLEGAL_METHOD_CALL:
-            case E_FAIL:
-            case E_ABORT:
-                return Status::InvalidOperation;
+        case E_ILLEGAL_METHOD_CALL:
+        case E_FAIL:
+        case E_ABORT:
+            return Error::InvalidOperation;
 
-            case E_NOTIMPL:
-                return Status::NotImplemented;
+        case E_NOTIMPL:
+            return Error::NotImplemented;
 
-            case __HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY):
-            case E_OUTOFMEMORY:
-                // case __HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY):
-                return Status::NotEnoughMemory;
+        case __HRESULT_FROM_WIN32(ERROR_NOT_ENOUGH_MEMORY):
+        case E_OUTOFMEMORY:
+            // case __HRESULT_FROM_WIN32(ERROR_OUTOFMEMORY):
+            return Error::NotEnoughMemory;
 
-            case E_PENDING:
-                return Status::OperationInProgress;
+        case E_PENDING:
+            return Error::InProgress;
 
-            case __HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE):
-            case __HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME):
-            case __HRESULT_FROM_WIN32(ERROR_INVALID_NAME):
-            case __HRESULT_FROM_WIN32(ERROR_HANDLE_DISK_FULL):
-            case __HRESULT_FROM_WIN32(ERROR_FILE_READ_ONLY):
-                return Status::InvalidArgument;
+        case __HRESULT_FROM_WIN32(ERROR_FILENAME_EXCED_RANGE):
+        case __HRESULT_FROM_WIN32(ERROR_BAD_PATHNAME):
+        case __HRESULT_FROM_WIN32(ERROR_INVALID_NAME):
+        case __HRESULT_FROM_WIN32(ERROR_HANDLE_DISK_FULL):
+        case __HRESULT_FROM_WIN32(ERROR_FILE_READ_ONLY):
+            return Error::InvalidArgument;
 
-            case __HRESULT_FROM_WIN32(ERROR_INVALID_DATA):
-            case __HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE):
-                return Status::InvalidData;
+        case __HRESULT_FROM_WIN32(ERROR_INVALID_DATA):
+        case __HRESULT_FROM_WIN32(ERROR_INVALID_DRIVE):
+            return Error::InvalidData;
 
-            case __HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
-                return Status::FileNotFound;
+        case __HRESULT_FROM_WIN32(ERROR_FILE_NOT_FOUND):
+            return Error::FileNotFound;
 
-            case __HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND):
-            case __HRESULT_FROM_WIN32(ERROR_NOT_FOUND):
-            case __HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND):
-                return Status::NotFound;
+        case __HRESULT_FROM_WIN32(ERROR_MOD_NOT_FOUND):
+        case __HRESULT_FROM_WIN32(ERROR_NOT_FOUND):
+        case __HRESULT_FROM_WIN32(ERROR_PROC_NOT_FOUND):
+            return Error::NotFound;
 
-            case __HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS):
-                return Status::AlreadyExists;
+        case __HRESULT_FROM_WIN32(ERROR_ALREADY_EXISTS):
+            return Error::AlreadyExists;
 
-            case STG_E_FILEALREADYEXISTS:
-            case __HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
-                return Status::FileExists;
+        case STG_E_FILEALREADYEXISTS:
+        case __HRESULT_FROM_WIN32(ERROR_FILE_EXISTS):
+            return Error::FileExists;
 
-            case __HRESULT_FROM_WIN32(ERROR_HANDLE_EOF):
-                return Status::EndOfFile;
+        case __HRESULT_FROM_WIN32(ERROR_HANDLE_EOF):
+            return Error::EndOfFile;
 
-            case E_ACCESSDENIED:
-            case __HRESULT_FROM_WIN32(ERROR_LOCK_VIOLATION):
-            case __HRESULT_FROM_WIN32(ERROR_CANNOT_BREAK_OPLOCK):
-            case __HRESULT_FROM_WIN32(ERROR_WRITE_PROTECT):
-            case __HRESULT_FROM_WIN32(ERROR_INVALID_ACCESS):
-                // case __HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED): // E_ACCESSDENIED
-                return Status::AccessDenied;
+        case E_ACCESSDENIED:
+        case __HRESULT_FROM_WIN32(ERROR_LOCK_VIOLATION):
+        case __HRESULT_FROM_WIN32(ERROR_CANNOT_BREAK_OPLOCK):
+        case __HRESULT_FROM_WIN32(ERROR_WRITE_PROTECT):
+        case __HRESULT_FROM_WIN32(ERROR_INVALID_ACCESS):
+            // case __HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED): // E_ACCESSDENIED
+            return Error::AccessDenied;
 
-            case __HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE):
-                return Status::InvalidHandle;
+        case __HRESULT_FROM_WIN32(ERROR_INVALID_HANDLE):
+            return Error::InvalidHandle;
 
-            case __HRESULT_FROM_WIN32(ERROR_DIRECTORY):
-                return Status::InvalidDirectory;
+        case __HRESULT_FROM_WIN32(ERROR_DIRECTORY):
+            return Error::InvalidDirectory;
 
-            case __HRESULT_FROM_WIN32(ERROR_READ_FAULT):
-            case __HRESULT_FROM_WIN32(ERROR_WRITE_FAULT):
-                return Status::IoError;
+        case __HRESULT_FROM_WIN32(ERROR_READ_FAULT):
+        case __HRESULT_FROM_WIN32(ERROR_WRITE_FAULT):
+            return Error::IoError;
 
-            case __HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION):
-                return Status::SharingViolation;
+        case __HRESULT_FROM_WIN32(ERROR_SHARING_VIOLATION):
+            return Error::SharingViolation;
 
-            case __HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED):
-                return Status::NotSupported;
+        case __HRESULT_FROM_WIN32(ERROR_NOT_SUPPORTED):
+            return Error::NotSupported;
 
-            case __HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND):
-            case __HRESULT_FROM_WIN32(ERROR_BAD_NETPATH):
-                return Status::InvalidPath;
+        case __HRESULT_FROM_WIN32(ERROR_PATH_NOT_FOUND):
+        case __HRESULT_FROM_WIN32(ERROR_BAD_NETPATH):
+            return Error::InvalidPath;
 
-            case __HRESULT_FROM_WIN32(ERROR_TIMEOUT):
-                return Status::OperationTimeout;
+        case __HRESULT_FROM_WIN32(ERROR_TIMEOUT):
+            return Error::Timeout;
 
-            case __HRESULT_FROM_WIN32(ERROR_DIR_NOT_EMPTY):
-                return Status::DirectoryNotEmpty;
-
-            default:
-                AE_TRACE(Error, "Unhandled HRESULT 0x{:08X}", static_cast<DWORD>(hr));
-                break;
-            }
+        case __HRESULT_FROM_WIN32(ERROR_DIR_NOT_EMPTY):
+            return Error::DirectoryNotEmpty;
         }
 
-        return Status::Unknown;
+        return Error::Failure;
     }
 
-    Status WindowsDebug::TranslateErrorCodeWin32(DWORD error)
+    Error WindowsDebug::TranslateErrorCodeWin32(DWORD error)
     {
         return TranslateErrorCodeHRESULT(__HRESULT_FROM_WIN32(error));
     }

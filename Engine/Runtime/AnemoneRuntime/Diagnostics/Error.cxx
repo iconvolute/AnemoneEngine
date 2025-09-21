@@ -37,111 +37,202 @@ namespace Anemone::Diagnostics
 #endif
     }
 
-    Status Debug::TranslateErrorCodeErrno(int error)
+    Error Debug::TranslateErrorCodeErrno(int error)
     {
         switch (error)
         {
         case 0:
-            return Status::Success;
+            return Error::Success;
 
         case ENOENT:
         case ESRCH:
         case ENXIO:
         case ECHILD:
         case ENODEV:
-            return Status::NotFound;
+            return Error::NotFound;
 
         case EBADF:
+            return Error::InvalidHandle;
+
         case EINVAL:
         case EDOM:
         case ERANGE:
         case EILSEQ:
-        case EOVERFLOW:
         case EDESTADDRREQ:
-            return Status::InvalidArgument;
+            return Error::InvalidArgument;
+
+        case EOVERFLOW:
+            return Error::ArithmeticOverflow;
 
         case E2BIG:
         case EFBIG:
         case EMSGSIZE:
         case ENAMETOOLONG:
-            return Status::InvalidRange;
+            return Error::InvalidRange;
 
         case EPERM:
         case EACCES:
-            return Status::AccessDenied;
+            return Error::AccessDenied;
 
         case EADDRINUSE:
         case EADDRNOTAVAIL:
         case EMFILE:
         case EMLINK:
         case ENFILE:
-            return Status::NotEnoughResources;
+            return Error::NotEnoughResources;
 
         case ENOMEM:
-            return Status::NotEnoughMemory;
+            return Error::NotEnoughMemory;
 
         case EEXIST:
+            return Error::AlreadyExists;
+
         case EISCONN:
-            return Status::AlreadyExists;
+            return Error::AlreadyConnected;
 
         case ETXTBSY:
         case ETIME:
         case ETIMEDOUT:
-            return Status::OperationTimeout;
+            return Error::Timeout;
 
         case EINTR:
         case EAGAIN:
         case EDEADLOCK:
-            return Status::OperationInterrupted;
+            return Error::Interrupted;
 
         case EAFNOSUPPORT:
         case ENOEXEC:
 #if defined(ENOTBLK)
         case ENOTBLK:
 #endif
-            return Status::NotSupported;
+            return Error::NotSupported;
 
         case EALREADY:
         case EBUSY:
         case EINPROGRESS:
-            return Status::OperationInProgress;
+            return Error::InProgress;
 
         case ECONNABORTED:
-            return Status::OperationAborted;
+            return Error::Canceled;
 
         case ECONNREFUSED:
-            return Status::OperationRefused;
+            return Error::Refused;
 
         case EFAULT:
         case EHOSTUNREACH:
         case ELOOP:
-            return Status::InvalidOperation;
+            return Error::InvalidOperation;
 
         case EBADMSG:
-            return Status::InvalidData;
+            return Error::InvalidData;
 
         case EIDRM:
         case ENETDOWN:
-            return Status::InvalidRequest;
+            return Error::InvalidRequest;
 
         case ECANCELED:
         case ECONNRESET:
         case ENETRESET:
-            return Status::OperationCanceled;
+            return Error::Canceled;
 
         case EISDIR:
-            return Status::DirectoryExists;
+            return Error::DirectoryExists;
 
         case EIO:
-            return Status::IoError;
+            return Error::IoError;
 
         case ENETUNREACH:
-            return Status::NotConnected;
+            return Error::NotConnected;
+
+        case EPIPE:
+            return Error::InvalidResource;
+
+        case EXDEV:
+            return Error::InvalidResource;
+
+        case ENOTEMPTY:
+            return Error::DirectoryNotEmpty;
+
+        case ENOSYS:
+            return Error::NotSupported;
+
+        case ENOTTY:
+            return Error::InvalidOperation;
+
+        case ESPIPE:
+            return Error::InvalidSeek;
+
+        case ENOBUFS:
+            return Error::NotEnoughSpace;
+
+        case ENOLINK:
+            return Error::InvalidResource;
+
+        case ENOLCK:
+            return Error::InvalidOperation;
+
+#ifdef ENODATA
+        case ENODATA:
+            return Error::InvalidData;
+#endif
+
+        case ENOMSG:
+            return Error::InvalidData;
+
+        case ENOPROTOOPT:
+            return Error::InvalidOption;
+
+        case ENOSPC:
+            return Error::NotEnoughSpace;
+
+#ifdef ENOSR
+        case ENOSR:
+            return Error::NotEnoughResources;
+#endif
+
+        case ENOTDIR:
+            return Error::InvalidDirectory;
+
+        case ENOTSOCK:
+            return Error::InvalidSocket;
+#ifdef ENOSTR
+        case ENOSTR:
+            return Error::InvalidStream;
+#endif
+
+        case ENOTCONN:
+            return Error::NotConnected;
+
+        case ENOTSUP:
+            return Error::NotSupported;
+
+#if defined(EOPNOTSUPP) && (EOPNOTSUPP != ENOTSUP)
+        case EOPNOTSUPP:
+            return Error::NotSupported;
+#endif
+
+        case EOWNERDEAD:
+            return Error::InvalidOperation;
+
+        case EPROTO:
+            return Error::NotSupported;
+
+        case EPROTONOSUPPORT:
+            return Error::NotSupported;
+
+        case EROFS:
+            return Error::AccessDenied;
+
+        case ENOTRECOVERABLE:
+            return Error::NotRecoverable;
+
+        case EPROTOTYPE:
+            return Error::InvalidType;
 
         default:
             break;
         }
 
-        return Status::Unknown;
+        return Error::Failure;
     }
 }
