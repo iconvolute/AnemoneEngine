@@ -8,7 +8,7 @@
 
 namespace Anemone
 {
-    class TextReader : public ReferenceCounted<TextReader>
+    class RUNTIME_API TextReader : public ReferenceCounted<TextReader>
     {
     public:
         TextReader();

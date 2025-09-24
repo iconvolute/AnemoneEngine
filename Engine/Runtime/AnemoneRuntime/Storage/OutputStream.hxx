@@ -11,7 +11,7 @@ namespace Anemone
     class OutputStream;
     using OutputStreamRef = Reference<OutputStream>;
 
-    class OutputStream : public ReferenceCounted<OutputStream>
+    class RUNTIME_API OutputStream : public ReferenceCounted<OutputStream>
     {
     public:
         OutputStream() = default;

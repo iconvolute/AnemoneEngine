@@ -43,75 +43,89 @@ namespace Anemone
 
 namespace Anemone
 {
-    inline auto operator<<(BinaryWriter& writer, float const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, float const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, double const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, double const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    auto operator<<(BinaryWriter& writer, long double const& value) -> std ::expected<size_t, Error> = delete;
+    auto operator<<(BinaryWriter& writer, long double const& value) -> BinaryWriter& = delete;
 
-    inline auto operator<<(BinaryWriter& writer, std::byte const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, std::byte const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, bool const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, bool const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, signed char const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, signed char const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, unsigned char const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, unsigned char const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, signed short const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, signed short const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, unsigned short const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, unsigned short const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, signed int const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, signed int const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, unsigned int const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, unsigned int const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, signed long const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, signed long const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, unsigned long const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, unsigned long const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, signed long long const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, signed long long const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 
-    inline auto operator<<(BinaryWriter& writer, unsigned long long const& value) -> std ::expected<size_t, Error>
+    inline auto operator<<(BinaryWriter& writer, unsigned long long const& value) -> BinaryWriter&
     {
-        return writer.Write(std::as_bytes(std::span{&value, 1}));
+        (void)writer.Write(std::as_bytes(std::span{&value, 1}));
+        return writer;
     }
 }

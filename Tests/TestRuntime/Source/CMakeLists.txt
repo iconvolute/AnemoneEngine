@@ -21,4 +21,5 @@ target_sources(TestRuntime
 add_subdirectory("Interop")
 add_subdirectory("Numerics")
 add_subdirectory("Security")
+add_subdirectory("Storage")
 add_subdirectory("Threading")

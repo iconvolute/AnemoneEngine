@@ -16,7 +16,7 @@ namespace Anemone
 
     class MemoryMappedFileView;
 
-    class MemoryMappedFile : public ReferenceCounted<MemoryMappedFile>
+    class RUNTIME_API MemoryMappedFile : public ReferenceCounted<MemoryMappedFile>
     {
     public:
         MemoryMappedFile() = default;
@@ -48,7 +48,7 @@ namespace Anemone
         virtual void Flush() = 0;
     };
 
-    class MemoryMappedFileView : public ReferenceCounted<MemoryMappedFileView>
+    class RUNTIME_API MemoryMappedFileView : public ReferenceCounted<MemoryMappedFileView>
     {
     public:
         MemoryMappedFileView() = default;

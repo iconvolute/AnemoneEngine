@@ -4,7 +4,7 @@
 
 namespace Anemone
 {
-    class MemoryInputStream final : public InputStream
+    class RUNTIME_API MemoryInputStream final : public InputStream
     {
     private:
         Reference<MemoryBuffer> _buffer{};

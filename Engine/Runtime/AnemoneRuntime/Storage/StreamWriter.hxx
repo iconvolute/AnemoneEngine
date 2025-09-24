@@ -6,7 +6,7 @@
 
 namespace Anemone
 {
-    class StreamWriter : public TextWriter
+    class RUNTIME_API StreamWriter : public TextWriter
     {
         static constexpr size_t DefaultBufferSize = 1024uz;
 

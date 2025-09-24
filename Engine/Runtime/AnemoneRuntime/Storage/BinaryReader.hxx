@@ -45,75 +45,89 @@ namespace Anemone
 
 namespace Anemone
 {
-    inline auto operator>>(BinaryReader& reader, float& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, float& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, double& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, double& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    auto operator>>(BinaryReader& reader, long double& value) -> std ::expected<size_t, Error> = delete;
+    auto operator>>(BinaryReader& reader, long double& value) -> BinaryReader& = delete;
 
-    inline auto operator>>(BinaryReader& reader, std::byte value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, std::byte value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, bool& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, bool& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, signed char& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, signed char& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, unsigned char& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, unsigned char& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, signed short& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, signed short& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, unsigned short& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, unsigned short& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, signed int& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, signed int& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, unsigned int& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, unsigned int& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, signed long& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, signed long& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, unsigned long& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, unsigned long& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, signed long long& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, signed long long& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 
-    inline auto operator>>(BinaryReader& reader, unsigned long long& value) -> std ::expected<size_t, Error>
+    inline auto operator>>(BinaryReader& reader, unsigned long long& value) -> BinaryReader&
     {
-        return reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        (void)reader.Read(std::as_writable_bytes(std::span{&value, 1}));
+        return reader;
     }
 }

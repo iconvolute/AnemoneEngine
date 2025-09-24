@@ -8,7 +8,7 @@
 
 namespace Anemone
 {
-    class TextWriter : public ReferenceCounted<TextWriter>
+    class RUNTIME_API TextWriter : public ReferenceCounted<TextWriter>
     {
     public:
         TextWriter();

@@ -6,7 +6,7 @@
 
 namespace Anemone
 {
-    class FileInputStream : public InputStream
+    class RUNTIME_API FileInputStream : public InputStream
     {
     private:
         Reference<FileHandle> _handle{};

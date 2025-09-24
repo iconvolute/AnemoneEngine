@@ -12,7 +12,7 @@
 
 namespace Anemone
 {
-    class MemoryBuffer final : public ReferenceCounted<MemoryBuffer>
+    class RUNTIME_API MemoryBuffer final : public ReferenceCounted<MemoryBuffer>
     {
     private:
         std::byte* _data{};

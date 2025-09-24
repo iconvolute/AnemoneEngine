@@ -40,7 +40,7 @@ namespace Anemone
         Temporary = 1u << 9u,
     };
 
-    class FileHandle : public ReferenceCounted<FileHandle>
+    class RUNTIME_API FileHandle : public ReferenceCounted<FileHandle>
     {
     public:
         FileHandle() = default;

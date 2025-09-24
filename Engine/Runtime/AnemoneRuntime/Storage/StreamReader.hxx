@@ -8,7 +8,7 @@
 
 namespace Anemone
 {
-    class StreamReader : public TextReader
+    class RUNTIME_API StreamReader : public TextReader
     {
         static constexpr size_t DefaultBufferSize = 1024uz;
 
