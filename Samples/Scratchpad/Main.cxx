@@ -313,7 +313,7 @@ anemone_noinline void test()
 #include "AnemoneRuntime/System/Process.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #endif
@@ -709,6 +709,10 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
         while (auto r = (*h)->Read(sb))
         {
+            if (*r == 0)
+            {
+                break;
+            }
             current.Update(sb.subspan(0, *r));
         }
     }
@@ -794,7 +798,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     EH eh{};
 
 #if ANEMONE_PLATFORM_WINDOWS
-    AE_TRACE(Error, "Error: {}", Anemone::Diagnostics::WindowsDebug::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
+    AE_TRACE(Error, "Error: {}", Anemone::WindowsDebug::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
 #endif
 
     Anemone::IApplication::Initialize(&eh);
@@ -826,10 +830,10 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     (void)argv;
     AE_PANIC("Hello {}", 42);
     Anemone::Platform::Internal::Initialize(argc, argv);
-    Anemone::Diagnostics::GTrace.Create();
+    Anemone::GTrace.Create();
     Anemone::Platform::Internal::SetupTraceListeners();
-    Anemone::Diagnostics::GTrace->AddListener(sl);
-    Anemone::Diagnostics::GTrace->AddListener(dl);
+    Anemone::GTrace->AddListener(sl);
+    Anemone::GTrace->AddListener(dl);
 
     AE_TRACE(Verbose, "Verbose");
     AE_TRACE(Debug, "Debug");
@@ -841,7 +845,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     AE_ASSERT(false);
 
     _mm_pause();
-    Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Information, "'Hello {} {}'", 42, "World");
+    Anemone::GTrace->WriteLine(Anemone::TraceLevel::Information, "'Hello {} {}'", 42, "World");
     _mm_pause();
 
     _mm_pause();
@@ -920,9 +924,9 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         L"CurrentBuildNumber");
 #endif
 
-    Anemone::Diagnostics::GTrace->RemoveListener(dl);
-    Anemone::Diagnostics::GTrace->RemoveListener(sl);
-    Anemone::Diagnostics::GTrace.Destroy();
+    Anemone::GTrace->RemoveListener(dl);
+    Anemone::GTrace->RemoveListener(sl);
+    Anemone::GTrace.Destroy();
     Anemone::Platform::Internal::Finalize();
 #endif
     return 0;
@@ -1321,8 +1325,8 @@ int main(int argc, char* argv[])
         Anemone::Math::Random rng{static_cast<uint64_t>(argc)};
         Anemone::Math::UniformDistribution dist{0.0, 1.0};
         double const d = dist(rng);
-        GXtrace->Log(Anemone::Diagnostics::TraceLevel::Critical,"Hello {}", "World");
-        GXtrace->Log(Anemone::Diagnostics::TraceLevel::Critical, "This is a test: {}", d);
+        GXtrace->Log(Anemone::TraceLevel::Critical,"Hello {}", "World");
+        GXtrace->Log(Anemone::TraceLevel::Critical, "This is a test: {}", d);
     }
     GXtrace.Destroy();
     {
@@ -1335,8 +1339,8 @@ int main(int argc, char* argv[])
         }
     }
     {
-        Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "Hello {}", "World");
-        Anemone::Diagnostics::GTrace->WriteLine(Anemone::Diagnostics::TraceLevel::Critical, "This is a test: {}", 42);
+        Anemone::GTrace->WriteLine(Anemone::TraceLevel::Critical, "Hello {}", "World");
+        Anemone::GTrace->WriteLine(Anemone::TraceLevel::Critical, "This is a test: {}", 42);
         AE_ASSERT(false);
     }
     {

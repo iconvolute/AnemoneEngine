@@ -1,17 +1,15 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
-#include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
+#include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
 namespace Anemone
 {
-    class ConsoleTraceListener final
-        : public TraceListener
+    class WindowsDebugTraceListener final : public TraceListener
     {
     private:
-        ReaderWriterLock _lock{};
+        CriticalSection m_lock{};
 
     public:
         void TraceEvent(TraceLevel level, const char* message, size_t size) override;
-        void Flush() override;
     };
 }

@@ -1,16 +1,22 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <string_view>
 #include <string>
+#include <expected>
 
 namespace Anemone
 {
     class Clipboard final
     {
     public:
-        RUNTIME_API static void Clear();
-        RUNTIME_API static bool GetText(std::string& result);
-        RUNTIME_API static bool SetText(std::string_view value);
+        RUNTIME_API static void Initialize();
+        RUNTIME_API static void Finalize();
+
+    public:
+        RUNTIME_API static auto Clear() -> std::expected<void, Error>;
+        RUNTIME_API static auto GetText(std::string& result) -> std::expected<void, Error>;
+        RUNTIME_API static auto SetText(std::string_view value) -> std::expected<void, Error>;
     };
 }

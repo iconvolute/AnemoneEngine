@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     void ConsoleTraceListener::TraceEvent(TraceLevel level, const char* message, size_t size)
     {

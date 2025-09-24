@@ -9,7 +9,7 @@
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
 #include "AnemoneRuntime/Platform/FilePath.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 
 #include <locale>
 #include <algorithm>
@@ -227,7 +227,7 @@ namespace Anemone
                 }
                 else
                 {
-                    Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                    Debug::ReportApplicationStop("Failed to get system information");
                 }
 
                 if (auto const keyBios = keySystem.OpenSubKey(LR"(BIOS)"))
@@ -238,7 +238,7 @@ namespace Anemone
                     }
                     else
                     {
-                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                        Debug::ReportApplicationStop("Failed to get system information");
                     }
 
                     if (keyBios.ReadString(L"SystemProductName", buffer))
@@ -247,7 +247,7 @@ namespace Anemone
                     }
                     else
                     {
-                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                        Debug::ReportApplicationStop("Failed to get system information");
                     }
 
                     if (keyBios.ReadString(L"SystemVersion", buffer))
@@ -256,17 +256,17 @@ namespace Anemone
                     }
                     else
                     {
-                        Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                        Debug::ReportApplicationStop("Failed to get system information");
                     }
                 }
                 else
                 {
-                    Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                    Debug::ReportApplicationStop("Failed to get system information");
                 }
             }
             else
             {
-                Diagnostics::Debug::ReportApplicationStop("Failed to get system information");
+                Debug::ReportApplicationStop("Failed to get system information");
             }
         }
 
@@ -390,17 +390,17 @@ namespace Anemone
             {
                 if (not key.ReadString("ProcessorNameString", statics.processorName))
                 {
-                    Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
+                    Debug::ReportApplicationStop("Cannot obtain processor information");
                 }
 
                 if (not key.ReadString("VendorIdentifier", statics.processorVendor))
                 {
-                    Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
+                    Debug::ReportApplicationStop("Cannot obtain processor information");
                 }
             }
             else
             {
-                Diagnostics::Debug::ReportApplicationStop("Cannot obtain processor information");
+                Debug::ReportApplicationStop("Cannot obtain processor information");
             }
         }
 
@@ -409,18 +409,18 @@ namespace Anemone
             if (Interop::Windows::IsProcessEmulated())
             {
                 // VERIFY: AVX is not supported in WoA process emulation.
-                Diagnostics::Debug::ReportApplicationStop("Emulated process not supported.");
+                Debug::ReportApplicationStop("Emulated process not supported.");
             }
 
             if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE_DOUBLE))
             {
-                Diagnostics::Debug::ReportApplicationStop("64-bit compare-exchange not supported.");
+                Debug::ReportApplicationStop("64-bit compare-exchange not supported.");
             }
 
 #if ANEMONE_ARCHITECTURE_X64
             if (not IsProcessorFeaturePresent(PF_COMPARE_EXCHANGE128))
             {
-                Diagnostics::Debug::ReportApplicationStop("128-bit compare-exchange not supported");
+                Debug::ReportApplicationStop("128-bit compare-exchange not supported");
             }
 #endif
 
@@ -428,26 +428,26 @@ namespace Anemone
 
             if (not IsProcessorFeaturePresent(PF_XSAVE_ENABLED))
             {
-                Diagnostics::Debug::ReportApplicationStop("XSAVE not enabled.");
+                Debug::ReportApplicationStop("XSAVE not enabled.");
             }
 
             if (not IsProcessorFeaturePresent(PF_AVX_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::Debug::ReportApplicationStop("AVX not supported.");
+                Debug::ReportApplicationStop("AVX not supported.");
             }
 #endif
 
 #if ANEMONE_FEATURE_AVX2
             if (not IsProcessorFeaturePresent(PF_AVX2_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::Debug::ReportApplicationStop("AVX2 not supported.");
+                Debug::ReportApplicationStop("AVX2 not supported.");
             }
 #endif
 
 #if ANEMONE_FEATURE_NEON
             if (not IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE))
             {
-                Diagnostics::Debug::ReportApplicationStop("NEON not supported.");
+                Debug::ReportApplicationStop("NEON not supported.");
             }
 #endif
 
@@ -472,7 +472,7 @@ namespace Anemone
                     VER_MAJORVERSION | VER_MINORVERSION,
                     conditionMask))
             {
-                Diagnostics::Debug::ReportApplicationStop("Windows 10 or newer required");
+                Debug::ReportApplicationStop("Windows 10 or newer required");
             }
         }
 
@@ -517,7 +517,7 @@ namespace Anemone::Internal
         // Initialize COM
         if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
         {
-            Diagnostics::Debug::ReportApplicationStop("Failed to initialize COM.");
+            Debug::ReportApplicationStop("Failed to initialize COM.");
         }
 
         // Initialize DPI awareness.
@@ -544,7 +544,7 @@ namespace Anemone::Internal
         WSADATA wsaData{};
         if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0)
         {
-            Diagnostics::Debug::ReportApplicationStop("Failed to initialize networking.");
+            Debug::ReportApplicationStop("Failed to initialize networking.");
         }
 
 
@@ -575,7 +575,7 @@ namespace Anemone::Internal
 
         if (WSACleanup() != 0)
         {
-            Diagnostics::Debug::ReportApplicationStop("Failed to finalize networking.");
+            Debug::ReportApplicationStop("Failed to finalize networking.");
         }
 
         // Finalize COM

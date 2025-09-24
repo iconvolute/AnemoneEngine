@@ -2,13 +2,15 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Clipboard.cxx"
+        "WindowsClipboard.cxx"
         "Environment.cxx"
         "WindowsProcess.cxx"
-        "SharedLibrary.cxx"
+        "WindowsSharedLibrary.cxx"
         "SystemAllocator.cxx"
     PUBLIC FILE_SET HEADERS FILES
+        "WindowsClipboard.hxx"
         "WindowsProcess.hxx"
+        "WindowsSharedLibrary.hxx"
 )
 
 endif()

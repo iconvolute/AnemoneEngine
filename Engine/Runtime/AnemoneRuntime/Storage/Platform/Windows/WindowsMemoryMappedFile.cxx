@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Storage/Platform/Windows/WindowsMemoryMappedFile.hxx"
 #include "AnemoneRuntime/Base/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 
 namespace Anemone

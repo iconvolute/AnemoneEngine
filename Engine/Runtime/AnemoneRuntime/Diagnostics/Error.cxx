@@ -4,7 +4,7 @@
 
 #include <cerrno>
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     void Debug::ReportErrorErrno(int error, std::source_location const& location)
     {

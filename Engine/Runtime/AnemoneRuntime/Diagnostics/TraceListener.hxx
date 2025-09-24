@@ -6,7 +6,7 @@
 #include <string_view>
 #include <fmt/format.h>
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     enum class TraceLevel : uint8_t
     {

@@ -3,12 +3,36 @@
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
+#elif ANEMONE_PLATFORM_LINUX
+#include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxDebug.hxx"
+#else
+#error Not implemented
+#endif
+
 #include <iterator>
 
-
-namespace Anemone::Diagnostics
+namespace Anemone
 {
-    static CriticalSection gDebugLock{};
+    namespace
+    {
+        UninitializedObject<CriticalSection> gDebugLock{};
+    }
+
+    void Debug::Initialize()
+    {
+        gDebugLock.Create();
+
+        PlatformDebug::Initialize();
+    }
+
+    void Debug::Finalize()
+    {
+        PlatformDebug::Finalize();
+
+        gDebugLock.Destroy();
+    }
 
     bool Debug::ReportAssertionFormatted(
         std::source_location const& location,
@@ -16,7 +40,7 @@ namespace Anemone::Diagnostics
         std::string_view format,
         fmt::format_args args)
     {
-        UniqueLock lock{gDebugLock};
+        UniqueLock lock{*gDebugLock};
 
         // TODO: It would be nice to have tracing handle lack of trace listeners instead???
         TraceDispatcher& dispatcher = Trace::Get();
@@ -59,7 +83,7 @@ namespace Anemone::Diagnostics
         std::string_view format,
         fmt::format_args args)
     {
-        UniqueLock lock{gDebugLock};
+        UniqueLock lock{*gDebugLock};
 
         TraceDispatcher& dispatcher = Trace::Get();
 
@@ -81,21 +105,5 @@ namespace Anemone::Diagnostics
 #if false
         Debugger::Attach();
 #endif
-    }
-}
-
-namespace Anemone::Internal
-{
-    extern void PlatformInitializeDebug();
-    extern void PlatformFinalizeDebug();
-
-    extern void InitializeDebug()
-    {
-        PlatformInitializeDebug();
-    }
-
-    extern void FinalizeDebug()
-    {
-        PlatformFinalizeDebug();
     }
 }

@@ -71,7 +71,10 @@ namespace Anemone
         virtual ~FileSystem() = default;
 
     public:
-        // gets platform file system
+        RUNTIME_API static void Initialize();
+
+        RUNTIME_API static void Finalize();
+
         RUNTIME_API static FileSystem& GetPlatformFileSystem();
 
     public:

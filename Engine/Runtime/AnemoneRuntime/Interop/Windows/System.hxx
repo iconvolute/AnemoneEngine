@@ -30,16 +30,15 @@ namespace Anemone::Interop::Windows
                    conditionMask) != FALSE;
     }
 
-
     class ClipboardSession final
     {
     private:
         bool m_opened{};
 
     public:
-        ClipboardSession() noexcept
+        explicit ClipboardSession(HWND hWndNewOwner) noexcept
         {
-            if (OpenClipboard(nullptr))
+            if (OpenClipboard(hWndNewOwner))
             {
                 this->m_opened = true;
             }
@@ -64,11 +63,12 @@ namespace Anemone::Interop::Windows
         }
     };
 
+    template <typename T>
     class HGlobalMemoryLock final
     {
     private:
         HGLOBAL m_handle{};
-        void* m_data{};
+        T* m_data{};
 
     public:
         HGlobalMemoryLock(HGLOBAL handle) noexcept
@@ -94,11 +94,11 @@ namespace Anemone::Interop::Windows
         {
             return this->m_data != nullptr;
         }
-        [[nodiscard]] void* data() noexcept
+        [[nodiscard]] T* data() noexcept
         {
             return this->m_data;
         }
-        [[nodiscard]] void const* data() const noexcept
+        [[nodiscard]] T const* data() const noexcept
         {
             return this->m_data;
         }

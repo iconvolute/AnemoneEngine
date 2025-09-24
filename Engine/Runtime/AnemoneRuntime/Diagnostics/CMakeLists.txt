@@ -2,7 +2,6 @@ target_sources(AnemoneRuntime
     PRIVATE
         "Debug.cxx"
         "Error.cxx"
-        "Runtime.cxx"
         "Trace.cxx"
         "TraceDispatcher.cxx"
         "TraceListener.cxx"

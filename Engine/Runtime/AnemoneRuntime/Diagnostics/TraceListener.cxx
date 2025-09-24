@@ -3,7 +3,7 @@
 #include <iterator>
 #include <array>
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     static constexpr std::array TraceLevelMarks = []()
     {

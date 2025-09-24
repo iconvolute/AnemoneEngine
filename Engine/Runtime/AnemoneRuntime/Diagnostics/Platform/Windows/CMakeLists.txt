@@ -2,12 +2,18 @@ if (WIN32)
 
 target_sources(AnemoneRuntime
     PRIVATE
-        "Debug.cxx"
-        "Error.cxx"
         "StackTrace.cxx"
-        "Trace.cxx"
+
+        "WindowsDebug.cxx"
+        "WindowsDebugTraceListener.cxx"
+        "WindowsEtwTraceListener.cxx"
+        "WindowsTrace.cxx"
     PUBLIC FILE_SET HEADERS FILES
-        "Debug.hxx"
+
+        "WindowsDebug.hxx"
+        "WindowsDebugTraceListener.hxx"
+        "WindowsEtwTraceListener.hxx"
+        "WindowsTrace.hxx"
 )
 
 endif()

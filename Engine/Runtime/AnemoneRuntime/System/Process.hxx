@@ -31,9 +31,10 @@ namespace Anemone
         Reference<StreamReader> _standardErrorReader{};
         Reference<StreamWriter> _standardInputWriter{};
 
-    public:
+    protected:
         Process();
 
+    public:
         Process(Process const&) = delete;
 
         Process(Process&&) noexcept = delete;
@@ -67,6 +68,6 @@ namespace Anemone
         }
 
     public:
-        static Reference<Process> Start(ProcessStartInfo const& processStartInfo);
+        RUNTIME_API static Reference<Process> Start(ProcessStartInfo const& processStartInfo);
     };
 }

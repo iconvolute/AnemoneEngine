@@ -1,0 +1,9 @@
+#pragma once
+#include "AnemoneRuntime/System/Clipboard.hxx"
+
+namespace Anemone
+{
+    struct LinuxClipboard final
+    {
+    };
+}

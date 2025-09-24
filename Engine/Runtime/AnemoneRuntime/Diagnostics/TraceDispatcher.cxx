@@ -1,6 +1,6 @@
 #include "AnemoneRuntime/Diagnostics/TraceDispatcher.hxx"
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     void TraceDispatcher::TraceEvent(TraceLevel level, const char* message, size_t size)
     {

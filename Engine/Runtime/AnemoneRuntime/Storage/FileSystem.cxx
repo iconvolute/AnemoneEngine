@@ -1,21 +1,6 @@
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
-namespace Anemone::Internal
-{
-    extern void InitializeFileSystem()
-    {
-        extern void PlatformInitializeFileSystem();
-        PlatformInitializeFileSystem();
-    }
-
-    extern void FinalizeFileSystem()
-    {
-        extern void PlatformFinalizeFileSystem();
-        PlatformFinalizeFileSystem();
-    }
-}
-
 namespace Anemone
 {
     auto FileSystem::ReadTextFile(

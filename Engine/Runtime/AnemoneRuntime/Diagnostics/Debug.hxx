@@ -7,11 +7,14 @@
 #include <source_location>
 #include <fmt/format.h>
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     class Debug
     {
     public:
+        RUNTIME_API static void Initialize();
+        RUNTIME_API static void Finalize();
+
         RUNTIME_API static bool ReportAssertionFormatted(
             std::source_location const& location,
             std::string_view expression,
@@ -100,7 +103,7 @@ namespace Anemone::Diagnostics
         if (!(expression)) \
             [[unlikely]] \
         { \
-            if (::Anemone::Diagnostics::Debug::ReportAssertion(::std::source_location::current(), #expression __VA_OPT__(, ) __VA_ARGS__)) \
+            if (::Anemone::Debug::ReportAssertion(::std::source_location::current(), #expression __VA_OPT__(, ) __VA_ARGS__)) \
             { \
                 anemone_debugbreak(); \
             } \
@@ -112,7 +115,7 @@ namespace Anemone::Diagnostics
 #define AE_PANIC(...) \
     do \
     { \
-        ::Anemone::Diagnostics::Debug::ReportPanic(::std::source_location::current() __VA_OPT__(, ) __VA_ARGS__); \
+        ::Anemone::Debug::ReportPanic(::std::source_location::current() __VA_OPT__(, ) __VA_ARGS__); \
         anemone_debugbreak(); \
     } while (false)
 
@@ -120,7 +123,7 @@ namespace Anemone::Diagnostics
 #define AE_VERIFY_ERRNO(error) \
     do \
     { \
-        ::Anemone::Diagnostics::Debug::ReportErrorErrno(error, std::source_location::current()); \
+        ::Anemone::Debug::ReportErrorErrno(error, std::source_location::current()); \
     } while (false)
 
 #else

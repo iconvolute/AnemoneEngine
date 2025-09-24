@@ -3,7 +3,7 @@
 #include "AnemoneRuntime/Interop/Windows/UI.hxx"
 #include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Input/Platform/Windows/WindowsInput.hxx"
 
@@ -88,7 +88,7 @@ namespace Anemone
 
         if (handle == nullptr)
         {
-            Diagnostics::Debug::ReportApplicationStop("Failed to create window.");
+            Debug::ReportApplicationStop("Failed to create window.");
         }
 
         ShowWindow(handle, SW_SHOWNORMAL);
@@ -490,7 +490,7 @@ namespace Anemone
 
             if (not RegisterClassExW(&wndClassEx))
             {
-                Diagnostics::Debug::ReportApplicationStop("Failed to register window class.");
+                Debug::ReportApplicationStop("Failed to register window class.");
             }
         }
     }

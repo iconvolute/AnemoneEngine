@@ -8,7 +8,7 @@
 
 #endif
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     void Debug::GetCurrentStackTrace(
         FunctionRef<void(void* address)> callback)

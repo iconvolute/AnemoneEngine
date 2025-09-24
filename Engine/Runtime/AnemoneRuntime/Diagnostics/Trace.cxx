@@ -3,48 +3,50 @@
 #include "AnemoneRuntime/Diagnostics/Internal/ConsoleTraceListener.hxx"
 #include "AnemoneRuntime/System/Environment.hxx"
 
-namespace Anemone::Diagnostics
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsTrace.hxx"
+#elif ANEMONE_PLATFORM_LINUX
+#include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxTrace.hxx"
+#else
+#error Not implemented
+#endif
+
+namespace Anemone
 {
     namespace
     {
-        UninitializedObject<Trace> GTrace{};
-        UninitializedObject<ConsoleTraceListener> GConsoleTraceListener{};
+        UninitializedObject<TraceDispatcher> gTraceDispatcher{};
+        UninitializedObject<ConsoleTraceListener> gConsoleTraceListener{};
     }
 
-    Trace& Trace::Get()
+    void Trace::Initialize()
     {
-        return *GTrace;
-    }
-};
-
-namespace Anemone::Internal
-{
-    extern void PlatformInitializeTrace();
-    extern void PlatformFinalizeTrace();
-
-    extern void InitializeTrace()
-    {
-        Diagnostics::GTrace.Create();
-
-        PlatformInitializeTrace();
+        gTraceDispatcher.Create();
 
         if (Environment::IsConsoleApplication())
         {
-            Diagnostics::GConsoleTraceListener.Create();
-            Diagnostics::Trace::Get().Register(*Diagnostics::GConsoleTraceListener);
+            gConsoleTraceListener.Create();
+            gTraceDispatcher->Register(*gConsoleTraceListener);
         }
+
+        PlatformTrace::Initialize();
     }
 
-    extern void FinalizeTrace()
+    void Trace::Finalize()
     {
-        if (Diagnostics::GConsoleTraceListener)
+        PlatformTrace::Finalize();
+
+        if (gConsoleTraceListener)
         {
-            Diagnostics::Trace::Get().Unregister(*Diagnostics::GConsoleTraceListener);
-            Diagnostics::GConsoleTraceListener.Destroy();
+            gTraceDispatcher->Unregister(*gConsoleTraceListener);
+            gConsoleTraceListener.Destroy();
         }
 
-        PlatformFinalizeTrace();
-
-        Diagnostics::GTrace.Destroy();
+        gTraceDispatcher.Destroy();
     }
-}
+
+    TraceDispatcher& Trace::Get()
+    {
+        return *gTraceDispatcher;
+    }
+};

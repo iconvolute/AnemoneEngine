@@ -5,33 +5,30 @@
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/DateTime.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 
 #include <system_error>
 
-namespace Anemone::Internal
+namespace Anemone
 {
     namespace
     {
-        UninitializedObject<WindowsFileSystem> GPlatformFileSystem{};
+        UninitializedObject<WindowsFileSystem> gWindowsFileSystem{};
     }
 
-    extern void PlatformInitializeFileSystem()
+    void FileSystem::Initialize()
     {
-        GPlatformFileSystem.Create();
+        gWindowsFileSystem.Create();
     }
 
-    extern void PlatformFinalizeFileSystem()
+    void FileSystem::Finalize()
     {
-        GPlatformFileSystem.Destroy();
+        gWindowsFileSystem.Destroy();
     }
-}
 
-namespace Anemone
-{
     FileSystem& FileSystem::GetPlatformFileSystem()
     {
-        return *Internal::GPlatformFileSystem;
+        return *gWindowsFileSystem;
     }
 }
 

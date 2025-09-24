@@ -14,31 +14,29 @@
 #include <sys/file.h>
 
 
-namespace Anemone::Internal
+namespace Anemone
 {
     namespace
     {
-        UninitializedObject<LinuxFileSystem> GPlatformFileSystem{};
+        UninitializedObject<LinuxFileSystem> gLinuxFileSystem{};
     }
 
-    extern void PlatformInitializeFileSystem()
+    void FileSystem::Initialize()
     {
-        GPlatformFileSystem.Create();
+        gLinuxFileSystem.Create();
     }
 
-    extern void PlatformFinalizeFileSystem()
+    void FileSystem::Finalize()
     {
-        GPlatformFileSystem.Destroy();
+        gLinuxFileSystem.Destroy();
     }
-}
 
-namespace Anemone
-{
     FileSystem& FileSystem::GetPlatformFileSystem()
     {
-        return *Internal::GPlatformFileSystem;
+        return *gLinuxFileSystem;
     }
 }
+
 namespace Anemone
 {
     namespace

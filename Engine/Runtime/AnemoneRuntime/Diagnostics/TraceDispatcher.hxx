@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneRuntime/Diagnostics/TraceListener.hxx"
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     class RUNTIME_API TraceDispatcher : public TraceListener
     {

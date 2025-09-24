@@ -309,7 +309,7 @@ namespace Anemone
 
             if (level0[0] < 1)
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: CPU Features not available\n");
+                Debug::ReportApplicationStop("Application stop: CPU Features not available\n");
             }
 
             int level1[4]{-1};
@@ -317,45 +317,45 @@ namespace Anemone
 
             if (!(level1[2] & bit_CMPXCHG16B))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
+                Debug::ReportApplicationStop("Application stop: CMPXCHG16B is not supported\n");
             }
 
             if (!(level1[2] & bit_POPCNT))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: POPCNT is not supported\n");
+                Debug::ReportApplicationStop("Application stop: POPCNT is not supported\n");
             }
 
 #if ANEMONE_FEATURE_AVX
             if (!(level1[2] & bit_OSXSAVE))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
+                Debug::ReportApplicationStop("Application stop: OSXSAVE is not supported\n");
             }
 
             if (!(level1[2] & bit_SSE3))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: SSE3 is not supported\n");
+                Debug::ReportApplicationStop("Application stop: SSE3 is not supported\n");
             }
 
             if (!(level1[2] & bit_SSE4_1))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
+                Debug::ReportApplicationStop("Application stop: SSE4_1 is not supported\n");
             }
 
             if (!(level1[2] & bit_AVX))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: AVX is not supported\n");
+                Debug::ReportApplicationStop("Application stop: AVX is not supported\n");
             }
 
 #if ANEMONE_FEATURE_AVX2
 
             if (!(level1[2] & bit_F16C))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: F16C is not supported\n");
+                Debug::ReportApplicationStop("Application stop: F16C is not supported\n");
             }
 
             if (!(level1[2] & bit_FMA))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: FMA is not supported\n");
+                Debug::ReportApplicationStop("Application stop: FMA is not supported\n");
             }
 
             int level7_0[4]{-1};
@@ -363,7 +363,7 @@ namespace Anemone
 
             if (!(level7_0[1] & bit_AVX2))
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: AVX2 is not supported\n");
+                Debug::ReportApplicationStop("Application stop: AVX2 is not supported\n");
             }
 
 #endif
@@ -379,17 +379,17 @@ namespace Anemone
 
             if ((cap & HWCAP_FP) != HWCAP_FP)
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: NEON not supported\n");
+                Debug::ReportApplicationStop("Application stop: NEON not supported\n");
             }
 
             if ((cap & HWCAP_ASIMD) != HWCAP_ASIMD)
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: ASIMD not supported\n");
+                Debug::ReportApplicationStop("Application stop: ASIMD not supported\n");
             }
 
             if ((cap & HWCAP_ATOMICS) != HWCAP_ATOMICS)
             {
-                Diagnostics::Debug::ReportApplicationStop("Application stop: ATOMICS not supported\n");
+                Debug::ReportApplicationStop("Application stop: ATOMICS not supported\n");
             }
 
 #endif

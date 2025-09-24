@@ -1,7 +1,6 @@
 #include "AnemoneRuntime/System/Platform/Windows/WindowsProcess.hxx"
 #include "AnemoneRuntime/System/CommandLine.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
-
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Text.hxx"
 #include "AnemoneRuntime/Interop/Windows/Threading.hxx"
 #include "AnemoneRuntime/Interop/Windows/FileSystem.hxx"

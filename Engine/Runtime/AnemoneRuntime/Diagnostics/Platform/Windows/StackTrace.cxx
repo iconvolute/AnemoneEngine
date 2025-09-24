@@ -14,7 +14,7 @@
 #include <bit>
 #include <iterator>
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     namespace
     {
@@ -152,7 +152,7 @@ namespace Anemone::Diagnostics
 
 #endif
 
-namespace Anemone::Diagnostics
+namespace Anemone
 {
     void Debug::GetCurrentStackTrace(FunctionRef<void(void* address)> callback)
     {

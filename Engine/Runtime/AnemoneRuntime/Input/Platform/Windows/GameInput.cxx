@@ -1,7 +1,7 @@
 #include "AnemoneRuntime/Input/Platform/Windows/GameInput.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
 #include "AnemoneRuntime/App/Platform/Windows/Window.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
 #pragma comment(lib, "gameinput.lib")

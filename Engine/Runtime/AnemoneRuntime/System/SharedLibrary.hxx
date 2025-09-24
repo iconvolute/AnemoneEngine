@@ -1,49 +1,31 @@
 #pragma once
-#include "AnemoneRuntime/System/Platform/Platform.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneRuntime/Diagnostics/Error.hxx"
 
 #include <expected>
 
 namespace Anemone
 {
-    class RUNTIME_API SharedLibrary final
+    class SharedLibrary : public ReferenceCounted<SharedLibrary>
     {
-    private:
-        Internal::PlatformSharedLibrary _handle{};
+    protected:
+        SharedLibrary();
 
     public:
-        explicit SharedLibrary(Internal::PlatformSharedLibrary handle)
-            : _handle{std::move(handle)}
-        {
-        }
-
         SharedLibrary(SharedLibrary const&) = delete;
-        SharedLibrary(SharedLibrary&&) noexcept = default;
+
+        SharedLibrary(SharedLibrary&&) = delete;
+
+        virtual ~SharedLibrary();
+
         SharedLibrary& operator=(SharedLibrary const&) = delete;
-        SharedLibrary& operator=(SharedLibrary&&) = default;
-        ~SharedLibrary() = default;
 
-
-    public:
-        [[nodiscard]] explicit operator bool() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] bool IsValid() const
-        {
-            return this->_handle.IsValid();
-        }
-
-        [[nodiscard]] Internal::PlatformSharedLibrary const& GetNativeHandle() const
-        {
-            return this->_handle;
-        }
+        SharedLibrary& operator=(SharedLibrary&&) = delete;
 
     public:
-        static auto Load(std::string_view path) -> std::expected<SharedLibrary, Error>;
+        RUNTIME_API static std::expected<Reference<SharedLibrary>, Error> Load(std::string_view path);
 
     public:
-        auto GetSymbol(const char* name) const -> std::expected<void*, Error>;
+        virtual std::expected<void*, Error> GetSymbol(const char* name) const = 0;
     };
 }

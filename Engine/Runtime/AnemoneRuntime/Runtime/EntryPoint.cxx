@@ -1,4 +1,8 @@
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Storage/FileSystem.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneRuntime/System/Clipboard.hxx"
 
 namespace Anemone::Internal
 {
@@ -6,23 +10,14 @@ namespace Anemone::Internal
     extern char** GCommandLineArgV;
     extern bool GIsConsoleApplication;
 
-    extern void InitializeDiagnostics();
-    extern void FinalizeDiagnostics();
-
     extern void InitializeEnvironment();
     extern void FinalizeEnvironment();
-
-    extern void InitializeClipboard();
-    extern void FinalizeClipboard();
 
     //extern void InitializeThreading();
     //extern void FinalizeThreading();
 
     extern void InitializeTaskScheduler();
     extern void FinalizeTaskScheduler();
-
-    extern void InitializeFileSystem();
-    extern void FinalizeFileSystem();
 
     //extern void InitializeApplication();
     //extern void FinalizeApplication();
@@ -40,10 +35,12 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
     Anemone::Internal::GCommandLineArgV = argv;
     Anemone::Internal::GIsConsoleApplication = console;
 
-    Anemone::Internal::InitializeDiagnostics();
+    Anemone::Trace::Initialize();
+    Anemone::Debug::Initialize();
     Anemone::Internal::InitializeEnvironment();
-    Anemone::Internal::InitializeFileSystem();
-    Anemone::Internal::InitializeClipboard();
+    Anemone::FileSystem::Initialize();
+    Anemone::Clipboard::Initialize();
+
     //Anemone::Internal::InitializeThreading();
     Anemone::Internal::InitializeTaskScheduler();
     Anemone::Internal::InitializeProfiling();
@@ -58,8 +55,11 @@ extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
     Anemone::Internal::FinalizeProfiling();
     Anemone::Internal::FinalizeTaskScheduler();
     //Anemone::Internal::FinalizeThreading();
-    Anemone::Internal::FinalizeClipboard();
-    Anemone::Internal::FinalizeFileSystem();
+
+    Anemone::Clipboard::Finalize();
+    Anemone::FileSystem::Finalize();
+
     Anemone::Internal::FinalizeEnvironment();
-    Anemone::Internal::FinalizeDiagnostics();
+    Anemone::Debug::Finalize();
+    Anemone::Trace::Finalize();
 }

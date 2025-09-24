@@ -1,8 +1,19 @@
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneRuntime/Diagnostics/Platform/Linux/LinuxDebug.hxx"
 
 #include <format>
 
-namespace Anemone::Diagnostics
+namespace Anemone
+{
+    void LinuxDebug::Initialize()
+    {
+    }
+
+    void LinuxDebug::Finalize()
+    {
+    }
+}
+
+namespace Anemone
 {
     void Debug::Break()
     {
@@ -52,16 +63,5 @@ namespace Anemone::Diagnostics
         (void)fwrite(reason.data(), 1, reason.size(), stderr);
         (void)fflush(stderr);
         abort();
-    }
-}
-
-namespace Anemone::Internal
-{
-    extern void PlatformInitializeDebug()
-    {
-    }
-
-    extern void PlatformFinalizeDebug()
-    {
     }
 }
