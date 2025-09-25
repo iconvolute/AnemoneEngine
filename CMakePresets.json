@@ -1,5 +1,5 @@
 {
-    "version": 4,
+    "version": 7,
     "configurePresets": [
         {
             "name": "base",
@@ -252,6 +252,537 @@
             "name": "windows-x64-profiling",
             "displayName": "Windows x64 Profiling",
             "inherits": [ "platform-windows-x64", "config-profiling" ]
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "linux-arm64-debug",
+            "configurePreset": "linux-arm64-debug"
+        },
+        {
+            "name": "linux-arm64-developer",
+            "configurePreset": "linux-arm64-developer"
+        },
+        {
+            "name": "linux-arm64-shipping",
+            "configurePreset": "linux-arm64-shipping"
+        },
+        {
+            "name": "linux-arm64-profiling",
+            "configurePreset": "linux-arm64-profiling"
+        },
+        {
+            "name": "linux-x64-debug",
+            "configurePreset": "linux-x64-debug"
+        },
+        {
+            "name": "linux-x64-developer",
+            "configurePreset": "linux-x64-developer"
+        },
+        {
+            "name": "linux-x64-shipping",
+            "configurePreset": "linux-x64-shipping"
+        },
+        {
+            "name": "linux-x64-profiling",
+            "configurePreset": "linux-x64-profiling"
+        },
+        {
+            "name": "android-arm64-debug",
+            "configurePreset": "android-arm64-debug"
+        },
+        {
+            "name": "android-arm64-developer",
+            "configurePreset": "android-arm64-developer"
+        },
+        {
+            "name": "android-arm64-shipping",
+            "configurePreset": "android-arm64-shipping"
+        },
+        {
+            "name": "android-arm64-profiling",
+            "configurePreset": "android-arm64-profiling"
+        },
+        {
+            "name": "windows-arm64-debug",
+            "configurePreset": "windows-arm64-debug"
+        },
+        {
+            "name": "windows-arm64-developer",
+            "configurePreset": "windows-arm64-developer"
+        },
+        {
+            "name": "windows-arm64-shipping",
+            "configurePreset": "windows-arm64-shipping"
+        },
+        {
+            "name": "windows-arm64-profiling",
+            "configurePreset": "windows-arm64-profiling"
+        },
+        {
+            "name": "windows-x64-debug",
+            "configurePreset": "windows-x64-debug"
+        },
+        {
+            "name": "windows-x64-developer",
+            "configurePreset": "windows-x64-developer"
+        },
+        {
+            "name": "windows-x64-shipping",
+            "configurePreset": "windows-x64-shipping"
+        },
+        {
+            "name": "windows-x64-profiling",
+            "configurePreset": "windows-x64-profiling"
+        }
+    ],
+    "testPresets": [
+        {
+            "name": "base",
+            "hidden": true,
+            "output": { "verbosity": "verbose" }
+        },
+        {
+            "name": "linux-arm64-debug",
+            "inherits": "base",
+            "configurePreset": "linux-arm64-debug"
+        },
+        {
+            "name": "linux-arm64-developer",
+            "inherits": "base",
+            "configurePreset": "linux-arm64-developer"
+        },
+        {
+            "name": "linux-arm64-shipping",
+            "inherits": "base",
+            "configurePreset": "linux-arm64-shipping"
+        },
+        {
+            "name": "linux-arm64-profiling",
+            "inherits": "base",
+            "configurePreset": "linux-arm64-profiling"
+        },
+        {
+            "name": "linux-x64-debug",
+            "inherits": "base",
+            "configurePreset": "linux-x64-debug"
+        },
+        {
+            "name": "linux-x64-developer",
+            "inherits": "base",
+            "configurePreset": "linux-x64-developer"
+        },
+        {
+            "name": "linux-x64-shipping",
+            "inherits": "base",
+            "configurePreset": "linux-x64-shipping"
+        },
+        {
+            "name": "linux-x64-profiling",
+            "inherits": "base",
+            "configurePreset": "linux-x64-profiling"
+        },
+        {
+            "name": "android-arm64-debug",
+            "inherits": "base",
+            "configurePreset": "android-arm64-debug"
+        },
+        {
+            "name": "android-arm64-developer",
+            "inherits": "base",
+            "configurePreset": "android-arm64-developer"
+        },
+        {
+            "name": "android-arm64-shipping",
+            "inherits": "base",
+            "configurePreset": "android-arm64-shipping"
+        },
+        {
+            "name": "android-arm64-profiling",
+            "inherits": "base",
+            "configurePreset": "android-arm64-profiling"
+        },
+        {
+            "name": "windows-arm64-debug",
+            "inherits": "base",
+            "configurePreset": "windows-arm64-debug"
+        },
+        {
+            "name": "windows-arm64-developer",
+            "inherits": "base",
+            "configurePreset": "windows-arm64-developer"
+        },
+        {
+            "name": "windows-arm64-shipping",
+            "inherits": "base",
+            "configurePreset": "windows-arm64-shipping"
+        },
+        {
+            "name": "windows-arm64-profiling",
+            "inherits": "base",
+            "configurePreset": "windows-arm64-profiling"
+        },
+        {
+            "name": "windows-x64-debug",
+            "inherits": "base",
+            "configurePreset": "windows-x64-debug"
+        },
+        {
+            "name": "windows-x64-developer",
+            "inherits": "base",
+            "configurePreset": "windows-x64-developer"
+        },
+        {
+            "name": "windows-x64-shipping",
+            "inherits": "base",
+            "configurePreset": "windows-x64-shipping"
+        },
+        {
+            "name": "windows-x64-profiling",
+            "inherits": "base",
+            "configurePreset": "windows-x64-profiling"
+        }
+    ],
+    "workflowPresets": [
+        {
+            "name": "linux-arm64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-arm64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-arm64-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-arm64-debug"
+                }
+            ]
+        },
+        {
+            "name": "linux-arm64-developer",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-arm64-developer"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-arm64-developer"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-arm64-developer"
+                }
+            ]
+        },
+        {
+            "name": "linux-arm64-shipping",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-arm64-shipping"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-arm64-shipping"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-arm64-shipping"
+                }
+            ]
+        },
+        {
+            "name": "linux-arm64-profiling",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-arm64-profiling"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-arm64-profiling"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-arm64-profiling"
+                }
+            ]
+        },
+        {
+            "name": "linux-x64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-x64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-x64-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-x64-debug"
+                }
+            ]
+        },
+        {
+            "name": "linux-x64-developer",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-x64-developer"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-x64-developer"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-x64-developer"
+                }
+            ]
+        },
+        {
+            "name": "linux-x64-shipping",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-x64-shipping"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-x64-shipping"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-x64-shipping"
+                }
+            ]
+        },
+        {
+            "name": "linux-x64-profiling",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "linux-x64-profiling"
+                },
+                {
+                    "type": "build",
+                    "name": "linux-x64-profiling"
+                },
+                {
+                    "type": "test",
+                    "name": "linux-x64-profiling"
+                }
+            ]
+        },
+        {
+            "name": "android-arm64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "android-arm64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "android-arm64-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "android-arm64-debug"
+                }
+            ]
+        },
+        {
+            "name": "android-arm64-developer",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "android-arm64-developer"
+                },
+                {
+                    "type": "build",
+                    "name": "android-arm64-developer"
+                },
+                {
+                    "type": "test",
+                    "name": "android-arm64-developer"
+                }
+            ]
+        },
+        {
+            "name": "android-arm64-shipping",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "android-arm64-shipping"
+                },
+                {
+                    "type": "build",
+                    "name": "android-arm64-shipping"
+                },
+                {
+                    "type": "test",
+                    "name": "android-arm64-shipping"
+                }
+            ]
+        },
+        {
+            "name": "android-arm64-profiling",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "android-arm64-profiling"
+                },
+                {
+                    "type": "build",
+                    "name": "android-arm64-profiling"
+                },
+                {
+                    "type": "test",
+                    "name": "android-arm64-profiling"
+                }
+            ]
+        },
+        {
+            "name": "windows-arm64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-arm64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-arm64-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-arm64-debug"
+                }
+            ]
+        },
+        {
+            "name": "windows-arm64-developer",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-arm64-developer"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-arm64-developer"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-arm64-developer"
+                }
+            ]
+        },
+        {
+            "name": "windows-arm64-shipping",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-arm64-shipping"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-arm64-shipping"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-arm64-shipping"
+                }
+            ]
+        },
+        {
+            "name": "windows-arm64-profiling",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-arm64-profiling"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-arm64-profiling"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-arm64-profiling"
+                }
+            ]
+        },
+        {
+            "name": "windows-x64-debug",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-x64-debug"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-x64-debug"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-x64-debug"
+                }
+            ]
+        },
+        {
+            "name": "windows-x64-developer",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-x64-developer"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-x64-developer"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-x64-developer"
+                }
+            ]
+        },
+        {
+            "name": "windows-x64-shipping",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-x64-shipping"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-x64-shipping"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-x64-shipping"
+                }
+            ]
+        },
+        {
+            "name": "windows-x64-profiling",
+            "steps": [
+                {
+                    "type": "configure",
+                    "name": "windows-x64-profiling"
+                },
+                {
+                    "type": "build",
+                    "name": "windows-x64-profiling"
+                },
+                {
+                    "type": "test",
+                    "name": "windows-x64-profiling"
+                }
+            ]
         }
     ]
 }
