@@ -97,7 +97,7 @@ namespace Anemone
 
         void InitializeEnvironment(EnvironmentStatics& statics)
         {
-            statics.startupTime = Environment::GetCurrentDateTime();
+            statics.startupTime = DateTime::Now();
 
             // Set locale.
             (void)std::setlocale(LC_ALL, "en_US.UTF-8"); // NOLINT(concurrency-mt-unsafe); this is invoked in main thread.
@@ -699,75 +699,6 @@ namespace Anemone
     auto Environment::GetTemporaryPath() -> std::string_view
     {
         return gEnvironmentStatics->temporaryPath;
-    }
-
-    auto Environment::GetCurrentDateTime() -> DateTime
-    {
-        struct timespec ts;
-
-        [[maybe_unused]] int const result = clock_gettime(CLOCK_REALTIME, &ts);
-        AE_ASSERT(result == 0);
-
-        int64_t const bias = GetCurrentTimeZoneBias().Seconds;
-
-        return DateTime{
-            .Inner = {
-                .Seconds = ts.tv_sec - bias + Interop::Linux::DateAdjustOffset,
-                .Nanoseconds = ts.tv_nsec,
-            }};
-    }
-
-    auto Environment::GetCurrentDateTimeUtc() -> DateTime
-    {
-        struct timespec ts;
-
-        // Get local time
-        [[maybe_unused]] int const result = clock_gettime(CLOCK_REALTIME, &ts);
-        AE_ASSERT(result == 0);
-
-        return DateTime{
-            .Inner = {
-                .Seconds = ts.tv_sec + Interop::Linux::DateAdjustOffset,
-                .Nanoseconds = ts.tv_nsec,
-            },
-        };
-    }
-
-    auto Environment::GetCurrentTimeZoneBias() -> Duration
-    {
-        time_t seconds = 0;
-        tm tmGMT{};
-        tm tmLocal{};
-        gmtime_r(&seconds, &tmGMT);
-        localtime_r(&seconds, &tmLocal);
-
-        return Duration{
-            .Seconds = mktime(&tmGMT) - mktime(&tmLocal),
-            .Nanoseconds = 0,
-        };
-    }
-
-    auto Environment::GetCurrentInstant() -> Instant
-    {
-#if defined(HAVE_CLOCK_GETTIME_NSEC_NP)
-
-        return {.Inner = Duration::FromNanoseconds(clock_gettime_nsec_np(CLOCK_MONOTONIC_RAW))};
-
-#else
-
-        struct timespec ts;
-
-        [[maybe_unused]] int const result = clock_gettime(CLOCK_MONOTONIC, &ts);
-        AE_ASSERT(result == 0);
-
-        return Instant{
-            .Inner = {
-                .Seconds = ts.tv_sec,
-                .Nanoseconds = ts.tv_nsec,
-            },
-        };
-
-#endif
     }
 
     void Environment::GetRandom(std::span<std::byte> buffer)

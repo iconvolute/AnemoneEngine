@@ -100,7 +100,7 @@ namespace Anemone
             // Capture application startup time.
             //
 
-            statics.startupTime = Environment::GetCurrentDateTime();
+            statics.startupTime = DateTime::Now();
 
 
             //
@@ -476,37 +476,6 @@ namespace Anemone
             }
         }
 
-        int64_t QueryInstantFrequency()
-        {
-            static std::atomic<int64_t> cache{};
-
-            int64_t result = cache.load(std::memory_order::relaxed);
-
-            if (result != 0)
-            {
-                return result;
-            }
-
-            // Implementation detail:
-            //  QPC Frequency is stored in KUSER_SHARED_DATA.
-            //  This function just performs read from that struct on all known platforms.
-            LARGE_INTEGER value;
-            [[maybe_unused]] BOOL const success = QueryPerformanceFrequency(&value);
-            AE_ASSERT(success != FALSE);
-
-            result = std::bit_cast<int64_t>(value);
-            cache.store(result, std::memory_order::relaxed);
-            return result;
-        }
-
-        int64_t QueryInstantValue()
-        {
-            LARGE_INTEGER counter;
-            [[maybe_unused]] BOOL const success = QueryPerformanceCounter(&counter);
-            AE_ASSERT(success != FALSE);
-
-            return std::bit_cast<int64_t>(counter);
-        }
     }
 }
 
@@ -985,81 +954,6 @@ namespace Anemone
     auto Environment::GetTemporaryPath() -> std::string_view
     {
         return gEnvironmentStatics->temporaryPath;
-    }
-
-    auto Environment::GetCurrentDateTime() -> DateTime
-    {
-        FILETIME ft;
-        Interop::Windows::GetLocalTimeAsFileTime(ft);
-        return Interop::Windows::ToDateTime(ft);
-    }
-
-    auto Environment::GetCurrentDateTimeUtc() -> DateTime
-    {
-        FILETIME ft;
-        GetSystemTimePreciseAsFileTime(&ft);
-
-        return Interop::Windows::ToDateTime(ft);
-    }
-
-    auto Environment::GetCurrentTimeZoneBias() -> Duration
-    {
-        DYNAMIC_TIME_ZONE_INFORMATION dtzi;
-
-        int64_t seconds = 0;
-
-        switch (GetDynamicTimeZoneInformation(&dtzi))
-        {
-        case TIME_ZONE_ID_INVALID:
-            AE_PANIC("Cannot obtain timezone ID: {}", GetLastError());
-            break;
-
-        default:
-        case TIME_ZONE_ID_UNKNOWN:
-            break;
-
-        case TIME_ZONE_ID_STANDARD:
-            seconds += static_cast<int64_t>(dtzi.StandardBias) * 60;
-            break;
-
-        case TIME_ZONE_ID_DAYLIGHT:
-            seconds += static_cast<int64_t>(dtzi.DaylightBias) * 60;
-            break;
-        }
-
-        seconds += static_cast<int64_t>(dtzi.Bias) * 60;
-
-        return Duration{
-            .Seconds = seconds,
-            .Nanoseconds = 0,
-        };
-    }
-
-    auto Environment::GetCurrentInstant() -> Instant
-    {
-        static constexpr int64_t QpcFrequency = 10'000'000;
-
-        int64_t const value = QueryInstantValue();
-
-        if (int64_t const frequency = QueryInstantFrequency(); frequency == QpcFrequency)
-        {
-            return Instant{
-                .Inner = {
-                    .Seconds = value / QpcFrequency,
-                    .Nanoseconds = (value % QpcFrequency) * 100,
-                },
-            };
-        }
-        else
-        {
-            int64_t const nanosecond_conversion = Internal::NanosecondsInSecond / frequency;
-            return Instant{
-                .Inner = {
-                    .Seconds = value / frequency,
-                    .Nanoseconds = (value % frequency) * nanosecond_conversion,
-                },
-            };
-        }
     }
 
     void Environment::GetRandom(std::span<std::byte> buffer)

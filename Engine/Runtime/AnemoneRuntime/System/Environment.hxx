@@ -38,7 +38,7 @@ namespace Anemone
         uint64_t QuotaPeakNonPagedPoolUsage;
         uint64_t QuotaNonPagedPoolUsage;
         uint64_t PageFileUsage;
-        uint64_t PeakPageFileUsage;        
+        uint64_t PeakPageFileUsage;
     };
 
     enum class PowerState : uint8_t
@@ -220,14 +220,6 @@ namespace Anemone
         RUNTIME_API static auto GetDownloadsPath() -> std::string_view;
 
         RUNTIME_API static auto GetTemporaryPath() -> std::string_view;
-
-        RUNTIME_API static auto GetCurrentDateTime() -> DateTime;
-
-        RUNTIME_API static auto GetCurrentDateTimeUtc() -> DateTime;
-
-        RUNTIME_API static auto GetCurrentTimeZoneBias() -> Duration;
-
-        RUNTIME_API static auto GetCurrentInstant() -> Instant;
 
         RUNTIME_API static void GetRandom(std::span<std::byte> buffer);
 

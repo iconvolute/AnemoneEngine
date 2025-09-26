@@ -3,6 +3,8 @@
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
+#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
+#include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone::Internal
 {
@@ -13,20 +15,11 @@ namespace Anemone::Internal
     extern void InitializeEnvironment();
     extern void FinalizeEnvironment();
 
-    //extern void InitializeThreading();
-    //extern void FinalizeThreading();
-
-    extern void InitializeTaskScheduler();
-    extern void FinalizeTaskScheduler();
-
     //extern void InitializeApplication();
     //extern void FinalizeApplication();
 
     extern void InitializeInput();
     extern void FinalizeInput();
-
-    extern void InitializeProfiling();
-    extern void FinalizeProfiling();
 }
 
 extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool console)
@@ -41,9 +34,12 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
     Anemone::FileSystem::Initialize();
     Anemone::Clipboard::Initialize();
 
-    //Anemone::Internal::InitializeThreading();
-    Anemone::Internal::InitializeTaskScheduler();
-    Anemone::Internal::InitializeProfiling();
+    Anemone::TaskScheduler::Initialize();
+
+#if ANEMONE_BUILD_PROFILING
+    Anemone::Profiler::Initialize();
+#endif
+
     //Anemone::Internal::InitializeApplication();
     Anemone::Internal::InitializeInput();
 }
@@ -51,10 +47,13 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
 extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
 {
     Anemone::Internal::FinalizeInput();
+
+#if ANEMONE_BUILD_PROFILING
+    Anemone::Profiler::Finalize();
+#endif
+
     //Anemone::Internal::FinalizeApplication();
-    Anemone::Internal::FinalizeProfiling();
-    Anemone::Internal::FinalizeTaskScheduler();
-    //Anemone::Internal::FinalizeThreading();
+    Anemone::TaskScheduler::Finalize();
 
     Anemone::Clipboard::Finalize();
     Anemone::FileSystem::Finalize();

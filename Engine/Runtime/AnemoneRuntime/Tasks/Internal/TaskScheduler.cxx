@@ -9,20 +9,17 @@ namespace Anemone
 {
     namespace
     {
-        Anemone::UninitializedObject<DefaultTaskScheduler> gDefaultTaskScheduler{};
+        UninitializedObject<DefaultTaskScheduler> gDefaultTaskScheduler{};
     }
 
-    namespace Internal
+    void TaskScheduler::Initialize()
     {
-        extern void InitializeTaskScheduler()
-        {
-            gDefaultTaskScheduler.Create();
-        }
+        gDefaultTaskScheduler.Create();
+    }
 
-        extern void FinalizeTaskScheduler()
-        {
-            gDefaultTaskScheduler.Destroy();
-        }
+    void TaskScheduler::Finalize()
+    {
+        gDefaultTaskScheduler.Destroy();
     }
 
     TaskScheduler& TaskScheduler::Get()

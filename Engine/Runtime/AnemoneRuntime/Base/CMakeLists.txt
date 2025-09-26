@@ -43,3 +43,5 @@ target_sources(AnemoneRuntime
         "Uuid.hxx"
         "Version.hxx"
 )
+
+add_subdirectory("Platform")

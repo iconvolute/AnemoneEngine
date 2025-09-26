@@ -40,7 +40,9 @@ namespace Anemone
 
     struct Profiler final
     {
-    public:
+        RUNTIME_API static void Initialize();
+        RUNTIME_API static void Finalize();
+
         RUNTIME_API static void RegisterMarker(ProfilerMarker& marker);
         RUNTIME_API static void UnregisterMarker(ProfilerMarker& marker);
         RUNTIME_API static void EnumerateMarkers(FunctionRef<void(ProfilerMarker& marker)> callback);

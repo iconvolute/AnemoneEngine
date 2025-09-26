@@ -60,16 +60,6 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
-    DateTime DateTime::Now()
-    {
-        return Environment::GetCurrentDateTime();
-    }
-
-    DateTime DateTime::UtcNow()
-    {
-        return Environment::GetCurrentDateTimeUtc();
-    }
-
     std::optional<DateTime> DateTime::FromMembers(DateTimeMembers const& members)
     {
         if (std::optional<Duration> const datePart = Internal::DateToSeconds(members.Year, members.Month, members.Day))
@@ -295,16 +285,4 @@ namespace Anemone
         return true;
     }
 
-    DateTimeOffset DateTimeOffset::Now()
-    {
-        return DateTimeOffset{
-            .Local = Environment::GetCurrentDateTime(),
-            .Bias = Environment::GetCurrentTimeZoneBias(),
-        };
-    }
-
-    Duration DateTimeOffset::GetCurrentTimeZoneBias()
-    {
-        return Environment::GetCurrentTimeZoneBias();
-    }
 }

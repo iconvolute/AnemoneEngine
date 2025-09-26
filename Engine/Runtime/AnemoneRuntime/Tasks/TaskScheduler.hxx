@@ -16,6 +16,9 @@ namespace Anemone
         virtual ~TaskScheduler() = default;
 
     public:
+        RUNTIME_API static void Initialize();
+        RUNTIME_API static void Finalize();
+
         RUNTIME_API static TaskScheduler& Get();
 
         virtual void Schedule(
