@@ -1,0 +1,1 @@
+#include "AnemoneApplication/HostSplashScreen.hxx"

@@ -14,12 +14,6 @@ namespace Anemone::Internal
 
     extern void InitializeEnvironment();
     extern void FinalizeEnvironment();
-
-    //extern void InitializeApplication();
-    //extern void FinalizeApplication();
-
-    extern void InitializeInput();
-    extern void FinalizeInput();
 }
 
 extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool console)
@@ -39,20 +33,14 @@ extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool
 #if ANEMONE_BUILD_PROFILING
     Anemone::Profiler::Initialize();
 #endif
-
-    //Anemone::Internal::InitializeApplication();
-    Anemone::Internal::InitializeInput();
 }
 
 extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
 {
-    Anemone::Internal::FinalizeInput();
-
 #if ANEMONE_BUILD_PROFILING
     Anemone::Profiler::Finalize();
 #endif
 
-    //Anemone::Internal::FinalizeApplication();
     Anemone::TaskScheduler::Finalize();
 
     Anemone::Clipboard::Finalize();

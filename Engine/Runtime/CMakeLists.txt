@@ -18,8 +18,6 @@ target_link_libraries(AnemoneRuntime
         "Bcrypt.lib"
         "Iphlpapi.lib"
         "onecore.lib"
-        "Xinput.lib"
-        "dwmapi.lib"
         "Faultrep.lib"
         "advapi32.lib"
         "Appnotify.lib"
