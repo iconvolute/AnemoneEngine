@@ -288,6 +288,6 @@ namespace Anemone
     template <typename T, typename... Args>
     [[nodiscard]] Reference<T> MakeReference(Args&&... args)
     {
-        return Reference<T>(new T(std::forward<Args>(args)...));
+        return Reference<T>(new T{std::forward<Args>(args)...});
     }
 }
