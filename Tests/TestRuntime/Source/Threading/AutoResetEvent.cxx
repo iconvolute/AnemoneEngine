@@ -60,9 +60,9 @@ TEST_CASE("Threading / UserAutoResetEvent")
 
 
     SharedState state;
-    Reference<Worker> w1 = MakeReference<Worker>(state, 23, 0x1);
-    Reference<Worker> w2 = MakeReference<Worker>(state, 24, 0x1'0000);
-    Reference<Worker> w3 = MakeReference<Worker>(state, 25, 0x1'0000'0000);
+    Reference<Worker> w1 = MakeReference<Worker>(state, 23uz, 0x1uz);
+    Reference<Worker> w2 = MakeReference<Worker>(state, 24uz, 0x1'0000uz);
+    Reference<Worker> w3 = MakeReference<Worker>(state, 25uz, 0x1'0000'0000uz);
 
     Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
     Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});
@@ -149,9 +149,9 @@ TEST_CASE("Threading / AutoResetEvent")
 
 
     SharedState state;
-    Reference<Worker> w1 = MakeReference<Worker>(state, 23, 0x1);
-    Reference<Worker> w2 = MakeReference<Worker>(state, 24, 0x1'0000);
-    Reference<Worker> w3 = MakeReference<Worker>(state, 25, 0x1'0000'0000);
+    Reference<Worker> w1 = MakeReference<Worker>(state, 23uz, 0x1uz);
+    Reference<Worker> w2 = MakeReference<Worker>(state, 24uz, 0x1'0000uz);
+    Reference<Worker> w3 = MakeReference<Worker>(state, 25uz, 0x1'0000'0000uz);
 
     Reference<Thread> t1 = Thread::Start(ThreadStart{.Callback = w1});
     Reference<Thread> t2 = Thread::Start(ThreadStart{.Callback = w2});

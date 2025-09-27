@@ -26,43 +26,22 @@ namespace Anemone
 
         TaskScheduler& taskScheduler = TaskScheduler::Get();
 
-        class Partitioner final
+        struct Partitioner final
         {
-        public:
-            size_t m_Count;
-            size_t m_Batch;
-            std::atomic<size_t> m_Index{};
-            FunctionRef<void(size_t index, size_t count)>& m_Callback;
+            FunctionRef<void(size_t index, size_t count)> Callback{};
+            size_t Count{};
+            size_t Batch{};
 
-        public:
-            Partitioner(
-                size_t count,
-                size_t batch,
-                FunctionRef<void(size_t index, size_t count)>& callback)
-                : m_Count{count}
-                , m_Batch{batch}
-                , m_Callback{callback}
-            {
-            }
-
-            Partitioner(Partitioner const&) = delete;
-
-            Partitioner(Partitioner&&) = delete;
-
-            Partitioner& operator=(Partitioner const&) = delete;
-
-            Partitioner& operator=(Partitioner&&) = delete;
-
-            ~Partitioner() = default;
+            std::atomic<size_t> CurrentIndex{};
 
             bool Partition(size_t& first, size_t& last)
             {
-                size_t const current = this->m_Index.fetch_add(this->m_Batch, std::memory_order::acquire);
+                size_t const current = this->CurrentIndex.fetch_add(this->Batch, std::memory_order::acquire);
 
-                if (current < this->m_Count)
+                if (current < this->Count)
                 {
                     first = current;
-                    last = std::min<size_t>(current + this->m_Batch, this->m_Count);
+                    last = std::min<size_t>(current + this->Batch, this->Count);
                     return true;
                 }
 
@@ -76,7 +55,7 @@ namespace Anemone
 
                 while (this->Partition(first, last))
                 {
-                    this->m_Callback(first, last - first);
+                    this->Callback(first, last - first);
                 }
             }
         };
@@ -133,9 +112,9 @@ namespace Anemone
 
         // Create partitioner for given range.
         Partitioner partitioner{
+            callback,
             count,
             batch,
-            callback,
         };
 
         // Fork/Join awaiter.

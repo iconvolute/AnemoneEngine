@@ -43,18 +43,13 @@ namespace Anemone
     template <std::invocable Callback>
     Reference<Runnable> MakeRunnable(Callback callback)
     {
-        struct Wrapper : public Runnable
+        struct Wrapper : Runnable
         {
             Callback _callback;
 
             void OnRun() override
             {
                 this->_callback();
-            }
-
-            Wrapper(Callback callback)
-                : _callback{std::move(callback)}
-            {
             }
         };
 
