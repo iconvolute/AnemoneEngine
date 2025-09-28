@@ -19,6 +19,7 @@ endif()
 # Replace default inlining optimization level
 if (MSVC)
 string(REPLACE "/Ob2" "/Ob3" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}")
+string(REPLACE "/Ob2" "/Ob3" CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
 
