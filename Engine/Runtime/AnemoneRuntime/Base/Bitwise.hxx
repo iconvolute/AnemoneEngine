@@ -67,6 +67,23 @@ namespace Anemone::Bitwise
         return (address & (alignment - 1)) == 0;
     }
 
+    [[nodiscard]] constexpr std::byte* Adjust(
+        std::byte* ptr,
+        ptrdiff_t offset)
+    {
+        uintptr_t const address = std::bit_cast<uintptr_t>(ptr);
+        uintptr_t const adjusted = address + offset;
+        return std::bit_cast<std::byte*>(adjusted);
+    }
+
+    [[nodiscard]] constexpr void* Adjust(
+        void* ptr,
+        ptrdiff_t offset)
+    {
+        uintptr_t const address = std::bit_cast<uintptr_t>(ptr);
+        uintptr_t const adjusted = address + offset;
+        return std::bit_cast<void*>(adjusted);
+    }
 
     template <typename T, typename U>
     [[nodiscard]] bool Disjoint(T const* pt, size_t nt, U const* pu, size_t nu) noexcept

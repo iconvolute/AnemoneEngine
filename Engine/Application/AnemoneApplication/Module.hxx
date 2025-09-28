@@ -3,20 +3,6 @@
 
 namespace Anemone
 {
-    template <typename Module>
-    struct ModuleInitializer final
-    {
-        ModuleInitializer()
-        {
-            Module::Initialize();
-        }
-
-        ~ModuleInitializer()
-        {
-            Module::Finalize();
-        }
-    };
-
     class Module_Application
     {
     public:
