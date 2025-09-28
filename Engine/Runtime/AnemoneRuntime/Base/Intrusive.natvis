@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+
+  <!-- IntrusiveStack<T, Tag> Visualizer -->
+  <Type Name="Anemone::IntrusiveStack&lt;*,*&gt;">
+    <DisplayString Condition="Head == nullptr">[empty stack]</DisplayString>
+    <DisplayString Condition="Head != nullptr">[stack with items]</DisplayString>
+    <Expand>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="current" InitialValue="Head"/>
+        <Loop>
+          <Break Condition="current == nullptr"/>
+          <Item>*($T1*)current</Item>
+          <Exec>current = current->Link</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- IntrusiveSingleList<T, Tag> Visualizer -->
+  <Type Name="Anemone::IntrusiveSingleList&lt;*,*&gt;">
+    <DisplayString Condition="Head == nullptr">[empty list]</DisplayString>
+    <DisplayString Condition="Head != nullptr">[single list with items]</DisplayString>
+    <Expand>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="current" InitialValue="Head"/>
+        <Loop>
+          <Break Condition="current == nullptr"/>
+          <Item>*($T1*)current</Item>
+          <Exec>current = current->Link</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+  <!-- IntrusiveList<T, Tag> Visualizer -->
+  <Type Name="Anemone::IntrusiveList&lt;*,*&gt;">
+    <DisplayString Condition="Head.FLink == &amp;Head">[empty list]</DisplayString>
+    <DisplayString Condition="Head.FLink != &amp;Head">[doubly-linked list with items]</DisplayString>
+    <Expand>
+      <CustomListItems MaxItemsPerView="100">
+        <Variable Name="current" InitialValue="Head.FLink"/>
+        <Loop>
+          <Break Condition="current == &amp;Head"/>
+          <Item>*($T1*)current</Item>
+          <Exec>current = current->FLink</Exec>
+        </Loop>
+      </CustomListItems>
+    </Expand>
+  </Type>
+
+</AutoVisualizer>
