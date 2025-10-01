@@ -85,54 +85,53 @@ namespace Anemone::inline FileSystemX
     };
 }*/
 
-#include "AnemoneRuntime/App/IApplication.hxx"
-#include "AnemoneRuntime/App/IApplicationEvents.hxx"
+#include "AnemoneApplication/HostApplication.hxx"
+#include "AnemoneApplication/HostApplicationEvents.hxx"
+#include "AnemoneApplication/HostDialogs.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
 
-#include "AnemoneRuntime/App/Dialogs.hxx"
-
 #include "AnemoneRuntime/System/CommandLine.hxx"
 #include "AnemoneRuntime/Diagnostics/Trace.hxx"
 
-class EH final : public Anemone::IApplicationEvents
+class EH final : public Anemone::HostApplicationEvents
 {
 public:
     EH() = default;
     ~EH() override = default;
 
-    void OnMouseEnter(Anemone::IWindow& window, Anemone::MouseEventArgs& args) override
+    void OnMouseEnter(Anemone::HostWindow& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseLeave(Anemone::IWindow& window, Anemone::MouseEventArgs& args) override
+    void OnMouseLeave(Anemone::HostWindow& window, Anemone::MouseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
-    void OnMouseMove(Anemone::IWindow& window, Anemone::MouseMoveEventArgs& args) override
-    {
-        (void)window;
-        (void)args;
-    }
-
-    void OnMouseWheel(Anemone::IWindow& window, Anemone::MouseWheelEventArgs& args) override
+    void OnMouseMove(Anemone::HostWindow& window, Anemone::MouseMoveEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonDown(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseWheel(Anemone::HostWindow& window, Anemone::MouseWheelEventArgs& args) override
+    {
+        (void)window;
+        (void)args;
+    }
+
+    void OnMouseButtonDown(Anemone::HostWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         AE_TRACE(Error, "mouse button down: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
 
         std::string ret;
-        if (Anemone::Dialogs::OpenFile(&window, ret, "Select file",
+        if (Anemone::HostDialogs::OpenFile(&window, ret, "Select file",
                 std::array{
                     Anemone::FileDialogFilter{"Any", "*.*"},
                 }) == Anemone::DialogResult::Ok)
@@ -155,19 +154,26 @@ public:
                     AE_TRACE(Error, "---------------");
                 }
 
-                Anemone::Clipboard::SetText(ret);
+                if (auto r = Anemone::Clipboard::SetText(ret))
+                {
+                    AE_TRACE(Error, "Set clipboard text");
+                }
+                else
+                {
+                    AE_TRACE(Error, "Failed to set clipboard text: {}", std::to_underlying(r.error()));
+                }
             }
         }
     }
 
-    void OnMouseButtonUp(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseButtonUp(Anemone::HostWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         AE_TRACE(Error, "mouse button up: {}", std::to_underlying(args.Key));
         (void)window;
         (void)args;
     }
 
-    void OnMouseButtonClick(Anemone::IWindow& window, Anemone::MouseButtonEventArgs& args) override
+    void OnMouseButtonClick(Anemone::HostWindow& window, Anemone::MouseButtonEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -175,7 +181,7 @@ public:
         *(volatile void**)0x42069 = nullptr;
     }
 
-    void OnKeyDown(Anemone::IWindow& window, Anemone::KeyEventArgs& args) override
+    void OnKeyDown(Anemone::HostWindow& window, Anemone::KeyEventArgs& args) override
     {
         AE_TRACE(Error, "Key down: {}", std::to_underlying(args.Key));
         (void)window;
@@ -201,13 +207,13 @@ public:
         }
     }
 
-    void OnKeyUp(Anemone::IWindow& window, Anemone::KeyEventArgs& args) override
+    void OnKeyUp(Anemone::HostWindow& window, Anemone::KeyEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnCharacterReceived(Anemone::IWindow& window, Anemone::CharacterReceivedEventArgs& args) override
+    void OnCharacterReceived(Anemone::HostWindow& window, Anemone::CharacterReceivedEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -231,44 +237,44 @@ public:
         (void)args;
     }
 
-    void OnWindowClose(Anemone::IWindow& window, Anemone::WindowCloseEventArgs& args) override
+    void OnWindowClose(Anemone::HostWindow& window, Anemone::WindowCloseEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowActivated(Anemone::IWindow& window, Anemone::WindowActivatedEventArgs& args) override
+    void OnWindowActivated(Anemone::HostWindow& window, Anemone::WindowActivatedEventArgs& args) override
     {
         window.SetTitle(fmt::format("Window: {}, Active: {}", fmt::ptr(&window), window.IsActive()));
         (void)window;
         (void)args;
     }
 
-    void OnWindowSizeChanged(Anemone::IWindow& window, Anemone::WindowSizeChangedEventArgs& args) override
+    void OnWindowSizeChanged(Anemone::HostWindow& window, Anemone::WindowSizeChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowLocationChanged(Anemone::IWindow& window, Anemone::WindowLocationChangedEventArgs& args) override
+    void OnWindowLocationChanged(Anemone::HostWindow& window, Anemone::WindowLocationChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeStarted(Anemone::IWindow& window, Anemone::WindowEventArgs& args) override
+    void OnWindowResizeStarted(Anemone::HostWindow& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowResizeCompleted(Anemone::IWindow& window, Anemone::WindowEventArgs& args) override
+    void OnWindowResizeCompleted(Anemone::HostWindow& window, Anemone::WindowEventArgs& args) override
     {
         (void)window;
         (void)args;
     }
 
-    void OnWindowDpiChanged(Anemone::IWindow& window, Anemone::WindowDpiChangedEventArgs& args) override
+    void OnWindowDpiChanged(Anemone::HostWindow& window, Anemone::WindowDpiChangedEventArgs& args) override
     {
         (void)window;
         (void)args;
@@ -291,7 +297,7 @@ public:
     {
     }
 
-    void OnWindowVisibilityChanged(Anemone::IWindow& window, Anemone::WindowVisibilityChangedEventArgs& args) override
+    void OnWindowVisibilityChanged(Anemone::HostWindow& window, Anemone::WindowVisibilityChangedEventArgs& args) override
     {
         AE_TRACE(Error, "Window: {} is visible: {}", fmt::ptr(&window), args.Visible);
     }
@@ -543,7 +549,24 @@ anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
 
 anemone_noinline void test2()
 {
-    (void)Anemone::Clipboard::SetText("testing2123");
+    if (auto r = Anemone::Clipboard::SetText("testing2123"))
+    {
+        AE_TRACE(Error, "Set clipboard text");
+    }
+    else
+    {
+        AE_TRACE(Error, "Failed to set clipboard text: {}", std::to_underlying(r.error()));
+    }
+
+    std::string result{};
+    if (auto r = Anemone::Clipboard::GetText(result))
+    {
+        AE_TRACE(Error, "Set clipboard text");
+    }
+    else
+    {
+        AE_TRACE(Error, "Failed to set clipboard text: {}", std::to_underlying(r.error()));
+    }
 }
 
 anemone_noinline Anemone::Math::Detail::SimdMask4F foo(Anemone::Math::Detail::SimdVector4F v)
@@ -571,8 +594,41 @@ anemone_noinline void test3()
     AE_TRACE(Error, "Frames-Per-Second: '{}'", timer.GetFramesPerSecond());
 }
 
+#include "AnemoneRuntime/System/SharedLibrary.hxx"
+
+#include "AnemoneApplication/Module.hxx"
+#include "AnemoneMemory/Module.hxx"
+
+namespace Anemone
+{
+    template <typename Module>
+    struct ModuleInitializer final
+    {
+        ModuleInitializer()
+        {
+            Module::Initialize();
+        }
+
+        ~ModuleInitializer()
+        {
+            Module::Finalize();
+        }
+    };
+}
+
 anemone_noinline int AnemoneMain(int argc, char** argv)
 {
+    Anemone::ModuleInitializer<Anemone::Module_Application> moduleApplication{};
+    Anemone::ModuleInitializer<Anemone::Module_Memory> moduleMemory{};
+
+    if (auto sh = Anemone::SharedLibrary::Load("TestLibrary.dll"))
+    {
+        AE_TRACE(Error, "Works");
+    }
+    else
+    {
+        AE_TRACE(Error, "Failed with {}", std::to_underlying(sh.error()));
+    }
     auto& fs = Anemone::FileSystem::GetPlatformFileSystem();
 
     auto path = "temp/a/b/c/d/e/f";
@@ -636,7 +692,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     //    return -1;
     //}
     //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
-    //test2();
+    test2();
 
 #if false
     (void)Anemone::Process::Start("DevDebugger.exe", fmt::format("--pid {}", GetCurrentProcessId()), {});
@@ -801,9 +857,9 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     AE_TRACE(Error, "Error: {}", Anemone::WindowsDebug::TranslateErrorCodeHRESULT(E_OUTOFMEMORY));
 #endif
 
-    Anemone::IApplication::Initialize(&eh);
-    auto window1 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
-    auto window2 = Anemone::IApplication::Get().CreateWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
+    Anemone::HostApplication::Initialize(eh);
+    auto window1 = Anemone::HostApplication::Get().MakeWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
+    auto window2 = Anemone::HostApplication::Get().MakeWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
 
     if (window1 and window2)
     {
@@ -815,7 +871,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
         while (not window1->IsClosed() or not window2->IsClosed())
         {
-            Anemone::IApplication::Get().ProcessMessages();
+            Anemone::HostApplication::Get().ProcessMessages();
             Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
         }
     }
