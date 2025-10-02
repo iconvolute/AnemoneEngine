@@ -29,6 +29,8 @@ enable_language(C CXX)
 # 1. Find external dependencies.
 include("CMake/Modules/FindITT.cmake")
 
+find_package(Vulkan)
+
 # 2. Detect toolchain and set up compiler flags.
 include("CMake/DetectToolchain.cmake")
 

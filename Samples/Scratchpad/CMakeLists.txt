@@ -9,6 +9,7 @@ target_link_libraries(Scratchpad
         AnemoneRuntime
         AnemoneApplication
         AnemoneMemory
+        AnemoneRenderVulkan
 )
 
 add_subdirectory("Resources")

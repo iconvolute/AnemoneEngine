@@ -494,11 +494,11 @@ namespace Anemone::Builtins
         return ~x + 1u; // Two's complement negation
     }
 
-    //constexpr bool UInt32_HasSingleBit(uint32_t x)
+    // constexpr bool UInt32_HasSingleBit(uint32_t x)
     //{
-    //    // A number has a single bit set if it is not zero and its bitwise AND with its negation is zero.
-    //    return (x != 0) && ((x & -x) == x);
-    //}
+    //     // A number has a single bit set if it is not zero and its bitwise AND with its negation is zero.
+    //     return (x != 0) && ((x & -x) == x);
+    // }
 
     constexpr uint32_t UInt32_CountBits(uint32_t x)
     {
@@ -539,8 +539,8 @@ namespace Anemone::Builtins
         value |= (value >> 16);
         value |= (value >> 32);
         return value + 1;
-        }
     }
+}
 
 anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
 {
@@ -686,12 +686,12 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         AE_TRACE(Error, "1: Copy file failed: {}", r.error());
     }
 
-    //test3();
-    //if (argc)
+    // test3();
+    // if (argc)
     //{
-    //    return -1;
-    //}
-    //AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
+    //     return -1;
+    // }
+    // AE_TRACE(Error, "{}", Anemone::Math::Detail::Vector4F_Extract<0>(foo(*reinterpret_cast<Anemone::Math::Detail::SimdVector4F*>(argv))));
     test2();
 
 #if false
@@ -790,7 +790,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     }
     else
     {
-        
     }
 
     if (std::vector<std::string_view> args; Anemone::CommandLine::GetPositional(args), true)
