@@ -39,6 +39,7 @@ namespace Anemone
         static WindowsProcessorProperties& Get();
 
         bool featureSmt = false;
+
         size_t cacheL1 = 0;
         size_t cacheL2 = 0;
         size_t cacheL3 = 0;

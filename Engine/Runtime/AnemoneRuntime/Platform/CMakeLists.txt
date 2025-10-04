@@ -8,6 +8,5 @@ target_sources(AnemoneRuntime
         "FilePath.hxx"
         "FileSystem.hxx"
         "NamedMutex.hxx"
-        "StackTrace.hxx"
         "Types.hxx"
 )
