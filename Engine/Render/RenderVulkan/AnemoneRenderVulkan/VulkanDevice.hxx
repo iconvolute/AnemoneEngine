@@ -1,14 +1,6 @@
 #pragma once
 #include "AnemoneRender/Device.hxx"
-#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
-
-#define VK_NO_PROTOTYPES
-#include <vulkan/vulkan.h>
-#if ANEMONE_PLATFORM_WINDOWS
-#include <vulkan/vulkan_win32.h>
-#endif
-
-#include <volk.h>
+#include "AnemoneRenderVulkan/VulkanHeaders.hxx"
 
 namespace Anemone
 {
