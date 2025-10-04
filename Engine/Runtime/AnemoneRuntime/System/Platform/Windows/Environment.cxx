@@ -32,6 +32,149 @@ namespace Anemone::Internal
 
 namespace Anemone
 {
+    struct WindowsProcessorProperties
+    {
+        static void Initialize();
+        static void Finalize();
+        static WindowsProcessorProperties& Get();
+
+        bool featureSmt = false;
+        size_t cacheL1 = 0;
+        size_t cacheL2 = 0;
+        size_t cacheL3 = 0;
+        size_t cacheLineSize = 0;
+
+        size_t logicalCores = 0;
+        size_t physicalCores = 0;
+        size_t performanceCores = 0;
+        size_t efficiencyCores = 0;
+    };
+
+    namespace
+    {
+        UninitializedObject<WindowsProcessorProperties> gWindowsProcessorProperties{};
+    }
+
+    void WindowsProcessorProperties::Initialize()
+    {
+        gWindowsProcessorProperties.Create();
+
+        Interop::memory_buffer<4096> buffer{};
+
+        // Find out information about caches.
+        if (SUCCEEDED(Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationCache)))
+        {
+            size_t cacheLineSize = std::numeric_limits<size_t>::max();
+            size_t cacheL1 = 0;
+            size_t cacheL2 = 0;
+            size_t cacheL3 = 0;
+
+            Interop::Windows::EnumerateLogicalProcessorInformation(buffer.as_span(), [&](SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current)
+            {
+                AE_ASSERT(current.Relationship == RelationCache);
+
+                // Choose the smallest cache line size as the "safest" value.
+                cacheLineSize = std::min<size_t>(cacheLineSize, current.Cache.LineSize);
+
+                switch (current.Cache.Level)
+                {
+                case 1:
+                    cacheL1 += current.Cache.CacheSize;
+                    break;
+
+                case 2:
+                    cacheL2 += current.Cache.CacheSize;
+                    break;
+
+                case 3:
+                    cacheL3 += current.Cache.CacheSize;
+                    break;
+
+                default:
+                    // Unknown cache line level. Are you some kind of server from the future?
+                    break;
+                }
+            });
+
+            gWindowsProcessorProperties->cacheLineSize = cacheLineSize;
+            gWindowsProcessorProperties->cacheL1 += cacheL1;
+            gWindowsProcessorProperties->cacheL2 += cacheL2;
+            gWindowsProcessorProperties->cacheL3 += cacheL3;
+        }
+
+        if (SUCCEEDED(Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationProcessorCore)))
+        {
+            bool const hasEfficiency = IsWindows10OrGreater();
+            bool featureSmt = false;
+            BYTE performanceEfficiencyClass = 0;
+
+            // Find out performance CPU efficiency class.
+            Interop::Windows::EnumerateLogicalProcessorInformation(buffer.as_span(), [&](SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current)
+            {
+                AE_ASSERT(current.Relationship == RelationProcessorCore);
+
+                if (hasEfficiency)
+                {
+                    performanceEfficiencyClass = std::max<uint8_t>(performanceEfficiencyClass, current.Processor.EfficiencyClass);
+                }
+
+                if (current.Processor.Flags & LTP_PC_SMT)
+                {
+                    featureSmt = true;
+                }
+            });
+
+            gWindowsProcessorProperties->featureSmt = featureSmt;
+
+            // Collect processor core counts.
+            size_t logicalCores = 0;
+            size_t physicalCores = 0;
+            size_t performanceCores = 0;
+            size_t efficiencyCores = 0;
+
+            Interop::Windows::EnumerateLogicalProcessorInformation(buffer.as_span(), [&](SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current)
+            {
+                AE_ASSERT(current.Relationship == RelationProcessorCore);
+
+                if (current.Processor.EfficiencyClass == performanceEfficiencyClass)
+                {
+                    ++performanceCores;
+                }
+                else
+                {
+                    ++efficiencyCores;
+                }
+
+                for (size_t i = 0; i < current.Processor.GroupCount; ++i)
+                {
+                    KAFFINITY const mask = current.Processor.GroupMask[i].Mask;
+
+                    logicalCores += std::popcount(mask);
+                }
+
+                ++physicalCores;
+            });
+
+            gWindowsProcessorProperties->logicalCores = logicalCores;
+            gWindowsProcessorProperties->physicalCores = physicalCores;
+            gWindowsProcessorProperties->performanceCores = performanceCores;
+            gWindowsProcessorProperties->efficiencyCores = efficiencyCores;
+        }
+    }
+
+    void WindowsProcessorProperties::Finalize()
+    {
+        gWindowsProcessorProperties.Destroy();
+    }
+
+    WindowsProcessorProperties& WindowsProcessorProperties::Get()
+    {
+        return *gWindowsProcessorProperties;
+    }
+}
+
+namespace Anemone
+{
     namespace
     {
         struct CoreInfoImpl
@@ -65,27 +208,6 @@ namespace Anemone
             std::string documentsPath;
             std::string downloadsPath;
             std::string temporaryPath;
-
-            // Number of physical cores.
-            uint32_t physicalCores{};
-
-            // Number of logical cores.
-            uint32_t logicalCores{};
-
-            // Number of performance cores.
-            uint32_t performanceCores{};
-
-            // Number of efficiency cores.
-            uint32_t efficiencyCores{};
-
-            bool hyperThreading{};
-
-            // Smallest cache-line size found.
-            uint32_t cacheLineSize{};
-
-            uint32_t cacheSizeLevel1{};
-            uint32_t cacheSizeLevel2{};
-            uint32_t cacheSizeLevel3{};
 
             Interop::string_buffer<char, 64> processorName{};
 
@@ -270,140 +392,6 @@ namespace Anemone
             }
         }
 
-        void InitializeProcessorProperties(EnvironmentStatics& statics)
-        {
-            Interop::memory_buffer<4096> buffer{};
-
-            if (SUCCEEDED(Interop::Windows::GetLogicalProcessorInformationEx(buffer, RelationAll)))
-            {
-                uint32_t cacheLineSize = std::numeric_limits<uint32_t>::max();
-
-                bool hasEfficiency = IsWindows10OrGreater();
-
-                std::vector<CoreInfoImpl> coreInfo;
-                uint8_t performanceEfficiencyClass = 0;
-
-                std::span view = buffer.as_span();
-
-                while (not view.empty())
-                {
-                    SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(view.data());
-
-                    switch (current.Relationship)
-                    {
-                    case RelationCache:
-                        {
-                            // Choose the smallest cache line size as the "safest" value.
-                            cacheLineSize = std::min<uint32_t>(cacheLineSize, current.Cache.LineSize);
-
-                            switch (current.Cache.Level)
-                            {
-                            case 1:
-                                statics.cacheSizeLevel1 += current.Cache.CacheSize;
-                                break;
-
-                            case 2:
-                                statics.cacheSizeLevel2 += current.Cache.CacheSize;
-                                break;
-
-                            case 3:
-                                statics.cacheSizeLevel3 += current.Cache.CacheSize;
-                                break;
-
-                            default:
-                                // Unknown cache line level. Are you some kind of server from the future?
-                                break;
-                            }
-
-                            break;
-                        }
-
-                    case RelationProcessorCore:
-                        {
-                            if (current.Processor.GroupCount == 1)
-                            {
-                                // On 64-bit windows, we count only cores on first group.
-                                // Maybe in future we enhance this to support more than 64 cores?
-
-                                if (hasEfficiency)
-                                {
-                                    performanceEfficiencyClass = std::max<uint8_t>(performanceEfficiencyClass, current.Processor.EfficiencyClass);
-
-                                    if (current.Processor.Flags & LTP_PC_SMT)
-                                    {
-                                        // Hyper-threaded CPU.
-                                        statics.hyperThreading = true;
-                                    }
-                                }
-
-                                coreInfo.emplace_back(
-                                    hasEfficiency ? current.Processor.EfficiencyClass : uint8_t{},
-                                    (current.Processor.Flags & LTP_PC_SMT) != 0);
-                            }
-
-                            break;
-                        }
-
-                    default:
-                        {
-                            break;
-                        }
-                    }
-
-                    view = view.subspan(current.Size);
-                }
-
-                statics.cacheLineSize = cacheLineSize;
-
-                statics.logicalCores = 0;
-                statics.physicalCores = 0;
-                statics.performanceCores = 0;
-                statics.efficiencyCores = 0;
-
-                for (auto const& core : coreInfo)
-                {
-                    // Classify core by efficiency.
-                    if (core.Efficiency == performanceEfficiencyClass)
-                    {
-                        ++statics.performanceCores;
-                    }
-                    else
-                    {
-                        ++statics.efficiencyCores;
-                    }
-
-                    // Count logical cores.
-                    ++statics.logicalCores;
-
-                    if (core.HyperThreaded)
-                    {
-                        ++statics.logicalCores;
-                    }
-
-                    // And physical cores.
-                    ++statics.physicalCores;
-                }
-            }
-
-            // Get name and vendor of the CPU
-            if (auto const key = Interop::Windows::RegistryKey::Open(HKEY_LOCAL_MACHINE, LR"(HARDWARE\DESCRIPTION\System\CentralProcessor\0)"))
-            {
-                if (not key.ReadString("ProcessorNameString", statics.processorName))
-                {
-                    Debug::ReportApplicationStop("Cannot obtain processor information");
-                }
-
-                if (not key.ReadString("VendorIdentifier", statics.processorVendor))
-                {
-                    Debug::ReportApplicationStop("Cannot obtain processor information");
-                }
-            }
-            else
-            {
-                Debug::ReportApplicationStop("Cannot obtain processor information");
-            }
-        }
-
         void VerifyRequirements()
         {
             if (Interop::Windows::IsProcessEmulated())
@@ -535,11 +523,14 @@ namespace Anemone::Internal
 
         gEnvironmentStatics.Create();
         InitializeEnvironment(*gEnvironmentStatics);
-        InitializeProcessorProperties(*gEnvironmentStatics);
+
+        WindowsProcessorProperties::Initialize();
     }
 
     extern void FinalizeEnvironment()
     {
+        WindowsProcessorProperties::Finalize();
+
         gEnvironmentStatics.Destroy();
 
         if (WSACleanup() != 0)
@@ -1007,47 +998,47 @@ namespace Anemone
 
     auto Environment::GetPhysicalCoresCount() -> size_t
     {
-        return gEnvironmentStatics->physicalCores;
+        return gWindowsProcessorProperties->physicalCores;
     }
 
     auto Environment::GetLogicalCoresCount() -> size_t
     {
-        return gEnvironmentStatics->logicalCores;
+        return gWindowsProcessorProperties->logicalCores;
     }
 
     auto Environment::GetPerformanceCoresCount() -> size_t
     {
-        return gEnvironmentStatics->performanceCores;
+        return gWindowsProcessorProperties->performanceCores;
     }
 
     auto Environment::GetEfficiencyCoresCount() -> size_t
     {
-        return gEnvironmentStatics->efficiencyCores;
+        return gWindowsProcessorProperties->efficiencyCores;
     }
 
     bool Environment::IsHyperThreadingEnabled()
     {
-        return gEnvironmentStatics->hyperThreading;
+        return gWindowsProcessorProperties->featureSmt;
     }
 
     auto Environment::GetCacheLineSize() -> size_t
     {
-        return gEnvironmentStatics->cacheLineSize;
+        return gWindowsProcessorProperties->cacheLineSize;
     }
 
     auto Environment::GetCacheSizeLevel1() -> size_t
     {
-        return gEnvironmentStatics->cacheSizeLevel1;
+        return gWindowsProcessorProperties->cacheL1;
     }
 
     auto Environment::GetCacheSizeLevel2() -> size_t
     {
-        return gEnvironmentStatics->cacheSizeLevel2;
+        return gWindowsProcessorProperties->cacheL2;
     }
 
     auto Environment::GetCacheSizeLevel3() -> size_t
     {
-        return gEnvironmentStatics->cacheSizeLevel3;
+        return gWindowsProcessorProperties->cacheL3;
     }
 
     auto Environment::GetProcessorName() -> std::string_view

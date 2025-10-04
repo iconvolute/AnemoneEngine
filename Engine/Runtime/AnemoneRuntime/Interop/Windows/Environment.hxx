@@ -288,4 +288,17 @@ namespace Anemone::Interop::Windows
             return HRESULT_FROM_WIN32(dwError);
         });
     }
+
+    template <typename Callback>
+    anemone_forceinline void EnumerateLogicalProcessorInformation(std::span<std::byte const> buffer, Callback callback)
+    {
+        while (not buffer.empty())
+        {
+            SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const& current = *reinterpret_cast<SYSTEM_LOGICAL_PROCESSOR_INFORMATION_EX const*>(buffer.data());
+
+            callback(current);
+
+            buffer = buffer.subspan(current.Size);
+        }
+    }
 }
