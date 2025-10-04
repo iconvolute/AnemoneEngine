@@ -4,7 +4,7 @@ add_subdirectory("LZ4")
 add_subdirectory("NVTX")
 
 
-if (Vulkan_FOUND)
+if (Vulkan_FOUND AND WIN32)
 
 add_subdirectory("volk")
 

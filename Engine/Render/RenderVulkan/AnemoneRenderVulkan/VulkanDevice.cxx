@@ -15,6 +15,7 @@ namespace Anemone
             size_t alignment,
             VkSystemAllocationScope allocationScope)
         {
+            AE_TRACE(Error, "VK::Alloc size={}, alignment={}, scope={}", size, alignment, std::to_underlying(allocationScope));
             (void)pUserData;
             (void)allocationScope;
             return _aligned_malloc(size, alignment);
@@ -24,6 +25,7 @@ namespace Anemone
             void* pUserData,
             void* pMemory)
         {
+            AE_TRACE(Error, "VK::Free ptr={}", fmt::ptr(pMemory));
             (void)pUserData;
             _aligned_free(pMemory);
         }
@@ -34,6 +36,7 @@ namespace Anemone
             VkInternalAllocationType allocationType,
             VkSystemAllocationScope allocationScope)
         {
+            AE_TRACE(Error, "VK::InternalAlloc size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
             (void)pUserData;
             (void)size;
             (void)allocationType;
@@ -46,6 +49,7 @@ namespace Anemone
             VkInternalAllocationType allocationType,
             VkSystemAllocationScope allocationScope)
         {
+            AE_TRACE(Error, "VK::InternalFree size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
             (void)pUserData;
             (void)size;
             (void)allocationType;
@@ -59,6 +63,7 @@ namespace Anemone
             size_t alignment,
             VkSystemAllocationScope allocationScope)
         {
+            AE_TRACE(Error, "VK::Realloc ptr={}, size={}, alignment={}, scope={}", fmt::ptr(pOriginal), size, alignment, std::to_underlying(allocationScope));
             (void)pUserData;
             (void)allocationScope;
 
@@ -80,6 +85,7 @@ namespace Anemone
             .pfnInternalFree = &FnVkInternalFreeNotification,
         };
 
+#if !ANEMONE_BUILD_SHIPPING
         VkBool32 VKAPI_PTR FnVkDebugReportCallbackEXT(
             VkDebugReportFlagsEXT flags,
             VkDebugReportObjectTypeEXT objectType,
@@ -102,6 +108,7 @@ namespace Anemone
 
             return VK_FALSE;
         }
+#endif
     }
     VulkanDevice::VulkanDevice()
     {
@@ -117,17 +124,19 @@ namespace Anemone
             .apiVersion = VK_API_VERSION_1_4,
         };
 
+#if !ANEMONE_BUILD_SHIPPING
         const char* enabledLayers[]{
             "VK_LAYER_KHRONOS_validation",
         };
+#endif
 
         const char* enabledExtensions[]{
             "VK_KHR_surface",
 
+#if !ANEMONE_BUILD_SHIPPING
             VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
             VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-            //VK_KHR_DEDICATED_ALLOCATION_EXTENSION_NAME,
-            //VK_KHR_GET_MEMORY_REQUIREMENTS_2_EXTENSION_NAME,
+#endif
 
 #if ANEMONE_PLATFORM_WINDOWS
             "VK_KHR_win32_surface",
@@ -137,9 +146,6 @@ namespace Anemone
             "VK_KHR_xcb_surface",
             "VK_KHR_wayland_surface",
 #endif
-            //"VK_EXT_full_screen_exclusive"
-            //"VK_KHR_win32_keyed_mutex",
-            //"VK_KHR_external_memory_win32",
         };
 
         VkInstanceCreateInfo info{
@@ -147,8 +153,13 @@ namespace Anemone
             .pNext = nullptr,
             .flags = 0,
             .pApplicationInfo = &applicationInfo,
+#if !ANEMONE_BUILD_SHIPPING
             .enabledLayerCount = std::size(enabledLayers),
             .ppEnabledLayerNames = enabledLayers,
+#else
+            .enabledLayerCount = 0,
+            .ppEnabledLayerNames = nullptr,
+#endif
             .enabledExtensionCount = std::size(enabledExtensions),
             .ppEnabledExtensionNames = enabledExtensions,
         };
@@ -158,6 +169,7 @@ namespace Anemone
 
         volkLoadInstanceOnly(this->_instance);
 
+#if !ANEMONE_BUILD_SHIPPING
         VkDebugReportCallbackCreateInfoEXT createInfo = {};
         createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
         createInfo.flags = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_DEBUG_BIT_EXT;
@@ -165,6 +177,7 @@ namespace Anemone
 
         vkr = vkCreateDebugReportCallbackEXT(this->_instance, &createInfo, &gVkAllocationCallbacks, &this->_debugReportCallback);
         AE_ENSURE(vkr == VK_SUCCESS);
+#endif
 
         uint32_t devCount{};
         std::vector<VkPhysicalDevice> devices{};
@@ -177,13 +190,13 @@ namespace Anemone
         AE_ENSURE(vkr == VK_SUCCESS);
 
         auto window = Anemone::HostApplication::Get().MakeWindow(WindowType::Game, WindowMode::Windowed);
-        
+
         VkWin32SurfaceCreateInfoKHR win32ci{
-        .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
-        .pNext = nullptr,
-        .flags = 0,
-        .hinstance = GetModuleHandleW(nullptr),
-        .hwnd = static_cast<HWND>(window->GetNativeHandle()),
+            .sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR,
+            .pNext = nullptr,
+            .flags = 0,
+            .hinstance = GetModuleHandleW(nullptr),
+            .hwnd = static_cast<HWND>(window->GetNativeHandle()),
         };
         VkSurfaceKHR surface{};
         vkr = vkCreateWin32SurfaceKHR(this->_instance, &win32ci, &gVkAllocationCallbacks, &surface);
@@ -208,13 +221,18 @@ namespace Anemone
             AE_ENSURE(vkr == VK_SUCCESS);
             volkLoadDevice(this->_device);
 
-            uint32_t propertyCount{};
-            vkr = vkGetPhysicalDeviceDisplayPropertiesKHR(device, &propertyCount, nullptr);
-            AE_ENSURE(vkr == VK_SUCCESS);
+            if (vkGetPhysicalDeviceDisplayPropertiesKHR)
+            {
+                uint32_t propertyCount{};
+                vkr = vkGetPhysicalDeviceDisplayPropertiesKHR(device, &propertyCount, nullptr);
+                AE_ENSURE(vkr == VK_SUCCESS);
 
-            std::vector<VkDisplayPropertiesKHR> properties{};
-            vkr = vkGetPhysicalDeviceDisplayPropertiesKHR(device, &propertyCount, properties.data());
-            AE_ENSURE(vkr == VK_SUCCESS);
+                std::vector<VkDisplayPropertiesKHR> properties{};
+                vkr = vkGetPhysicalDeviceDisplayPropertiesKHR(device, &propertyCount, properties.data());
+                AE_ENSURE(vkr == VK_SUCCESS);
+            }
+
+            vkDestroyDevice(this->_device, &gVkAllocationCallbacks);
         }
     }
 

@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneApplication/HostWindow.hxx"
 
