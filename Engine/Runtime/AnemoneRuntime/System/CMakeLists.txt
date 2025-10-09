@@ -5,6 +5,7 @@ target_sources(AnemoneRuntime
         "CommandLine.cxx"
         "SharedLibrary.cxx"
         "Process.cxx"
+        "ProcessorProperties.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Clipboard.hxx"
         "CommandLine.hxx"
@@ -12,4 +13,5 @@ target_sources(AnemoneRuntime
         "Process.hxx"
         "SharedLibrary.hxx"
         "SystemAllocator.hxx"
+        "ProcessorProperties.hxx"
 )

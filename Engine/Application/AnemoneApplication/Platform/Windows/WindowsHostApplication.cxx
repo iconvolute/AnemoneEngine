@@ -1,7 +1,9 @@
-#include "AnemoneApplication/Platform/Windows/WindowsHostApplication.hxx"
 #include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneRuntime/Interop/Windows/Graphics.hxx"
+#include "AnemoneApplication/Platform/Windows/WindowsHostApplication.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
-
 #include "AnemoneApplication/Platform/Windows/WindowsHostInput.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsGameInput.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsXInput.hxx"
@@ -137,5 +139,151 @@ namespace Anemone
     Reference<HostWindow> WindowsHostApplication::MakeWindow(WindowType windowType, WindowMode windowMode)
     {
         return MakeReference<WindowsHostWindow>(*this, windowType, windowMode);
+    }
+}
+
+namespace Anemone
+{
+    void HostApplication::GetDisplayMetrics(DisplayMetrics& metrics)
+    {
+        metrics.Displays.clear();
+
+        // Get display size.
+        metrics.PrimaryDisplaySize = Math::SizeF{
+            .Width = static_cast<float>(GetSystemMetrics(SM_CXSCREEN)),
+            .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
+        };
+
+        RECT workArea = {-1, -1, -1, -1};
+
+        if (SystemParametersInfoW(SPI_GETWORKAREA, 0, &workArea, 0) == FALSE)
+        {
+            workArea = {};
+        }
+
+        // Get workspace area.
+        metrics.PrimaryDisplayWorkArea = Interop::Windows::ToRectF(workArea);
+
+        // Virtual display rect
+        metrics.VirtualDisplayRect = Math::RectF{
+            .X = static_cast<float>(GetSystemMetrics(SM_XVIRTUALSCREEN)),
+            .Y = static_cast<float>(GetSystemMetrics(SM_YVIRTUALSCREEN)),
+            .Width = static_cast<float>(GetSystemMetrics(SM_CXVIRTUALSCREEN)),
+            .Height = static_cast<float>(GetSystemMetrics(SM_CYVIRTUALSCREEN)),
+        };
+
+        // Get displays
+        metrics.Displays.clear();
+
+        DISPLAY_DEVICEW device{};
+        device.cb = sizeof(device);
+
+        for (DWORD id = 0; EnumDisplayDevicesW(nullptr, id, &device, 0) != FALSE; ++id)
+        {
+            if ((device.StateFlags & DISPLAY_DEVICE_MIRRORING_DRIVER) != 0)
+            {
+                // Mirroring devices are not supported.
+                continue;
+            }
+
+            if ((device.StateFlags & DISPLAY_DEVICE_ATTACHED_TO_DESKTOP) == 0)
+            {
+                // Only devices attached to desktop.
+                continue;
+            }
+
+            DisplayInfo& display = metrics.Displays.emplace_back();
+            Interop::Windows::NarrowString(display.Id, device.DeviceID);
+            Interop::Windows::NarrowString(display.Name, device.DeviceName);
+            display.Primary = (device.StateFlags & DISPLAY_DEVICE_PRIMARY_DEVICE) != 0;
+
+            DEVMODEW dm{};
+            dm.dmSize = sizeof(dm);
+
+            if (EnumDisplaySettingsExW(
+                    device.DeviceName,
+                    ENUM_CURRENT_SETTINGS,
+                    &dm,
+                    EDS_RAWMODE))
+            {
+                if (dm.dmFields & DM_DISPLAYORIENTATION)
+                {
+                    switch (dm.dmDisplayOrientation)
+                    {
+                    default:
+                        display.Orientation = DisplayOrientation::Unknown;
+                        break;
+
+                    case DMDO_DEFAULT:
+                        display.Orientation = DisplayOrientation::Landscape;
+                        break;
+
+                    case DMDO_90:
+                        display.Orientation = DisplayOrientation::Portrait;
+                        break;
+
+                    case DMDO_180:
+                        display.Orientation = DisplayOrientation::LandscapeFlipped;
+                        break;
+
+                    case DMDO_270:
+                        display.Orientation = DisplayOrientation::PortraitFlipped;
+                        break;
+                    }
+                }
+            }
+            else
+            {
+                display.Orientation = DisplayOrientation::Unknown;
+            }
+
+            // Find detailed properties.
+            (void)Interop::Windows::EnumDisplayMonitors(
+                nullptr,
+                nullptr,
+                [&](HMONITOR handle, HDC dc, LPRECT rect) -> bool
+            {
+                (void)rect;
+                (void)dc;
+
+                MONITORINFOEXW miex{};
+                miex.cbSize = sizeof(miex);
+
+                GetMonitorInfoW(handle, &miex);
+
+                Interop::string_buffer<char, 128> name{};
+                Interop::Windows::NarrowString(name, miex.szDevice);
+
+                AE_ASSERT(!metrics.Displays.empty());
+
+                DisplayInfo& last = metrics.Displays.back();
+
+                if (last.Name == name.as_view())
+                {
+                    last.DisplayRect = Interop::Windows::ToRectF(miex.rcMonitor);
+                    last.WorkAreaRect = Interop::Windows::ToRectF(miex.rcWork);
+                }
+
+                return true;
+            });
+        }
+    }
+
+    ColorRef HostApplication::GetScreenPixel(Math::PointF position, float gamma)
+    {
+        COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), static_cast<int>(position.X), static_cast<int>(position.Y));
+
+        float const r = static_cast<float>(static_cast<uint8_t>(color)) / 255.0f;
+        float const g = static_cast<float>(static_cast<uint8_t>(color >> 8)) / 255.0f;
+        float const b = static_cast<float>(static_cast<uint8_t>(color >> 16)) / 255.0f;
+
+        float const exp = std::max(gamma, 1.0F);
+
+        return ColorRef{
+            .Red = std::pow(r, exp),
+            .Green = std::pow(g, exp),
+            .Blue = std::pow(b, exp),
+            .Alpha = 1.0f,
+        };
     }
 }

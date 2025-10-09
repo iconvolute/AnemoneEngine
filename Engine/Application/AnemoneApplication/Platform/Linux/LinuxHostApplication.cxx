@@ -47,3 +47,18 @@ namespace Anemone
         return {};
     }
 }
+
+namespace Anemone
+{
+    void HostApplication::GetDisplayMetrics(DisplayMetrics& metrics)
+    {
+        (void)metrics;
+    }
+
+    ColorRef HostApplication::GetScreenPixel(Math::PointF position, float gamma)
+    {
+        (void)position;
+        (void)gamma;
+        return {};
+    }
+}

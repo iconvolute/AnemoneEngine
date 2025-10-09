@@ -1,4 +1,4 @@
-anemone_add_ui_executable(Scratchpad)
+anemone_add_console_executable(Scratchpad)
 
 target_sources(Scratchpad
     PRIVATE
@@ -9,7 +9,15 @@ target_link_libraries(Scratchpad
         AnemoneRuntime
         AnemoneApplication
         AnemoneMemory
+)
+
+if (Vulkan_FOUND AND WIN32)
+
+target_link_libraries(Scratchpad
+    PUBLIC
         AnemoneRenderVulkan
 )
+
+endif()
 
 add_subdirectory("Resources")

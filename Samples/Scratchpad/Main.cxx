@@ -19,6 +19,7 @@
 #include "AnemoneRuntime/Threading/Lock.hxx"
 
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 
 namespace anemone
 {
@@ -89,7 +90,6 @@ namespace Anemone::inline FileSystemX
 #include "AnemoneApplication/HostApplicationEvents.hxx"
 #include "AnemoneApplication/HostDialogs.hxx"
 #include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Platform/StackTrace.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
 
 #include "AnemoneRuntime/System/CommandLine.hxx"
@@ -311,8 +311,8 @@ public:
 
 anemone_noinline void test()
 {
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorName());
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorVendor());
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetProcessorName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetProcessorVendor());
 }
 
 #include "AnemoneRuntime/Hash/FNV.hxx"
@@ -616,10 +616,39 @@ namespace Anemone
     };
 }
 
+#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
+#include "AnemoneRenderVulkan/VulkanDevice.hxx"
+#endif
+
+#include "AnemoneRuntime/Diagnostics/Internal/FileTraceListener.hxx"
+
 anemone_noinline int AnemoneMain(int argc, char** argv)
 {
     Anemone::ModuleInitializer<Anemone::Module_Application> moduleApplication{};
     Anemone::ModuleInitializer<Anemone::Module_Memory> moduleMemory{};
+    Anemone::UninitializedObject<Anemone::FileTraceListener> fts{};
+
+    if (auto fh = Anemone::FileSystem::GetPlatformFileSystem().CreateFileWriter("log.txt"))
+    {
+        fts.Create(Anemone::MakeReference<Anemone::FileOutputStream>(*fh));
+        Anemone::Trace::Get().Register(*fts);
+    }
+
+    {
+        EH eh{};
+        Anemone::HostApplication::Initialize(eh);
+#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
+        auto rd = Anemone::CreateRenderDevice();
+        (void)rd;
+#endif
+        Anemone::HostApplication::Finalize();
+        
+    }
+    if (fts)
+    {
+        Anemone::Trace::Get().Unregister(*fts);
+        fts.Destroy();
+    }
 
     if (auto sh = Anemone::SharedLibrary::Load("TestLibrary.dll"))
     {
@@ -838,15 +867,15 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     }
     test();
     AE_TRACE(Error, "Hello, World!");
-    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::Environment::GetProcessorName());
-    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::Environment::GetProcessorVendor());
-    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::Environment::GetEfficiencyCoresCount());
-    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::Environment::GetPerformanceCoresCount());
-    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::Environment::GetPhysicalCoresCount());
-    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::Environment::GetLogicalCoresCount());
+    AE_TRACE(Error, "cpu-Name:             '{}'", Anemone::ProcessorProperties::GetProcessorName());
+    AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetProcessorVendor());
+    AE_TRACE(Error, "cpu-EfficiencyCores:  '{}'", Anemone::ProcessorProperties::GetEfficiencyCoresCount());
+    AE_TRACE(Error, "cpu-PerformanceCores: '{}'", Anemone::ProcessorProperties::GetPerformanceCoresCount());
+    AE_TRACE(Error, "cpu-PhysicalCores:    '{}'", Anemone::ProcessorProperties::GetPhysicalCoresCount());
+    AE_TRACE(Error, "cpu-LogicalCores:     '{}'", Anemone::ProcessorProperties::GetLogicalCoresCount());
 
-    fmt::println("cpu-name:    '{}'", Anemone::Environment::GetProcessorName());
-    fmt::println("cpu-vendor:  '{}'", Anemone::Environment::GetProcessorVendor());
+    fmt::println("cpu-name:    '{}'", Anemone::ProcessorProperties::GetProcessorName());
+    fmt::println("cpu-vendor:  '{}'", Anemone::ProcessorProperties::GetProcessorVendor());
     /*fmt::println("device-name: '{}'", Anemone::Environment::GetDeviceName());
     fmt::println("device-id:   '{}'", Anemone::Environment::GetDeviceUniqueId());*/
 

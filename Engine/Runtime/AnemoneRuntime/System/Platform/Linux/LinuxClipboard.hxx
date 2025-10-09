@@ -5,5 +5,8 @@ namespace Anemone
 {
     struct LinuxClipboard final
     {
+        static void Initialize();
+        static void Finalize();
+        static LinuxClipboard& Get();
     };
 }

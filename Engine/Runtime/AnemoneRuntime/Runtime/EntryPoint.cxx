@@ -5,26 +5,24 @@
 #include "AnemoneRuntime/System/Clipboard.hxx"
 #include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
+#include "AnemoneRuntime/System/Environment.hxx"
 
 namespace Anemone::Internal
 {
     extern int GCommandLineArgC;
     extern char** GCommandLineArgV;
-    extern bool GIsConsoleApplication;
-
-    extern void InitializeEnvironment();
-    extern void FinalizeEnvironment();
 }
 
 extern "C" RUNTIME_API void AnemoneRuntimeInitialize(int argc, char** argv, bool console)
 {
     Anemone::Internal::GCommandLineArgC = argc;
     Anemone::Internal::GCommandLineArgV = argv;
-    Anemone::Internal::GIsConsoleApplication = console;
 
     Anemone::Trace::Initialize();
     Anemone::Debug::Initialize();
-    Anemone::Internal::InitializeEnvironment();
+    Anemone::Environment::Initialize(console);
+    Anemone::ProcessorProperties::Initialize();
     Anemone::FileSystem::Initialize();
     Anemone::Clipboard::Initialize();
 
@@ -45,8 +43,8 @@ extern "C" RUNTIME_API void AnemoneRuntimeFinalize()
 
     Anemone::Clipboard::Finalize();
     Anemone::FileSystem::Finalize();
-
-    Anemone::Internal::FinalizeEnvironment();
+    Anemone::ProcessorProperties::Finalize();
+    Anemone::Environment::Finalize();
     Anemone::Debug::Finalize();
     Anemone::Trace::Finalize();
 }

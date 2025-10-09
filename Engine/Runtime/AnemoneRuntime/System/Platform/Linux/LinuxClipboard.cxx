@@ -8,14 +8,29 @@ namespace Anemone
         UninitializedObject<LinuxClipboard> gLinuxClipboard{};
     }
 
-    void Clipboard::Initialize()
+    void LinuxClipboard::Initialize()
     {
         gLinuxClipboard.Create();
     }
 
-    void Clipboard::Finalize()
+    void LinuxClipboard::Finalize()
     {
         gLinuxClipboard.Destroy();
+    }
+
+    LinuxClipboard& LinuxClipboard::Get()
+    {
+        return *gLinuxClipboard;
+    }
+
+    void Clipboard::Initialize()
+    {
+        LinuxClipboard::Initialize();
+    }
+
+    void Clipboard::Finalize()
+    {
+        LinuxClipboard::Finalize();
     }
 
     auto Clipboard::Clear() -> std::expected<void, Error>

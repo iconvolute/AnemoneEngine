@@ -9,16 +9,31 @@ namespace Anemone
         UninitializedObject<WindowsClipboard> gWindowsClipboard{};
     }
 
-    void Clipboard::Initialize()
+    void WindowsClipboard::Initialize()
     {
         gWindowsClipboard.Create();
 
         gWindowsClipboard->binaryClipboardFormat = RegisterClipboardFormatW(L"AnemoneEngineBinaryData");
     }
 
-    void Clipboard::Finalize()
+    void WindowsClipboard::Finalize()
     {
         gWindowsClipboard.Destroy();
+    }
+
+    WindowsClipboard& WindowsClipboard::Get()
+    {
+        return *gWindowsClipboard;
+    }
+
+    void Clipboard::Initialize()
+    {
+        WindowsClipboard::Initialize();        
+    }
+
+    void Clipboard::Finalize()
+    {
+        WindowsClipboard::Finalize();
     }
 
     auto Clipboard::Clear() -> std::expected<void, Error>

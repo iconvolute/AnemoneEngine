@@ -2,7 +2,7 @@
 #include "AnemoneRuntime/Base/Instant.hxx"
 #include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
 #include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone
@@ -39,7 +39,7 @@ namespace Anemone
         // Assume that main thread will contribute as well.
         //
 
-        size_t const workerCount = Environment::GetLogicalCoresCount() - 1uz;
+        size_t const workerCount = ProcessorProperties::GetLogicalCoresCount() - 1uz;
 
         this->m_Workers.resize(workerCount);
         this->m_Threads.resize(workerCount);

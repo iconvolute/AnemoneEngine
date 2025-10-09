@@ -1,14 +1,10 @@
 #pragma once
-#include "AnemoneRuntime/Math/Rect.hxx"
-#include "AnemoneRuntime/Math/Size.hxx"
 #include "AnemoneRuntime/Base/Duration.hxx"
 #include "AnemoneRuntime/Base/DateTime.hxx"
-#include "AnemoneRuntime/Base/Instant.hxx"
 #include "AnemoneRuntime/Base/Uuid.hxx"
 
 #include <span>
 #include <cstdint>
-#include <vector>
 #include <string>
 #include <string_view>
 
@@ -89,42 +85,6 @@ namespace Anemone
         bool Audio;
     };
 
-    // fixme: should this be defined in Math?
-    struct ColorRef final
-    {
-        float Red;
-        float Green;
-        float Blue;
-        float Alpha;
-    };
-
-    enum class DisplayOrientation : uint8_t
-    {
-        Unknown,
-        Landscape,
-        LandscapeFlipped,
-        Portrait,
-        PortraitFlipped,
-    };
-
-    struct DisplayInfo
-    {
-        std::string Name;
-        std::string Id;
-        DisplayOrientation Orientation;
-        bool Primary;
-        Math::RectF DisplayRect;
-        Math::RectF WorkAreaRect;
-    };
-
-    struct DisplayMetrics
-    {
-        std::vector<DisplayInfo> Displays;
-        Math::RectF VirtualDisplayRect;
-        Math::RectF PrimaryDisplayWorkArea;
-        Math::SizeF PrimaryDisplaySize;
-    };
-
     enum class PlatformId : uint32_t
     {
         Unknown = 0,
@@ -151,7 +111,6 @@ namespace Anemone
         uint32_t CacheL2;
         uint32_t CacheL3;
     };
-
 }
 
 namespace Anemone
@@ -159,15 +118,14 @@ namespace Anemone
     class Environment final
     {
     public:
+        static void Initialize(bool applicationType);
+        static void Finalize();
+
         RUNTIME_API static auto GetEnvironmentVariable(std::string& result, std::string_view name) -> bool;
 
-        RUNTIME_API static auto SetEnvironmentVariable(std::string name, std::string_view value) -> bool;
+        RUNTIME_API static auto SetEnvironmentVariable(std::string_view name, std::string_view value) -> bool;
 
         RUNTIME_API static auto RemoveEnvironmentVariable(std::string_view name) -> bool;
-
-        RUNTIME_API static void GetDisplayMetrics(DisplayMetrics& metrics);
-
-        RUNTIME_API static auto GetScreenPixel(Math::PointF position, float gamma) -> ColorRef;
 
         RUNTIME_API static auto GetSystemVersion() -> std::string_view;
 
@@ -226,27 +184,5 @@ namespace Anemone
         RUNTIME_API static void LaunchUrl(std::string_view url);
 
         RUNTIME_API static bool IsOnline();
-
-        RUNTIME_API static auto GetPhysicalCoresCount() -> size_t;
-
-        RUNTIME_API static auto GetLogicalCoresCount() -> size_t;
-
-        RUNTIME_API static auto GetPerformanceCoresCount() -> size_t;
-
-        RUNTIME_API static auto GetEfficiencyCoresCount() -> size_t;
-
-        RUNTIME_API static bool IsHyperThreadingEnabled();
-
-        RUNTIME_API static auto GetCacheLineSize() -> size_t;
-
-        RUNTIME_API static auto GetCacheSizeLevel1() -> size_t;
-
-        RUNTIME_API static auto GetCacheSizeLevel2() -> size_t;
-
-        RUNTIME_API static auto GetCacheSizeLevel3() -> size_t;
-
-        RUNTIME_API static auto GetProcessorName() -> std::string_view;
-
-        RUNTIME_API static auto GetProcessorVendor() -> std::string_view;
     };
 }
