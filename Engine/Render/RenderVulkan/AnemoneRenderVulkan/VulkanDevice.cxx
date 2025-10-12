@@ -15,13 +15,17 @@ namespace Anemone
         {
             (void)pUserData;
             (void)allocationScope;
-            return _aligned_malloc(size, alignment);
+            void* result = _aligned_malloc(size, alignment);
+            AE_TRACE(Error, "VK::Alloc size={}, alignment={}, scope={} => {}", size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
+            return result;
         }
 
         void VKAPI_PTR FnVkFreeFunction(
             void* pUserData,
             void* pMemory)
         {
+            AE_TRACE(Error, "VK::Free ptr={}", fmt::ptr(pMemory));
+
             (void)pUserData;
             _aligned_free(pMemory);
         }
@@ -64,11 +68,14 @@ namespace Anemone
 
             if (size == 0)
             {
+                AE_TRACE(Error, "VM::Realloc ptr={}, size=0 => free", fmt::ptr(pOriginal));
                 _aligned_free(pOriginal);
                 return nullptr;
             }
 
-            return _aligned_realloc(pOriginal, size, alignment);
+            void* result = _aligned_realloc(pOriginal, size, alignment);
+            AE_TRACE(Error, "VK::Realloc ptr={}, size={}, alignment={}, scope={} => {}", fmt::ptr(pOriginal), size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
+            return result;
         }
 
         constexpr VkAllocationCallbacks gVkAllocationCallbacks{
@@ -209,7 +216,7 @@ namespace Anemone
                 .pEnabledFeatures = &pdf,
             };
 
-            AE_VK_CALL(vkCreateDevice(device, &dci, nullptr, &this->_device));
+            AE_VK_CALL(vkCreateDevice(device, &dci, &gVkAllocationCallbacks, &this->_device));
             volkLoadDevice(this->_device);
 
             if (vkGetPhysicalDeviceDisplayPropertiesKHR)

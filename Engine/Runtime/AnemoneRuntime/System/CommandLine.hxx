@@ -12,6 +12,9 @@ namespace Anemone
     class CommandLine final
     {
     public:
+        RUNTIME_API static void StaticInitialize(int argc, char** argv);
+        RUNTIME_API static void StaticFinalize();
+
         RUNTIME_API static auto GetOption(
             std::string_view name) -> std::optional<std::string_view>;
 

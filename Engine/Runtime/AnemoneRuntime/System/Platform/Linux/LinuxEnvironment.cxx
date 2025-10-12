@@ -40,10 +40,9 @@ namespace Anemone
         pthread_mutex_t gLinuxEnvironmentLock = PTHREAD_MUTEX_INITIALIZER;
     }
 
-    void LinuxEnvironment::Initialize(bool applicationType)
+    void LinuxEnvironment::Initialize()
     {
         gLinuxEnvironment.Create();
-        gLinuxEnvironment->applicationType = applicationType;
 
         gLinuxEnvironment->startupTime = DateTime::Now();
 
@@ -440,11 +439,6 @@ namespace Anemone
         {
             exit(0);
         }
-    }
-
-    bool Environment::IsConsoleApplication()
-    {
-        return gLinuxEnvironment->applicationType;
     }
 
     auto Environment::GetDeviceUniqueId() -> std::string_view

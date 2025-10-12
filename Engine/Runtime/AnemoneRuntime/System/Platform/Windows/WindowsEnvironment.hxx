@@ -5,11 +5,9 @@ namespace Anemone
 {
     struct WindowsEnvironment
     {
-        static void Initialize(bool applicationType);
+        static void Initialize();
         static void Finalize();
         static WindowsEnvironment& Get();
-
-        bool applicationType{};
         
         DateTime startupTime{};
         Uuid systemId{};

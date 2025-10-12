@@ -1,8 +1,10 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "MemoryBuffer.cxx"
+        "Module.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "MemoryBuffer.hxx"
+        "Module.hxx"
 )
 
 add_subdirectory("Base")

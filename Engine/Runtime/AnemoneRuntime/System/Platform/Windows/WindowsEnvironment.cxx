@@ -28,10 +28,9 @@ namespace Anemone
         UninitializedObject<WindowsEnvironment> gWindowsEnvironment{};
     }
 
-    void WindowsEnvironment::Initialize(bool applicationType)
+    void WindowsEnvironment::Initialize()
     {
         gWindowsEnvironment.Create();
-        gWindowsEnvironment->applicationType = applicationType;
 
         // Initialize COM
         if (FAILED(CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE)))
@@ -276,9 +275,9 @@ namespace Anemone
 
 namespace Anemone
 {
-    void Environment::Initialize(bool applicationType)
+    void Environment::Initialize()
     {
-        WindowsEnvironment::Initialize(applicationType);
+        WindowsEnvironment::Initialize();
     }
 
     void Environment::Finalize()
@@ -468,11 +467,6 @@ namespace Anemone
         {
             PostQuitMessage(0);
         }
-    }
-
-    bool Environment::IsConsoleApplication()
-    {
-        return gWindowsEnvironment->applicationType;
     }
 
     auto Environment::GetDeviceUniqueId() -> std::string_view

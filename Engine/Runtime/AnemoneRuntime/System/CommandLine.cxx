@@ -5,15 +5,6 @@
 #include <algorithm>
 #include <iterator>
 
-namespace Anemone::Internal
-{
-    extern int GCommandLineArgC;
-    extern char** GCommandLineArgV;
-
-    int GCommandLineArgC = 0;
-    char** GCommandLineArgV = nullptr;
-}
-
 namespace Anemone
 {
     namespace
@@ -148,19 +139,32 @@ namespace Anemone
             s.remove_prefix(result.size());
             return result;
         }
+
+        int gCommandLineArgC = 0;
+        char** gCommandLineArgV = nullptr;
     }
 }
 
 
 namespace Anemone
 {
+    void CommandLine::StaticInitialize(int argc, char** argv)
+    {
+        gCommandLineArgC = argc;
+        gCommandLineArgV = argv;
+    }
+
+    void CommandLine::StaticFinalize()
+    {
+    }
+
     auto CommandLine::GetOption(std::string_view name) -> std::optional<std::string_view>
     {
         std::optional<std::string_view> result{};
 
-        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
+        for (int i = 1; i < gCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineArgV[i]};
+            std::string_view token{gCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name); value.has_value())
             {
@@ -175,9 +179,9 @@ namespace Anemone
 
     void CommandLine::GetOption(std::string_view name, std::vector<std::string_view>& values)
     {
-        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
+        for (int i = 1; i < gCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineArgV[i]};
+            std::string_view token{gCommandLineArgV[i]};
 
             if (auto value = ExtractTokenValue(token, name))
             {
@@ -188,9 +192,9 @@ namespace Anemone
 
     void CommandLine::GetPositional(std::vector<std::string_view>& positional)
     {
-        for (int i = 1; i < Internal::GCommandLineArgC; ++i)
+        for (int i = 1; i < gCommandLineArgC; ++i)
         {
-            std::string_view token{Internal::GCommandLineArgV[i]};
+            std::string_view token{gCommandLineArgV[i]};
 
             if (token.starts_with('-'))
             {

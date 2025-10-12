@@ -118,7 +118,7 @@ namespace Anemone
     class Environment final
     {
     public:
-        static void Initialize(bool applicationType);
+        static void Initialize();
         static void Finalize();
 
         RUNTIME_API static auto GetEnvironmentVariable(std::string& result, std::string_view name) -> bool;
@@ -148,8 +148,6 @@ namespace Anemone
         RUNTIME_API static auto GetProcessMemoryUsage() -> ProcessMemoryUsage;
 
         RUNTIME_API static void Terminate(bool force);
-
-        RUNTIME_API static bool IsConsoleApplication();
 
         RUNTIME_API static auto GetDeviceUniqueId() -> std::string_view;
 
