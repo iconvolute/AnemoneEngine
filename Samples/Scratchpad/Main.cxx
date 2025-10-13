@@ -317,7 +317,7 @@ anemone_noinline void test()
 
 #include "AnemoneRuntime/Hash/FNV.hxx"
 #include "AnemoneRuntime/System/Process.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
+#include "AnemoneTasks/TaskScheduler.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneRuntime/Interop/Windows/Environment.hxx"
@@ -338,7 +338,7 @@ struct V2 : Anemone::FileSystemVisitor
     }
 };
 
-#include "AnemoneRuntime/Tasks/Parallel.hxx"
+#include "AnemoneTasks/Parallel.hxx"
 
 //
 // Engine : IApplicationEvents
@@ -621,12 +621,19 @@ namespace Anemone
 #endif
 
 #include "AnemoneRuntime/Diagnostics/Internal/FileTraceListener.hxx"
+#include "AnemoneTasks/Module.hxx"
 
 anemone_noinline int AnemoneMain(int argc, char** argv)
 {
     Anemone::ModuleInitializer<Anemone::Module_Application> moduleApplication{};
     Anemone::ModuleInitializer<Anemone::Module_Memory> moduleMemory{};
+    Anemone::ModuleInitializer<Anemone::Module_Tasks> moduleTasks{};
     Anemone::UninitializedObject<Anemone::FileTraceListener> fts{};
+
+    Anemone::Parallel::For(10000, 128, [](size_t first, size_t count)
+    {
+        AE_TRACE(Error, "First: {:016x}, Count: {:016x}", first, count);
+    });
 
     if (auto fh = Anemone::FileSystem::GetPlatformFileSystem().CreateFileWriter("log.txt"))
     {

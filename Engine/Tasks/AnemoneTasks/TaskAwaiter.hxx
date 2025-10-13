@@ -1,23 +1,16 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Base/Reference.hxx"
 #include "AnemoneRuntime/Threading/Spinlock.hxx"
-#include "AnemoneRuntime/Base/Intrusive.hxx"
-
-#include <atomic>
-
 
 namespace Anemone
 {
-    class Awaiter;
     class Task;
-}
 
-namespace Anemone
-{
-    class RUNTIME_API Awaiter final
+    class TASKS_API TaskAwaiter final
     {
-        friend class Reference<Awaiter>;
+        friend class Reference<TaskAwaiter>;
 
     private:
         std::atomic<uint32_t> m_Value{};
@@ -75,24 +68,24 @@ namespace Anemone
         }
     };
 
-    using AwaiterHandle = Reference<Awaiter>;
+    using TaskAwaiterHandle = Reference<TaskAwaiter>;
 }
 
 namespace Anemone
 {
-    class [[nodiscard]] AwaiterCompletionDeferral final
+    class [[nodiscard]] TaskAwaiterCompletionDeferral final
     {
     private:
-        AwaiterHandle& m_Awaiter;
+        TaskAwaiterHandle& m_Awaiter;
 
     public:
-        AwaiterCompletionDeferral() = delete;
-        AwaiterCompletionDeferral(AwaiterCompletionDeferral const&) = delete;
-        AwaiterCompletionDeferral(AwaiterCompletionDeferral&&) = delete;
-        AwaiterCompletionDeferral& operator=(AwaiterCompletionDeferral const&) = delete;
-        AwaiterCompletionDeferral& operator=(AwaiterCompletionDeferral&&) = delete;
+        TaskAwaiterCompletionDeferral() = delete;
+        TaskAwaiterCompletionDeferral(TaskAwaiterCompletionDeferral const&) = delete;
+        TaskAwaiterCompletionDeferral(TaskAwaiterCompletionDeferral&&) = delete;
+        TaskAwaiterCompletionDeferral& operator=(TaskAwaiterCompletionDeferral const&) = delete;
+        TaskAwaiterCompletionDeferral& operator=(TaskAwaiterCompletionDeferral&&) = delete;
 
-        explicit AwaiterCompletionDeferral(AwaiterHandle& awaiter)
+        explicit TaskAwaiterCompletionDeferral(TaskAwaiterHandle& awaiter)
             : m_Awaiter{awaiter}
         {
             if (this->m_Awaiter)
@@ -101,7 +94,7 @@ namespace Anemone
             }
         }
 
-        ~AwaiterCompletionDeferral()
+        ~TaskAwaiterCompletionDeferral()
         {
             if (this->m_Awaiter)
             {

@@ -1,7 +1,5 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Duration.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Threading/Runnable.hxx"
 
 namespace Anemone

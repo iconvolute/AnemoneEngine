@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Tasks/Parallel.hxx"
-
+#include "AnemoneTasks/Parallel.hxx"
+#include "AnemoneTasks/TaskScheduler.hxx"
 #include <algorithm>
 
 namespace Anemone
@@ -36,6 +36,7 @@ namespace Anemone
 
             bool Partition(size_t& first, size_t& last)
             {
+                // note: worker threads may be too fast to observe end of the range due to overflow condition
                 size_t const current = this->CurrentIndex.fetch_add(this->Batch, std::memory_order::acquire);
 
                 if (current < this->Count)
@@ -118,8 +119,8 @@ namespace Anemone
         };
 
         // Fork/Join awaiter.
-        AwaiterHandle joinCounter = MakeReference<Awaiter>();
-        AwaiterHandle forkCounter = MakeReference<Awaiter>();
+        TaskAwaiterHandle joinCounter = MakeReference<TaskAwaiter>();
+        TaskAwaiterHandle forkCounter = MakeReference<TaskAwaiter>();
 
         // Spawn tasks.
         for (auto i = 0uz; i < workers; ++i)

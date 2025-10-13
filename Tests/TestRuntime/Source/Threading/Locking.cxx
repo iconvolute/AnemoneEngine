@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Tasks/Parallel.hxx"
+#include "AnemoneTasks/Parallel.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/ReaderWriterLock.hxx"
 #include "AnemoneRuntime/Threading/Semaphore.hxx"

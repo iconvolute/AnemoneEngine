@@ -1,4 +1,5 @@
-#include "AnemoneRuntime/Tasks/Task.hxx"
+#include "AnemoneTasks/Task.hxx"
+#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 
 namespace Anemone
 {
@@ -50,7 +51,7 @@ namespace Anemone
         }
     }
 
-    void Task::Dispatched(uint32_t id, AwaiterHandle const& awaiter, AwaiterHandle const& dependencyAwaiter)
+    void Task::Dispatched(uint32_t id, TaskAwaiterHandle const& awaiter, TaskAwaiterHandle const& dependencyAwaiter)
     {
         AE_ASSERT(this->m_Awaiter == nullptr);
         AE_ASSERT(this->m_DependencyAwaiter == nullptr);

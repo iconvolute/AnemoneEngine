@@ -1,8 +1,8 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
 #include "AnemoneRuntime/Base/FunctionRef.hxx"
+#include "AnemoneTasks/Task.hxx"
+#include "AnemoneTasks/TaskAwaiter.hxx"
 
 namespace Anemone
 {
@@ -10,7 +10,7 @@ namespace Anemone
     {
         Parallel() = delete;
 
-        RUNTIME_API static void For(
+        TASKS_API static void For(
             size_t count,
             size_t batch,
             FunctionRef<void(size_t index, size_t count)> callback,
@@ -49,8 +49,8 @@ namespace Anemone
         virtual void OnExecute(size_t index, size_t count) = 0;
         virtual void OnFinalize(size_t count) = 0;
 
-        AwaiterHandle Schedule(size_t index, size_t count);
-        AwaiterHandle Schedule(size_t index, size_t count, AwaiterHandle const& dependency);
+        TaskAwaiterHandle Schedule(size_t index, size_t count);
+        TaskAwaiterHandle Schedule(size_t index, size_t count, TaskAwaiterHandle const& dependency);
     };
 
     class ITask
@@ -66,8 +66,8 @@ namespace Anemone
     public:
         virtual void OnExecute() = 0;
 
-        AwaiterHandle Schedule();
-        AwaiterHandle Schedule(AwaiterHandle const& dependency);
+        TaskAwaiterHandle Schedule();
+        TaskAwaiterHandle Schedule(TaskAwaiterHandle const& dependency);
     };
 
 }

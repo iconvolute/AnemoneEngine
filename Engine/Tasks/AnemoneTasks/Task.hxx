@@ -1,8 +1,9 @@
 #pragma once
+#include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Base/Flags.hxx"
 #include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Base/Reference.hxx"
-#include "AnemoneRuntime/Tasks/Awaiter.hxx"
+#include "AnemoneTasks/TaskAwaiter.hxx"
 
 namespace Anemone
 {
@@ -51,15 +52,15 @@ namespace Anemone
 
     using TaskOptions = Flags<TaskOption>;
 
-    class RUNTIME_API Task : private IntrusiveListNode<Task, Task>
+    class TASKS_API Task : private IntrusiveListNode<Task, Task>
     {
         friend struct IntrusiveList<Task, Task>;
         friend class Reference<Task>;
         friend class TaskScheduler;
 
     private:
-        AwaiterHandle m_Awaiter{};
-        AwaiterHandle m_DependencyAwaiter{};
+        TaskAwaiterHandle m_Awaiter{};
+        TaskAwaiterHandle m_DependencyAwaiter{};
         std::atomic<uint32_t> m_ReferenceCount{};
         TaskOptions m_Options{TaskOption::Dispose};
         TaskPriority m_Priority{TaskPriority::Inherited};
@@ -81,17 +82,17 @@ namespace Anemone
         // TaskOperations?
         void Execute();
         void Abandon();
-        void Dispatched(uint32_t id, AwaiterHandle const& awaiter, AwaiterHandle const& dependencyAwaiter);
+        void Dispatched(uint32_t id, TaskAwaiterHandle const& awaiter, TaskAwaiterHandle const& dependencyAwaiter);
         void DispatchedToPending();
         void PendingToDispatched();
 
     public:
-        AwaiterHandle& GetAwaiter()
+        TaskAwaiterHandle& GetAwaiter()
         {
             return this->m_Awaiter;
         }
 
-        AwaiterHandle& GetDependencyAwaiter()
+        TaskAwaiterHandle& GetDependencyAwaiter()
         {
             return this->m_DependencyAwaiter;
         }

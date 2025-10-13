@@ -5,7 +5,6 @@
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone
@@ -19,8 +18,6 @@ namespace Anemone
         Anemone::FileSystem::Initialize();
         Anemone::Clipboard::Initialize();
 
-        Anemone::TaskScheduler::Initialize();
-
 #if ANEMONE_BUILD_PROFILING
         Anemone::Profiler::Initialize();
 #endif
@@ -31,8 +28,6 @@ namespace Anemone
 #if ANEMONE_BUILD_PROFILING
         Anemone::Profiler::Finalize();
 #endif
-
-        Anemone::TaskScheduler::Finalize();
 
         Anemone::Clipboard::Finalize();
         Anemone::FileSystem::Finalize();

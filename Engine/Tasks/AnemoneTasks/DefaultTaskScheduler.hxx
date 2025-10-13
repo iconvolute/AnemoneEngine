@@ -1,17 +1,24 @@
 #pragma once
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
+#include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneTasks/TaskScheduler.hxx"
+#include "AnemoneTasks/TaskQueue.hxx"
+#include "AnemoneTasks/Task.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/ConditionVariable.hxx"
 #include "AnemoneRuntime/Threading/CancellationToken.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-#include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
-#include "AnemoneRuntime/Tasks/Internal/TaskQueue.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
+#include "AnemoneRuntime/Base/Duration.hxx"
+
 
 #include <atomic>
 #include <vector>
 
 namespace Anemone
 {
+    class Thread;
+
+    class DefaultTaskWorker;
+
     class DefaultTaskScheduler final : public TaskScheduler
     {
     private:
@@ -46,13 +53,13 @@ namespace Anemone
     public:
         void Schedule(
             Task& task,
-            AwaiterHandle const& awaiter,
-            AwaiterHandle const& dependency,
+            TaskAwaiterHandle const& awaiter,
+            TaskAwaiterHandle const& dependency,
             TaskPriority priority) override;
 
-        void Wait(AwaiterHandle const& awaiter) override;
+        void Wait(TaskAwaiterHandle const& awaiter) override;
 
-        bool TryWait(AwaiterHandle const& awaiter, Duration timeout) override;
+        bool TryWait(TaskAwaiterHandle const& awaiter, Duration timeout) override;
 
         void Delay(Duration timeout) override;
 

@@ -1,9 +1,6 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Threading/Spinlock.hxx"
-#include "AnemoneRuntime/Base/Intrusive.hxx"
-#include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneTasks/Task.hxx"
 
 namespace Anemone
 {

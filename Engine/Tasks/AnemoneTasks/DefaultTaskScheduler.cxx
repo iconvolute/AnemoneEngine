@@ -1,32 +1,15 @@
-#include "AnemoneRuntime/Tasks/Internal/TaskScheduler.hxx"
-#include "AnemoneRuntime/Base/Instant.hxx"
-#include "AnemoneRuntime/Tasks/Internal/TaskWorker.hxx"
-#include "AnemoneRuntime/Tasks/Task.hxx"
+#include "AnemoneTasks/DefaultTaskScheduler.hxx"
+#include "AnemoneTasks/DefaultTaskWorker.hxx"
+#include "AnemoneTasks/Task.hxx"
+#include "AnemoneTasks/TaskAwaiter.hxx"
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
+#include "AnemoneRuntime/Threading/Thread.hxx"
+#include "AnemoneRuntime/Threading/Lock.hxx"
+#include "AnemoneRuntime/Base/Instant.hxx"
+#include "AnemoneRuntime/Base/Intrusive.hxx"
+#include "AnemoneRuntime/Threading/SpinWait.hxx"
+
 #include "AnemoneRuntime/Profiler/Profiler.hxx"
-
-namespace Anemone
-{
-    namespace
-    {
-        UninitializedObject<DefaultTaskScheduler> gDefaultTaskScheduler{};
-    }
-
-    void TaskScheduler::Initialize()
-    {
-        gDefaultTaskScheduler.Create();
-    }
-
-    void TaskScheduler::Finalize()
-    {
-        gDefaultTaskScheduler.Destroy();
-    }
-
-    TaskScheduler& TaskScheduler::Get()
-    {
-        return *gDefaultTaskScheduler;
-    }
-}
 
 namespace Anemone
 {
@@ -179,8 +162,8 @@ namespace Anemone
 
     void DefaultTaskScheduler::Schedule(
         Task& task,
-        AwaiterHandle const& awaiter,
-        AwaiterHandle const& dependency,
+        TaskAwaiterHandle const& awaiter,
+        TaskAwaiterHandle const& dependency,
         TaskPriority priority)
     {
         task.SetPriority(priority);
@@ -209,7 +192,7 @@ namespace Anemone
     }
 
     void DefaultTaskScheduler::Wait(
-        AwaiterHandle const& awaiter)
+        TaskAwaiterHandle const& awaiter)
     {
         AE_ASSERT(awaiter);
 
@@ -229,7 +212,7 @@ namespace Anemone
         });
     }
 
-    bool DefaultTaskScheduler::TryWait(AwaiterHandle const& awaiter, Duration timeout)
+    bool DefaultTaskScheduler::TryWait(TaskAwaiterHandle const& awaiter, Duration timeout)
     {
         AE_ASSERT(awaiter);
 
