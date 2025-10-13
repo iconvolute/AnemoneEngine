@@ -812,7 +812,7 @@ namespace Anemone::Math
     struct UniformOnUnitSphereDistribution;
 
     template <>
-    struct UniformOnUnitSphereDistribution<double>
+    struct UniformOnUnitSphereDistribution<double> final
     {
         template <typename G>
         [[nodiscard]] static Packed::Vector3D operator()(G& generator)
@@ -834,7 +834,7 @@ namespace Anemone::Math
     };
 
     template <>
-    struct UniformOnUnitSphereDistribution<float>
+    struct UniformOnUnitSphereDistribution<float> final
     {
         template <typename G>
         [[nodiscard]] static Packed::Vector3F operator()(G& generator)
