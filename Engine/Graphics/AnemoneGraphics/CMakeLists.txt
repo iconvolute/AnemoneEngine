@@ -3,10 +3,12 @@ target_sources(AnemoneGraphics
         "Histogram.cxx"
         "Image.cxx"
         "ImageDDS.cxx"
+        "Module.cxx"
         "PixelFormat.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "DxgiFormat.hxx"
         "Histogram.hxx"
         "Image.hxx"
+        "Module.hxx"
         "PixelFormat.hxx"
 )

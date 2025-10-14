@@ -5,6 +5,7 @@
 #include "AnemoneRuntime/Diagnostics/Error.hxx"
 #include "AnemoneRuntime/Storage/BinaryWriter.hxx"
 #include "AnemoneRuntime/Storage/BinaryReader.hxx"
+#include "AnemoneRuntime/Base/Reference.hxx"
 
 #include <cstdint>
 #include <cstddef>
@@ -42,11 +43,6 @@ namespace Anemone::Graphics
         TextureCube = 4,
     };
 
-    constexpr bool IsCube(ImageDimension dimension)
-    {
-        return (dimension == ImageDimension::TextureCube);
-    }
-
     struct ImageSize final
     {
         size_t Width;
@@ -81,17 +77,16 @@ namespace Anemone::Graphics
         return indexMip + (indexArray * countMip);
     }
 
-    inline ImageSize ComputeSurfaceSize(PixelFormat format, ImageSize const& size, size_t mip_level)
+    inline ImageSize ComputeSurfaceSize(PixelFormat format, ImageSize const& size, size_t mipLevel)
     {
         uint32_t const minValue = IsCompressed(format) ? 4 : 1;
 
         return {
-            .Width = std::max<size_t>(minValue, size.Width >> mip_level),
-            .Height = std::max<size_t>(minValue, size.Height >> mip_level),
-            .Depth = std::max<size_t>(1, size.Depth >> mip_level),
+            .Width = std::max<size_t>(minValue, size.Width >> mipLevel),
+            .Height = std::max<size_t>(minValue, size.Height >> mipLevel),
+            .Depth = std::max<size_t>(1, size.Depth >> mipLevel),
         };
     }
-
 
     inline size_t SlicePitchBytes(
         PixelFormat format,
@@ -99,22 +94,22 @@ namespace Anemone::Graphics
         size_t height,
         size_t depth) noexcept
     {
-        size_t const block_size = GetBlockSize(format);
-        if (block_size != 0)
+        size_t const blockSize = GetBlockSize(format);
+        if (blockSize != 0)
         {
-            size_t const blocks_horz = Bitwise::AlignUp<size_t>(width, 4) / 4;
-            size_t const blocks_vert = Bitwise::AlignUp<size_t>(height, 4) / 4;
-            size_t const blocks_count = blocks_horz * blocks_vert;
-            return blocks_count * block_size * depth;
+            size_t const blocksHorz = Bitwise::AlignUp<size_t>(width, 4) / 4;
+            size_t const blocksVert = Bitwise::AlignUp<size_t>(height, 4) / 4;
+            size_t const blocksCount = blocksHorz * blocksVert;
+            return blocksCount * blockSize * depth;
         }
         else
         {
-            uint64_t bits_total = width;
-            bits_total *= height;
-            bits_total *= depth;
-            bits_total *= GetPixelBits(format);
-            size_t const bytes_total = bits_total / 8;
-            return bytes_total;
+            uint64_t bitsTotal = width;
+            bitsTotal *= height;
+            bitsTotal *= depth;
+            bitsTotal *= GetPixelBits(format);
+            size_t const bytesTotal = bitsTotal / 8;
+            return bytesTotal;
         }
     }
 
@@ -136,26 +131,26 @@ namespace Anemone::Graphics
         PixelFormat format,
         uint32_t width) noexcept
     {
-        size_t const bits_per_pixel = GetPixelBits(format);
+        size_t const bitsPerPixel = GetPixelBits(format);
 
-        // For compressed pixel format, bits_per_pixel == 0.
-        return (width * bits_per_pixel) / 8;
+        // For compressed pixel format, bitsPerPixel == 0.
+        return (width * bitsPerPixel) / 8;
     }
 
     inline size_t RowPitchBytes(
         PixelFormat format,
         uint32_t width) noexcept
     {
-        size_t const block_size = GetBlockSize(format);
-        if (block_size != 0)
+        size_t const blockSize = GetBlockSize(format);
+        if (blockSize != 0)
         {
-            uint32_t const blocks_count = Bitwise::AlignUp<uint32_t>(width, 4) / 4;
-            return blocks_count * block_size;
+            uint32_t const blocksCount = Bitwise::AlignUp<uint32_t>(width, 4) / 4;
+            return blocksCount * blockSize;
         }
         else
         {
-            size_t const bits_per_pixel = GetPixelBits(format);
-            size_t const result = Bitwise::AlignUp<size_t>(width * bits_per_pixel, 8) / 8;
+            size_t const bitsPerPixel = GetPixelBits(format);
+            size_t const result = Bitwise::AlignUp<size_t>(width * bitsPerPixel, 8) / 8;
             return result;
         }
     }
@@ -164,52 +159,52 @@ namespace Anemone::Graphics
         PixelFormat format,
         size_t width,
         size_t height,
-        size_t& out_bytes,
-        size_t& out_row_bytes,
-        size_t& out_rows) noexcept
+        size_t& outBytes,
+        size_t& outRowBytes,
+        size_t& outRows) noexcept
     {
-        size_t const block_size = GetBlockSize(format);
+        size_t const blockSize = GetBlockSize(format);
 
-        if (block_size != 0)
+        if (blockSize != 0)
         {
-            size_t blocks_horz = 0;
+            size_t blocksHorz = 0;
             if (width > 0)
             {
-                blocks_horz = std::max<size_t>(1, Bitwise::AlignUp<size_t>(width, 4) / 4);
+                blocksHorz = std::max<size_t>(1, Bitwise::AlignUp<size_t>(width, 4) / 4);
             }
 
-            size_t blocks_vert = 0;
+            size_t blocksVert = 0;
             if (height > 0)
             {
-                blocks_vert = std::max<size_t>(1, Bitwise::AlignUp<size_t>(height, 4) / 4);
+                blocksVert = std::max<size_t>(1, Bitwise::AlignUp<size_t>(height, 4) / 4);
             }
 
-            out_row_bytes = blocks_horz * block_size;
-            out_rows = blocks_vert;
+            outRowBytes = blocksHorz * blockSize;
+            outRows = blocksVert;
         }
         else
         {
             size_t const bpp = GetPixelBits(format);
-            out_row_bytes = Bitwise::AlignUp<size_t>(width * bpp, 8) / 8;
-            out_rows = height;
+            outRowBytes = Bitwise::AlignUp<size_t>(width * bpp, 8) / 8;
+            outRows = height;
         }
 
-        out_bytes = out_row_bytes * out_rows;
+        outBytes = outRowBytes * outRows;
     }
 
     inline size_t ComputeMipMapLevels(
         PixelFormat format,
         ImageSize size) noexcept
     {
-        size_t const min_value = IsCompressed(format) ? 4 : 1;
+        size_t const minValue = IsCompressed(format) ? 4 : 1;
         size_t levels = 1;
 
         auto [width, height, depth] = size;
 
-        while ((width > min_value) or (height > min_value) or (depth > 1))
+        while ((width > minValue) or (height > minValue) or (depth > 1))
         {
-            width = std::max<size_t>(min_value, width >> 1);
-            height = std::max<size_t>(min_value, height >> 1);
+            width = std::max<size_t>(minValue, width >> 1);
+            height = std::max<size_t>(minValue, height >> 1);
             depth = std::max<size_t>(1, depth >> 1);
 
             ++levels;
@@ -218,116 +213,121 @@ namespace Anemone::Graphics
         return levels;
     }
 
-    class GRAPHICS_API Image final
+    class GRAPHICS_API Image final : public ReferenceCounted<Image>
     {
     private:
         ImageSize _size;
-        size_t _mip_count;
-        size_t _array_count;
+        size_t _mipCount;
+        size_t _arrayCount;
         ImageDimension _dimension;
         PixelFormat _format;
-        ImageAlphaMode _alpha_mode;
-        size_t _subresources_count;
+        ImageAlphaMode _alphaMode;
+        size_t _subresourcesCount;
         std::unique_ptr<ImageSurface[]> _subresources;
-        size_t _buffer_size;
+        size_t _bufferSize;
         std::unique_ptr<std::byte[]> _buffer;
 
     public:
         Image(
             ImageSize size,
-            size_t mip_count,
-            size_t array_count,
+            size_t mipCount,
+            size_t arrayCount,
             ImageDimension dimension,
             PixelFormat format,
-            ImageAlphaMode alpha_mode);
-
-        Image(Image const&) = delete;
-        Image(Image&&) noexcept = default;
-        Image& operator=(Image const&) = delete;
-        Image& operator=(Image&&) = default;
-
-    public:
-        static std::unique_ptr<Image> Create1D(
-            PixelFormat format,
-            size_t width,
-            size_t mipmap_count,
-            size_t array_count,
             ImageAlphaMode alphaMode);
 
-        static std::unique_ptr<Image> Create2D(
+        Image(Image const&) = delete;
+
+        Image(Image&&) noexcept = delete;
+
+        Image& operator=(Image const&) = delete;
+
+        Image& operator=(Image&&) = delete;
+
+        ~Image() = default;
+
+    public:
+        static Reference<Image> Create1D(
+            PixelFormat format,
+            size_t width,
+            size_t mipmapCount,
+            size_t arrayCount,
+            ImageAlphaMode alphaMode);
+
+        static Reference<Image> Create2D(
             PixelFormat format,
             size_t width,
             size_t height,
-            size_t mipmap_count,
-            size_t array_count,
+            size_t mipmapCount,
+            size_t arrayCount,
             ImageAlphaMode alphaMode);
 
-        static std::unique_ptr<Image> Create3D(
+        static Reference<Image> Create3D(
             PixelFormat format,
             size_t width,
             size_t height,
             size_t depth,
-            size_t mipmap_count,
-            size_t array_count,
+            size_t mipmapCount,
+            size_t arrayCount,
             ImageAlphaMode alphaMode);
 
-        static std::unique_ptr<Image> CreateCube(
+        static Reference<Image> CreateCube(
             PixelFormat format,
             size_t size,
-            size_t mipmap_count,
-            size_t array_count,
+            size_t mipmapCount,
+            size_t arrayCount,
             ImageAlphaMode alphaMode);
 
     public:
-        ImageSize GetSize() const
+        constexpr ImageSize GetSize() const
         {
             return this->_size;
         }
 
-        size_t GetMipMapCount() const
+        constexpr size_t GetMipMapCount() const
         {
-            return this->_mip_count;
+            return this->_mipCount;
         }
 
-        size_t GetArrayCount() const
+        constexpr size_t GetArrayCount() const
         {
-            return this->_array_count;
+            return this->_arrayCount;
         }
 
-        ImageDimension GetDimension() const
+        constexpr ImageDimension GetDimension() const
         {
             return this->_dimension;
         }
 
-        PixelFormat GetFormat() const
+        constexpr PixelFormat GetFormat() const
         {
             return this->_format;
         }
 
-        ImageAlphaMode GetAlphaMode() const
+        constexpr ImageAlphaMode GetAlphaMode() const
         {
-            return this->_alpha_mode;
+            return this->_alphaMode;
         }
 
     public:
-        std::span<ImageSurface> GetSubresources()
+        constexpr std::span<ImageSurface> GetSubresources()
         {
-            return {this->_subresources.get(), this->_subresources_count};
+            return {this->_subresources.get(), this->_subresourcesCount};
         }
 
-        std::span<ImageSurface const> GetSubresources() const
+        constexpr std::span<ImageSurface const> GetSubresources() const
         {
-            return {this->_subresources.get(), this->_subresources_count};
+            return {this->_subresources.get(), this->_subresourcesCount};
         }
 
-        std::optional<ImageSurface> GetSubresource(size_t index)
+        constexpr std::optional<ImageSurface> GetSubresource(size_t index)
         {
-            if (index < this->_subresources_count)
+            if (index < this->_subresourcesCount)
             {
                 return this->_subresources[index];
             }
 
-            return std::nullopt;
+            return {};
         }
 
         std::optional<ImageSurface> GetSubresource(
@@ -343,6 +343,6 @@ namespace Anemone::Graphics
 
 namespace Anemone::Graphics
 {
-    GRAPHICS_API std::expected<std::unique_ptr<Image>, Error> ImageDecoder_DDS(std::span<std::byte> buffer);
+    GRAPHICS_API std::expected<Reference<Image>, Error> ImageDecoder_DDS(std::span<std::byte> buffer);
     GRAPHICS_API std::expected<void, Error> ImageEncoder_DDS(BinaryWriter& writer, Image const& image);
 }

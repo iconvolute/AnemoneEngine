@@ -1,3 +1,5 @@
+// ReSharper disable IdentifierTypo
+// ReSharper disable CppClangTidyClangDiagnosticUnusedConstVariable
 #include "AnemoneGraphics/DxgiFormat.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
 #include "AnemoneGraphics/Image.hxx"
@@ -843,34 +845,34 @@ namespace Anemone::Graphics::Internal
     }
 
 
-    constexpr uint32_t DDS_HEADER_SIGNATURE = 0x20534444;
+    inline constexpr uint32_t DDS_HEADER_SIGNATURE = 0x20534444;
 
-    constexpr uint32_t DDS_HEADER_CAPS = 0x1;
-    constexpr uint32_t DDS_HEADER_HEIGHT = 0x2;
-    constexpr uint32_t DDS_HEADER_WIDTH = 0x4;
-    constexpr uint32_t DDS_HEADER_PITCH = 0x8;
-    constexpr uint32_t DDS_HEADER_PIXELFORMAT = 0x1000;
-    constexpr uint32_t DDS_HEADER_MIPMAP = 0x20000;
-    constexpr uint32_t DDS_HEADER_LINEARSIZE = 0x80000;
-    constexpr uint32_t DDS_HEADER_VOLUME = 0x800000;
+    inline constexpr uint32_t DDS_HEADER_CAPS = 0x1;
+    inline constexpr uint32_t DDS_HEADER_HEIGHT = 0x2;
+    inline constexpr uint32_t DDS_HEADER_WIDTH = 0x4;
+    inline constexpr uint32_t DDS_HEADER_PITCH = 0x8;
+    inline constexpr uint32_t DDS_HEADER_PIXELFORMAT = 0x1000;
+    inline constexpr uint32_t DDS_HEADER_MIPMAP = 0x20000;
+    inline constexpr uint32_t DDS_HEADER_LINEARSIZE = 0x80000;
+    inline constexpr uint32_t DDS_HEADER_VOLUME = 0x800000;
 
-    constexpr uint32_t DDS_HEADER_TEXTURE = DDS_HEADER_CAPS | DDS_HEADER_HEIGHT | DDS_HEADER_WIDTH | DDS_HEADER_PIXELFORMAT;
+    inline constexpr uint32_t DDS_HEADER_TEXTURE = DDS_HEADER_CAPS | DDS_HEADER_HEIGHT | DDS_HEADER_WIDTH | DDS_HEADER_PIXELFORMAT;
 
-    constexpr uint32_t DDS_SURFACE_TEXTURE = 0x1000;
-    constexpr uint32_t DDS_SURFACE_MIPMAP = 0x400008;
-    constexpr uint32_t DDS_SURFACE_CUBEMAP = 0x8;
+    inline constexpr uint32_t DDS_SURFACE_TEXTURE = 0x1000;
+    inline constexpr uint32_t DDS_SURFACE_MIPMAP = 0x400008;
+    inline constexpr uint32_t DDS_SURFACE_CUBEMAP = 0x8;
 
-    constexpr uint32_t DDS_CUBEMAP = 0x200;
-    constexpr uint32_t DDS_CUBEMAP_POSITIVEX = 0x600;
-    constexpr uint32_t DDS_CUBEMAP_NEGATIVEX = 0xa00;
-    constexpr uint32_t DDS_CUBEMAP_POSITIVEY = 0x1200;
-    constexpr uint32_t DDS_CUBEMAP_NEGATIVEY = 0x2200;
-    constexpr uint32_t DDS_CUBEMAP_POSITIVEZ = 0x4200;
-    constexpr uint32_t DDS_CUBEMAP_NEGATIVEZ = 0x8200;
+    inline constexpr uint32_t DDS_CUBEMAP = 0x200;
+    inline constexpr uint32_t DDS_CUBEMAP_POSITIVEX = 0x600;
+    inline constexpr uint32_t DDS_CUBEMAP_NEGATIVEX = 0xa00;
+    inline constexpr uint32_t DDS_CUBEMAP_POSITIVEY = 0x1200;
+    inline constexpr uint32_t DDS_CUBEMAP_NEGATIVEY = 0x2200;
+    inline constexpr uint32_t DDS_CUBEMAP_POSITIVEZ = 0x4200;
+    inline constexpr uint32_t DDS_CUBEMAP_NEGATIVEZ = 0x8200;
 
-    constexpr uint32_t DDS_CUBEMAP_ALLFACES = DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX | DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY | DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ;
+    inline constexpr uint32_t DDS_CUBEMAP_ALLFACES = DDS_CUBEMAP_POSITIVEX | DDS_CUBEMAP_NEGATIVEX | DDS_CUBEMAP_POSITIVEY | DDS_CUBEMAP_NEGATIVEY | DDS_CUBEMAP_POSITIVEZ | DDS_CUBEMAP_NEGATIVEZ;
 
-    constexpr uint32_t DDS_CUBEMAP_VOLUME = 0x200000;
+    inline constexpr uint32_t DDS_CUBEMAP_VOLUME = 0x200000;
 
     struct DDS_HEADER final
     {
@@ -891,19 +893,19 @@ namespace Anemone::Graphics::Internal
     };
     static_assert(sizeof(DDS_HEADER) == 124);
 
-    constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_1D = 2;
-    constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_2D = 3;
-    constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_3D = 4;
+    inline constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_1D = 2;
+    inline constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_2D = 3;
+    inline constexpr uint32_t DDS_RESOURCE_DIMENSION_TEXTURE_3D = 4;
 
-    constexpr uint32_t DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE = 0x4;
+    inline constexpr uint32_t DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE = 0x4;
 
-    constexpr uint32_t DDS_ALPHA_MODE_UNKNOWN = 0;
-    constexpr uint32_t DDS_ALPHA_MODE_STRAIGHT = 1;
-    constexpr uint32_t DDS_ALPHA_MODE_PREMULTIPLIED = 2;
-    constexpr uint32_t DDS_ALPHA_MODE_OPAQUE = 3;
-    constexpr uint32_t DDS_ALPHA_MODE_CUSTOM = 4;
+    inline constexpr uint32_t DDS_ALPHA_MODE_UNKNOWN = 0;
+    inline constexpr uint32_t DDS_ALPHA_MODE_STRAIGHT = 1;
+    inline constexpr uint32_t DDS_ALPHA_MODE_PREMULTIPLIED = 2;
+    inline constexpr uint32_t DDS_ALPHA_MODE_OPAQUE = 3;
+    inline constexpr uint32_t DDS_ALPHA_MODE_CUSTOM = 4;
 
-    constexpr uint32_t DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 7;
+    inline constexpr uint32_t DDS_MISC_FLAGS2_ALPHA_MODE_MASK = 7;
 
     struct DDS_HEADER_DXT10 final
     {
@@ -915,15 +917,15 @@ namespace Anemone::Graphics::Internal
     };
     static_assert(sizeof(DDS_HEADER_DXT10) == 20);
 
-    constexpr uint32_t DDS_TEXTURE_1D_U_DIMENSION = 16384;
-    constexpr uint32_t DDS_TEXTURE_1D_ARRAY_AXIS_DIMENSION = 2048;
-    constexpr uint32_t DDS_TEXTURE_2D_UV_DIMENSION = 16384;
-    constexpr uint32_t DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION = 2048;
-    constexpr uint32_t DDS_TEXTURE_3D_UVW_DIMENSION = 2048;
-    constexpr uint32_t DDS_TEXTURE_CUBE_DIMENSION = 16384;
+    inline constexpr uint32_t DDS_TEXTURE_1D_U_DIMENSION = 16384;
+    inline constexpr uint32_t DDS_TEXTURE_1D_ARRAY_AXIS_DIMENSION = 2048;
+    inline constexpr uint32_t DDS_TEXTURE_2D_UV_DIMENSION = 16384;
+    inline constexpr uint32_t DDS_TEXTURE_2D_ARRAY_AXIS_DIMENSION = 2048;
+    inline constexpr uint32_t DDS_TEXTURE_3D_UVW_DIMENSION = 2048;
+    inline constexpr uint32_t DDS_TEXTURE_CUBE_DIMENSION = 16384;
 
-    constexpr size_t DDS_MAX_SUBRESOURCES = 1u << 16u;
-    constexpr size_t DDS_MAX_MIP_LEVELS = 1u << 11u;
+    inline constexpr size_t DDS_MAX_SUBRESOURCES = 1u << 16u;
+    inline constexpr size_t DDS_MAX_MIP_LEVELS = 1u << 11u;
 
     constexpr bool GetSurfaceInfo(
         size_t width,
@@ -1374,7 +1376,7 @@ namespace Anemone::Graphics::Internal
 
 namespace Anemone::Graphics
 {
-    std::expected<std::unique_ptr<Image>, Error> ImageDecoder_DDS(std::span<std::byte> buffer)
+    std::expected<Reference<Image>, Error> ImageDecoder_DDS(std::span<std::byte> buffer)
     {
         Internal::DDS_HEADER const* header{};
         Internal::DDS_HEADER_DXT10 const* header10{};
@@ -1387,7 +1389,7 @@ namespace Anemone::Graphics
             size_t depth = header->Depth;
 
             ImageDimension dimension;
-            Internal::DXGI_FORMAT format = Internal::DXGI_FORMAT_UNKNOWN;
+            Internal::DXGI_FORMAT format;
 
             size_t arraySize = 1;
             size_t mipCount = header->MipMapCount;
@@ -1679,7 +1681,7 @@ namespace Anemone::Graphics
                     skipMips,
                     subresources))
             {
-                auto result = std::make_unique<Image>(
+                auto result = MakeReference<Image>(
                     ImageSize{
                         outWidth,
                         outHeight,
@@ -1824,15 +1826,19 @@ namespace Anemone::Graphics
             return std::unexpected(Error::InvalidArgument);
         }
 
-        uint32_t ddsResourceFlags = IsCube(dimension) ? Internal::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE : 0;
+        uint32_t ddsResourceFlags = (dimension == ImageDimension::TextureCube)
+            ? Internal::DDS_RESOURCE_MISC_FLAG_TEXTURE_CUBE
+            : 0;
 
         Internal::DDS_HEADER header{
             .Size = sizeof(header),
             .Flags = ddsHeaderFlags,
             .Height = ddsHeight,
             .Width = ddsWidth,
+            .PitchOrLinearSize = 0,
             .Depth = ddsDepth,
             .MipMapCount = static_cast<uint32_t>(mipCount),
+            .Reserved1 = {},
             .PixelFormat = Internal::DDS_PIXELFORMAT{
                 .Size = sizeof(Internal::DDS_PIXELFORMAT),
                 .Flags = Internal::DDS_PIXELFORMAT_FOURCC,
@@ -1845,6 +1851,9 @@ namespace Anemone::Graphics
             },
             .Surface = ddsHeaderSurface,
             .Cubemap = ddsHeaderCubemap,
+            .Caps3 = 0,
+            .Caps4 = 0,
+            .Reserved2 = 0,
         };
 
         Internal::DDS_HEADER_DXT10 header10{
