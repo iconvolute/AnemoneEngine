@@ -36,17 +36,42 @@ namespace Anemone
 
             bool Partition(size_t& first, size_t& last)
             {
-                // note: worker threads may be too fast to observe end of the range due to overflow condition
-                size_t const current = this->CurrentIndex.fetch_add(this->Batch, std::memory_order::acquire);
+                size_t const batch = this->Batch;
+                size_t const count = this->Count;
 
-                if (current < this->Count)
+                size_t current = this->CurrentIndex.load(std::memory_order::relaxed);
+
+                while (true)
                 {
-                    first = current;
-                    last = std::min<size_t>(current + this->Batch, this->Count);
-                    return true;
-                }
+                    if (current >= count)
+                    {
+                        // No more work.
+                        return false;
+                    }
 
-                return false;
+                    size_t next;
+
+                    if (batch > (count - current))
+                    {
+                        next = count;
+                    }
+                    else
+                    {
+                        next = current + batch;
+                    }
+
+                    if (this->CurrentIndex.compare_exchange_weak(
+                        current,
+                        next,
+                        std::memory_order::acquire,
+                        std::memory_order::relaxed))
+                    {
+                        // Successfully claimed the batch.
+                        first = current;
+                        last = next;
+                        return true;
+                    }
+                }
             }
 
             void Execute()

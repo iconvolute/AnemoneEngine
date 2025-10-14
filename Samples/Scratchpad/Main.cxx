@@ -599,22 +599,6 @@ anemone_noinline void test3()
 #include "AnemoneApplication/Module.hxx"
 #include "AnemoneMemory/Module.hxx"
 
-namespace Anemone
-{
-    template <typename Module>
-    struct ModuleInitializer final
-    {
-        ModuleInitializer()
-        {
-            Module::Initialize();
-        }
-
-        ~ModuleInitializer()
-        {
-            Module::Finalize();
-        }
-    };
-}
 
 #if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
