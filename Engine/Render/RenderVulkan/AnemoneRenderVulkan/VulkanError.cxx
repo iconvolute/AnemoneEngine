@@ -71,7 +71,7 @@ namespace Anemone
         }
     }
 
-    void VulkanError::ReportError(VkResult result)
+    void VulkanError::ReportError([[maybe_unused]] VkResult result)
     {
         AE_PANIC("Vulkan error: {} ({})", VkResultToString(result), static_cast<int>(result));
     }
