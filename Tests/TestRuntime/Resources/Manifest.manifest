@@ -30,7 +30,7 @@
             <dpiAwareness>system</dpiAwareness>
             <longPathAware>true</longPathAware>
             <activeCodePage>UTF-8</activeCodePage>
-            <heapTyped>SegmentHeap</heapTyped>
+            <heapType>SegmentHeap</heapType>
         </windowsSettings>
     </asmv3:application>
 </assembly>
