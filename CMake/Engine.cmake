@@ -243,6 +243,38 @@ function(_anemone_target_enable_warnings target_name)
 
 endfunction()
 
+function(_anemone_target_generate_metadata target_name)
+    file(GLOB_RECURSE metadata_inputs
+        CONFIGURE_DEPENDS
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.hxx
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cxx
+    )
+
+    # Define custom command to generate file
+    add_custom_command(
+        OUTPUT
+            "${CMAKE_CURRENT_BINARY_DIR}/Generated/Metadata.cxx"
+        COMMAND
+            ${CMAKE_COMMAND} -E make_directory "${CMAKE_CURRENT_BINARY_DIR}/Generated"
+        COMMAND
+            AnemoneMetadataGenerator
+            "${target_name}"
+            "${CMAKE_CURRENT_SOURCE_DIR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/Generated/Metadata.cxx"
+        DEPENDS
+            "${metadata_inputs}"
+            AnemoneMetadataGenerator
+        COMMENT "Generating metadata ${CMAKE_CURRENT_BINARY_DIR}/Generated/Metadata.cxx"
+        VERBATIM
+    )
+
+    target_sources(${target_name}
+        PRIVATE
+            "${CMAKE_CURRENT_BINARY_DIR}/Generated/Metadata.cxx"
+    )
+
+endfunction()
+
 function(_anemone_target_add_includes target_name)
     target_sources(${target_name} PUBLIC FILE_SET HEADERS BASE_DIRS .)
 endfunction()
@@ -286,6 +318,7 @@ function(anemone_add_module target_name)
 
     # Create target
     add_library(${target_name} ${target_kind})
+    #_anemone_target_generate_metadata(${target_name})
     _anemone_target_add_options(${target_name})
     _anemone_target_enable_warnings(${target_name})
     _anemone_target_add_includes(${target_name})
@@ -319,6 +352,7 @@ endfunction()
 
 function(_anemone_add_executable target_name)
     add_executable(${target_name})
+    #_anemone_target_generate_metadata(${target_name})
     _anemone_target_add_options(${target_name})
     _anemone_target_enable_warnings(${target_name})
     _anemone_target_install(${target_name})
@@ -361,6 +395,7 @@ endfunction()
 
 function(anemone_add_test target_name)
     _anemone_add_executable(${target_name})
+    #_anemone_target_generate_metadata(${target_name})
 
     target_compile_definitions(${target_name}
         PRIVATE
