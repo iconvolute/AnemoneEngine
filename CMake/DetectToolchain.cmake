@@ -1,7 +1,3 @@
-include(CheckCXXSourceCompiles)
-include(CheckCXXCompilerFlag)
-include(CheckSymbolExists)
-
 # Validate 64-bit target platform
 if(NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
 message(FATAL_ERROR "64-bit builds are not supported")
@@ -22,38 +18,22 @@ string(REPLACE "/Ob2" "/Ob3" CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE}
 string(REPLACE "/Ob2" "/Ob3" CMAKE_C_FLAGS_RELEASE   "${CMAKE_C_FLAGS_RELEASE}")
 endif()
 
-
-
-# Detect SVML feature
-check_cxx_source_compiles("
-#include <immintrin.h>
-
-int main() {
-    __m128 v = _mm_set_ps1(0.6f);
-    __m128 f = _mm_svml_floor_ps(v);
-    return static_cast<int>(_mm_cvtss_f32(f));
-}" HAVE_SVML)
-
-option(ANEMONE_FEATURE_SVML "Enable SVML" ${HAVE_SVML})
-message(STATUS "Feature SVML: ${ANEMONE_FEATURE_SVML}")
-
-
-function(detect_architecture symbol arch)
-    if (NOT DEFINED ARCHITECTURE)
-        set(CMAKE_REQUIRED_QUIET 1)
-        check_symbol_exists("${symbol}" "" ARCHITECTURE_${arch})
-        unset(CMAKE_REQUIRED_QUIET)
-
-        if (ARCHITECTURE_${arch})
-            set(ANEMONE_ARCHITECTURE_${arch} 1 PARENT_SCOPE)
-        endif()
-    endif()
-endfunction()
-
 if (MSVC)
-    detect_architecture("_M_ARM64" ARM64)
-    detect_architecture("_M_AMD64" X64)
-else()
-    detect_architecture("__aarch64__" ARM64)
-    detect_architecture("__x86_64__" X64)
+    if (CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "ARM64")
+        set(ANEMONE_ARCHITECTURE_ARM64 ON)
+    elseif (CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "x64")
+        set(ANEMONE_ARCHITECTURE_X64 ON)
+        set(ANEMONE_FEATURE_SVML ON)
+    endif()
 endif()
+
+if (CLANG OR GCC)
+    if (CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "aarch64")
+        set(ANEMONE_ARCHITECTURE_ARM64 ON)
+    elseif (CMAKE_CXX_COMPILER_ARCHITECTURE_ID STREQUAL "x86_64")
+        set(ANEMONE_ARCHITECTURE_X64 ON)
+        set(ANEMONE_FEATURE_SVML ON)
+    endif()
+endif()
+
+message(STATUS "Feature SVML: ${ANEMONE_FEATURE_SVML}")
