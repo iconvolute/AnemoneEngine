@@ -3,7 +3,7 @@
 
 namespace Anemone
 {
-    class Socket : public Reference<Socket>
+    class Socket : public ReferenceCounted<Socket>
     {
     public:
         virtual ~Socket();

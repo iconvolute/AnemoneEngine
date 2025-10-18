@@ -30,6 +30,14 @@ namespace Anemone
 
     static ProfilerStatics GProfilerStatics{};
 
+    void Profiler::Initialize()
+    {
+    }
+
+    void Profiler::Finalize()
+    {
+    }
+
     struct ProfilerMarkerRegistry final
     {
         CriticalSection Lock{};
