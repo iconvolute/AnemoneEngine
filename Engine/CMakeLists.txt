@@ -8,3 +8,7 @@ add_subdirectory("Runtime")
 add_subdirectory("Tasks")
 add_subdirectory("UI")
 add_subdirectory("VM")
+
+if (Vulkan_FOUND AND WIN32)
+    add_subdirectory("RenderVulkan")
+endif()

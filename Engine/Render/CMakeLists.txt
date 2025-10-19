@@ -1,8 +1,12 @@
-add_subdirectory("Render")
+anemone_add_module(AnemoneRender
+    ALIAS Anemone::Render
+    EXPORT "RENDER_API"
+)
 
+target_link_libraries(AnemoneRender
+    PUBLIC
+        AnemoneRuntime
+        AnemoneApplication
+)
 
-if (Vulkan_FOUND AND WIN32)
-
-add_subdirectory("RenderVulkan")
-
-endif()
+add_subdirectory("AnemoneRender")
