@@ -5,6 +5,7 @@ target_link_libraries(TestRuntime
         AnemoneRuntime
         AnemoneTasks
         AnemoneNetwork
+        AnemoneEntryPoint
 )
 
 add_subdirectory("Source")

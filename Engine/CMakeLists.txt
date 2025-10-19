@@ -1,5 +1,6 @@
 add_subdirectory("Application")
 add_subdirectory("Engine")
+add_subdirectory("EntryPoint")
 add_subdirectory("Graphics")
 add_subdirectory("Memory")
 add_subdirectory("Network")

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Runtime/EntryPoint.hxx"
+#include "AnemoneEntryPoint/EntryPoint.hxx"
 #include "AnemoneTasks/Module.hxx"
 
 #include <catch_amalgamated.hpp>

@@ -1,4 +1,4 @@
-target_sources(AnemoneRuntime
+target_sources(AnemoneEntryPoint
     PRIVATE
         
     PUBLIC FILE_SET HEADERS FILES

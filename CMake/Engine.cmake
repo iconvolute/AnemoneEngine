@@ -168,6 +168,7 @@ function(anemone_add_module target_name)
     # Parse arguments
     set(options
         STATIC
+        HEADER
     )
 
     set(namedOptions
@@ -191,15 +192,23 @@ function(anemone_add_module target_name)
         set(target_kind STATIC)
     endif()
 
+    if (parsed_HEADER)
+        set(target_kind INTERFACE)
+    endif()
+
 
     # Create target
     add_library(${target_name} ${target_kind})
-    #_anemone_target_generate_metadata(${target_name})
-    _anemone_target_add_options(${target_name})
-    _anemone_target_enable_warnings(${target_name})
+
+    if (NOT parsed_HEADER)
+        #_anemone_target_generate_metadata(${target_name})
+        _anemone_target_add_options(${target_name})
+        _anemone_target_enable_warnings(${target_name})
+    endif()
+
     _anemone_target_add_includes(${target_name})
 
-    if (NOT target_kind MATCHES STATIC)
+    if (NOT target_kind MATCHES STATIC|INTERFACE)
         _anemone_target_install(${target_name})
     endif()
 
@@ -222,14 +231,6 @@ function(anemone_add_module target_name)
             )
         endif()
     endif()
-
-    target_compile_definitions(${target_name}
-        PUBLIC
-
-  $<$<AND:$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>,$<STREQUAL:$<TARGET_PROPERTY:ARCHITECTURE_ID>,x86_64>>:-mfma>
-            
-    )
-
 
 endfunction()
 
