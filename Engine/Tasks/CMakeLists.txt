@@ -6,6 +6,7 @@ anemone_add_module(AnemoneTasks
 target_link_libraries(AnemoneTasks
     PUBLIC
         AnemoneRuntime
+        AnemoneProfiler
 )
 
 add_subdirectory("AnemoneTasks")

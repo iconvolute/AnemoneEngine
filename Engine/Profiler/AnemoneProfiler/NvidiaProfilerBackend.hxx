@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Profiler/Profiler.hxx"
+#include "AnemoneProfiler/Profiler.hxx"
 
 #if ANEMONE_BUILD_PROFILING
 

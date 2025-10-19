@@ -43,15 +43,4 @@ target_link_libraries(AnemoneRuntime
 )
 endif()
 
-if(ANEMONE_BUILD_PROFILING)
-target_link_libraries(AnemoneRuntime
-    PRIVATE
-        nvtx3-cpp)
-
-if (ITT_FOUND)
-    target_link_libraries(AnemoneRuntime PUBLIC ITT::ITT)
-endif()
-
-endif()
-
 add_subdirectory("AnemoneRuntime")

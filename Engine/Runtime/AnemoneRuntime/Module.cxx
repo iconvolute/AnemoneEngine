@@ -5,7 +5,6 @@
 #include "AnemoneRuntime/System/ProcessorProperties.hxx"
 #include "AnemoneRuntime/Storage/FileSystem.hxx"
 #include "AnemoneRuntime/System/Clipboard.hxx"
-#include "AnemoneRuntime/Profiler/Profiler.hxx"
 
 namespace Anemone
 {
@@ -17,18 +16,10 @@ namespace Anemone
         Anemone::ProcessorProperties::Initialize();
         Anemone::FileSystem::Initialize();
         Anemone::Clipboard::Initialize();
-
-#if ANEMONE_BUILD_PROFILING
-        Anemone::Profiler::Initialize();
-#endif
     }
 
     void Module_Runtime::Finalize()
     {
-#if ANEMONE_BUILD_PROFILING
-        Anemone::Profiler::Finalize();
-#endif
-
         Anemone::Clipboard::Finalize();
         Anemone::FileSystem::Finalize();
         Anemone::ProcessorProperties::Finalize();

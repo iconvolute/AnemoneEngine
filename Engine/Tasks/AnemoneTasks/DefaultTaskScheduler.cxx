@@ -9,7 +9,7 @@
 #include "AnemoneRuntime/Base/Intrusive.hxx"
 #include "AnemoneRuntime/Threading/SpinWait.hxx"
 
-#include "AnemoneRuntime/Profiler/Profiler.hxx"
+#include "AnemoneProfiler/Profiler.hxx"
 
 namespace Anemone
 {
