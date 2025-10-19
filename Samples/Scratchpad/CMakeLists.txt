@@ -10,6 +10,7 @@ target_link_libraries(Scratchpad
         AnemoneApplication
         AnemoneMemory
         AnemoneTasks
+        AnemoneNetwork
 )
 
 if (Vulkan_FOUND AND WIN32)

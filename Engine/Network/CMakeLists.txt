@@ -8,4 +8,11 @@ target_link_libraries(AnemoneNetwork
         AnemoneRuntime
 )
 
+if(WIN32)
+target_link_libraries(AnemoneNetwork
+    PRIVATE
+        "Ws2_32.lib"
+)
+endif()
+
 add_subdirectory("AnemoneNetwork")

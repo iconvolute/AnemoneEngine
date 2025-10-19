@@ -14,7 +14,7 @@
 #include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
 #include "AnemoneRuntime/Interop/Windows/Registry.hxx"
 #endif
-#include "AnemoneRuntime/Network/Tcp.hxx"
+#include "AnemoneNetwork/Tcp.hxx"
 #include "AnemoneRuntime/Threading/CriticalSection.hxx"
 #include "AnemoneRuntime/Threading/Lock.hxx"
 

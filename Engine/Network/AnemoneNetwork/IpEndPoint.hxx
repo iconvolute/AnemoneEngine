@@ -1,11 +1,11 @@
 #pragma once
 #include "AnemoneRuntime/Interop/Headers.hxx"
 #include "AnemoneRuntime/Platform/Types.hxx"
-#include "AnemoneRuntime/Network/IpAddress.hxx"
+#include "AnemoneNetwork/IpAddress.hxx"
 
 namespace Anemone::Network
 {
-    class RUNTIME_API IpEndPoint final
+    class NETWORK_API IpEndPoint final
     {
     private:
         Interop::NativeIpEndPoint m_native;
