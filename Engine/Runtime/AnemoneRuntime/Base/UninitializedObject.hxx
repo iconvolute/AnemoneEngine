@@ -11,7 +11,7 @@ namespace Anemone
     class UninitializedObject final
     {
     private:
-        alignas(T) std::byte _buffer[sizeof(T)]{};
+        alignas(T) std::byte _buffer[sizeof(T)];
         T* m_instance = nullptr;
 
     public:

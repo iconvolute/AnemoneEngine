@@ -43,129 +43,6 @@ function(_anemone_target_add_options target_name)
         endif()
     endif()
 
-    # Configure compiler
-    if (MSVC)
-        target_link_options(${target_name}
-            PRIVATE
-                # /CETCOMPAT          # Enable Control Flow Guard compatibility
-                /debug:fastlink                             # Generate debug information
-                $<$<NOT:$<CONFIG:DEBUG>>:/OPT:REF>          # Remove unreferenced functions and data.
-                $<$<NOT:$<CONFIG:DEBUG>>:/OPT:ICF>          # Identical COMDAT folding.
-                $<$<CONFIG:DEBUG>:/OPT:NOREF>               # No unreferenced data elimination.
-                $<$<CONFIG:DEBUG>:/OPT:NOICF>               # No Identical COMDAT folding.
-        )
-
-        target_compile_options(${target_name}
-            PRIVATE
-                #/GR-                                       # Disable RTTI
-                $<$<NOT:$<CONFIG:RELEASE>>:/sdl>            # Enable additional security features; useful for catching some bugs
-                $<$<NOT:$<CONFIG:RELEASE>>:/guard:cf>       # Enable Control Flow Guard
-                $<$<CONFIG:RELEASE>:/sdl- /GS->             # Disable additional security features
-                $<$<CONFIG:RELEASE>:/Gy>                    # Enable COMDAT folding
-                $<$<CONFIG:RELEASE>:/Gw>                    # Optimize Global Data
-                $<$<CONFIG:RELEASE>:/Ob3>                   # Enable inline function expansion
-                /ZH:SHA_256                                 # Use SHA-256 hash for PDB
-                /fp:fast                                    # Fast floating-point optimizations
-                /permissive-                                # Enable strict conformance mode
-                /volatile:iso
-                /Zc:__cplusplus                             # Enable __cplusplus macro
-                /Zc:inline                                  # Enable inline conformance
-                /Zc:preprocessor                            # Enable preprocessor conformance
-                /Zc:lambda                                  # Enable lambda conformance
-                /Zc:checkGwOdr                              # Check global variable definitions
-                /Zc:referenceBinding
-                /Zc:rvalueCast
-                /Zc:strictStrings
-                /Zc:ternary
-                /Zc:wchar_t
-                /Zc:forScope                                # conformant for-scope
-                /Zc:enumTypes
-                /Zc:externConstexpr
-                /Zc:throwingNew
-                /external:anglebrackets                     # External includes passed in `<>`
-                /external:W0                                # Disable warnings for external includes
-                /utf-8                                      # Set source and execution character set to UTF-8
-                /MP                                         # multicore compilation
-        )
-
-        target_compile_definitions(${target_name}
-            PUBLIC
-                UNICODE
-                _UNICODE
-        )
-
-    else()
-        target_compile_options(${target_name}
-            PRIVATE
-                #-g
-                -ggdb
-                -fvisibility=hidden
-                #-ffast-math                                 # Enable fast math optimizations
-        )
-    endif()
-
-    # Features
-    if (MSVC)
-        if(ANEMONE_ARCHITECTURE_X64)
-            target_compile_options(
-                ${target_name}
-                PRIVATE
-                    /arch:AVX
-                    /favor:AMD64
-            )
-            target_compile_definitions(
-                ${target_name}
-                PRIVATE
-                    __AVX__=1
-            )
-        endif()
-
-        if(ANEMONE_ARCHITECTURE_ARM64)
-            target_compile_options(
-                ${target_name}
-                PRIVATE
-                    /arch:armv8.1
-                    #/Zc:arm64-aliased-neon-types-
-            )
-
-            target_compile_definitions(
-                ${target_name}
-                PRIVATE
-                    #_ARM64_DISTINCT_NEON_TYPES
-            )
-        endif()
-    else()
-        if (ANEMONE_ARCHITECTURE_X64)
-            target_compile_options(
-                ${target_name}
-                PRIVATE
-                    -mavx
-            )
-            target_compile_definitions(
-                ${target_name}
-                PRIVATE
-                    __AVX__=1
-            )
-        endif()
-
-        if(ANEMONE_ARCHITECTURE_ARM64)
-            if (NOT ANDROID)
-                target_compile_options(
-                    ${target_name}
-                    PRIVATE
-                        -march=native
-                        -mtune=native
-                        -mcpu=native
-                )
-                target_compile_definitions(
-                    ${target_name}
-                    PRIVATE
-                        __ARM_NEON=1
-                )
-            endif()
-        endif()
-    endif()
-
 endfunction()
 
 function(_anemone_target_enable_warnings target_name)
@@ -179,7 +56,6 @@ function(_anemone_target_enable_warnings target_name)
             target_compile_options(
                 ${target_name}
                 PRIVATE
-                    /diagnostics:caret
                     /Wall       # enable all warnings
                     #-WL         # show warnings as messages
                     /wd4710
@@ -346,6 +222,13 @@ function(anemone_add_module target_name)
             )
         endif()
     endif()
+
+    target_compile_definitions(${target_name}
+        PUBLIC
+
+  $<$<AND:$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>,$<STREQUAL:$<TARGET_PROPERTY:ARCHITECTURE_ID>,x86_64>>:-mfma>
+            
+    )
 
 
 endfunction()

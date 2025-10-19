@@ -28,7 +28,7 @@
             "name": "config-developer",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_BUILD_TYPE": "Developer",
                 "ANEMONE_BUILD_DEVELOPER": true
             }
         },
@@ -36,7 +36,7 @@
             "name": "config-shipping",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_BUILD_TYPE": "Shipping",
                 "ANEMONE_BUILD_SHIPPING": true,
                 "ANEMONE_BUILD_MONOLITHIC": true
             }
@@ -45,7 +45,7 @@
             "name": "config-profiling",
             "hidden": true,
             "cacheVariables": {
-                "CMAKE_BUILD_TYPE": "Release",
+                "CMAKE_BUILD_TYPE": "Profiling",
                 "ANEMONE_BUILD_SHIPPING": true,
                 "ANEMONE_BUILD_MONOLITHIC": true,
                 "ANEMONE_BUILD_PROFILING": true
@@ -81,6 +81,9 @@
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "linux-gcc-x64"
                 }
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Linux.GCC.x64.cmake"
             }
         },
         {
@@ -95,6 +98,9 @@
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "linux-gcc-arm"
                 }
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Linux.GCC.arm64.cmake"
             }
         },
         {
@@ -124,9 +130,8 @@
                 "rhs": "Windows"
             },
             "cacheVariables": {
-                "CMAKE_C_COMPILER": "cl.exe",
-                "CMAKE_CXX_COMPILER": "cl.exe",
-                "ANEMONE_PLATFORM_WINDOWS": true
+                "ANEMONE_PLATFORM_WINDOWS": true,
+                "TOOLCHAIN_MSVC_VERSION": "14.44.35207"
             }
         },
         {
@@ -137,10 +142,12 @@
                 "value": "x64",
                 "strategy": "external"
             },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.x64.cmake"
+            },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "windows-msvc-x64"
-
                 }
             }
         },
@@ -151,6 +158,9 @@
             "architecture": {
                 "value": "arm64",
                 "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.arm64.cmake"
             }
         },
         {

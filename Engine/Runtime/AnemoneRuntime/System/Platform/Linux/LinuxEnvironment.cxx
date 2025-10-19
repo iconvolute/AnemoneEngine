@@ -236,9 +236,9 @@ namespace Anemone
 
 namespace Anemone
 {
-    void Environment::Initialize(bool applicationType)
+    void Environment::Initialize()
     {
-        LinuxEnvironment::Initialize(applicationType);
+        LinuxEnvironment::Initialize();
     }
 
     void Environment::Finalize()

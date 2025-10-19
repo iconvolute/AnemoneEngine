@@ -5,7 +5,7 @@ namespace Anemone
 {
     struct LinuxEnvironment
     {
-        static void Initialize(bool applicationType);
+        static void Initialize();
         static void Finalize();
         static LinuxEnvironment& Get();
 
