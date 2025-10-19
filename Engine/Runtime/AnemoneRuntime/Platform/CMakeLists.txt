@@ -6,7 +6,6 @@ target_sources(AnemoneRuntime
         "FilePath.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "FilePath.hxx"
-        "FileSystem.hxx"
         "NamedMutex.hxx"
         "Types.hxx"
 )
