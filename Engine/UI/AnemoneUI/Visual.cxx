@@ -57,6 +57,16 @@ namespace Anemone::UI
         return this->_localTransform;
     }
 
+    float Visual::Opacity() const
+    {
+        return this->_opacity;
+    }
+
+    void Visual::Opacity(float value)
+    {
+        this->_opacity = value;
+    }
+
     Math::SizeF Visual::Size() const
     {
         return this->_bounds.Size();

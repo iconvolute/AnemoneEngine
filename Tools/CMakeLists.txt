@@ -3,4 +3,4 @@ add_subdirectory("CrashReporter")
 add_subdirectory("DevDebugger")
 endif()
 
-#add_subdirectory("MetadataGenerator")
+add_subdirectory("MetadataGenerator")

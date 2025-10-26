@@ -7,9 +7,8 @@
 namespace Anemone
 {
     ReaderWriterLock::ReaderWriterLock()
-        : _inner{SRWLOCK_INIT}
+        : _inner{}
     {
-        // InitializeSRWLock(&this->_inner);
     }
 
     ReaderWriterLock::~ReaderWriterLock() = default;

@@ -5,7 +5,7 @@ namespace Anemone
 {
     namespace
     {
-        constexpr const char* VkResultToString(VkResult result)
+        [[maybe_unused]] constexpr const char* VkResultToString(VkResult result)
         {
             switch (result)
             {

@@ -34,6 +34,9 @@ namespace Anemone::UI
 
         Math::Matrix3x2F const& TransformMatrix() const;
 
+        float Opacity() const;
+        void Opacity(float value);
+
         Math::SizeF Size() const;
         void Size(Math::SizeF value);
 

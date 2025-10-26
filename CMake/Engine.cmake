@@ -113,6 +113,7 @@ function(_anemone_target_enable_warnings target_name)
                     #-Wno-undefined-func-template
                     -Wno-attributes
                     -Wno-missing-field-initializers
+                    -Wno-unused-const-variable
             )
         endif()
     endif()

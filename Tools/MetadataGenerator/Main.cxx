@@ -268,6 +268,13 @@ void Parse(ParserContext& context, std::ifstream& input)
     }
 }
 
+// Todo and ideas:
+//
+// - detect top-level namespace in form of `namespace x::y::z` and generate metadata for them
+//   - every namespace declaration resets the current namespace context - we don't support nested namespaces here
+//   - emitted code assumes it lives in top level namespace and that's reflected in reflected code
+// - generalize "directives" concept
+
 int main(int argc, char** argv)
 {
     if (argc != 4)

@@ -41,20 +41,22 @@
 // Detect Architecture
 //
 
+#if defined(__x86_64) || defined(__x86_64__) || \
+    defined(__amd64__) || defined(__amd64) || \
+    defined(_M_X64)
+#define ANEMONE_ARCHITECTURE_X64 true
+#endif
+
+#if defined(__aarch64__) || defined(_M_ARM64)
+#define ANEMONE_ARCHITECTURE_ARM64 true
+#endif
+
 #ifndef ANEMONE_ARCHITECTURE_X64
 #define ANEMONE_ARCHITECTURE_X64 false
 #endif
 
 #ifndef ANEMONE_ARCHITECTURE_ARM64
 #define ANEMONE_ARCHITECTURE_ARM64 false
-#endif
-
-#ifndef ANEMONE_ARCHITECTURE_RISCV64
-#define ANEMONE_ARCHITECTURE_RISCV64 false
-#endif
-
-#ifndef ANEMONE_ARCHITECTURE_RISCV128
-#define ANEMONE_ARCHITECTURE_RISCV128 false
 #endif
 
 #ifndef ANEMONE_CACHELINE_SIZE
@@ -88,6 +90,10 @@
 
 #if defined(_M_ARM64) || defined(__ARM_NEON)
 #define ANEMONE_FEATURE_NEON true
+#endif
+
+#if defined(_M_X64) && defined(_MSC_VER) && !defined(__clang__)
+#define ANEMONE_FEATURE_SVML true
 #endif
 
 #ifndef ANEMONE_FEATURE_AVX

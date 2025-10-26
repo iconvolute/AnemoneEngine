@@ -9,7 +9,9 @@ namespace Anemone
     private:
         VkInstance _instance{};
         VkDevice _device{};
+#if !ANEMONE_BUILD_SHIPPING
         VkDebugReportCallbackEXT _debugReportCallback{};
+#endif
 
     public:
         VulkanDevice();

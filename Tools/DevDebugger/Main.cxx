@@ -255,40 +255,53 @@ public:
 
     MyOutput& operator=(const MyOutput&) = delete;
 
-    STDMETHODIMP QueryInterface(
+    STDMETHOD(QueryInterface)(
         REFIID InterfaceId,
-        PVOID* Interface) override
-    {
-        (void)InterfaceId;
-        (void)Interface;
-        return E_NOINTERFACE;
-    }
+        PVOID* Interface) override;
 
-    STDMETHODIMP_(ULONG) AddRef() override
-    {
-        return 0;
-    }
+    STDMETHOD_(ULONG, AddRef)() override;
 
-    STDMETHODIMP_(ULONG) Release() override
-    {
-        return 0;
-    }
+    STDMETHOD_(ULONG, Release)() override;
 
-    STDMETHODIMP Output(
+    STDMETHOD(Output)(
         ULONG Mask,
-        PCSTR Text) override
-    {
-        if (Mask & DEBUG_OUTPUT_NORMAL)
-        {
-            std::print("{}", Text);
-        }
-
-        return S_OK;
-    }
+        PCSTR Text) override;
 
 private:
     Microsoft::WRL::ComPtr<IDebugClient9> p_client_;
 };
+
+
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyOutput::QueryInterface(
+    REFIID InterfaceId,
+    PVOID* Interface)
+{
+    (void)InterfaceId;
+    (void)Interface;
+    return E_NOINTERFACE;
+}
+
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) MyOutput::AddRef()
+{
+    return 0;
+}
+
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) MyOutput::Release()
+{
+    return 0;
+}
+
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyOutput::Output(
+    ULONG Mask,
+    PCSTR Text)
+{
+    if (Mask & DEBUG_OUTPUT_NORMAL)
+    {
+        std::print("{}", Text);
+    }
+
+    return S_OK;
+}
 
 class MyCallback : public IDebugEventCallbacks
 {
@@ -296,36 +309,36 @@ public:
     MyCallback() = default;
     virtual ~MyCallback() = default;
 
-    STDMETHODIMP QueryInterface(
+    STDMETHOD(QueryInterface)(
         REFIID InterfaceId,
         PVOID* Interface) override;
 
-    STDMETHODIMP_(ULONG) AddRef() override;
+    STDMETHOD_(ULONG, AddRef)() override;
 
-    STDMETHODIMP_(ULONG) Release() override;
+    STDMETHOD_(ULONG, Release)() override;
 
-    STDMETHODIMP GetInterestMask(
+    STDMETHOD(GetInterestMask)(
         PULONG Mask) override;
 
-    STDMETHODIMP Breakpoint(
+    STDMETHOD(Breakpoint)(
         PDEBUG_BREAKPOINT Bp) override;
 
-    STDMETHODIMP Exception(
+    STDMETHOD(Exception)(
         PEXCEPTION_RECORD64 Exception,
         ULONG FirstChance) override;
 
-    STDMETHODIMP CreateThread(
+    STDMETHOD(CreateThread)(
         ULONG64 Handle,
         ULONG64 DataOffset,
         ULONG64 StartOffset) override;
 
-    STDMETHODIMP ExitThread(
+    STDMETHOD(ExitThread)(
         ULONG ExitCode) override;
 
-    STDMETHODIMP ExitProcess(
+    STDMETHOD(ExitProcess)(
         ULONG ExitCode) override;
 
-    STDMETHODIMP LoadModule(
+    STDMETHOD(LoadModule)(
         ULONG64 ImageFileHandle,
         ULONG64 BaseOffset,
         ULONG ModuleSize,
@@ -334,30 +347,30 @@ public:
         ULONG CheckSum,
         ULONG TimeDateStamp) override;
 
-    STDMETHODIMP UnloadModule(
+    STDMETHOD(UnloadModule)(
         PCSTR ImageBaseName,
         ULONG64 BaseOffset) override;
 
-    STDMETHODIMP SystemError(
+    STDMETHOD(SystemError)(
         ULONG Error,
         ULONG Level) override;
 
-    STDMETHODIMP SessionStatus(
+    STDMETHOD(SessionStatus)(
         ULONG Status) override;
 
-    STDMETHODIMP ChangeDebuggeeState(
+    STDMETHOD(ChangeDebuggeeState)(
         ULONG Flags,
         ULONG64 Argument) override;
 
-    STDMETHODIMP ChangeEngineState(
+    STDMETHOD(ChangeEngineState)(
         ULONG Flags,
         ULONG64 Argument) override;
 
-    STDMETHODIMP ChangeSymbolState(
+    STDMETHOD(ChangeSymbolState)(
         ULONG Flags,
         ULONG64 Argument) override;
 
-    STDMETHODIMP CreateProcessW(
+    STDMETHOD(CreateProcessW)(
         ULONG64 ImageFileHandle,
         ULONG64 Handle,
         ULONG64 BaseOffset,
@@ -371,7 +384,7 @@ public:
         ULONG64 StartOffset) override;
 };
 
-STDMETHODIMP MyCallback::QueryInterface(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::QueryInterface(
     REFIID InterfaceId,
     PVOID* Interface)
 {
@@ -380,17 +393,17 @@ STDMETHODIMP MyCallback::QueryInterface(
     return E_NOINTERFACE;
 }
 
-STDMETHODIMP_(ULONG) MyCallback::AddRef()
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) MyCallback::AddRef()
 {
     return 0;
 }
 
-STDMETHODIMP_(ULONG) MyCallback::Release()
+COM_DECLSPEC_NOTHROW STDMETHODIMP_(ULONG) MyCallback::Release()
 {
     return 0;
 }
 
-STDMETHODIMP MyCallback::GetInterestMask(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::GetInterestMask(
     PULONG Mask)
 {
     *Mask = 0;
@@ -398,7 +411,7 @@ STDMETHODIMP MyCallback::GetInterestMask(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::Breakpoint(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::Breakpoint(
     PDEBUG_BREAKPOINT Bp)
 {
     ULONG breakpointId{};
@@ -416,7 +429,7 @@ STDMETHODIMP MyCallback::Breakpoint(
     return DEBUG_STATUS_GO;
 }
 
-STDMETHODIMP MyCallback::Exception(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::Exception(
     PEXCEPTION_RECORD64 Exception,
     ULONG FirstChance)
 {
@@ -503,7 +516,7 @@ STDMETHODIMP MyCallback::Exception(
     return DEBUG_STATUS_GO;
 }
 
-STDMETHODIMP MyCallback::CreateThread(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::CreateThread(
     ULONG64 Handle,
     ULONG64 DataOffset,
     ULONG64 StartOffset)
@@ -516,14 +529,15 @@ STDMETHODIMP MyCallback::CreateThread(
     return DEBUG_STATUS_GO;
 }
 
-STDMETHODIMP MyCallback::ExitThread(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::ExitThread(
     ULONG ExitCode)
 {
     std::println("ExitThread: {}", ExitCode);
 
     return DEBUG_STATUS_GO;
 }
-STDMETHODIMP MyCallback::ExitProcess(
+
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::ExitProcess(
     ULONG ExitCode)
 {
     std::println("ExitProcess: {}", ExitCode);
@@ -531,7 +545,7 @@ STDMETHODIMP MyCallback::ExitProcess(
     return DEBUG_STATUS_GO;
 }
 
-STDMETHODIMP MyCallback::LoadModule(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::LoadModule(
     ULONG64 ImageFileHandle,
     ULONG64 BaseOffset,
     ULONG ModuleSize,
@@ -552,7 +566,7 @@ STDMETHODIMP MyCallback::LoadModule(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::UnloadModule(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::UnloadModule(
     PCSTR ImageBaseName,
     ULONG64 BaseOffset)
 {
@@ -563,7 +577,7 @@ STDMETHODIMP MyCallback::UnloadModule(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::SystemError(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::SystemError(
     ULONG Error,
     ULONG Level)
 {
@@ -572,7 +586,7 @@ STDMETHODIMP MyCallback::SystemError(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::SessionStatus(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::SessionStatus(
     ULONG Status)
 {
     std::println("SessionStatus: {}", Status);
@@ -580,7 +594,7 @@ STDMETHODIMP MyCallback::SessionStatus(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::ChangeDebuggeeState(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::ChangeDebuggeeState(
     ULONG Flags,
     ULONG64 Argument)
 {
@@ -591,7 +605,7 @@ STDMETHODIMP MyCallback::ChangeDebuggeeState(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::ChangeEngineState(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::ChangeEngineState(
     ULONG Flags,
     ULONG64 Argument)
 {
@@ -602,7 +616,7 @@ STDMETHODIMP MyCallback::ChangeEngineState(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::ChangeSymbolState(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::ChangeSymbolState(
     ULONG Flags,
     ULONG64 Argument)
 {
@@ -613,7 +627,7 @@ STDMETHODIMP MyCallback::ChangeSymbolState(
     return S_OK;
 }
 
-STDMETHODIMP MyCallback::CreateProcessW(
+COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::CreateProcessW(
     ULONG64 ImageFileHandle,
     ULONG64 Handle,
     ULONG64 BaseOffset,

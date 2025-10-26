@@ -130,8 +130,7 @@
                 "rhs": "Windows"
             },
             "cacheVariables": {
-                "ANEMONE_PLATFORM_WINDOWS": true,
-                "TOOLCHAIN_MSVC_VERSION": "14.44.35207"
+                "ANEMONE_PLATFORM_WINDOWS": true
             }
         },
         {
@@ -143,11 +142,29 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.x64.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.x64.cmake",
+                "TOOLCHAIN_MSVC_VERSION": "14.44.35207"
             },
             "vendor": {
                 "microsoft.com/VisualStudioSettings/CMake/1.0": {
                     "intelliSenseMode": "windows-msvc-x64"
+                }
+            }
+        },
+        {
+            "name": "platform-windows-x64-clang",
+            "hidden": true,
+            "inherits": "platform-windows",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.Clang.x64.cmake"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-clang-x64"
                 }
             }
         },
@@ -160,7 +177,25 @@
                 "strategy": "external"
             },
             "cacheVariables": {
-                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.arm64.cmake"
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.MSVC.arm64.cmake",
+                "TOOLCHAIN_MSVC_VERSION": "14.44.35207"
+            }
+        },
+        {
+            "name": "platform-windows-arm64-clang",
+            "hidden": true,
+            "inherits": "platform-windows",
+            "architecture": {
+                "value": "x64",
+                "strategy": "external"
+            },
+            "cacheVariables": {
+                "CMAKE_TOOLCHAIN_FILE": "${sourceDir}/CMake/Toolchains/Windows.Clang.arm64.cmake"
+            },
+            "vendor": {
+                "microsoft.com/VisualStudioSettings/CMake/1.0": {
+                    "intelliSenseMode": "windows-clang-arm64"
+                }
             }
         },
         {
@@ -262,6 +297,46 @@
             "name": "windows-x64-profiling",
             "displayName": "Windows x64 Profiling",
             "inherits": [ "platform-windows-x64", "config-profiling" ]
+        },
+        {
+            "name": "windows-x64-clang-debug",
+            "displayName": "Windows x64 Clang Debug",
+            "inherits": [ "platform-windows-x64-clang", "config-debug" ]
+        },
+        {
+            "name": "windows-x64-clang-developer",
+            "displayName": "Windows x64 Clang Developer",
+            "inherits": [ "platform-windows-x64-clang", "config-developer" ]
+        },
+        {
+            "name": "windows-x64-clang-shipping",
+            "displayName": "Windows x64 Clang Shipping",
+            "inherits": [ "platform-windows-x64-clang", "config-shipping" ]
+        },
+        {
+            "name": "windows-x64-clang-profiling",
+            "displayName": "Windows x64 Clang Profiling",
+            "inherits": [ "platform-windows-x64-clang", "config-profiling" ]
+        },
+        {
+            "name": "windows-arm64-clang-debug",
+            "displayName": "Windows ARM64 Clang Debug",
+            "inherits": [ "platform-windows-arm64-clang", "config-debug" ]
+        },
+        {
+            "name": "windows-arm64-clang-developer",
+            "displayName": "Windows ARM64 Clang Developer",
+            "inherits": [ "platform-windows-arm64-clang", "config-developer" ]
+        },
+        {
+            "name": "windows-arm64-clang-shipping",
+            "displayName": "Windows ARM64 Clang Shipping",
+            "inherits": [ "platform-windows-arm64-clang", "config-shipping" ]
+        },
+        {
+            "name": "windows-arm64-clang-profiling",
+            "displayName": "Windows ARM64 Clang Profiling",
+            "inherits": [ "platform-windows-arm64-clang", "config-profiling" ]
         }
     ],
     "buildPresets": [
