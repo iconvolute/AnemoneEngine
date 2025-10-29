@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
+#include "AnemoneMath/Detail/SimdFloat.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

@@ -1,14 +1,29 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Platform/Types.hxx"
+#include "AnemoneInterop/Headers.hxx"
 #include "AnemoneNetwork/IpAddress.hxx"
+
+#if ANEMONE_PLATFORM_WINDOWS
+#include "AnemoneInterop/Windows/Headers.hxx"
+#elif ANEMONE_PLATFORM_LINUX || ANEMONE_PLATFORM_ANDROID
+#include "AnemoneInterop/Linux/Headers.hxx"
+#else
+#error "Unsupported platform"
+#endif
 
 namespace Anemone::Network
 {
     class NETWORK_API IpEndPoint final
     {
+    public:
+        union Native final
+        {
+            sockaddr header;
+            sockaddr_in v4;
+            sockaddr_in6 v6;
+        };
+
     private:
-        Interop::NativeIpEndPoint m_native;
+        Native m_native;
 
     public:
         IpEndPoint() = default;

@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneRuntime/Hash/FNV.hxx"
+#include "AnemoneBase/FNV.hxx"
 
 TEST_CASE("FNV Hash")
 {

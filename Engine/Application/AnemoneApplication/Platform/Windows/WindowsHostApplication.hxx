@@ -2,7 +2,7 @@
 #include "AnemoneApplication/HostApplication.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
 
-#include "AnemoneRuntime/Base/Intrusive.hxx"
+#include "AnemoneBase/Intrusive.hxx"
 
 namespace Anemone
 {

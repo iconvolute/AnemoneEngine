@@ -1,5 +1,5 @@
 #include "AnemoneApplication/Platform/Linux/LinuxHostApplication.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
 
 namespace Anemone
 {

@@ -1,7 +1,7 @@
 #include "AnemoneProfiler/Profiler.hxx"
-#include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-#include "AnemoneRuntime/Threading/CriticalSection.hxx"
+#include "AnemoneBase/FNV.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
+#include "AnemoneThreading/CriticalSection.hxx"
 
 namespace Anemone::Internal
 {

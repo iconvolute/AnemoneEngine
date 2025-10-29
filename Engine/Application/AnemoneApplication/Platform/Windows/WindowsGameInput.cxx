@@ -1,8 +1,8 @@
 #include "AnemoneApplication/Platform/Windows/WindowsGameInput.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
+#include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 namespace Anemone
 {

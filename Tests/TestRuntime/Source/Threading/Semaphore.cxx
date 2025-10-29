@@ -1,6 +1,6 @@
-#include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/Semaphore.hxx"
-#include "AnemoneRuntime/Threading/UserSemaphore.hxx"
+#include "AnemoneThreading/Thread.hxx"
+#include "AnemoneThreading/Semaphore.hxx"
+#include "AnemoneThreading/UserSemaphore.hxx"
 
 #include <catch_amalgamated.hpp>
 

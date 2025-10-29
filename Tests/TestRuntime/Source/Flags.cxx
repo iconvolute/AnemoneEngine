@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneRuntime/Base/Flags.hxx"
+#include "AnemoneBase/Flags.hxx"
 
 enum class TestFlag : uint32_t
 {

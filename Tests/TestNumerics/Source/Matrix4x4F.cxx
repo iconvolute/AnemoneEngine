@@ -1,5 +1,5 @@
-#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
-#include "AnemoneRuntime/Math/Random.hxx"
+#include "AnemoneMath/Detail/SimdFloat.hxx"
+#include "AnemoneMath/Random.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

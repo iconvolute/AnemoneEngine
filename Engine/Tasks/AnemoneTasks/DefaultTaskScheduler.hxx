@@ -1,13 +1,13 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneInterop/Headers.hxx"
 #include "AnemoneTasks/TaskScheduler.hxx"
 #include "AnemoneTasks/TaskQueue.hxx"
 #include "AnemoneTasks/Task.hxx"
-#include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Threading/ConditionVariable.hxx"
-#include "AnemoneRuntime/Threading/CancellationToken.hxx"
-#include "AnemoneRuntime/Base/Reference.hxx"
-#include "AnemoneRuntime/Base/Duration.hxx"
+#include "AnemoneThreading/CriticalSection.hxx"
+#include "AnemoneThreading/ConditionVariable.hxx"
+#include "AnemoneThreading/CancellationToken.hxx"
+#include "AnemoneBase/Reference.hxx"
+#include "AnemoneBase/Duration.hxx"
 
 
 #include <atomic>

@@ -2,12 +2,12 @@
 #include "AnemoneTasks/DefaultTaskWorker.hxx"
 #include "AnemoneTasks/Task.hxx"
 #include "AnemoneTasks/TaskAwaiter.hxx"
-#include "AnemoneRuntime/System/ProcessorProperties.hxx"
-#include "AnemoneRuntime/Threading/Thread.hxx"
-#include "AnemoneRuntime/Threading/Lock.hxx"
-#include "AnemoneRuntime/Base/Instant.hxx"
-#include "AnemoneRuntime/Base/Intrusive.hxx"
-#include "AnemoneRuntime/Threading/SpinWait.hxx"
+#include "AnemoneSystem/ProcessorProperties.hxx"
+#include "AnemoneThreading/Thread.hxx"
+#include "AnemoneThreading/Lock.hxx"
+#include "AnemoneBase/Instant.hxx"
+#include "AnemoneBase/Intrusive.hxx"
+#include "AnemoneThreading/SpinWait.hxx"
 
 #include "AnemoneProfiler/Profiler.hxx"
 

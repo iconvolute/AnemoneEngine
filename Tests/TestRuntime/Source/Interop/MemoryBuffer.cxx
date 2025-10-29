@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Interop/MemoryBuffer.hxx"
+#include "AnemoneInterop/MemoryBuffer.hxx"
 
 #include <catch_amalgamated.hpp>
 

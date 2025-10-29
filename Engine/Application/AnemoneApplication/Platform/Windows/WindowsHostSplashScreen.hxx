@@ -1,9 +1,9 @@
 #pragma once
 #include "AnemoneApplication/HostSplashScreen.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
-#include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
-#include "AnemoneRuntime/Threading/CriticalSection.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
+#include "AnemoneInterop/Windows/Text.hxx"
+#include "AnemoneInterop/Windows/SafeHandle.hxx"
+#include "AnemoneThreading/CriticalSection.hxx"
 
 namespace Anemone
 {

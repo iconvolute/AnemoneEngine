@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Threading/Runnable.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneThreading/Runnable.hxx"
 
 namespace Anemone
 {

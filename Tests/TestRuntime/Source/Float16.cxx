@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneRuntime/Base/Float.hxx"
+#include "AnemoneBase/Float.hxx"
 
 TEST_CASE("Float16 conversion")
 {

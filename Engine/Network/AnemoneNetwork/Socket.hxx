@@ -1,11 +1,11 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Platform/Types.hxx"
-#include "AnemoneRuntime/Diagnostics/Error.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneDiagnostics/Error.hxx"
 
 #include <expected>
 #include <span>
 
+#if false
 namespace Anemone::Network
 {
     enum class SocketType
@@ -75,3 +75,4 @@ namespace Anemone::Network
         std::expected<SocketEndPoint, Error> GetRemoteEndPoint() const;
     };
 }
+#endif

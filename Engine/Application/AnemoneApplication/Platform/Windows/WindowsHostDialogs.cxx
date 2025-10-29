@@ -1,6 +1,6 @@
 #include "AnemoneApplication/Platform/Windows/WindowsHostDialogs.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
-#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneInterop/Windows/Text.hxx"
 
 #include <wrl/client.h>
 #include <CommCtrl.h>

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Math/Functions.hxx"
+#include "AnemoneMath/Functions.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

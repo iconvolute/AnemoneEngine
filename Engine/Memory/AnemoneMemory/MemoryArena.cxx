@@ -1,5 +1,5 @@
 #include "AnemoneMemory/MemoryArena.hxx"
-#include "AnemoneRuntime/Base/Bitwise.hxx"
+#include "AnemoneBase/Bitwise.hxx"
 
 namespace Anemone
 {
@@ -18,17 +18,17 @@ namespace Anemone
         size_t const totalAlignment = std::max(alignof(Deleter), alignment);
 
         // Calculate the offset to the allocated object.
-        size_t const allocationOffset = Bitwise::AlignUp(sizeof(Deleter), totalAlignment);
+        size_t const allocationOffset = AlignUp(sizeof(Deleter), totalAlignment);
 
         // Calculate total size of the allocation for deleter and the object.
-        size_t const totalSize = Bitwise::AlignUp(allocationOffset + size, totalAlignment);
+        size_t const totalSize = AlignUp(allocationOffset + size, totalAlignment);
 
         // Allocate memory from the arena.
         void* const allocation = this->_arena.Allocate(totalSize, totalAlignment);
         AE_ASSERT(allocation != nullptr, "Out of memory");
 
         // Calculate the pointer to the object within the allocation.
-        void* const result = Bitwise::Adjust(allocation, static_cast<ptrdiff_t>(allocationOffset));
+        void* const result = Adjust(allocation, static_cast<ptrdiff_t>(allocationOffset));
 
         // Construct and remember deleter for that object.
         this->_deleters = std::construct_at(static_cast<Deleter*>(allocation), this->_deleters, deleterCallback, result, count);

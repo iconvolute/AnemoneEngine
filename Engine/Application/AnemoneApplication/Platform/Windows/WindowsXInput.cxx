@@ -1,6 +1,6 @@
 #include "AnemoneApplication/Platform/Windows/WindowsXInput.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
 
 namespace Anemone
 {

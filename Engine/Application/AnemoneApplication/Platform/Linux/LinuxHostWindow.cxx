@@ -1,7 +1,7 @@
 #include "AnemoneApplication/Platform/Linux/LinuxHostWindow.hxx"
 #include "AnemoneApplication/Platform/Linux/LinuxHostApplication.hxx"
 #include "AnemoneApplication/HostApplicationEvents.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
 
 namespace Anemone
 {

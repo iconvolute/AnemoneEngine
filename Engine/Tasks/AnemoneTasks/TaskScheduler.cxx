@@ -1,5 +1,5 @@
 #include "AnemoneTasks/TaskScheduler.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
 #include "AnemoneTasks/DefaultTaskScheduler.hxx"
 
 namespace Anemone

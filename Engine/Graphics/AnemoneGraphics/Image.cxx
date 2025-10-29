@@ -1,5 +1,5 @@
 #include "AnemoneGraphics/Image.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
 
 namespace Anemone::Graphics
 {
@@ -84,7 +84,7 @@ namespace Anemone::Graphics
 
         for (size_t i = 0; i < this->_subresourcesCount; ++i)
         {
-            totalSize += Bitwise::AlignUp<size_t>(this->_subresources[i].BufferSize, scanlineAlignment);
+            totalSize += AlignUp<size_t>(this->_subresources[i].BufferSize, scanlineAlignment);
         }
 
         AE_ASSERT(totalSize != 0);
@@ -98,7 +98,7 @@ namespace Anemone::Graphics
         {
             this->_subresources[i].Buffer = buffer;
 
-            buffer += Bitwise::AlignUp(this->_subresources[i].BufferSize, scanlineAlignment);
+            buffer += AlignUp(this->_subresources[i].BufferSize, scanlineAlignment);
         }
     }
 

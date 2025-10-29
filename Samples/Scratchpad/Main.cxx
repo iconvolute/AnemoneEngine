@@ -1,25 +1,25 @@
 #include "AnemoneEntryPoint/EntryPoint.hxx"
-#include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneSystem/Environment.hxx"
 
 
 #include <string>
 #include <string_view>
 
-#include "AnemoneRuntime/Diagnostics/Error.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
+#include "AnemoneDiagnostics/Error.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
 
 #include <expected>
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
-#include "AnemoneRuntime/Interop/Windows/Registry.hxx"
+#include "AnemoneInterop/Windows/Dwm.hxx"
+#include "AnemoneInterop/Windows/Registry.hxx"
 #endif
 #include "AnemoneNetwork/Tcp.hxx"
-#include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Threading/Lock.hxx"
+#include "AnemoneThreading/CriticalSection.hxx"
+#include "AnemoneThreading/Lock.hxx"
 
-#include "AnemoneRuntime/Storage/FileSystem.hxx"
-#include "AnemoneRuntime/System/ProcessorProperties.hxx"
+#include "AnemoneStorage/FileSystem.hxx"
+#include "AnemoneSystem/ProcessorProperties.hxx"
 
 namespace anemone
 {
@@ -67,7 +67,7 @@ namespace anemone
     inline constexpr auto BitPack = bit_pack<T>{};
 }
 
-#include "AnemoneRuntime/Base/Uuid.hxx"
+#include "AnemoneBase/Uuid.hxx"
 /*
 namespace Anemone::inline FileSystemX
 {
@@ -89,11 +89,11 @@ namespace Anemone::inline FileSystemX
 #include "AnemoneApplication/HostApplication.hxx"
 #include "AnemoneApplication/HostApplicationEvents.hxx"
 #include "AnemoneApplication/HostDialogs.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/System/Clipboard.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
+#include "AnemoneSystem/Clipboard.hxx"
 
-#include "AnemoneRuntime/System/CommandLine.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneSystem/CommandLine.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 class EH final : public Anemone::HostApplicationEvents
 {
@@ -307,7 +307,7 @@ public:
 #pragma comment(lib, "Dwmapi.lib")
 #endif
 
-#include "AnemoneRuntime/System/Environment.hxx"
+#include "AnemoneSystem/Environment.hxx"
 
 anemone_noinline void test()
 {
@@ -315,13 +315,13 @@ anemone_noinline void test()
     AE_TRACE(Error, "cpu-Vendor:           '{}'", Anemone::ProcessorProperties::GetProcessorVendor());
 }
 
-#include "AnemoneRuntime/Hash/FNV.hxx"
-#include "AnemoneRuntime/System/Process.hxx"
+#include "AnemoneBase/FNV.hxx"
+#include "AnemoneSystem/Process.hxx"
 #include "AnemoneTasks/TaskScheduler.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
-#include "AnemoneRuntime/Interop/Windows/Environment.hxx"
-#include "AnemoneRuntime/Interop/Windows/Text.hxx"
+#include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
+#include "AnemoneInterop/Windows/Environment.hxx"
+#include "AnemoneInterop/Windows/Text.hxx"
 #endif
 
 struct V2 : Anemone::FileSystemVisitor
@@ -346,8 +346,8 @@ struct V2 : Anemone::FileSystemVisitor
 // EditorEngine : Engine
 //
 
-#include "AnemoneRuntime/Math/PidController.hxx"
-#include "AnemoneRuntime/Math/Random.hxx"
+#include "AnemoneMath/PidController.hxx"
+#include "AnemoneMath/Random.hxx"
 
 namespace Anemone::Builtins
 {
@@ -574,7 +574,7 @@ anemone_noinline Anemone::Math::Detail::SimdMask4F foo(Anemone::Math::Detail::Si
     return Anemone::Math::Detail::Vector4F_CompareNaN(v);
 }
 
-#include "AnemoneRuntime/Base/AdaptiveTimer.hxx"
+#include "AnemoneBase/AdaptiveTimer.hxx"
 
 anemone_noinline void test3()
 {
@@ -594,7 +594,7 @@ anemone_noinline void test3()
     AE_TRACE(Error, "Frames-Per-Second: '{}'", timer.GetFramesPerSecond());
 }
 
-#include "AnemoneRuntime/System/SharedLibrary.hxx"
+#include "AnemoneSystem/SharedLibrary.hxx"
 
 #include "AnemoneApplication/Module.hxx"
 #include "AnemoneMemory/Module.hxx"
@@ -604,7 +604,7 @@ anemone_noinline void test3()
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
 #endif
 
-#include "AnemoneRuntime/Diagnostics/Internal/FileTraceListener.hxx"
+#include "AnemoneDiagnostics/FileTraceListener.hxx"
 #include "AnemoneTasks/Module.hxx"
 
 anemone_noinline int AnemoneMain(int argc, char** argv)
@@ -1008,35 +1008,10 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 }
 
 #if false
-#include "AnemoneRuntime/Instant.hxx"
-#include "AnemoneRuntime/Profiler/Profiler.hxx"
-#include "AnemoneRuntime/Threading/Yielding.hxx"
-#include "AnemoneRuntime/Runtime.hxx"
-#include "AnemoneRuntime/Diagnostic/StackTrace.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
-#include "AnemoneRuntime/System/Environment.hxx"
-#include "AnemoneRuntime/Tasks/Task.hxx"
-#include "AnemoneRuntime/Tasks/Awaiter.hxx"
-#include "AnemoneRuntime/Tasks/TaskScheduler.hxx"
-
-#include <fmt/format.h>
-#include <atomic>
-
-#include "AnemoneRuntime/Bitwise.hxx"
-#include "AnemoneRuntime/Error.hxx"
-#include "AnemoneRuntime/Unicode.hxx"
-#include "AnemoneRuntime/Hash/FNV.hxx"
 
 AE_DECLARE_PROFILE(Main);
 AE_DECLARE_PROFILE(Outer);
 AE_DECLARE_PROFILE(Inner);
-
-#include "AnemoneRuntime/Math/Detail/SimdFloat.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-
-#include "AnemoneRuntime/Math/Types.hxx"
-#include "AnemoneRuntime/Math/Transform2.hxx"
-#include "AnemoneRuntime/Math/Matrix3x2.hxx"
 
 #include <WinSock2.h>
 
@@ -1069,8 +1044,6 @@ anemone_noinline Anemone::Math::Matrix3x2F Too(Anemone::Math::Transform2F const&
 {
     return ToMatrix3x2(xform);
 }
-
-#include "AnemoneRuntime/App/Application.hxx"
 
 void TestTasking();
 
@@ -1155,8 +1128,6 @@ namespace Anemone::Network
 }
 
 #if ANEMONE_PLATFORM_WINDOWS
-
-#include "AnemoneRuntime/Platform/Windows/Functions.hxx"
 
 #include <afunix.h>
 
@@ -1352,12 +1323,7 @@ public:
     }
 };
 
-#pragma comment(lib, "Ws2_32.lib")
 #endif
-
-
-#include "AnemoneRuntime/Network/IpEndPoint.hxx"
-#include "AnemoneRuntime/Network/Socket.hxx"
 
 
 // note: networking done via Client/Server abstract classes
@@ -1383,10 +1349,6 @@ namespace Anemone::Network2
 
 AE_DECLARE_PROFILE(ClientWorker);
 AE_DECLARE_PROFILE(ServerWorker);
-
-#include "AnemoneRuntime/Threading/CriticalSection.hxx"
-#include "AnemoneRuntime/Math/Random.hxx"
-
 
 #include <random>
 
@@ -1657,7 +1619,6 @@ AE_DECLARE_PROFILE(ParallelFor4);
 #endif
 
 
-#include "AnemoneRuntime/Crypto/Sha512.hxx"
 
 class MyFancyTaskWithAlignment : public Anemone::Tasks::Task
 {
@@ -1708,9 +1669,9 @@ AE_DECLARE_PROFILE(ParallelFor1);
 AE_DECLARE_PROFILE(ParallelFor2);
 AE_DECLARE_PROFILE(ParallelFor3);
 
-#include "AnemoneRuntime/Threading/UserCriticalSection.hxx"
-#include "AnemoneRuntime/Threading/ConcurrentAccess.hxx"
-#include "AnemoneRuntime/Tasks/ParallelFor.hxx"
+#include "AnemoneThreading/UserCriticalSection.hxx"
+#include "AnemoneThreading/ConcurrentAccess.hxx"
+#include "AnemoneTasks/ParallelFor.hxx"
 
 void TestTasking()
 {

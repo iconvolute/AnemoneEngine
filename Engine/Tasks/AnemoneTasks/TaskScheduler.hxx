@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Duration.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/Duration.hxx"
 #include "AnemoneTasks/Task.hxx"
 
 namespace Anemone

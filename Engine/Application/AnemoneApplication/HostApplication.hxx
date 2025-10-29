@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Reference.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/Reference.hxx"
 #include "AnemoneApplication/HostWindow.hxx"
 
 namespace Anemone

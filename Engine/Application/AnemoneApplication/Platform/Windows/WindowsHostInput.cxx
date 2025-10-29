@@ -1,7 +1,7 @@
 #include "AnemoneApplication/Platform/Windows/WindowsHostInput.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
-#include "AnemoneRuntime/Base/UninitializedObject.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneBase/UninitializedObject.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
 
 #include <hidusage.h>
 

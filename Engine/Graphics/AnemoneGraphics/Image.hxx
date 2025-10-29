@@ -1,11 +1,11 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneInterop/Headers.hxx"
 #include "AnemoneGraphics/PixelFormat.hxx"
-#include "AnemoneRuntime/Base/Bitwise.hxx"
-#include "AnemoneRuntime/Diagnostics/Error.hxx"
-#include "AnemoneRuntime/Storage/BinaryWriter.hxx"
-#include "AnemoneRuntime/Storage/BinaryReader.hxx"
-#include "AnemoneRuntime/Base/Reference.hxx"
+#include "AnemoneBase/Bitwise.hxx"
+#include "AnemoneDiagnostics/Error.hxx"
+#include "AnemoneStorage/BinaryWriter.hxx"
+#include "AnemoneStorage/BinaryReader.hxx"
+#include "AnemoneBase/Reference.hxx"
 
 #include <cstdint>
 #include <cstddef>
@@ -97,8 +97,8 @@ namespace Anemone::Graphics
         size_t const blockSize = GetBlockSize(format);
         if (blockSize != 0)
         {
-            size_t const blocksHorz = Bitwise::AlignUp<size_t>(width, 4) / 4;
-            size_t const blocksVert = Bitwise::AlignUp<size_t>(height, 4) / 4;
+            size_t const blocksHorz = AlignUp<size_t>(width, 4) / 4;
+            size_t const blocksVert = AlignUp<size_t>(height, 4) / 4;
             size_t const blocksCount = blocksHorz * blocksVert;
             return blocksCount * blockSize * depth;
         }
@@ -144,13 +144,13 @@ namespace Anemone::Graphics
         size_t const blockSize = GetBlockSize(format);
         if (blockSize != 0)
         {
-            uint32_t const blocksCount = Bitwise::AlignUp<uint32_t>(width, 4) / 4;
+            uint32_t const blocksCount = AlignUp<uint32_t>(width, 4) / 4;
             return blocksCount * blockSize;
         }
         else
         {
             size_t const bitsPerPixel = GetPixelBits(format);
-            size_t const result = Bitwise::AlignUp<size_t>(width * bitsPerPixel, 8) / 8;
+            size_t const result = AlignUp<size_t>(width * bitsPerPixel, 8) / 8;
             return result;
         }
     }
@@ -170,13 +170,13 @@ namespace Anemone::Graphics
             size_t blocksHorz = 0;
             if (width > 0)
             {
-                blocksHorz = std::max<size_t>(1, Bitwise::AlignUp<size_t>(width, 4) / 4);
+                blocksHorz = std::max<size_t>(1, AlignUp<size_t>(width, 4) / 4);
             }
 
             size_t blocksVert = 0;
             if (height > 0)
             {
-                blocksVert = std::max<size_t>(1, Bitwise::AlignUp<size_t>(height, 4) / 4);
+                blocksVert = std::max<size_t>(1, AlignUp<size_t>(height, 4) / 4);
             }
 
             outRowBytes = blocksHorz * blockSize;
@@ -185,7 +185,7 @@ namespace Anemone::Graphics
         else
         {
             size_t const bpp = GetPixelBits(format);
-            outRowBytes = Bitwise::AlignUp<size_t>(width * bpp, 8) / 8;
+            outRowBytes = AlignUp<size_t>(width * bpp, 8) / 8;
             outRows = height;
         }
 

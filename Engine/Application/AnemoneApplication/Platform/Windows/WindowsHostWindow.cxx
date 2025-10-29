@@ -2,11 +2,11 @@
 #include "AnemoneApplication/Platform/Windows/WindowsHostApplication.hxx"
 #include "AnemoneApplication/HostApplicationEvents.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostInput.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
-#include "AnemoneRuntime/Interop/Windows/Dwm.hxx"
-#include "AnemoneRuntime/Interop/Windows/Text.hxx"
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
+#include "AnemoneInterop/Windows/Dwm.hxx"
+#include "AnemoneInterop/Windows/Text.hxx"
+#include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 namespace Anemone
 {

@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Math/Thickness.hxx"
-#include "AnemoneRuntime/Base/Flags.hxx"
-#include "AnemoneRuntime/Math/Point.hxx"
-#include "AnemoneRuntime/Math/Rect.hxx"
+#include "AnemoneMath/Thickness.hxx"
+#include "AnemoneBase/Flags.hxx"
+#include "AnemoneMath/Point.hxx"
+#include "AnemoneMath/Rect.hxx"
 
 namespace Anemone::UI::Drawing
 {

@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Math/Rect.hxx"
+#include "AnemoneMath/Rect.hxx"
 
 #include <catch_amalgamated.hpp>
 

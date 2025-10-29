@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/FunctionRef.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/FunctionRef.hxx"
 #include "AnemoneTasks/Task.hxx"
 #include "AnemoneTasks/TaskAwaiter.hxx"
 

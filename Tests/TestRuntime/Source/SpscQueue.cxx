@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Threading/SpscQueue.hxx"
+#include "AnemoneThreading/SpscQueue.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

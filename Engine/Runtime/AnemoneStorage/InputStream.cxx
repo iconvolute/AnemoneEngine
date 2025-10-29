@@ -1,0 +1,1 @@
+#include "AnemoneStorage/InputStream.hxx"

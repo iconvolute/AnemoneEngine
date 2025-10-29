@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneApplication/HostApplicationEvents.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
-#include "AnemoneRuntime/Interop/Windows/SafeHandle.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
+#include "AnemoneInterop/Windows/SafeHandle.hxx"
 
 #include <GameInput.h>
 #include <wrl/client.h>

@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Flags.hxx"
-#include "AnemoneRuntime/Math/Size.hxx"
-#include "AnemoneRuntime/Math/Point.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/Flags.hxx"
+#include "AnemoneMath/Size.hxx"
+#include "AnemoneMath/Point.hxx"
 
 namespace Anemone
 {

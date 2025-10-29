@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Reference.hxx"
-#include "AnemoneRuntime/Math/Size.hxx"
-#include "AnemoneRuntime/Math/Rect.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/Reference.hxx"
+#include "AnemoneMath/Size.hxx"
+#include "AnemoneMath/Rect.hxx"
 
 #include <string_view>
 #include <optional>

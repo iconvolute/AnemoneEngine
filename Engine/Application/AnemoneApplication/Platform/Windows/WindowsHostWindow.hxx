@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneApplication/HostWindow.hxx"
-#include "AnemoneRuntime/Base/Intrusive.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneBase/Intrusive.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
 
 namespace Anemone
 {

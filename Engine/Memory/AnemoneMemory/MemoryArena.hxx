@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneMemory/RawMemoryArena.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
 
 #include <string_view>
 #include <span>

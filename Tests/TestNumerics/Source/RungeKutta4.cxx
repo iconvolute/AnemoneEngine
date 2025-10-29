@@ -1,4 +1,4 @@
-#include "AnemoneRuntime/Math/Functions.hxx"
+#include "AnemoneMath/Functions.hxx"
 
 #include <cmath>
 #include <catch_amalgamated.hpp>

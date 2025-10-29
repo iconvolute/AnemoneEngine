@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneApplication/HostApplicationEvents.hxx"
-#include "AnemoneRuntime/Interop/Windows/UI.hxx"
+#include "AnemoneInterop/Windows/UI.hxx"
 
 namespace Anemone
 {

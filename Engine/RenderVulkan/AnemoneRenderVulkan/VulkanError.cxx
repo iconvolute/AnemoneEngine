@@ -1,5 +1,5 @@
 #include "AnemoneRenderVulkan/VulkanError.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 namespace Anemone
 {

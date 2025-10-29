@@ -1,7 +1,7 @@
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
 #include "AnemoneRenderVulkan/VulkanError.hxx"
 #include "AnemoneApplication/HostApplication.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 namespace Anemone
 {

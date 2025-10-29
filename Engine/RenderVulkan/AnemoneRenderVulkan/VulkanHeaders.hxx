@@ -1,8 +1,8 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneInterop/Windows/Headers.hxx"
 #endif
 
 #define VK_NO_PROTOTYPES

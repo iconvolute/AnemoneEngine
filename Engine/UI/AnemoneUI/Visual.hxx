@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Math/Transform2.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneMath/Transform2.hxx"
 
 #include "AnemoneUI/UIElement.hxx"
 

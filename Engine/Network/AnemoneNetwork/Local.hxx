@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Diagnostics/Error.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneDiagnostics/Error.hxx"
 
 #include <expected>
 #include <span>

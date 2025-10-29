@@ -1,18 +1,15 @@
 #include "AnemoneNetwork/Socket.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Diagnostics/Trace.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
+#include "AnemoneDiagnostics/Trace.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Diagnostics/Platform/Windows/WindowsDebug.hxx"
+#include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
 #endif
 
 #include <optional>
 #include <utility>
 
-#if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneRuntime/Platform/Windows/Types.hxx"
-#endif
-
+#if false
 namespace Anemone::Network::Detail
 {
     static Error GetLastSocketError()
@@ -306,3 +303,4 @@ namespace Anemone::Network
         return result;
     }
 }
+#endif

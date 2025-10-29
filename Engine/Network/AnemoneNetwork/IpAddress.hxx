@@ -1,6 +1,6 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Headers.hxx"
-#include "AnemoneRuntime/Base/Bitwise.hxx"
+#include "AnemoneInterop/Headers.hxx"
+#include "AnemoneBase/Bitwise.hxx"
 
 #include <compare>
 #include <array>
@@ -9,28 +9,28 @@ namespace Anemone::Network::Detail
 {
     [[nodiscard]] constexpr std::array<uint8_t, 16> ConvertSegmentsToOctets(std::array<uint16_t, 8> value)
     {
-        value[0] = Bitwise::ToBigEndian(value[0]);
-        value[1] = Bitwise::ToBigEndian(value[1]);
-        value[2] = Bitwise::ToBigEndian(value[2]);
-        value[3] = Bitwise::ToBigEndian(value[3]);
-        value[4] = Bitwise::ToBigEndian(value[4]);
-        value[5] = Bitwise::ToBigEndian(value[5]);
-        value[6] = Bitwise::ToBigEndian(value[6]);
-        value[7] = Bitwise::ToBigEndian(value[7]);
+        value[0] = ToBigEndian(value[0]);
+        value[1] = ToBigEndian(value[1]);
+        value[2] = ToBigEndian(value[2]);
+        value[3] = ToBigEndian(value[3]);
+        value[4] = ToBigEndian(value[4]);
+        value[5] = ToBigEndian(value[5]);
+        value[6] = ToBigEndian(value[6]);
+        value[7] = ToBigEndian(value[7]);
         return std::bit_cast<std::array<uint8_t, 16>>(value);
     }
 
     [[nodiscard]] constexpr std::array<uint16_t, 8> ConvertOctetsToSegments(std::array<uint8_t, 16> value)
     {
         std::array result = std::bit_cast<std::array<uint16_t, 8>>(value);
-        result[0] = Bitwise::ToLittleEndian(result[0]);
-        result[1] = Bitwise::ToLittleEndian(result[1]);
-        result[2] = Bitwise::ToLittleEndian(result[2]);
-        result[3] = Bitwise::ToLittleEndian(result[3]);
-        result[4] = Bitwise::ToLittleEndian(result[4]);
-        result[5] = Bitwise::ToLittleEndian(result[5]);
-        result[6] = Bitwise::ToLittleEndian(result[6]);
-        result[7] = Bitwise::ToLittleEndian(result[7]);
+        result[0] = ToLittleEndian(result[0]);
+        result[1] = ToLittleEndian(result[1]);
+        result[2] = ToLittleEndian(result[2]);
+        result[3] = ToLittleEndian(result[3]);
+        result[4] = ToLittleEndian(result[4]);
+        result[5] = ToLittleEndian(result[5]);
+        result[6] = ToLittleEndian(result[6]);
+        result[7] = ToLittleEndian(result[7]);
         return result;
     }
 }

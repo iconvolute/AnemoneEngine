@@ -1,6 +1,6 @@
 #include "AnemoneMemory/MemoryArena.hxx"
-#include "AnemoneRuntime/Diagnostics/Debug.hxx"
-#include "AnemoneRuntime/Base/Bitwise.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
+#include "AnemoneBase/Bitwise.hxx"
 
 namespace Anemone
 {
@@ -9,12 +9,12 @@ namespace Anemone
         AE_ASSERT(size != 0);
         AE_ASSERT(alignment != 0);
 
-        size_t const validSize = Bitwise::AlignUp(size, alignment);
+        size_t const validSize = AlignUp(size, alignment);
 
         uintptr_t const segmentStart = std::bit_cast<uintptr_t>(this);
         uintptr_t const segmentEnd = segmentStart + this->Size;
         uintptr_t const lastAddress = segmentStart + this->Last;
-        uintptr_t const allocationStart = Bitwise::AlignUp(lastAddress, alignment);
+        uintptr_t const allocationStart = AlignUp(lastAddress, alignment);
         uintptr_t const allocationEnd = allocationStart + validSize;
 
         void* result{};
@@ -34,7 +34,7 @@ namespace Anemone
     {
         void* const allocation = ::operator new(segmentSize);
         AE_ASSERT(allocation != nullptr);
-        AE_ASSERT(Bitwise::IsAligned(allocation, alignof(Segment)));
+        AE_ASSERT(IsAligned(allocation, alignof(Segment)));
 
         Segment* const header = std::construct_at(static_cast<Segment*>(allocation), segmentSize);
         this->_segments.PushFront(header);
@@ -50,8 +50,8 @@ namespace Anemone
         size_t const totalAlignment = std::max(alignment, alignof(Oversized));
 
         // Compute total allocation size.
-        size_t const allocationOffset = Bitwise::AlignUp(sizeof(Oversized), totalAlignment);
-        size_t totalSize = Bitwise::AlignUp(allocationOffset + size, totalAlignment);
+        size_t const allocationOffset = AlignUp(sizeof(Oversized), totalAlignment);
+        size_t totalSize = AlignUp(allocationOffset + size, totalAlignment);
 
         void* const allocation = ::operator new(totalSize, std::align_val_t{totalAlignment});
         AE_ASSERT(allocation != nullptr);
@@ -59,7 +59,7 @@ namespace Anemone
         Oversized* const header = std::construct_at(static_cast<Oversized*>(allocation), totalSize, totalAlignment);
         this->_oversized.PushBack(header);
 
-        void* const result = Bitwise::Adjust(allocation, static_cast<ptrdiff_t>(allocationOffset));
+        void* const result = Adjust(allocation, static_cast<ptrdiff_t>(allocationOffset));
         return result;
     }
 

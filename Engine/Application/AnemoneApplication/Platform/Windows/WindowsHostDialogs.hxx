@@ -1,5 +1,5 @@
 #pragma once
-#include "AnemoneRuntime/Interop/Windows/Headers.hxx"
+#include "AnemoneInterop/Windows/Headers.hxx"
 #include "AnemoneApplication/HostDialogs.hxx"
 
 #include <shobjidl.h>
