@@ -1,5 +1,7 @@
 #include "AnemoneMath/Detail/SimdFloat.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneMath/Aligned.hxx"
+#include "AnemoneRandom/Generator.hxx"
+#include "AnemoneRandom/Distribution.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -327,6 +329,7 @@ TEST_CASE("Matrix4x4F_Determinant")
     using namespace Catch::Matchers;
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
 
     static constexpr float tolerance = 0.05f;
 
@@ -495,6 +498,7 @@ TEST_CASE("Matrix4x4F_Inverse")
     using namespace Catch::Matchers;
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
 
     static constexpr float tolerance = 0.01f;
 
@@ -1788,6 +1792,7 @@ TEST_CASE("Matrix4x4F_CreateRotationZ")
 TEST_CASE("Matrix4x4F_LoadAlignedFloat4x4")
 {
     using namespace Catch::Matchers;
+    using namespace Anemone;
     using namespace Anemone::Math;
     using namespace Anemone::Math::Detail;
 

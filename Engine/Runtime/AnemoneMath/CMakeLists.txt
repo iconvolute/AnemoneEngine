@@ -1,7 +1,6 @@
 target_sources(AnemoneRuntime
     PRIVATE
         "Easing.cxx"
-        "Random.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Aligned.hxx"
         "Bounds.hxx"
@@ -16,7 +15,6 @@ target_sources(AnemoneRuntime
         "PidController.hxx"
         "Point.hxx"
         "Point.inl"
-        "Random.hxx"
         "Rect.hxx"
         "Rect.inl"
         "Size.hxx"

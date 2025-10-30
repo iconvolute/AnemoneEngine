@@ -318,6 +318,7 @@ anemone_noinline void test()
 #include "AnemoneBase/FNV.hxx"
 #include "AnemoneSystem/Process.hxx"
 #include "AnemoneTasks/TaskScheduler.hxx"
+#include "AnemoneMath/Detail/SimdFloat.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
 #include "AnemoneInterop/Windows/Environment.hxx"
@@ -347,7 +348,8 @@ struct V2 : Anemone::FileSystemVisitor
 //
 
 #include "AnemoneMath/PidController.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
+#include "AnemoneRandom/Distribution.hxx"
 
 namespace Anemone::Builtins
 {
@@ -542,9 +544,9 @@ namespace Anemone::Builtins
     }
 }
 
-anemone_noinline double gen(Anemone::Math::Xorshiro256ss& generator)
+anemone_noinline double gen(Anemone::Random& generator)
 {
-    return Anemone::Math::UniformDistribution<double>{}(generator);
+    return Anemone::UniformDistribution<double>{}(generator);
 }
 
 anemone_noinline void test2()

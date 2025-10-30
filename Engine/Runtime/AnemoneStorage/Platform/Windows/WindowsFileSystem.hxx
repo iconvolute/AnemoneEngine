@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneStorage/FileSystem.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
 
 namespace Anemone
 {

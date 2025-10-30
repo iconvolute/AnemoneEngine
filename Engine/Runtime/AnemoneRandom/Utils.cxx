@@ -1,15 +1,7 @@
-#include "AnemoneMath/Random.hxx"
-#include "AnemoneBase/Bitwise.hxx"
-#include "AnemoneBase/Float.hxx"
+#include "AnemoneRandom/Utils.hxx"
 #include "AnemoneMath/Functions.hxx"
-#include "AnemoneDiagnostics/Debug.hxx"
 
-#include <limits>
-#include <algorithm>
-#include <string_view>
-#include <cstring>
-
-namespace Anemone::Math
+namespace Anemone
 {
     void ComputeHistogram(std::vector<uint64_t>& histogram, std::span<uint8_t const> data)
     {
@@ -30,13 +22,13 @@ namespace Anemone::Math
             histogram.resize(buckets, 0);
 
             float const range = max - min;
-            float const buckets_range = static_cast<float>(buckets);
+            float const bucketsRange = static_cast<float>(buckets);
 
             for (float const value : data)
             {
                 if ((min <= value) && (value <= max))
                 {
-                    size_t const index = static_cast<size_t>((value - min) / range * buckets_range);
+                    size_t const index = static_cast<size_t>((value - min) / range * bucketsRange);
 
                     histogram[index] += 1;
                 }
@@ -54,7 +46,7 @@ namespace Anemone::Math
             if (value != 0)
             {
                 double const probability = static_cast<double>(value) / length;
-                result -= probability * (std::log(probability) / std::log(2.0));
+                result -= probability * (Math::Log(probability) / Math::Ln2<double>);
             }
         }
 

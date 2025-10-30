@@ -43,10 +43,11 @@ target_link_libraries(AnemoneRuntime
 )
 endif()
 
+add_subdirectory("AnemoneBase")
 add_subdirectory("AnemoneDiagnostics")
 add_subdirectory("AnemoneInterop")
 add_subdirectory("AnemoneMath")
-add_subdirectory("AnemoneBase")
+add_subdirectory("AnemoneRandom")
 add_subdirectory("AnemoneSecurity")
 add_subdirectory("AnemoneStorage")
 add_subdirectory("AnemoneSystem")

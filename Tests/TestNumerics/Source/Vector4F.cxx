@@ -1,5 +1,6 @@
 #include "AnemoneMath/Detail/SimdFloat.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
+#include "AnemoneRandom/Distribution.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -599,6 +600,7 @@ TEST_CASE("Vector4F_MultiplyAdd")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -646,6 +648,7 @@ TEST_CASE("Vector4F_MultiplySubtract")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -693,6 +696,7 @@ TEST_CASE("Vector4F_NegateMultiplyAdd")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -740,6 +744,7 @@ TEST_CASE("Vector4F_NegateMultiplySubtract")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -787,6 +792,7 @@ TEST_CASE("Vector4F_Add")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -824,6 +830,7 @@ TEST_CASE("Vector4F_Subtract")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -861,6 +868,7 @@ TEST_CASE("Vector4F_Multiply")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -900,6 +908,7 @@ TEST_CASE("Vector4F_Divide")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -937,6 +946,7 @@ TEST_CASE("Vector4F_Negate")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -966,6 +976,7 @@ TEST_CASE("Vector4F_Reciprocal")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -995,6 +1006,7 @@ TEST_CASE("Vector4F_ReciprocalEst")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.1f;
@@ -1026,6 +1038,7 @@ TEST_CASE("Vector4F_Min")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1063,6 +1076,7 @@ TEST_CASE("Vector4F_Max")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1100,6 +1114,7 @@ TEST_CASE("Vector4F_Abs")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1129,6 +1144,7 @@ TEST_CASE("Vector4F_Square")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1158,6 +1174,7 @@ TEST_CASE("Vector4F_SignedSquare")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1187,6 +1204,7 @@ TEST_CASE("Vector4F_Clamp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1232,6 +1250,7 @@ TEST_CASE("Vector4F_Saturate")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1261,6 +1280,7 @@ TEST_CASE("Vector4F_SquareRoot")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1290,6 +1310,7 @@ TEST_CASE("Vector4F_SquareRootEst")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1321,6 +1342,7 @@ TEST_CASE("Vector4F_ReciprocalSquareRoot")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1350,6 +1372,7 @@ TEST_CASE("Vector4F_ReciprocalSquareRootEst")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0075f;
@@ -1381,6 +1404,7 @@ TEST_CASE("Vector4F_Ceil")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1410,6 +1434,7 @@ TEST_CASE("Vector4F_Floor")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1439,6 +1464,7 @@ TEST_CASE("Vector4F_Truncate")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1468,6 +1494,7 @@ TEST_CASE("Vector4F_Round")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1497,6 +1524,7 @@ TEST_CASE("Vector4F_Fraction")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1526,6 +1554,7 @@ TEST_CASE("Vector4F_Remainder")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1563,6 +1592,7 @@ TEST_CASE("Vector4F_Repeat")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1602,6 +1632,7 @@ TEST_CASE("Vector4F_Wrap")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.005f;
@@ -1649,6 +1680,7 @@ TEST_CASE("Vector4F_Power")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1686,6 +1718,7 @@ TEST_CASE("Vector4F_Exp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1715,6 +1748,7 @@ TEST_CASE("Vector4F_Exp2")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1744,6 +1778,7 @@ TEST_CASE("Vector4F_Exp10")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1773,6 +1808,7 @@ TEST_CASE("Vector4F_Log")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1802,6 +1838,7 @@ TEST_CASE("Vector4F_Log with base")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1834,6 +1871,7 @@ TEST_CASE("Vector4F_Log2")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1863,6 +1901,7 @@ TEST_CASE("Vector4F_Log10")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1892,6 +1931,7 @@ TEST_CASE("Vector4F_SinCos")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1929,6 +1969,7 @@ TEST_CASE("Vector4F_Sin")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1958,6 +1999,7 @@ TEST_CASE("Vector4F_Cos")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -1987,6 +2029,7 @@ TEST_CASE("Vector4F_Tan")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2016,6 +2059,7 @@ TEST_CASE("Vector4F_Asin")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2045,6 +2089,7 @@ TEST_CASE("Vector4F_Acos")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2074,6 +2119,7 @@ TEST_CASE("Vector4F_Atan")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2103,6 +2149,7 @@ TEST_CASE("Vector4F_Atan2")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2140,6 +2187,7 @@ TEST_CASE("Vector4F_PreciseLerp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -2222,6 +2270,7 @@ TEST_CASE("Vector4F_Lerp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2304,6 +2353,7 @@ TEST_CASE("Vector4F_PreciseBilinearLerp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -2428,6 +2478,7 @@ TEST_CASE("Vector4F_BilinearLerp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2556,6 +2607,7 @@ TEST_CASE("Vector4F_Unlerp")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2601,6 +2653,7 @@ TEST_CASE("Vector4F_Map")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2664,6 +2717,7 @@ TEST_CASE("Vector4F_PreciseMap")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.001f;
@@ -2727,6 +2781,7 @@ TEST_CASE("Vector4F_UnwindRadians")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2753,6 +2808,7 @@ TEST_CASE("Vector4F_UnwindDegrees")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -2781,6 +2837,7 @@ TEST_CASE("Vector4F_AngleDifferenceRadians")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -2815,6 +2872,7 @@ TEST_CASE("Vector4F_AngleDifferenceDegrees")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2847,6 +2905,7 @@ TEST_CASE("Vector4F_RevolutionsToDegrees")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2873,6 +2932,7 @@ TEST_CASE("Vector4F_RevolutionsToRadians")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2899,6 +2959,7 @@ TEST_CASE("Vector4F_DegreesToRevolutions")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2925,6 +2986,7 @@ TEST_CASE("Vector4F_RadiansToRevolutions")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     UniformDistribution<float> uniform{};
@@ -2951,6 +3013,7 @@ TEST_CASE("Vector4F_RadiansToDegrees")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -2979,6 +3042,7 @@ TEST_CASE("Vector4F_DegreesToRadians")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.01f;
@@ -3007,6 +3071,7 @@ TEST_CASE("Vector4F_Dot4")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     SECTION("dot4(+X, +X)")

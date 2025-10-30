@@ -1,6 +1,6 @@
 #pragma once
 #include "AnemoneInterop/Headers.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
 
 #include <cstdint>
 #include <span>
@@ -122,11 +122,11 @@ namespace Anemone
 
     struct UuidGenerator final
     {
-        RUNTIME_API static Uuid CreateRandom(Math::Random& generator);
+        RUNTIME_API static Uuid CreateRandom(Random& generator);
 
-        RUNTIME_API static Uuid CreateSortable(Math::Random& generator);
+        RUNTIME_API static Uuid CreateSortable(Random& generator);
 
-        RUNTIME_API static Uuid CreateSortable(Math::Random& generator, DateTime dateTime);
+        RUNTIME_API static Uuid CreateSortable(Random& generator, DateTime dateTime);
 
         RUNTIME_API static Uuid CreateNamed(std::string_view name, uint64_t seed = 0);
 

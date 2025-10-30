@@ -1,5 +1,6 @@
 #include "AnemoneMath/Detail/SimdFloat.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
+#include "AnemoneRandom/Distribution.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 
@@ -50,6 +51,7 @@ TEST_CASE("QuaternionF_Rotate3")
 {
     using namespace Anemone::Math::Detail;
     using namespace Anemone::Math;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;

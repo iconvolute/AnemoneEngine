@@ -1,5 +1,5 @@
 #include "AnemoneBase/Uuid.hxx"
-#include "AnemoneMath/Random.hxx"
+#include "AnemoneRandom/Generator.hxx"
 #include "AnemoneBase/DateTime.hxx"
 #include "AnemoneSecurity/SHA256.hxx"
 #include "AnemoneBase/Bitwise.hxx"
@@ -10,7 +10,7 @@ namespace Anemone
     static_assert(std::is_trivially_constructible_v<Uuid>);
     static_assert(std::is_standard_layout_v<Uuid>);
 
-    Uuid UuidGenerator::CreateRandom(Math::Random& generator)
+    Uuid UuidGenerator::CreateRandom(Random& generator)
     {
         uint64_t const lo = generator.Next();
         uint64_t const hi = generator.Next();
@@ -20,17 +20,17 @@ namespace Anemone
         return std::bit_cast<Uuid>(elements);
     }
 
-    Uuid UuidGenerator::CreateSortable(Math::Random& generator)
+    Uuid UuidGenerator::CreateSortable(Random& generator)
     {
         return CreateSortable(generator, DateTime::UtcNow());
     }
 
-    Uuid UuidGenerator::CreateSortable(Math::Random& generator, DateTime dateTime)
+    Uuid UuidGenerator::CreateSortable(Random& generator, DateTime dateTime)
     {
         uint64_t const milliseconds = static_cast<uint64_t>((dateTime - UnixEpoch).ToMilliseconds());
 
         // Big-endian representation of the milliseconds since Unix epoch
-        uint64_t const bytes_bigendian = ToBigEndian(milliseconds << 16u);
+        uint64_t const bytesBigendian = ToBigEndian(milliseconds << 16u);
 
         uint64_t const lo = generator.Next();
         uint64_t const hi = generator.Next();
@@ -40,7 +40,7 @@ namespace Anemone
         Uuid result = std::bit_cast<Uuid>(elements);
 
         // Copy 48 bits of the big-endian representation of the milliseconds since Unix epoch. It should work for year 10889 with ease
-        std::memcpy(result.Elements, &bytes_bigendian, 6);
+        std::memcpy(result.Elements, &bytesBigendian, 6);
 
         return result;
     }
