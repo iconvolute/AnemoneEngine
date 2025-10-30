@@ -506,12 +506,12 @@ namespace Anemone
                     if ((relativeX != 0) || (relativeY != 0))
                     {
                         MouseMoveEventArgs e;
-                        e.Position = Math::PointF{
+                        e.Position = PointF{
                             static_cast<float>(_trackMouseWindowPosition.x),
                             static_cast<float>(_trackMouseWindowPosition.y),
                         };
                         e.Modifiers = this->_keyModifiers;
-                        e.Delta = Math::PointF{
+                        e.Delta = PointF{
                             static_cast<float>(relativeX),
                             static_cast<float>(relativeY),
                         };
@@ -526,12 +526,12 @@ namespace Anemone
                     last.y += mouse.lLastY;
 
                     MouseMoveEventArgs e;
-                    e.Position = Math::PointF{
+                    e.Position = PointF{
                         static_cast<float>(_trackMouseWindowPosition.x),
                         static_cast<float>(_trackMouseWindowPosition.y),
                     };
                     e.Modifiers = this->_keyModifiers;
-                    e.Delta = Math::PointF{
+                    e.Delta = PointF{
                         static_cast<float>(mouse.lLastX),
                         static_cast<float>(mouse.lLastY),
                     };
@@ -635,7 +635,7 @@ namespace Anemone
         BOOL click)
     {
         MouseButtonEventArgs e;
-        e.Position = Math::PointF{
+        e.Position = PointF{
             static_cast<float>(static_cast<short>(LOWORD(message.LParam))),
             static_cast<float>(static_cast<short>(HIWORD(message.LParam))),
         };
@@ -669,12 +669,12 @@ namespace Anemone
         if (not this->IsTracking(window.GetHandle()))
         {
             MouseMoveEventArgs e;
-            e.Position = Math::PointF{
+            e.Position = PointF{
                 static_cast<float>(static_cast<short>(LOWORD(message.LParam))),
                 static_cast<float>(static_cast<short>(HIWORD(message.LParam))),
             };
             e.Modifiers = this->_keyModifiers;
-            e.Delta = Math::PointF{};
+            e.Delta = PointF{};
             e.Absolute = true;
 
             window.GetEvents().OnMouseMove(window, e);

@@ -10,10 +10,9 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 TEST_CASE("QuaternionF_CreateFromAxisAngle")
 {
-    using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
     using namespace Anemone;
+    using namespace Catch::Matchers;
 
     SECTION("axis = x, angle = 90")
     {
@@ -49,8 +48,7 @@ TEST_CASE("QuaternionF_CreateFromAxisAngle")
 
 TEST_CASE("QuaternionF_Rotate3")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
     using namespace Anemone;
     using namespace Catch::Matchers;
 
@@ -93,8 +91,8 @@ TEST_CASE("QuaternionF_Rotate3")
 
 TEST_CASE("QuaternionF_Slerp")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;

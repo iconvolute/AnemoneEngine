@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneMath/Matrix3x2.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     struct ScaleTransform2F final
     {

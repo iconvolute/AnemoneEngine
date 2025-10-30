@@ -2,7 +2,7 @@
 
 // Defines aligned math types
 
-namespace Anemone::Math::Aligned
+namespace Anemone::Aligned
 {
     struct alignas(16) Vector2F
     {

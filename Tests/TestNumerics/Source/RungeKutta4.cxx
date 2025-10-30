@@ -7,7 +7,7 @@
 TEST_CASE("RungeKutta4: Exponential Growth")
 {
     using namespace Catch;
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     auto const dYdX = [](double x, double y)
     {
@@ -30,7 +30,7 @@ TEST_CASE("RungeKutta4: Exponential Growth")
 TEST_CASE("RungeKutta4: Exponential Decay")
 {
     using namespace Catch;
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     auto const dYdX = [](double x, double y)
     {
@@ -53,7 +53,7 @@ TEST_CASE("RungeKutta4: Exponential Decay")
 TEST_CASE("RungeKutta4: Quadratic Growth")
 {
     using namespace Catch;
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     auto const dYdX = [](double x, double y)
     {

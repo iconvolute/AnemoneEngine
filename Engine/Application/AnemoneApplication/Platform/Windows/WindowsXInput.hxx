@@ -64,8 +64,8 @@ namespace Anemone
             GamepadButtonState ButtonsHeld{};
             float LeftTrigger{};
             float RightTrigger{};
-            Math::PointF LeftStick{};
-            Math::PointF RightStick{};
+            PointF LeftStick{};
+            PointF RightStick{};
         };
 
         GamepadState m_gamepads[XUSER_MAX_COUNT]{};

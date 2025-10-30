@@ -1,7 +1,7 @@
 #include "AnemoneMath/Transform2.hxx"
 #include "AnemoneMath/Matrix3x2.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     inline Matrix3x2F ToMatrix3x2(Transform2F const& transform)
     {

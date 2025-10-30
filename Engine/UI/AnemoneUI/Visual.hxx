@@ -9,47 +9,47 @@ namespace Anemone::UI
     class UI_API Visual : public UIElement
     {
     private:
-        Math::Transform2F _transform{};
+        Transform2F _transform{};
         float _opacity{};
-        Math::RectF _bounds{};
-        Math::ThicknessF _padding{};
-        Math::ThicknessF _margin{};
-        Math::Matrix3x2F _localTransform{};
+        RectF _bounds{};
+        ThicknessF _padding{};
+        ThicknessF _margin{};
+        Matrix3x2F _localTransform{};
 
     public:
-        Math::Transform2F const& Transform() const;
-        void Transform(Math::Transform2F const& value);
+        Transform2F const& Transform() const;
+        void Transform(Transform2F const& value);
 
-        Math::TranslateTransform2F const& TranslateTransform() const;
-        void TranslateTransform(Math::TranslateTransform2F const& value);
+        TranslateTransform2F const& TranslateTransform() const;
+        void TranslateTransform(TranslateTransform2F const& value);
 
-        Math::RotateTransform2F const& RotateTransform() const;
-        void RotateTransform(Math::RotateTransform2F const& value);
+        RotateTransform2F const& RotateTransform() const;
+        void RotateTransform(RotateTransform2F const& value);
 
-        Math::ScaleTransform2F const& ScaleTransform() const;
-        void ScaleTransform(Math::ScaleTransform2F const& value);
+        ScaleTransform2F const& ScaleTransform() const;
+        void ScaleTransform(ScaleTransform2F const& value);
 
-        Math::SkewTransform2F const& SkewTransform() const;
-        void SkewTransform(Math::SkewTransform2F const& value);
+        SkewTransform2F const& SkewTransform() const;
+        void SkewTransform(SkewTransform2F const& value);
 
-        Math::Matrix3x2F const& TransformMatrix() const;
+        Matrix3x2F const& TransformMatrix() const;
 
         float Opacity() const;
         void Opacity(float value);
 
-        Math::SizeF Size() const;
-        void Size(Math::SizeF value);
+        SizeF Size() const;
+        void Size(SizeF value);
 
-        Math::PointF Location() const;
-        void Location(Math::PointF value);
+        PointF Location() const;
+        void Location(PointF value);
 
-        Math::RectF Bounds() const;
-        void Bounds(Math::RectF value);
+        RectF Bounds() const;
+        void Bounds(RectF value);
 
-        Math::ThicknessF Padding() const;
-        void Padding(Math::ThicknessF value);
+        ThicknessF Padding() const;
+        void Padding(ThicknessF value);
 
-        Math::ThicknessF Margin() const;
-        void Margin(Math::ThicknessF value);
+        ThicknessF Margin() const;
+        void Margin(ThicknessF value);
     };
 }

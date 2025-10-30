@@ -1,7 +1,7 @@
 #pragma once
 #include <span>
 
-namespace Anemone::Math
+namespace Anemone
 {
     struct PointF;
     struct SizeF;

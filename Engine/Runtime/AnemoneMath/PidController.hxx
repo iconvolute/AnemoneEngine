@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneMath/Functions.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <std::floating_point T>
     class PidController final

@@ -3,13 +3,13 @@
 #include <catch_amalgamated.hpp>
 
 template <typename Callback>
-anemone_noinline Anemone::Math::Detail::SimdVector4F anemone_vectorcall Integrate(
+anemone_noinline Anemone::Internal::SimdVector4F anemone_vectorcall Integrate(
     float step,
     float start,
     float end,
     Callback callback)
 {
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Internal;
 
     SimdVector4F result{};
 
@@ -24,8 +24,9 @@ anemone_noinline Anemone::Math::Detail::SimdVector4F anemone_vectorcall Integrat
 
 TEST_CASE("Bezier - Integrate")
 {
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
 
     constexpr float step = 1.0f / 1024.0f;
 
@@ -76,8 +77,9 @@ TEST_CASE("Bezier - Integrate")
 
 TEST_CASE("Bezier4 - calculate length")
 {
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
 
     SECTION("Custom")
     {

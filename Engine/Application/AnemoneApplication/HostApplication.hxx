@@ -28,16 +28,16 @@ namespace Anemone
         std::string Id;
         DisplayOrientation Orientation;
         bool Primary;
-        Math::RectF DisplayRect;
-        Math::RectF WorkAreaRect;
+        RectF DisplayRect;
+        RectF WorkAreaRect;
     };
 
     struct DisplayMetrics
     {
         std::vector<DisplayInfo> Displays;
-        Math::RectF VirtualDisplayRect;
-        Math::RectF PrimaryDisplayWorkArea;
-        Math::SizeF PrimaryDisplaySize;
+        RectF VirtualDisplayRect;
+        RectF PrimaryDisplayWorkArea;
+        SizeF PrimaryDisplaySize;
     };
 }
 
@@ -67,6 +67,6 @@ namespace Anemone
 
         APPLICATION_API static void GetDisplayMetrics(DisplayMetrics& metrics);
 
-        APPLICATION_API static ColorRef GetScreenPixel(Math::PointF position, float gamma);
+        APPLICATION_API static ColorRef GetScreenPixel(PointF position, float gamma);
     };
 }

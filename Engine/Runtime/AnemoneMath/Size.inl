@@ -1,7 +1,7 @@
 #include "AnemoneMath/Size.hxx"
 #include "AnemoneMath/Functions.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr SizeF SizeF::CreateUniform(float uniform)
     {

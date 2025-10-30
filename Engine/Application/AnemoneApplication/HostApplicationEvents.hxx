@@ -252,7 +252,7 @@ namespace Anemone
 
     struct MouseEventArgs
     {
-        Math::PointF Position;
+        PointF Position;
         VirtualKeyModifiers Modifiers;
     };
 
@@ -269,7 +269,7 @@ namespace Anemone
 
     struct MouseMoveEventArgs : MouseEventArgs
     {
-        Math::PointF Delta;
+        PointF Delta;
         bool Absolute;
     };
 
@@ -299,10 +299,10 @@ namespace Anemone
 
     struct MotionEventArgs
     {
-        Math::Packed::Vector2F Tilt;
-        Math::Packed::Vector3F RotationRate;
-        Math::Packed::Vector3F Gravity;
-        Math::Packed::Vector3F Acceleration;
+        Packed::Vector2F Tilt;
+        Packed::Vector3F RotationRate;
+        Packed::Vector3F Gravity;
+        Packed::Vector3F Acceleration;
     };
 
     struct WindowEventArgs
@@ -321,12 +321,12 @@ namespace Anemone
 
     struct WindowSizeChangedEventArgs : WindowEventArgs
     {
-        Math::SizeF Size;
+        SizeF Size;
     };
 
     struct WindowLocationChangedEventArgs : WindowEventArgs
     {
-        Math::PointF Location;
+        PointF Location;
     };
 
     struct WindowDpiChangedEventArgs : WindowEventArgs

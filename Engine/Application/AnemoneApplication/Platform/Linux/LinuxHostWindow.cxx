@@ -150,25 +150,25 @@ namespace Anemone
         (void)value;
     }
 
-    std::optional<Math::SizeF> LinuxHostWindow::GetMinimumSize()
+    std::optional<SizeF> LinuxHostWindow::GetMinimumSize()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    void LinuxHostWindow::SetMinimumSize(std::optional<Math::SizeF> value)
+    void LinuxHostWindow::SetMinimumSize(std::optional<SizeF> value)
     {
         AE_PANIC("Not implemented");
         (void)value;
     }
 
-    std::optional<Math::SizeF> LinuxHostWindow::GetMaximumSize()
+    std::optional<SizeF> LinuxHostWindow::GetMaximumSize()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    void LinuxHostWindow::SetMaximumSize(std::optional<Math::SizeF> value)
+    void LinuxHostWindow::SetMaximumSize(std::optional<SizeF> value)
     {
         AE_PANIC("Not implemented");
         (void)value;
@@ -186,19 +186,19 @@ namespace Anemone
         return {};
     }
 
-    Math::RectF LinuxHostWindow::GetBounds()
+    RectF LinuxHostWindow::GetBounds()
     {
         AE_PANIC("Not implemented");
         return {};
     }
 
-    void LinuxHostWindow::SetBounds(Math::RectF value)
+    void LinuxHostWindow::SetBounds(RectF value)
     {
         AE_PANIC("Not implemented");
         (void)value;
     }
 
-    Math::RectF LinuxHostWindow::GetClientBounds()
+    RectF LinuxHostWindow::GetClientBounds()
     {
         AE_PANIC("Not implemented");
         return {};

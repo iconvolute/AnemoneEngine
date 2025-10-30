@@ -343,14 +343,14 @@ namespace Anemone
         SetWindowTextW(this->_handle, wTitle.data());
     }
 
-    std::optional<Math::SizeF> WindowsHostWindow::GetMinimumSize()
+    std::optional<SizeF> WindowsHostWindow::GetMinimumSize()
     {
         AE_ASSERT(this->ValidateState());
 
         return this->_minimumSize;
     }
 
-    void WindowsHostWindow::SetMinimumSize(std::optional<Math::SizeF> value)
+    void WindowsHostWindow::SetMinimumSize(std::optional<SizeF> value)
     {
         AE_ASSERT(this->ValidateState());
 
@@ -370,14 +370,14 @@ namespace Anemone
         }
     }
 
-    std::optional<Math::SizeF> WindowsHostWindow::GetMaximumSize()
+    std::optional<SizeF> WindowsHostWindow::GetMaximumSize()
     {
         AE_ASSERT(this->ValidateState());
 
         return this->_maximumSize;
     }
 
-    void WindowsHostWindow::SetMaximumSize(std::optional<Math::SizeF> value)
+    void WindowsHostWindow::SetMaximumSize(std::optional<SizeF> value)
     {
         AE_ASSERT(this->ValidateState());
 
@@ -412,7 +412,7 @@ namespace Anemone
         return this->_cursorType;
     }
 
-    Math::RectF WindowsHostWindow::GetBounds()
+    RectF WindowsHostWindow::GetBounds()
     {
         AE_ASSERT(this->ValidateState());
 
@@ -432,7 +432,7 @@ namespace Anemone
         return this->_cachedWindowBounds;
     }
 
-    void WindowsHostWindow::SetBounds(Math::RectF value)
+    void WindowsHostWindow::SetBounds(RectF value)
     {
         AE_ASSERT(this->ValidateState());
 
@@ -446,7 +446,7 @@ namespace Anemone
             SWP_NOZORDER | SWP_NOOWNERZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
     }
 
-    Math::RectF WindowsHostWindow::GetClientBounds()
+    RectF WindowsHostWindow::GetClientBounds()
     {
         AE_ASSERT(this->ValidateState());
 

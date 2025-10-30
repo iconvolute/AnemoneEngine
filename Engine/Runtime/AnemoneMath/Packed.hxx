@@ -2,7 +2,7 @@
 
 // Defines packed math types.
 
-namespace Anemone::Math::Packed
+namespace Anemone::Packed
 {
     struct Vector2F
     {

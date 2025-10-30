@@ -149,7 +149,7 @@ namespace Anemone
         metrics.Displays.clear();
 
         // Get display size.
-        metrics.PrimaryDisplaySize = Math::SizeF{
+        metrics.PrimaryDisplaySize = SizeF{
             .Width = static_cast<float>(GetSystemMetrics(SM_CXSCREEN)),
             .Height = static_cast<float>(GetSystemMetrics(SM_CYSCREEN)),
         };
@@ -165,7 +165,7 @@ namespace Anemone
         metrics.PrimaryDisplayWorkArea = Interop::Windows::ToRectF(workArea);
 
         // Virtual display rect
-        metrics.VirtualDisplayRect = Math::RectF{
+        metrics.VirtualDisplayRect = RectF{
             .X = static_cast<float>(GetSystemMetrics(SM_XVIRTUALSCREEN)),
             .Y = static_cast<float>(GetSystemMetrics(SM_YVIRTUALSCREEN)),
             .Width = static_cast<float>(GetSystemMetrics(SM_CXVIRTUALSCREEN)),
@@ -269,7 +269,7 @@ namespace Anemone
         }
     }
 
-    ColorRef HostApplication::GetScreenPixel(Math::PointF position, float gamma)
+    ColorRef HostApplication::GetScreenPixel(PointF position, float gamma)
     {
         COLORREF const color = GetPixel(GetDC(HWND_DESKTOP), static_cast<int>(position.X), static_cast<int>(position.Y));
 

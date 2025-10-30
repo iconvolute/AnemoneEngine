@@ -195,11 +195,11 @@ public:
         }
         else if (args.Key == Anemone::VirtualKey::F2)
         {
-            window.SetBounds(Anemone::Math::RectF{0, 0, 1000, 1000});
+            window.SetBounds(Anemone::RectF{0, 0, 1000, 1000});
         }
         else if (args.Key == Anemone::VirtualKey::F3)
         {
-            window.SetBounds(Anemone::Math::RectF{1000, 1000, 1000, 1000});
+            window.SetBounds(Anemone::RectF{1000, 1000, 1000, 1000});
         }
         else
         {
@@ -571,9 +571,9 @@ anemone_noinline void test2()
     }
 }
 
-anemone_noinline Anemone::Math::Detail::SimdMask4F foo(Anemone::Math::Detail::SimdVector4F v)
+anemone_noinline Anemone::Internal::SimdMask4F foo(Anemone::Internal::SimdVector4F v)
 {
-    return Anemone::Math::Detail::Vector4F_CompareNaN(v);
+    return Anemone::Internal::Vector4F_CompareNaN(v);
 }
 
 #include "AnemoneBase/AdaptiveTimer.hxx"
@@ -884,10 +884,10 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
     if (window1 and window2)
     {
-        window1->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window1->SetMinimumSize(Anemone::SizeF{640.0f, 480.0f});
         window1->SetInputEnabled(true);
 
-        window2->SetMinimumSize(Anemone::Math::SizeF{640.0f, 480.0f});
+        window2->SetMinimumSize(Anemone::SizeF{640.0f, 480.0f});
         window2->SetInputEnabled(true);
 
         while (not window1->IsClosed() or not window2->IsClosed())

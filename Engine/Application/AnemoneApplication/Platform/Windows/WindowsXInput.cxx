@@ -43,7 +43,7 @@ namespace Anemone
             }
 
             float const scaled = value / (max - deadzone);
-            return Anemone::Math::Clamp(scaled, -1.0f, 1.0f);
+            return Clamp(scaled, -1.0f, 1.0f);
         }
     }
 

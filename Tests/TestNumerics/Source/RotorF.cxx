@@ -10,8 +10,8 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 TEST_CASE("RotorF_CreateFromAxisAngle")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -239,8 +239,7 @@ TEST_CASE("RotorF_CreateFromAxisAngle")
 
 TEST_CASE("RotorF_Rotate3")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
     using namespace Anemone;
     using namespace Catch::Matchers;
 
@@ -309,8 +308,8 @@ TEST_CASE("RotorF_Rotate3")
 
 TEST_CASE("RotorF_ToMatrix4x4F")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -1054,8 +1053,8 @@ TEST_CASE("RotorF_ToMatrix4x4F")
 
 TEST_CASE("RotorF_Slerp")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;
@@ -1222,8 +1221,8 @@ TEST_CASE("RotorF_Slerp")
 
 TEST_CASE("RotorF_ToMatrix4x4F / scratch")
 {
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     static constexpr float tolerance = 0.0001f;

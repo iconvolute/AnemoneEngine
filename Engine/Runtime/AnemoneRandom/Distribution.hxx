@@ -248,10 +248,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector4D> final
+    struct UniformDistribution<Packed::Vector4D> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector4D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector4D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
@@ -265,10 +265,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector3D> final
+    struct UniformDistribution<Packed::Vector3D> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
@@ -281,10 +281,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector2D> final
+    struct UniformDistribution<Packed::Vector2D> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
@@ -296,10 +296,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector4F> final
+    struct UniformDistribution<Packed::Vector4F> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector4F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector4F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
@@ -313,10 +313,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector3F> final
+    struct UniformDistribution<Packed::Vector3F> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
@@ -329,10 +329,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::Vector2F> final
+    struct UniformDistribution<Packed::Vector2F> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
@@ -360,10 +360,10 @@ namespace Anemone
             double const u1 = uniform(generator);
             double const u2 = uniform(generator);
 
-            double const r = Math::Sqrt(-2.0 * Math::Log(u1));
-            double const theta = Math::Pi2<double> * u2;
+            double const r = Sqrt(-2.0 * Log(u1));
+            double const theta = Pi2<double> * u2;
 
-            return r * Math::Sin(theta);
+            return r * Sin(theta);
         }
 
         template <typename G>
@@ -384,10 +384,10 @@ namespace Anemone
             float const u1 = uniform(generator);
             float const u2 = uniform(generator);
 
-            float const r = Math::Sqrt(-2.0f * Math::Log(u1));
-            float const theta = Math::Pi2<float> * u2;
+            float const r = Sqrt(-2.0f * Log(u1));
+            float const theta = Pi2<float> * u2;
 
-            return r * Math::Sin(theta);
+            return r * Sin(theta);
         }
 
         template <typename G>
@@ -453,10 +453,10 @@ namespace Anemone
 
             if (variable < 0.5)
             {
-                return mean + scale * Math::Log(2.0 * variable);
+                return mean + scale * Log(2.0 * variable);
             }
 
-            return mean - scale * Math::Log(2.0 * (1.0 - variable));
+            return mean - scale * Log(2.0 * (1.0 - variable));
         }
     };
 
@@ -470,10 +470,10 @@ namespace Anemone
 
             if (variable < 0.5f)
             {
-                return mean + scale * Math::Log(2.0f * variable);
+                return mean + scale * Log(2.0f * variable);
             }
 
-            return mean - scale * Math::Log(2.0f * (1.0f - variable));
+            return mean - scale * Log(2.0f * (1.0f - variable));
         }
     };
 }
@@ -487,17 +487,17 @@ namespace Anemone
     struct UniformInsideUnitSphereDistribution<double> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
-            double const theta = uniform(generator, Math::Pi2<double>);
+            double const theta = uniform(generator, Pi2<double>);
             double const v = uniform(generator, -1.0, 1.0);
-            double const phi = Math::Acos(v);
-            double const r = Math::Power(uniform(generator), 1.0 / 3.0);
+            double const phi = Acos(v);
+            double const r = Power(uniform(generator), 1.0 / 3.0);
 
-            auto [sinPhi, cosPhi] = Math::SinCos(phi);
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinPhi, cosPhi] = SinCos(phi);
+            auto [sinTheta, cosTheta] = SinCos(theta);
 
             return {
                 r * sinPhi * cosTheta,
@@ -511,17 +511,17 @@ namespace Anemone
     struct UniformInsideUnitSphereDistribution<float> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
-            float const theta = uniform(generator, Math::Pi2<float>);
+            float const theta = uniform(generator, Pi2<float>);
             float const v = uniform(generator, -1.0f, 1.0f);
-            float const phi = Math::Acos(v);
-            float const r = Math::Power(uniform(generator), 1.0f / 3.0f);
+            float const phi = Acos(v);
+            float const r = Power(uniform(generator), 1.0f / 3.0f);
 
-            auto [sinPhi, cosPhi] = Math::SinCos(phi);
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinPhi, cosPhi] = SinCos(phi);
+            auto [sinTheta, cosTheta] = SinCos(theta);
 
             return {
                 r * sinPhi * cosTheta,
@@ -541,17 +541,17 @@ namespace Anemone
     struct UniformInsideUnitCircleDistribution<double> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
             double const r = uniform(generator);
             double const t = uniform(generator);
 
-            double const radius = Math::Sqrt(r);
-            double const theta = t * Math::Pi2<double>;
+            double const radius = Sqrt(r);
+            double const theta = t * Pi2<double>;
 
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinTheta, cosTheta] = SinCos(theta);
 
             return {
                 radius * sinTheta,
@@ -564,17 +564,17 @@ namespace Anemone
     struct UniformInsideUnitCircleDistribution<float> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
             float const r = uniform(generator);
             float const t = uniform(generator);
 
-            float const radius = Math::Sqrt(r);
-            float const theta = t * Math::Pi2<float>;
+            float const radius = Sqrt(r);
+            float const theta = t * Pi2<float>;
 
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinTheta, cosTheta] = SinCos(theta);
 
             return {
                 radius * sinTheta,
@@ -593,7 +593,7 @@ namespace Anemone
     struct UniformOnUnitSphereDistribution<double> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3D operator()(G& generator)
         {
             NormalDistribution<double> normal{};
 
@@ -601,7 +601,7 @@ namespace Anemone
             double const y = normal(generator);
             double const z = normal(generator);
 
-            double const invLength = Math::ReciprocalSqrt((x * x) + (y * y) + (z * z));
+            double const invLength = ReciprocalSqrt((x * x) + (y * y) + (z * z));
 
             return {
                 x * invLength,
@@ -615,7 +615,7 @@ namespace Anemone
     struct UniformOnUnitSphereDistribution<float> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3F operator()(G& generator)
         {
             NormalDistribution<float> normal{};
 
@@ -623,7 +623,7 @@ namespace Anemone
             float const y = normal(generator);
             float const z = normal(generator);
 
-            float const invLength = Math::ReciprocalSqrt((x * x) + (y * y) + (z * z));
+            float const invLength = ReciprocalSqrt((x * x) + (y * y) + (z * z));
 
             return {
                 x * invLength,
@@ -643,13 +643,13 @@ namespace Anemone
     struct UniformOnUnitCircleDistribution<double> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
-            double const theta = uniform(generator, Math::Pi2<double>);
+            double const theta = uniform(generator, Pi2<double>);
 
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinTheta, cosTheta] = SinCos(theta);
             return {sinTheta, cosTheta};
         }
     };
@@ -658,13 +658,13 @@ namespace Anemone
     struct UniformOnUnitCircleDistribution<float> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector2F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector2F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
-            float const theta = uniform(generator, Math::Pi2<float>);
+            float const theta = uniform(generator, Pi2<float>);
 
-            auto [sinTheta, cosTheta] = Math::SinCos(theta);
+            auto [sinTheta, cosTheta] = SinCos(theta);
             return {sinTheta, cosTheta};
         }
     };
@@ -679,7 +679,7 @@ namespace Anemone
     struct UniformBarycentricDistribution<double> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3D operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3D operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
@@ -698,7 +698,7 @@ namespace Anemone
     struct UniformBarycentricDistribution<float> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::Vector3F operator()(G& generator)
+        [[nodiscard]] static Packed::Vector3F operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
@@ -717,10 +717,10 @@ namespace Anemone
 namespace Anemone
 {
     template <>
-    struct UniformDistribution<Math::Packed::ColorD> final
+    struct UniformDistribution<Packed::ColorD> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorD operator()(G& generator)
+        [[nodiscard]] static Packed::ColorD operator()(G& generator)
         {
             UniformDistribution<double> uniform{};
 
@@ -732,7 +732,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness)
+        [[nodiscard]] static Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness)
         {
             UniformDistribution<double> uniform{};
 
@@ -744,7 +744,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness, double alpha)
+        [[nodiscard]] static Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness, double alpha)
         {
             UniformDistribution<double> uniform{};
 
@@ -756,7 +756,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness, double minAlpha, double maxAlpha)
+        [[nodiscard]] static Packed::ColorD operator()(G& generator, double minBrightness, double maxBrightness, double minAlpha, double maxAlpha)
         {
             UniformDistribution<double> uniform{};
 
@@ -770,10 +770,10 @@ namespace Anemone
     };
 
     template <>
-    struct UniformDistribution<Math::Packed::ColorF> final
+    struct UniformDistribution<Packed::ColorF> final
     {
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorF operator()(G& generator)
+        [[nodiscard]] static Packed::ColorF operator()(G& generator)
         {
             UniformDistribution<float> uniform{};
 
@@ -785,7 +785,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness)
+        [[nodiscard]] static Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness)
         {
             UniformDistribution<float> uniform{};
 
@@ -797,7 +797,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness, float alpha)
+        [[nodiscard]] static Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness, float alpha)
         {
             UniformDistribution<float> uniform{};
 
@@ -809,7 +809,7 @@ namespace Anemone
         }
 
         template <typename G>
-        [[nodiscard]] static Math::Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness, float minAlpha, float maxAlpha)
+        [[nodiscard]] static Packed::ColorF operator()(G& generator, float minBrightness, float maxBrightness, float minAlpha, float maxAlpha)
         {
             UniformDistribution<float> uniform{};
 

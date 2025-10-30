@@ -49,7 +49,7 @@
 #include "AnemoneMath/Numbers.hxx"
 #include "AnemoneDiagnostics/Debug.hxx"
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
 #if ANEMONE_BUILD_DISABLE_SIMD
 
@@ -93,7 +93,8 @@ namespace Anemone::Math::Detail
 }
 
 // Vector4F
-namespace Anemone::Math::Detail
+
+namespace Anemone::Internal
 {
     SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source);
     SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat3(float const* source);
@@ -133,7 +134,7 @@ namespace Anemone::Math::Detail
     template <size_t N>
     float anemone_vectorcall Vector4F_Extract(SimdVector4F v)
         requires(N < 4);
-    
+
     template <size_t N>
     void anemone_vectorcall Vector4F_Extract(SimdVector4F v, float* f)
         requires(N < 4);
@@ -355,7 +356,7 @@ namespace Anemone::Math::Detail
 }
 
 // Mask4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdMask4F anemone_vectorcall Mask4F_True();
     SimdMask4F anemone_vectorcall Mask4F_False();
@@ -400,7 +401,7 @@ namespace Anemone::Math::Detail
 }
 
 // QuaternionF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4F anemone_vectorcall QuaternionF_Identity();
 
@@ -448,7 +449,7 @@ namespace Anemone::Math::Detail
 }
 
 // RotorF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4F anemone_vectorcall RotorF_Identity();
 
@@ -497,7 +498,7 @@ namespace Anemone::Math::Detail
 }
 
 // Matrix4x4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat4x4(float const* source);
     SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat4x3(float const* source);
@@ -582,7 +583,7 @@ namespace Anemone::Math::Detail
 }
 
 // PlaneF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4F anemone_vectorcall PlaneF_Create(float a, float b, float c, float d);
     SimdVector4F anemone_vectorcall PlaneF_CreateFromPointNormal(SimdVector4F point, SimdVector4F normal);
@@ -607,7 +608,7 @@ namespace Anemone::Math::Detail
 }
 
 // Bezier4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     struct Bezier4FA
     {

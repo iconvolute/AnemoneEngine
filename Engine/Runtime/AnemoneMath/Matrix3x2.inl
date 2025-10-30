@@ -4,7 +4,7 @@
 #include "AnemoneMath/Point.hxx"
 #include "AnemoneMath/Functions.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr Matrix3x2F Matrix3x2F::FromRectToPoly(RectF r, PointF p1, PointF p2, PointF p3)
     {

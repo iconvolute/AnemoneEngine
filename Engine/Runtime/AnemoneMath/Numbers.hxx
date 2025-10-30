@@ -4,7 +4,7 @@
 #include <cfloat>
 #include <bit>
 
-namespace Anemone::Math
+namespace Anemone
 {
     // = e
     template <typename T>
@@ -99,7 +99,7 @@ namespace Anemone::Math
     inline constexpr T PiOver8 = static_cast<T>(0.39269908169872415480783042290993786052464617492189);
 }
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     template <typename T>
     inline constexpr T Factor_RevolutionsToDegrees = T(360);

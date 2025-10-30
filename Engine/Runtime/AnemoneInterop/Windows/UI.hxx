@@ -90,7 +90,7 @@ namespace Anemone::Interop::Windows
         return scale;
     }
 
-    constexpr Math::PointF ToPointF(POINT const& value)
+    constexpr PointF ToPointF(POINT const& value)
     {
         return {
             .X = static_cast<float>(value.x),
@@ -98,7 +98,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr POINT ToPOINT(Math::PointF const& value)
+    constexpr POINT ToPOINT(PointF const& value)
     {
         return {
             .x = static_cast<LONG>(value.X),
@@ -106,7 +106,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::PointF ToPointF(RECT const& value)
+    constexpr PointF ToPointF(RECT const& value)
     {
         return {
             .X = static_cast<float>(value.left),
@@ -114,7 +114,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr POINT ToPOINT(Math::RectF const& value)
+    constexpr POINT ToPOINT(RectF const& value)
     {
         return {
             .x = static_cast<LONG>(value.X),
@@ -122,7 +122,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::SizeF ToSizeF(SIZE const& value)
+    constexpr SizeF ToSizeF(SIZE const& value)
     {
         return {
             .Width = static_cast<float>(value.cx),
@@ -130,7 +130,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr SIZE ToSIZE(Math::SizeF const& value)
+    constexpr SIZE ToSIZE(SizeF const& value)
     {
         return {
             .cx = static_cast<LONG>(value.Width),
@@ -138,7 +138,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::SizeF ToSizeF(RECT const& value)
+    constexpr SizeF ToSizeF(RECT const& value)
     {
         return {
             .Width = static_cast<float>(value.right - value.left),
@@ -146,7 +146,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr SIZE ToSIZE(Math::RectF const& value)
+    constexpr SIZE ToSIZE(RectF const& value)
     {
         return {
             .cx = static_cast<LONG>(value.Width),
@@ -154,7 +154,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::RectF ToRectF(RECT const& value)
+    constexpr RectF ToRectF(RECT const& value)
     {
         return {
             .X = static_cast<float>(value.left),
@@ -164,7 +164,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr RECT ToRECT(Math::RectF const& value)
+    constexpr RECT ToRECT(RectF const& value)
     {
         return {
             .left = static_cast<LONG>(value.X),
@@ -174,7 +174,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::RectF ToRectF(POINT const& value)
+    constexpr RectF ToRectF(POINT const& value)
     {
         return {
             .X = static_cast<float>(value.x),
@@ -184,7 +184,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr RECT ToRECT(Math::PointF const& value)
+    constexpr RECT ToRECT(PointF const& value)
     {
         return {
             .left = static_cast<LONG>(value.X),
@@ -194,7 +194,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::RectF ToRectF(SIZE const& value)
+    constexpr RectF ToRectF(SIZE const& value)
     {
         return {
             .X = 0.0f,
@@ -204,7 +204,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr RECT ToRECT(Math::SizeF const& value)
+    constexpr RECT ToRECT(SizeF const& value)
     {
         return {
             .left = 0,
@@ -214,7 +214,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr Math::RectF ToRectF(POINT const& location, SIZE const& size)
+    constexpr RectF ToRectF(POINT const& location, SIZE const& size)
     {
         return {
             .X = static_cast<float>(location.x),
@@ -224,7 +224,7 @@ namespace Anemone::Interop::Windows
         };
     }
 
-    constexpr RECT ToRECT(Math::PointF const& location, Math::SizeF const& size)
+    constexpr RECT ToRECT(PointF const& location, SizeF const& size)
     {
         return {
             .left = static_cast<LONG>(location.X),

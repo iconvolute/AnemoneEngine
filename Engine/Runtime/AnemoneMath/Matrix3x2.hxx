@@ -1,7 +1,7 @@
 #pragma once
 #include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     struct RectF;
     struct PointF;

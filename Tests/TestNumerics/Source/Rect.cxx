@@ -4,7 +4,7 @@
 
 TEST_CASE("RectF")
 {
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     SECTION("Create")
     {

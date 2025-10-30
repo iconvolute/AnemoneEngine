@@ -7,7 +7,7 @@
 #include "AnemoneMath/Rect.hxx"
 #include "AnemoneMath/Functions.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr BoundsF BoundsF::FromLocationSize(float x, float y, float width, float height)
     {

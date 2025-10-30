@@ -49,7 +49,7 @@
 #include "AnemoneMath/Numbers.hxx"
 #include "AnemoneDiagnostics/Debug.hxx"
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
 #if ANEMONE_BUILD_DISABLE_SIMD
 
@@ -101,7 +101,7 @@ namespace Anemone::Math::Detail
 #endif
 }
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4D anemone_vectorcall Vector4D_LoadAlignedDouble4(double const* source);
     SimdVector4D anemone_vectorcall Vector4D_LoadAlignedDouble3(double const* source);
@@ -362,7 +362,7 @@ namespace Anemone::Math::Detail
 }
 
 // Mask4D
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdMask4D anemone_vectorcall Mask4D_True();
     SimdMask4D anemone_vectorcall Mask4D_False();
@@ -407,7 +407,7 @@ namespace Anemone::Math::Detail
 }
 
 // QuaternionF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4D anemone_vectorcall QuaternionD_Identity();
 
@@ -455,7 +455,7 @@ namespace Anemone::Math::Detail
 }
 
 // RotorF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4D anemone_vectorcall RotorD_Identity();
 
@@ -504,7 +504,7 @@ namespace Anemone::Math::Detail
 }
 
 // Matrix4x4D
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdMatrix4x4D anemone_vectorcall Matrix4x4D_LoadAlignedDouble4x4(double const* source);
     SimdMatrix4x4D anemone_vectorcall Matrix4x4D_LoadAlignedDouble4x3(double const* source);
@@ -586,7 +586,7 @@ namespace Anemone::Math::Detail
 }
 
 // PlaneF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     SimdVector4D anemone_vectorcall PlaneD_Create(double a, double b, double c, double d);
     SimdVector4D anemone_vectorcall PlaneD_CreateFromPointNormal(SimdVector4D point, SimdVector4D normal);
@@ -611,7 +611,7 @@ namespace Anemone::Math::Detail
 }
 
 // Bezier4D
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     struct Bezier4DA
     {

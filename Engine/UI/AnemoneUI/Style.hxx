@@ -46,7 +46,7 @@ namespace Anemone::UI::Drawing
         return result;
     }
 
-    constexpr bool Clip(Math::PointF& point1, Math::PointF& point2, Math::RectF rect)
+    constexpr bool Clip(PointF& point1, PointF& point2, RectF rect)
     {
         // Cohen-Sutherland line clip algorithm
 
@@ -143,13 +143,13 @@ namespace Anemone::UI
 
     struct StylePatch final
     {
-        Math::RectF Rect;
+        RectF Rect;
     };
 
     struct StylePatchGrid final
     {
-        Math::RectF Rect;
-        Math::ThicknessF Padding;
+        RectF Rect;
+        ThicknessF Padding;
     };
 
     class ITesselationFeedback
@@ -157,9 +157,9 @@ namespace Anemone::UI
         virtual ~ITesselationFeedback() = default;
 
         virtual void AddTriangles(
-            Math::Packed::Vector3F p0,
-            Math::Packed::Vector3F p1,
-            Math::Packed::Vector3F p2) = 0;
+            Packed::Vector3F p0,
+            Packed::Vector3F p1,
+            Packed::Vector3F p2) = 0;
 
         virtual void Close() = 0;
     };

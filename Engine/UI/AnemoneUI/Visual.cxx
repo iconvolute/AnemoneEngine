@@ -2,57 +2,57 @@
 
 namespace Anemone::UI
 {
-    Math::Transform2F const& Visual::Transform() const
+    Transform2F const& Visual::Transform() const
     {
         return this->_transform;
     }
 
-    void Visual::Transform(Math::Transform2F const& value)
+    void Visual::Transform(Transform2F const& value)
     {
         this->_transform = value;
     }
 
-    Math::TranslateTransform2F const& Visual::TranslateTransform() const
+    TranslateTransform2F const& Visual::TranslateTransform() const
     {
         return this->_transform.Translate;
     }
 
-    void Visual::TranslateTransform(Math::TranslateTransform2F const& value)
+    void Visual::TranslateTransform(TranslateTransform2F const& value)
     {
         this->_transform.Translate = value;
     }
 
-    Math::RotateTransform2F const& Visual::RotateTransform() const
+    RotateTransform2F const& Visual::RotateTransform() const
     {
         return this->_transform.Rotate;
     }
 
-    void Visual::RotateTransform(Math::RotateTransform2F const& value)
+    void Visual::RotateTransform(RotateTransform2F const& value)
     {
         this->_transform.Rotate = value;
     }
 
-    Math::ScaleTransform2F const& Visual::ScaleTransform() const
+    ScaleTransform2F const& Visual::ScaleTransform() const
     {
         return this->_transform.Scale;
     }
 
-    void Visual::ScaleTransform(Math::ScaleTransform2F const& value)
+    void Visual::ScaleTransform(ScaleTransform2F const& value)
     {
         this->_transform.Scale = value;
     }
 
-    Math::SkewTransform2F const& Visual::SkewTransform() const
+    SkewTransform2F const& Visual::SkewTransform() const
     {
         return this->_transform.Skew;
     }
 
-    void Visual::SkewTransform(Math::SkewTransform2F const& value)
+    void Visual::SkewTransform(SkewTransform2F const& value)
     {
         this->_transform.Skew = value;
     }
 
-    Math::Matrix3x2F const& Visual::TransformMatrix() const
+    Matrix3x2F const& Visual::TransformMatrix() const
     {
         return this->_localTransform;
     }
@@ -67,52 +67,52 @@ namespace Anemone::UI
         this->_opacity = value;
     }
 
-    Math::SizeF Visual::Size() const
+    SizeF Visual::Size() const
     {
         return this->_bounds.Size();
     }
 
-    void Visual::Size(Math::SizeF value)
+    void Visual::Size(SizeF value)
     {
-        this->_bounds = Math::RectF::FromLocationSize(this->_bounds.Location(), value);
+        this->_bounds = RectF::FromLocationSize(this->_bounds.Location(), value);
     }
 
-    Math::PointF Visual::Location() const
+    PointF Visual::Location() const
     {
         return this->_bounds.Location();
     }
 
-    void Visual::Location(Math::PointF value)
+    void Visual::Location(PointF value)
     {
-        this->_bounds = Math::RectF::FromLocationSize(value, this->_bounds.Size());
+        this->_bounds = RectF::FromLocationSize(value, this->_bounds.Size());
     }
 
-    Math::RectF Visual::Bounds() const
+    RectF Visual::Bounds() const
     {
         return this->_bounds;
     }
 
-    void Visual::Bounds(Math::RectF value)
+    void Visual::Bounds(RectF value)
     {
         this->_bounds = value;
     }
 
-    Math::ThicknessF Visual::Padding() const
+    ThicknessF Visual::Padding() const
     {
         return this->_padding;
     }
 
-    void Visual::Padding(Math::ThicknessF value)
+    void Visual::Padding(ThicknessF value)
     {
         this->_padding = value;
     }
 
-    Math::ThicknessF Visual::Margin() const
+    ThicknessF Visual::Margin() const
     {
         return this->_margin;
     }
 
-    void Visual::Margin(Math::ThicknessF value)
+    void Visual::Margin(ThicknessF value)
     {
         this->_margin = value;
     }

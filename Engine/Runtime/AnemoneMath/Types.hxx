@@ -23,7 +23,7 @@
 //  There is no real benefit in the latter, and it is more complex to implement.
 //
 
-namespace Anemone::Math
+namespace Anemone
 {
     struct Matrix4x4F;
     struct Vector2F;
@@ -131,7 +131,7 @@ namespace Anemone::Math
 }
 
 // Mask4F
-namespace Anemone::Math
+namespace Anemone
 {
     inline Mask4F anemone_vectorcall Mask4F::Create(bool x, bool y, bool z, bool w)
     {
@@ -229,7 +229,7 @@ namespace Anemone::Math
 }
 
 // Vector3F
-namespace Anemone::Math
+namespace Anemone
 {
     inline Vector3F anemone_vectorcall Vector3F::Create(float x, float y, float z)
     {
@@ -238,7 +238,7 @@ namespace Anemone::Math
 }
 
 // RotorF
-namespace Anemone::Math
+namespace Anemone
 {
     inline RotorF anemone_vectorcall RotorF::Create(float xy, float xz, float yz, float scalar)
     {

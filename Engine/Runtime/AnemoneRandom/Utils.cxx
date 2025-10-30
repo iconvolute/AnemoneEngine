@@ -46,7 +46,7 @@ namespace Anemone
             if (value != 0)
             {
                 double const probability = static_cast<double>(value) / length;
-                result -= probability * (Math::Log(probability) / Math::Ln2<double>);
+                result -= probability * (Log(probability) / Ln2<double>);
             }
         }
 

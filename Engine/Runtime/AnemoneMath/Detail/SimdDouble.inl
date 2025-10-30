@@ -5,7 +5,7 @@
 
 #if ANEMONE_BUILD_DISABLE_SIMD
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline constexpr uint64_t ScalarMaskComponentUInt64{0xFFFF'FFFF'FFFF'FFFF};
 
@@ -20,7 +20,7 @@ namespace Anemone::Math::Detail
 
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     anemone_forceinline __m256d anemone_vectorcall AvxMultiplyAdd(__m256d a, __m256d b, __m256d c)
     {
@@ -283,7 +283,7 @@ namespace Anemone::Numerics::Simd
 
 #elif ANEMONE_FEATURE_NEON
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline constexpr uint64_t NeonMaskComponentUInt64{0xFFFF'FFFF'FFFF'FFFF};
 
@@ -297,7 +297,7 @@ namespace Anemone::Math::Detail
 
 #endif
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdVector4D anemone_vectorcall Vector4D_LoadAlignedDouble4(double const* source)
     {

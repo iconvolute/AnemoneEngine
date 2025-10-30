@@ -9,7 +9,7 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("Float / Unwinding angles")
 {
     using Catch::Matchers::WithinAbs;
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     SECTION("Unwind Radians")
     {
@@ -37,7 +37,7 @@ TEST_CASE("Float / Unwinding angles")
 
 TEST_CASE("Float / IsNearZeroPrecise")
 {
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     SECTION("0.0f - 16 ULP")
     {
@@ -121,7 +121,7 @@ TEST_CASE("Float / IsNearZeroPrecise")
 
 TEST_CASE("Float / IsNearEqualPrecise")
 {
-    using namespace Anemone::Math;
+    using namespace Anemone;
 
     SECTION("diff <= epsilon")
     {

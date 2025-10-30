@@ -74,23 +74,23 @@ namespace Anemone
 
         void SetTitle(std::string_view value) override;
 
-        std::optional<Math::SizeF> GetMinimumSize() override;
+        std::optional<SizeF> GetMinimumSize() override;
 
-        void SetMinimumSize(std::optional<Math::SizeF> value) override;
+        void SetMinimumSize(std::optional<SizeF> value) override;
 
-        std::optional<Math::SizeF> GetMaximumSize() override;
+        std::optional<SizeF> GetMaximumSize() override;
 
-        void SetMaximumSize(std::optional<Math::SizeF> value) override;
+        void SetMaximumSize(std::optional<SizeF> value) override;
 
         void SetCursor(CursorType value) override;
 
         CursorType GetCursor() override;
 
-        Math::RectF GetBounds() override;
+        RectF GetBounds() override;
 
-        void SetBounds(Math::RectF value) override;
+        void SetBounds(RectF value) override;
 
-        Math::RectF GetClientBounds() override;
+        RectF GetClientBounds() override;
 
     public:
         HostApplicationEvents& GetEvents() const

@@ -1,6 +1,6 @@
 #include "AnemoneMath/Thickness.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr ThicknessF ThicknessF::CreateUniform(float uniform)
     {

@@ -8,7 +8,8 @@ ANEMONE_EXTERNAL_HEADERS_END
 
 TEST_CASE("Mask4F_Select")
 {
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
     using namespace Catch::Matchers;
 
     SimdVector4F const a = Vector4F_Create(1.0f, 2.0f, 3.0f, 4.0f);

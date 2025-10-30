@@ -55,7 +55,7 @@ namespace Anemone
         (void)metrics;
     }
 
-    ColorRef HostApplication::GetScreenPixel(Math::PointF position, float gamma)
+    ColorRef HostApplication::GetScreenPixel(PointF position, float gamma)
     {
         (void)position;
         (void)gamma;

@@ -7,7 +7,7 @@
 #include "AnemoneMath/Thickness.hxx"
 #include "AnemoneMath/Functions.hxx"
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr RectF RectF::FromLocationSize(float x, float y, float width, float height)
     {
@@ -150,7 +150,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr RectF Inflate(RectF self, float value)
     {

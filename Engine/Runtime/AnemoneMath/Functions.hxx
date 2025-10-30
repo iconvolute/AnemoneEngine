@@ -16,7 +16,7 @@
 
 #if ANEMONE_ARCHITECTURE_ARM64
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     //    return vrecpes_f32(value);
     //    return vrecped_f64(value);
@@ -28,7 +28,7 @@ namespace Anemone::Math::Detail
 
 #if ANEMONE_ARCHITECTURE_X64
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     // = sqrt(x)
     inline float AvxSquareRoot(float x)
@@ -99,13 +99,13 @@ namespace Anemone::Math::Detail
 
 #endif
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline constexpr int32_t UlpToleranceFloat = 4;
     inline constexpr int64_t UlpToleranceDouble = 16;
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     constexpr T Min(T left, T right)
@@ -664,7 +664,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     inline Packed::Vector3F CartesianToSpherical(Packed::Vector3F const& value)
     {
@@ -818,7 +818,7 @@ namespace Anemone::Math
 
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     constexpr T PreciseLerp(T a, T b, T t)
@@ -1124,7 +1124,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     float NearbyInt(float value)
@@ -1241,13 +1241,13 @@ namespace Anemone::Math
     inline bool IsNearZeroPrecise(float x)
     {
         int32_t const bits = std::bit_cast<int32_t>(x);
-        return Abs(bits) <= Detail::UlpToleranceFloat;
+        return Abs(bits) <= Internal::UlpToleranceFloat;
     }
 
     inline bool IsNearZeroPrecise(double x)
     {
         int64_t const bits = std::bit_cast<int64_t>(x);
-        return Abs(bits) <= Detail::UlpToleranceDouble;
+        return Abs(bits) <= Internal::UlpToleranceDouble;
     }
 
     template <typename T>
@@ -1292,7 +1292,7 @@ namespace Anemone::Math
 
         // FLT_EPSILON does not scale with the magnitude of the numbers being compared.
         // Use ULP (Units in the Last Place) to compare floating point numbers.
-        return Abs(bitsA - bitsB) <= Detail::UlpToleranceFloat;
+        return Abs(bitsA - bitsB) <= Internal::UlpToleranceFloat;
     }
 
     inline bool IsNearEqualPrecise(double a, double b)
@@ -1316,7 +1316,7 @@ namespace Anemone::Math
 
         // DBL_EPSILON does not scale with the magnitude of the numbers being compared.
         // Use ULP (Units in the Last Place) to compare floating point numbers.
-        return Abs(bitsA - bitsB) <= Detail::UlpToleranceDouble;
+        return Abs(bitsA - bitsB) <= Internal::UlpToleranceDouble;
     }
 
     template <typename T>
@@ -1350,7 +1350,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     int QuadricEquation(T a, T b, T c, T& out_x1, T& out_x2)
@@ -1398,7 +1398,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     constexpr uint32_t UNormToUInt(float value, size_t bits)
     {
@@ -1455,7 +1455,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     T UnwindRadians(T value)
@@ -1503,47 +1503,47 @@ namespace Anemone::Math
     constexpr T RevolutionsToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RevolutionsToDegrees<T>;
+        return value * Internal::Factor_RevolutionsToDegrees<T>;
     }
 
     template <typename T>
     constexpr T RevolutionsToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RevolutionsToRadians<T>;
+        return value * Internal::Factor_RevolutionsToRadians<T>;
     }
 
     template <typename T>
     constexpr T DegreesToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_DegreesToRevolutions<T>;
+        return value * Internal::Factor_DegreesToRevolutions<T>;
     }
 
     template <typename T>
     constexpr T RadiansToRevolutions(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RadiansToRevolutions<T>;
+        return value * Internal::Factor_RadiansToRevolutions<T>;
     }
 
     template <typename T>
     constexpr T RadiansToDegrees(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_RadiansToDegrees<T>;
+        return value * Internal::Factor_RadiansToDegrees<T>;
     }
 
     template <typename T>
     constexpr T DegreesToRadians(T value)
         requires(std::is_floating_point_v<T>)
     {
-        return value * Detail::Factor_DegreesToRadians<T>;
+        return value * Internal::Factor_DegreesToRadians<T>;
     }
 
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     T MoveTowards(T current, T target, T maxDelta)
@@ -1575,7 +1575,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     T Gauss(T amplitude, T x, T y, T centerX, T centerY, T sigmaX, T sigmaY)
@@ -1731,7 +1731,7 @@ namespace Anemone::Math
     }
 }
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T>
     T SmoothDamp(T current, T target, T& currentVelocity, T smoothTime, T maxSpeed, T deltaTime)
@@ -1789,7 +1789,7 @@ namespace Anemone::Math
 // ODE
 //
 
-namespace Anemone::Math
+namespace Anemone
 {
     template <typename T, typename Fn>
     constexpr void RungeKutta4Step(Fn& dydx, T& x, T& y, T dt)

@@ -5,7 +5,7 @@
 
 #if ANEMONE_BUILD_DISABLE_SIMD
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline constexpr uint32_t ScalarMaskComponentUInt32{0xFFFF'FFFF};
 
@@ -20,7 +20,7 @@ namespace Anemone::Math::Detail
 
 #elif ANEMONE_FEATURE_AVX || ANEMONE_FEATURE_AVX2
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline constexpr int32_t AvxMaskComponentInt32{-1};
 
@@ -53,7 +53,7 @@ namespace Anemone::Math::Detail
 
 #elif ANEMONE_FEATURE_NEON
 
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     template <size_t Lane0, size_t Lane1>
     float32x2_t anemone_vectorcall NeonShuffle(float32x2_t v)
@@ -650,7 +650,7 @@ namespace Anemone::Math::Detail
 #endif
 
 // Vector4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdVector4F anemone_vectorcall Vector4F_LoadAlignedFloat4(float const* source)
     {
@@ -5245,7 +5245,7 @@ namespace Anemone::Math::Detail
 }
 
 // Mask4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdMask4F anemone_vectorcall Mask4F_True()
     {
@@ -5664,7 +5664,7 @@ namespace Anemone::Math::Detail
 }
 
 // QuaternionF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdVector4F anemone_vectorcall QuaternionF_Identity()
     {
@@ -6308,7 +6308,7 @@ namespace Anemone::Math::Detail
 }
 
 // RotorF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdVector4F anemone_vectorcall RotorF_Identity()
     {
@@ -7196,7 +7196,7 @@ namespace Anemone::Math::Detail
 }
 
 // Matrix4x4F
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdMatrix4x4F anemone_vectorcall Matrix4x4F_LoadAlignedFloat4x4(float const* source)
     {
@@ -10923,7 +10923,7 @@ namespace Anemone::Math::Detail
 }
 
 // PlaneF
-namespace Anemone::Math::Detail
+namespace Anemone::Internal
 {
     inline SimdVector4F anemone_vectorcall PlaneF_Create(float a, float b, float c, float d)
     {

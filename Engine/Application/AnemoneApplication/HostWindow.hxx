@@ -100,23 +100,23 @@ namespace Anemone
 
         virtual void SetTitle(std::string_view value) = 0;
 
-        virtual std::optional<Math::SizeF> GetMinimumSize() = 0;
+        virtual std::optional<SizeF> GetMinimumSize() = 0;
 
-        virtual void SetMinimumSize(std::optional<Math::SizeF> value) = 0;
+        virtual void SetMinimumSize(std::optional<SizeF> value) = 0;
 
-        virtual std::optional<Math::SizeF> GetMaximumSize() = 0;
+        virtual std::optional<SizeF> GetMaximumSize() = 0;
 
-        virtual void SetMaximumSize(std::optional<Math::SizeF> value) = 0;
+        virtual void SetMaximumSize(std::optional<SizeF> value) = 0;
 
         virtual void SetCursor(CursorType value) = 0;
 
         virtual CursorType GetCursor() = 0;
 
-        virtual Math::RectF GetBounds() = 0;
+        virtual RectF GetBounds() = 0;
 
-        virtual void SetBounds(Math::RectF value) = 0;
+        virtual void SetBounds(RectF value) = 0;
 
-        virtual Math::RectF GetClientBounds() = 0;
+        virtual RectF GetClientBounds() = 0;
     };
 
     using HostWindowRef = Reference<HostWindow>;

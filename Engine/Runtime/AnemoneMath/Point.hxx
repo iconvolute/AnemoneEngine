@@ -1,7 +1,7 @@
 #pragma once
 #include <compare>
 
-namespace Anemone::Math
+namespace Anemone
 {
     struct PointF
     {

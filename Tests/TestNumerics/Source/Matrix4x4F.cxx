@@ -12,8 +12,8 @@ ANEMONE_EXTERNAL_HEADERS_END
 TEST_CASE("Matrix4x4F_Multiply")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
 
     static constexpr float tolerance = 0.001f;
 
@@ -150,8 +150,8 @@ TEST_CASE("Matrix4x4F_Multiply")
 TEST_CASE("Matrix4x4F_MultiplyTranspose")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
 
     static constexpr float tolerance = 0.001f;
 
@@ -327,8 +327,7 @@ T Helper_Matrix4x4_ComputeDeterminant(T const* m)
 TEST_CASE("Matrix4x4F_Determinant")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
     using namespace Anemone;
 
     static constexpr float tolerance = 0.05f;
@@ -496,8 +495,7 @@ T Helper_Matrix4x4_ComputeInverse(T const* matrix, T* result)
 TEST_CASE("Matrix4x4F_Inverse")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
     using namespace Anemone;
 
     static constexpr float tolerance = 0.01f;
@@ -738,8 +736,8 @@ TEST_CASE("Matrix4x4F_Inverse")
 TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math::Detail;
-    using namespace Anemone::Math;
+    using namespace Anemone::Internal;
+    using namespace Anemone;
 
     static constexpr float tolerance = 0.001f;
 
@@ -912,8 +910,8 @@ TEST_CASE("Matrix4x4F_CreateFromQuaternion")
 TEST_CASE("Matrix4x4F_CreateFromPitchYawRoll")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     SECTION("Pitch = 0, Yaw = 0, Roll = 0")
     {
@@ -1079,8 +1077,8 @@ TEST_CASE("Matrix4x4F_CreateFromPitchYawRoll")
 TEST_CASE("Matrix4x4F_CreateAffineTransform3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     SECTION("Affine2 - Identity")
     {
@@ -1124,8 +1122,8 @@ TEST_CASE("Matrix4x4F_CreateAffineTransform3")
 TEST_CASE("Matrix4x4F_CreateAffineTransform2")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     SECTION("Affine2 - Identity")
     {
@@ -1169,8 +1167,8 @@ TEST_CASE("Matrix4x4F_CreateAffineTransform2")
 TEST_CASE("Matrix4x4F_Transpose")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1212,8 +1210,8 @@ TEST_CASE("Matrix4x4F_Transpose")
 TEST_CASE("Matrix4x4F_Diagonal")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1236,8 +1234,8 @@ TEST_CASE("Matrix4x4F_Diagonal")
 TEST_CASE("Matrix4x4F_Trace")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1261,8 +1259,8 @@ TEST_CASE("Matrix4x4F_Trace")
 TEST_CASE("Matrix4x4F_CreateTranslation / scalar")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1297,8 +1295,8 @@ TEST_CASE("Matrix4x4F_CreateTranslation / scalar")
 TEST_CASE("Matrix4x4F_CreateTranslation / vector")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1333,8 +1331,8 @@ TEST_CASE("Matrix4x4F_CreateTranslation / vector")
 TEST_CASE("Matrix4x4F_CreateScale / scalar")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1369,8 +1367,8 @@ TEST_CASE("Matrix4x4F_CreateScale / scalar")
 TEST_CASE("Matrix4x4F_CreateScale / vector")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1405,8 +1403,8 @@ TEST_CASE("Matrix4x4F_CreateScale / vector")
 TEST_CASE("Matrix4x4F_CreateRotationX")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1534,8 +1532,8 @@ TEST_CASE("Matrix4x4F_CreateRotationX")
 TEST_CASE("Matrix4x4F_CreateRotationY")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1663,8 +1661,8 @@ TEST_CASE("Matrix4x4F_CreateRotationY")
 TEST_CASE("Matrix4x4F_CreateRotationZ")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1793,8 +1791,7 @@ TEST_CASE("Matrix4x4F_LoadAlignedFloat4x4")
 {
     using namespace Catch::Matchers;
     using namespace Anemone;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1847,8 +1844,8 @@ TEST_CASE("Matrix4x4F_LoadAlignedFloat4x4")
 TEST_CASE("Matrix4x4F_LoadAlignedFloat4x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1897,8 +1894,8 @@ TEST_CASE("Matrix4x4F_LoadAlignedFloat4x3")
 TEST_CASE("Matrix4x4F_LoadAlignedFloat3x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -1947,8 +1944,8 @@ TEST_CASE("Matrix4x4F_LoadAlignedFloat3x4")
 TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2001,8 +1998,8 @@ TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x4")
 TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2051,8 +2048,8 @@ TEST_CASE("Matrix4x4F_LoadUnalignedFloat4x3")
 TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2101,8 +2098,8 @@ TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x4")
 TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2148,8 +2145,8 @@ TEST_CASE("Matrix4x4F_LoadUnalignedFloat3x3")
 TEST_CASE("Matrix4x4F_StoreAlignedFloat4x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2198,8 +2195,8 @@ TEST_CASE("Matrix4x4F_StoreAlignedFloat4x4")
 TEST_CASE("Matrix4x4F_StoreAlignedFloat4x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2244,8 +2241,8 @@ TEST_CASE("Matrix4x4F_StoreAlignedFloat4x3")
 TEST_CASE("Matrix4x4F_StoreAlignedFloat3x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2290,8 +2287,8 @@ TEST_CASE("Matrix4x4F_StoreAlignedFloat3x4")
 TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2340,8 +2337,8 @@ TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x4")
 TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2386,8 +2383,8 @@ TEST_CASE("Matrix4x4F_StoreUnalignedFloat4x3")
 TEST_CASE("Matrix4x4F_StoreUnalignedFloat3x4")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
@@ -2432,8 +2429,8 @@ TEST_CASE("Matrix4x4F_StoreUnalignedFloat3x4")
 TEST_CASE("Matrix4x4F_StoreUnalignedFloat3x3")
 {
     using namespace Catch::Matchers;
-    using namespace Anemone::Math;
-    using namespace Anemone::Math::Detail;
+    using namespace Anemone;
+    using namespace Anemone::Internal;
 
     static constexpr float tolerance = 0.0001f;
 
