@@ -1093,7 +1093,7 @@ namespace Anemone::Internal
         return vsetq_lane_f32(f, v, N);
 #endif
     }
-    
+
     template <size_t N>
     SimdVector4F anemone_vectorcall Vector4F_Insert(SimdVector4F v, float const* f)
         requires(N < 4)
@@ -9087,9 +9087,9 @@ namespace Anemone::Internal
         result.val[0] = vcopyq_laneq_f32(d0, 3, r0, 3);
         result.val[1] = vcopyq_laneq_f32(d1, 3, r1, 3);
         result.val[2] = vcopyq_laneq_f32(d2, 3, r2, 3);
-        //result.val[0] = Vector4F_Select<true, true, true, false>(d0, r0);
-        //result.val[1] = Vector4F_Select<true, true, true, false>(d1, r1);
-        //result.val[2] = Vector4F_Select<true, true, true, false>(d2, r2);
+        // result.val[0] = Vector4F_Select<true, true, true, false>(d0, r0);
+        // result.val[1] = Vector4F_Select<true, true, true, false>(d1, r1);
+        // result.val[2] = Vector4F_Select<true, true, true, false>(d2, r2);
         result.val[3] = Vector4F_PositiveUnitW();
 #else
         result.Inner[0] = Vector4F_Select<true, true, true, false>(d0, r0);

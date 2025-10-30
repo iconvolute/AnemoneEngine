@@ -111,7 +111,7 @@ namespace Anemone::Internal
     SimdVector4D anemone_vectorcall Vector4D_LoadUnalignedDouble3(double const* source);
     SimdVector4D anemone_vectorcall Vector4D_LoadUnalignedDouble2(double const* source);
     SimdVector4D anemone_vectorcall Vector4D_LoadUnalignedDouble1(double const* source);
-    
+
     void anemone_vectorcall Vector4D_StoreAlignedDouble4(double* destination, SimdVector4D source);
     void anemone_vectorcall Vector4D_StoreAlignedDouble3(double* destination, SimdVector4D source);
     void anemone_vectorcall Vector4D_StoreAlignedDouble2(double* destination, SimdVector4D source);

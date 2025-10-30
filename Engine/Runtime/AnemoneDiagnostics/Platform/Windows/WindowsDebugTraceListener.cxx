@@ -3,7 +3,8 @@
 
 namespace Anemone
 {
-    void WindowsDebugTraceListener::TraceEvent(TraceLevel level, const char* message, size_t size) {
+    void WindowsDebugTraceListener::TraceEvent(TraceLevel level, const char* message, size_t size)
+    {
         (void)level;
 
         UniqueLock scope{this->m_lock};

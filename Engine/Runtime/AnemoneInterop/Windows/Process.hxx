@@ -15,27 +15,27 @@ namespace Anemone::Interop::Windows
     {
         USHORT processMachine = IMAGE_FILE_MACHINE_UNKNOWN;
         USHORT nativeMachine = IMAGE_FILE_MACHINE_UNKNOWN;
-    
+
         if (IsWow64Process2(GetCurrentProcess(), &processMachine, &nativeMachine))
         {
-    #if ANEMONE_ARCHITECTURE_X64
+#if ANEMONE_ARCHITECTURE_X64
             if (nativeMachine != IMAGE_FILE_MACHINE_AMD64)
             {
                 return true;
             }
-    #endif
-    
-    #if ANEMONE_ARCHITECTURE_ARM64
+#endif
+
+#if ANEMONE_ARCHITECTURE_ARM64
             if (nativeMachine != IMAGE_FILE_MACHINE_ARM64)
             {
                 return true;
             }
-    #endif
+#endif
         }
-    
+
         return false;
     }
-    
+
     template <size_t Capacity>
     anemone_forceinline HRESULT QueryFullProcessImageName(string_buffer<wchar_t, Capacity>& result, HANDLE const hProcess) noexcept
     {

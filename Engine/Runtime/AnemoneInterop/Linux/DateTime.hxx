@@ -43,7 +43,7 @@ namespace Anemone::Interop::Linux
             },
         };
     }
-    
+
     constexpr timespec ToTimespec(Duration const& value)
     {
         return timespec{

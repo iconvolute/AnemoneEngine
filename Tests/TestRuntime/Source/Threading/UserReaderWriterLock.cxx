@@ -114,7 +114,7 @@ TEST_CASE("Threading / UserReaderWriterLock")
         // Launch reader threads
         for (int i = 0; i < numReaders; ++i)
         {
-            
+
             threads.emplace_back([&]()
             {
                 int errors{};

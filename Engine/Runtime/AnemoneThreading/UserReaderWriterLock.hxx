@@ -50,7 +50,7 @@ namespace Anemone
                 {
                     return;
                 }
-                
+
                 int32_t current = m_bits.load(std::memory_order::acquire);
                 if ((current & (Writer | Upgraded)))
                 {
@@ -82,7 +82,7 @@ namespace Anemone
         void LeaveShared()
         {
             int32_t oldValue = this->m_bits.fetch_add(-Reader, std::memory_order::release);
-            
+
             // If this was the last reader and someone might be waiting, wake them
             if (oldValue == Reader)
             {
@@ -97,7 +97,7 @@ namespace Anemone
             return std::forward<F>(f)();
         }
 
-        public:
+    public:
         void Enter()
         {
             SpinWait spinner;
@@ -107,7 +107,7 @@ namespace Anemone
                 {
                     return;
                 }
-                
+
                 int32_t current = m_bits.load(std::memory_order::acquire);
                 if (current != 0)
                 {
@@ -133,7 +133,7 @@ namespace Anemone
         {
             static_assert(Reader > (Writer + Upgraded));
             int32_t oldValue = m_bits.fetch_and(~(Writer | Upgraded), std::memory_order::release);
-            
+
             // If we released a writer lock and there might be waiters, wake them all
             // We wake all since we don't know if waiters are readers or writers
             if (oldValue & Writer)
@@ -149,7 +149,7 @@ namespace Anemone
             return std::forward<F>(f)();
         }
 
-        public:
+    public:
         void LeaveAndEnterShared()
         {
             this->m_bits.fetch_add(Reader, std::memory_order_acquire);
@@ -165,7 +165,7 @@ namespace Anemone
                 {
                     return;
                 }
-                
+
                 int32_t current = m_bits.load(std::memory_order::acquire);
                 if ((current & (Writer | Upgraded)))
                 {
@@ -184,7 +184,7 @@ namespace Anemone
         void LeaveUpgrade()
         {
             int32_t oldValue = this->m_bits.fetch_add(-Upgraded, std::memory_order_acq_rel);
-            
+
             // If anyone might be waiting, wake them
             if (oldValue & Upgraded)
             {
@@ -201,7 +201,7 @@ namespace Anemone
                 {
                     return;
                 }
-                
+
                 int32_t current = m_bits.load(std::memory_order::acquire);
                 if (current != Upgraded)
                 {
@@ -227,7 +227,7 @@ namespace Anemone
         {
             this->m_bits.fetch_or(Upgraded, std::memory_order_acquire);
             this->m_bits.fetch_add(-Writer, std::memory_order_release);
-            
+
             // Wake all readers since we're transitioning to a less exclusive state
             Internal::Futex::WakeAll(m_bits);
         }

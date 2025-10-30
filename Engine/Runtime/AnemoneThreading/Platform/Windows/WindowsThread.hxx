@@ -19,7 +19,7 @@ namespace Anemone
 
     private:
         static DWORD WINAPI EntryPoint(LPVOID lpThreadParameter);
-        
+
     public:
         WindowsThread() = default;
 

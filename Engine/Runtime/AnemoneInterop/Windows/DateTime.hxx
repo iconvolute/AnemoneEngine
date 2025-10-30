@@ -45,7 +45,7 @@ namespace Anemone::Interop::Windows
     {
         return ToFILETIME(value.Inner);
     }
-    
+
     inline HRESULT LocalSystemTimeToFileTime(const SYSTEMTIME& localTime, FILETIME& fileTime)
     {
         SYSTEMTIME systemTime;

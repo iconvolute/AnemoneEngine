@@ -506,7 +506,7 @@ COM_DECLSPEC_NOTHROW STDMETHODIMP MyCallback::Exception(
     AbortIfFailed(GDebugClient->WriteDumpFile2("test.dmp", DEBUG_DUMP_SMALL, flags, "Comment!"));
 #endif
 
-    
+
     std::println("=======");
     std::println("Modules");
     std::println("=======");

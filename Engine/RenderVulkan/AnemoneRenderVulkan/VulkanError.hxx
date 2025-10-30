@@ -16,9 +16,11 @@ namespace Anemone
 #else
 
 #define AE_VK_CALL(expression) \
-    do { \
+    do \
+    { \
         VkResult const _ae_vk_result = (expression); \
-        if (_ae_vk_result != VK_SUCCESS) { \
+        if (_ae_vk_result != VK_SUCCESS) \
+        { \
             Anemone::VulkanError::ReportError(_ae_vk_result); \
             AE_PANIC("Vulkan call failed: {} at {}:{}", #expression, __FILE__, __LINE__); \
         } \

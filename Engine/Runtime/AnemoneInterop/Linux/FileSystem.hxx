@@ -6,7 +6,7 @@ namespace Anemone::Interop::Linux
 {
     // Note: PATH_MAX is typically defined as 4 KiB.
     using FilePath = string_buffer<char, 256>;
-    
+
     //
     // On Linux, read() (and similar system calls) will transfer at most 0x7ffff000 (2,147,479,552) bytes,
     // returning the number of bytes actually transferred.

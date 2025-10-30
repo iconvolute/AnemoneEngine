@@ -635,7 +635,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         (void)rd;
 #endif
         Anemone::HostApplication::Finalize();
-        
     }
     if (fts)
     {

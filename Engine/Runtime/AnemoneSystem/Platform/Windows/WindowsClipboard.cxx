@@ -28,7 +28,7 @@ namespace Anemone
 
     void Clipboard::Initialize()
     {
-        WindowsClipboard::Initialize();        
+        WindowsClipboard::Initialize();
     }
 
     void Clipboard::Finalize()

@@ -26,10 +26,10 @@ namespace Anemone::Interop::Windows
             return false;
         }
     }
-    
+
     using FilePathW = string_buffer<wchar_t, MAX_PATH>;
     using FilePathA = string_buffer<char, MAX_PATH>;
-    
+
     inline constexpr size_t DefaultBufferSize = size_t{64} << 10u;
 
     constexpr OVERLAPPED GetOverlappedForPosition(int64_t position)
@@ -158,7 +158,7 @@ namespace Anemone::Interop::Windows
         tail.clear();
         return false;
     }
-    
+
     // TODO: Test this function
     template <size_t CapacityT>
     anemone_forceinline bool GetFullPathName(string_buffer<wchar_t, CapacityT>& result, const wchar_t* path) noexcept

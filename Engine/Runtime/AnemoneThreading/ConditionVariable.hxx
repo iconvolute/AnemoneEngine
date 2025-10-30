@@ -34,7 +34,7 @@ namespace Anemone
         void WaitImpl(CriticalSection& lock);
         void WaitImpl(RecursiveCriticalSection& lock);
         bool TryWaitImpl(CriticalSection& lock, Duration const& timeout);
-        bool TryWaitImpl(RecursiveCriticalSection& lock, Duration const& timeout); 
+        bool TryWaitImpl(RecursiveCriticalSection& lock, Duration const& timeout);
 
     public:
         template <UniqueLockable Lock>

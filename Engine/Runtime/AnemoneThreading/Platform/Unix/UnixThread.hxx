@@ -22,7 +22,7 @@ namespace Anemone
 
     public:
         UnixThread() = default;
-        
+
         ~UnixThread() override;
 
     public:

@@ -16,10 +16,10 @@ namespace Anemone::SystemAllocator
     RUNTIME_API void Reset(void* address, size_t size);
 }
 //
-//#pragma once
-//#include "AnemoneInterop/Headers.hxx"
+// #pragma once
+// #include "AnemoneInterop/Headers.hxx"
 //
-//namespace Anemone
+// namespace Anemone
 //{
 //    struct SystemAllocator final
 //    {

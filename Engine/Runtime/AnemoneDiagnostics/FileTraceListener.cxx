@@ -14,7 +14,7 @@ namespace Anemone
         UniqueLock _{this->_lock};
 
         (void)this->_stream->Write(std::as_bytes(std::span{message, size}));
-        (void)this->_stream->Write(std::as_bytes(std::span{"\n",1}));
+        (void)this->_stream->Write(std::as_bytes(std::span{"\n", 1}));
     }
 
     void FileTraceListener::Flush()

@@ -45,7 +45,7 @@ namespace Anemone
 
         UnixThread* self = context.thread.load(std::memory_order::acquire);
         AE_ASSERT(self != nullptr);
-        
+
         self->_handle.Attach(pthread_self());
         self->_id = ThreadId{static_cast<uintptr_t>(Interop::Linux::GetThreadId())};
 
@@ -129,7 +129,7 @@ namespace Anemone
 
             // Store runnable object.
             result->_runnable = start.Callback;
-            
+
             StartupContext context{
                 .thread = result.Get(),
                 .start = &start,
@@ -161,7 +161,6 @@ namespace Anemone
             {
                 AE_PANIC("Failed to spawn thread");
             }
-
         }
 
         return result;

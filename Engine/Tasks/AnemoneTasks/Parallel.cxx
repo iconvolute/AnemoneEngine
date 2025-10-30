@@ -61,10 +61,10 @@ namespace Anemone
                     }
 
                     if (this->CurrentIndex.compare_exchange_weak(
-                        current,
-                        next,
-                        std::memory_order::acquire,
-                        std::memory_order::relaxed))
+                            current,
+                            next,
+                            std::memory_order::acquire,
+                            std::memory_order::relaxed))
                     {
                         // Successfully claimed the batch.
                         first = current;

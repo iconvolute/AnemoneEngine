@@ -186,7 +186,7 @@ namespace Anemone::Interop
                 return false;
             }
         } while (bufferLength != requiredSize);
-        
+
         assert(bufferLength == requiredSize);
         buffer.resize(bufferLength);
         return true;

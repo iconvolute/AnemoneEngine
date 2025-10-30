@@ -8,7 +8,7 @@ namespace Anemone
         static void Initialize();
         static void Finalize();
         static WindowsEnvironment& Get();
-        
+
         DateTime startupTime{};
         Uuid systemId{};
         DeviceType deviceType{};

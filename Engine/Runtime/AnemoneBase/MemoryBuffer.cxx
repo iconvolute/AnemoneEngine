@@ -45,7 +45,7 @@ namespace Anemone
         return Reference{new (std::nothrow) MemoryBuffer(data, size, size, true)};
     }
 
-    std::size_t MemoryBuffer::CalculateGrowth(std::size_t current,std::size_t requested)
+    std::size_t MemoryBuffer::CalculateGrowth(std::size_t current, std::size_t requested)
     {
         if (current == 0)
         {

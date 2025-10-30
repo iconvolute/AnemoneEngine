@@ -159,16 +159,11 @@ namespace Anemone::Interop::Linux
         {
             return MAP_FAILED;
         }
-        static bool IsValid(
-            void* value
-        )
+        static bool IsValid(void* value)
         {
             return value != MAP_FAILED;
         }
-        static bool Reset(
-            void* value,
-            size_t size
-        )
+        static bool Reset(void* value, size_t size)
         {
             return ::munmap(value, size) == 0;
         }

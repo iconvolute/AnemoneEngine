@@ -7,8 +7,7 @@
 namespace Anemone
 {
     template <typename T>
-    concept RandomGenerator = requires(T generator)
-    {
+    concept RandomGenerator = requires(T generator) {
         { generator.Next() } -> std::same_as<uint64_t>;
         { generator.Randomize(uint64_t{0}) } -> std::same_as<void>;
     };

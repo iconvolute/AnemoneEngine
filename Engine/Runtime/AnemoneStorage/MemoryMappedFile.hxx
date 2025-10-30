@@ -36,14 +36,12 @@ namespace Anemone
             std::string_view path,
             FileMode mode,
             uint64_t capacity,
-            MemoryMappedFileAccess access
-        );
+            MemoryMappedFileAccess access);
 
         virtual Reference<MemoryMappedFileView> CreateView(
             MemoryMappedFileAccess access,
             size_t offset = 0,
-            size_t length = 0
-        ) = 0;
+            size_t length = 0) = 0;
 
         virtual void Flush() = 0;
     };

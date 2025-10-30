@@ -123,7 +123,7 @@ namespace Anemone
             0x00000036};
     }
 
-    
+
     Error AES::Initialize(std::span<std::byte const> key)
     {
         switch (key.size())

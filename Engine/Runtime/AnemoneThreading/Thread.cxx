@@ -4,4 +4,3 @@ namespace Anemone
 {
     Thread::~Thread() = default;
 }
-
