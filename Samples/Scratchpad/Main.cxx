@@ -130,37 +130,29 @@ public:
         (void)window;
         (void)args;
 
-        std::string ret;
-        if (Anemone::HostDialogs::OpenFile(&window, ret, "Select file",
+        std::vector<std::string> ret;
+        if (Anemone::HostDialogs::OpenFiles(&window, ret, "Select file",
                 std::array{
                     Anemone::FileDialogFilter{"Any", "*.*"},
                 }) == Anemone::DialogResult::Ok)
         {
-            AE_TRACE(Error, "Selected file: '{}'", ret);
-
             Anemone::CriticalSection cs{};
 
             {
                 Anemone::UniqueLock scope{cs};
 
-                if (auto f = Anemone::FileSystem::GetPlatformFileSystem().GetPathInfo(ret))
+                for (std::string const& item : ret)
                 {
-                    AE_TRACE(Error, "---------------");
-                    AE_TRACE(Error, "File-Size:     '{}'", f->Size);
-                    AE_TRACE(Error, "File-Created:  '{}'", f->Created);
-                    AE_TRACE(Error, "File-Modified: '{}'", f->Modified);
-                    AE_TRACE(Error, "File-ReadOnly: '{}'", f->ReadOnly);
-                    AE_TRACE(Error, "File-Type:     '{}'", std::to_underlying(f->Type));
-                    AE_TRACE(Error, "---------------");
-                }
-
-                if (auto r = Anemone::Clipboard::SetText(ret))
-                {
-                    AE_TRACE(Error, "Set clipboard text");
-                }
-                else
-                {
-                    AE_TRACE(Error, "Failed to set clipboard text: {}", std::to_underlying(r.error()));
+                    if (auto f = Anemone::FileSystem::GetPlatformFileSystem().GetPathInfo(item))
+                    {
+                        AE_TRACE(Error, "---------------");
+                        AE_TRACE(Error, "File-Size:     '{}'", f->Size);
+                        AE_TRACE(Error, "File-Created:  '{}'", f->Created);
+                        AE_TRACE(Error, "File-Modified: '{}'", f->Modified);
+                        AE_TRACE(Error, "File-ReadOnly: '{}'", f->ReadOnly);
+                        AE_TRACE(Error, "File-Type:     '{}'", std::to_underlying(f->Type));
+                        AE_TRACE(Error, "---------------");
+                    }
                 }
             }
         }

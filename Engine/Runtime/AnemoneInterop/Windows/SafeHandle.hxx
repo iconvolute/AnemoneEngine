@@ -2,6 +2,8 @@
 #include "AnemoneInterop/SafeHandle.hxx"
 #include "AnemoneInterop/Windows/Headers.hxx"
 
+#include <combaseapi.h>
+
 namespace Anemone::Interop::Windows
 {
     struct SafeRegistryHandleTraits final
@@ -137,4 +139,46 @@ namespace Anemone::Interop::Windows
         }
     };
     using SafeMemoryMappedViewHandle = SafeBufferT<void, SafeMemoryMappedViewHandleTraits>;
+
+    struct SafeComTaskMemoryBufferTraits final
+    {
+        static void* Invalid()
+        {
+            return nullptr;
+        }
+
+        static bool IsValid(void* value)
+        {
+            return value != nullptr;
+        }
+
+        static bool Reset(void* value, size_t size)
+        {
+            (void)size;
+            CoTaskMemFree(value);
+            return true;
+        }
+    };
+    using SafeComTaskMemoryBuffer = SafeBufferT<void, SafeComTaskMemoryBufferTraits>;
+
+    template <typename T>
+    struct SafeComTaskMemoryHandleTraits final
+    {
+        static T* Invalid()
+        {
+            return nullptr;
+        }
+        static bool IsValid(T* value)
+        {
+            return value != nullptr;
+        }
+        static bool Reset(T* value)
+        {
+            CoTaskMemFree(value);
+            return true;
+        }
+    };
+
+    template <typename T>
+    using SafeComTaskMemoryHandle = SafeHandleT<T*, SafeComTaskMemoryHandleTraits<T>>;
 }

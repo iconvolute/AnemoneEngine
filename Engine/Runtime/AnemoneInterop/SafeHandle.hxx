@@ -72,6 +72,17 @@ namespace Anemone::Interop
             return &this->_value;
         }
 
+        [[nodiscard]] HandleT* ResetAndGetAddressOf()
+        {
+            if (TraitsT::IsValid(this->_value))
+            {
+                TraitsT::Reset(this->_value);
+                this->_value = TraitsT::Invalid();
+            }
+
+            return &this->_value;
+        }
+
     public:
         HandleT Detach()
         {

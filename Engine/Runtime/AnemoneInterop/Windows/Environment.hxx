@@ -2,6 +2,7 @@
 #include "AnemoneInterop/Windows/Headers.hxx"
 #include "AnemoneInterop/Windows/StringBuffer.hxx"
 #include "AnemoneInterop/Windows/MemoryBuffer.hxx"
+#include "AnemoneInterop/Windows/SafeHandle.hxx"
 
 #include <ShlObj.h>
 
@@ -235,16 +236,15 @@ namespace Anemone::Interop::Windows
     template <typename Callback = void(std::wstring_view)>
     anemone_forceinline HRESULT GetKnownFolderPath(KNOWNFOLDERID const& id, Callback&& callback) noexcept
     {
-        PWSTR result{};
+        SafeComTaskMemoryHandle<wchar_t> wPath{};
 
-        HRESULT const hr = SHGetKnownFolderPath(id, 0, nullptr, &result);
+        HRESULT const hr = SHGetKnownFolderPath(id, 0, nullptr, wPath.ResetAndGetAddressOf());
 
         if (SUCCEEDED(hr))
         {
-            if (result != nullptr)
+            if (wPath)
             {
-                std::forward<Callback>(callback)(std::wstring_view{result});
-                CoTaskMemFree(result);
+                std::forward<Callback>(callback)(std::wstring_view{wPath.Get()});
             }
         }
 

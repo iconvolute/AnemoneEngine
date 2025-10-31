@@ -1,6 +1,7 @@
 #include "AnemoneApplication/Platform/Windows/WindowsHostDialogs.hxx"
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
 #include "AnemoneInterop/Windows/Text.hxx"
+#include "AnemoneInterop/Windows/SafeHandle.hxx"
 
 #include <wrl/client.h>
 #include <CommCtrl.h>
@@ -127,17 +128,14 @@ namespace Anemone
 
         HRESULT hr = self.GetResult(item.GetAddressOf());
 
-        wchar_t* wpath{};
-
         if (SUCCEEDED(hr))
         {
-            hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wpath);
+            Interop::Windows::SafeComTaskMemoryHandle<wchar_t> wPath{};
+            hr = item->GetDisplayName(SIGDN_FILESYSPATH, wPath.GetAddressOf());
 
             if (SUCCEEDED(hr))
             {
-                Interop::Windows::NarrowString(result, wpath);
-                CoTaskMemFree(wpath);
-
+                Interop::Windows::NarrowString(result, wPath.Get());
                 return true;
             }
         }
@@ -161,21 +159,21 @@ namespace Anemone
             hr = items->GetCount(&dwCount);
         }
 
+        Interop::Windows::SafeComTaskMemoryHandle<wchar_t> wPath{};
+
         for (DWORD i = 0; i < dwCount; ++i)
         {
             Microsoft::WRL::ComPtr<IShellItem> item{};
-            wchar_t* wPath{};
 
             hr = items->GetItemAt(i, item.GetAddressOf());
 
             if (SUCCEEDED(hr))
             {
-                hr = item->GetDisplayName(SIGDN_FILESYSPATH, &wPath);
+                hr = item->GetDisplayName(SIGDN_FILESYSPATH, wPath.ResetAndGetAddressOf());
 
                 if (SUCCEEDED(hr))
                 {
-                    Interop::Windows::NarrowString(results.emplace_back(), wPath);
-                    CoTaskMemFree(wPath);
+                    Interop::Windows::NarrowString(results.emplace_back(), wPath.Get());
                 }
                 else
                 {
