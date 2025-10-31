@@ -38,6 +38,7 @@ target_sources(AnemoneRuntime
         "Int128.hxx"
         "Intrusive.hxx"
         "KnownColor.hxx"
+        "LockfreeIntrusive.hxx"
         "Memory.hxx"
         "MemoryBuffer.hxx"
         "Module.hxx"

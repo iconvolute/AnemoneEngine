@@ -34,6 +34,8 @@ target_link_libraries(AnemoneRuntime
         "unwind"
         #"uuid"
         "dl"
+    PUBLIC
+        "atomic"
 )
 elseif(ANDROID)
 target_link_libraries(AnemoneRuntime

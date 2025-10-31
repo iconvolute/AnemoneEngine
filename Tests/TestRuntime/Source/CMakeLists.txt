@@ -9,13 +9,14 @@ target_sources(TestRuntime
         "HandleTable.cxx"
         "IpAddress.cxx"
         "IpEndPoint.cxx"
+        "LockFree.cxx"
         "Main.cxx"
         "MpmcQueue.cxx"
         "Path.cxx"
         "SpscQueue.cxx"
+        "String.cxx"
         "Unicode.cxx"
         "Uuid.cxx"
-        "String.cxx"
 )
 
 add_subdirectory("Interop")
