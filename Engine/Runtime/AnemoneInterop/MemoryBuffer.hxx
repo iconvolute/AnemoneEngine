@@ -4,6 +4,7 @@
 #include <memory>
 #include <span>
 #include <cassert>
+#include <algorithm>
 
 namespace Anemone::Interop
 {
@@ -70,31 +71,40 @@ namespace Anemone::Interop
             assert(this->m_capacity >= StaticCapacityT);
             assert(this->m_capacity >= this->m_size);
 
-            if (size != this->m_size)
+            if (size <= StaticCapacityT)
             {
-                if (size <= this->m_capacity)
+                if (this->m_dynamic)
                 {
-                    // Allocated buffer can hold the new size.
-                    this->m_size = size;
+                    std::copy_n(this->m_dynamic.get(), size, this->m_static);
+                    this->m_dynamic = {};
                 }
-                else
-                {
-                    // Size exceeds capacity of the buffer. Need to allocate a new buffer, copy data and discard the previous buffer.
-                    size_t const capacity = std::max(size, this->m_capacity * 2uz);
 
-                    // Allocate new buffer.
-                    std::unique_ptr<std::byte[]> newBuffer = std::make_unique_for_overwrite<std::byte[]>(capacity);
+                this->m_data = this->m_static;
+                this->m_capacity = StaticCapacityT;
+                this->m_size = size;
+            }
+            else if (size <= this->m_capacity)
+            {
+                // Allocated buffer can hold the new size.
+                this->m_size = size;
+            }
+            else if (size > this->m_capacity)
+            {
+                // Size exceeds capacity of the buffer. Need to allocate a new buffer, copy data and discard the previous buffer.
+                size_t const capacity = std::max(size, this->m_capacity * 2uz);
 
-                    // Copy data from the old buffer to the new one.
-                    std::copy(this->m_data, this->m_data + this->m_size, newBuffer.get());
+                // Allocate new buffer.
+                std::unique_ptr<std::byte[]> newBuffer = std::make_unique_for_overwrite<std::byte[]>(capacity);
 
-                    std::fill(newBuffer.get() + this->m_size, newBuffer.get() + size, std::byte{});
+                // Copy data from the old buffer to the new one.
+                std::copy_n(this->m_data, this->m_size, newBuffer.get());
 
-                    this->m_data = newBuffer.get();
-                    this->m_dynamic = std::move(newBuffer);
-                    this->m_capacity = capacity;
-                    this->m_size = size;
-                }
+                std::fill(newBuffer.get() + this->m_size, newBuffer.get() + size, std::byte{});
+
+                this->m_dynamic = std::move(newBuffer);
+                this->m_data = this->m_dynamic.get();
+                this->m_capacity = capacity;
+                this->m_size = size;
             }
         }
 

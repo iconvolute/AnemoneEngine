@@ -99,8 +99,8 @@ TEST_CASE("Memory Buffer")
         buffer.resize(4);
 
         REQUIRE(buffer.size() == 4);
-        REQUIRE(buffer.capacity() == 8);
-        REQUIRE(buffer.is_dynamic());
+        REQUIRE(buffer.capacity() == 4);
+        REQUIRE_FALSE(buffer.is_dynamic());
 
         REQUIRE(buffer[0] == std::byte{0x01});
         REQUIRE(buffer[1] == std::byte{0x02});
@@ -110,8 +110,8 @@ TEST_CASE("Memory Buffer")
         // Resize below static capacity.
         buffer.resize(2);
         REQUIRE(buffer.size() == 2);
-        REQUIRE(buffer.capacity() == 8);
-        REQUIRE(buffer.is_dynamic());
+        REQUIRE(buffer.capacity() == 4);
+        REQUIRE_FALSE(buffer.is_dynamic());
 
         REQUIRE(buffer[0] == std::byte{0x01});
         REQUIRE(buffer[1] == std::byte{0x02});
