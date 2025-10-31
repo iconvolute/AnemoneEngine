@@ -3,6 +3,7 @@
 #include "AnemoneStorage/FileInputStream.hxx"
 #include "AnemoneStorage/FileOutputStream.hxx"
 #include "AnemoneBase/DateTime.hxx"
+#include "AnemoneBase/MemoryBuffer.hxx"
 
 #include <vector>
 #include <string>
@@ -92,7 +93,7 @@ namespace Anemone
 
         virtual auto ReadBinaryFile(
             std::string_view path)
-            -> std::expected<std::vector<std::byte>, Error>;
+            -> std::expected<Reference<MemoryBuffer>, Error>;
 
         virtual auto WriteTextFile(
             std::string_view path,
@@ -101,7 +102,7 @@ namespace Anemone
 
         virtual auto WriteBinaryFile(
             std::string_view path,
-            std::span<std::byte const> content)
+            MemoryBuffer const& content)
             -> std::expected<void, Error>;
 
         virtual auto GetPathInfo(

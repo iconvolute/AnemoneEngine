@@ -50,35 +50,37 @@ namespace Anemone
 
     auto FileSystem::ReadBinaryFile(
         std::string_view path)
-        -> std::expected<std::vector<std::byte>, Error>
+        -> std::expected<Reference<MemoryBuffer>, Error>
     {
         if (auto handle = this->CreateFileReader(path))
         {
             if (auto length = (*handle)->GetLength())
             {
-                std::vector<std::byte> result;
-                result.resize(*length);
+                auto result = MemoryBuffer::Create(*length);
 
-                std::span view{result.data(), result.size()};
-
-                do
+                if (result)
                 {
-                    if (auto processed = (*handle)->Read(view))
-                    {
-                        if (*processed == 0)
-                        {
-                            // End of file.
-                            break;
-                        }
+                    std::span<std::byte> bufferView = (*result)->GetView();
 
-                        // Update view to the remaining part.
-                        view = view.subspan(*processed);
-                    }
-                    else
+                    do
                     {
-                        return std::unexpected(processed.error());
-                    }
-                } while (true);
+                        if (auto processed = (*handle)->Read(bufferView))
+                        {
+                            if (*processed == 0)
+                            {
+                                // End of file.
+                                break;
+                            }
+
+                            bufferView = bufferView.subspan(*processed);
+                        }
+                        else
+                        {
+                            return std::unexpected(processed.error());
+                        }
+                    } while (true);
+
+                }
 
                 return result;
             }
@@ -125,17 +127,19 @@ namespace Anemone
 
     auto FileSystem::WriteBinaryFile(
         std::string_view path,
-        std::span<std::byte const> content)
+        MemoryBuffer const& content)
         -> std::expected<void, Error>
     {
         if (auto handle = this->CreateFileWriter(path))
         {
-            while (not content.empty())
+            std::span contentView = content.GetView();
+
+            while (not contentView.empty())
             {
-                if (auto processed = (*handle)->Write(content))
+                if (auto processed = (*handle)->Write(contentView))
                 {
                     // Update content to the remaining part.
-                    content = content.subspan(*processed);
+                    contentView = contentView.subspan(*processed);
                 }
                 else
                 {
