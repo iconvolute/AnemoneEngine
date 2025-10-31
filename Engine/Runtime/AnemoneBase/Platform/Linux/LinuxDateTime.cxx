@@ -38,14 +38,13 @@ namespace Anemone
 
     Duration LinuxDateTime::GetCurrentTimeZoneBias()
     {
-        time_t seconds = 0;
-        tm tmGMT{};
-        tm tmLocal{};
-        gmtime_r(&seconds, &tmGMT);
-        localtime_r(&seconds, &tmLocal);
+        time_t temp{};
+        tm tms{};
+
+        localtime_r(&temp, &tms);
 
         return Duration{
-            .Seconds = mktime(&tmGMT) - mktime(&tmLocal),
+            .Seconds = -(tms.tm_gmtoff),
             .Nanoseconds = 0,
         };
     }
