@@ -94,27 +94,48 @@ namespace Anemone
             {
                 PAINTSTRUCT ps{};
                 HDC hdc = BeginPaint(hwnd, &ps);
-
-                RECT rect{};
-                GetClientRect(hwnd, &rect);
-                FillRect(hdc, &rect, GetSysColorBrush(COLOR_WINDOW));
-                InflateRect(&rect, -20, -20);
-                if (self)
                 {
-                    HFONT SystemFontHandle = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
-                    UniqueLock scope{self->_lock};
+                    HDC cdc = CreateCompatibleDC(hdc);
+                    {
+                        RECT rect{};
+                        GetClientRect(hwnd, &rect);
+                        HBITMAP bmp = CreateCompatibleBitmap(hdc, rect.right - rect.left, rect.bottom - rect.top);
+                        HBITMAP oldBmp = static_cast<HBITMAP>(SelectObject(cdc, bmp));
 
-                    SelectObject(hdc, SystemFontHandle);
-                    SetTextColor(hdc, RGB(0, 0, 0));
-                    SetBkMode(hdc, TRANSPARENT);
-                    DrawTextW(
-                        hdc,
-                        self->_text.c_str(),
-                        -1,
-                        &rect,
-                        DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+                        FillRect(cdc, &rect, GetSysColorBrush(COLOR_APPWORKSPACE));
+
+                        if (self)
+                        {
+                            HFONT SystemFontHandle = (HFONT)GetStockObject(DEFAULT_GUI_FONT);
+                            UniqueLock scope{self->_lock};
+
+                            SelectObject(cdc, SystemFontHandle);
+                            SetTextColor(cdc, RGB(0, 0, 0));
+                            SetBkMode(cdc, TRANSPARENT);
+                            DrawTextW(
+                                cdc,
+                                self->_text.c_str(),
+                                -1,
+                                &rect,
+                                DT_CENTER | DT_VCENTER | DT_SINGLELINE);
+                        }
+
+                        BitBlt(
+                            hdc,
+                            rect.left,
+                            rect.top,
+                            rect.right - rect.left,
+                            rect.bottom - rect.top,
+                            cdc,
+                            0,
+                            0,
+                            0x00CC0020); // SRCCOPY
+                        SelectObject(cdc, oldBmp);
+                        DeleteObject(bmp);
+
+                        DeleteDC(cdc);
+                    }
                 }
-
                 EndPaint(hwnd, &ps);
                 break;
             }
@@ -155,7 +176,7 @@ namespace Anemone
 
         WNDCLASSEXW wcex{};
         wcex.cbSize = sizeof(wcex);
-        wcex.style = 0;
+        wcex.style = CS_NOCLOSE;
         wcex.lpfnWndProc = WindowProc;
         wcex.cbClsExtra = 0;
         wcex.cbWndExtra = 0;
@@ -174,14 +195,31 @@ namespace Anemone
             return 0;
         }
 
-        int const width = 640;
-        int const height = 480;
+        POINT ptMouse{};
+        GetCursorPos(&ptMouse);
 
-        int const centerX = GetSystemMetrics(SM_CXSCREEN) / 2;
-        int const centerY = GetSystemMetrics(SM_CYSCREEN) / 2;
+        RECT rcWorkArea{};
 
-        int const positionX = centerX - width / 2;
-        int const positionY = centerY - height / 2;
+        HMONITOR const hMonitor = MonitorFromPoint(ptMouse, MONITOR_DEFAULTTONEAREST);
+        MONITORINFO mi{.cbSize = sizeof(MONITORINFO)};
+
+        if (GetMonitorInfoW(hMonitor, &mi))
+        {
+            rcWorkArea = mi.rcWork;
+        }
+        else
+        {
+            SystemParametersInfoW(SPI_GETWORKAREA, 0, &rcWorkArea, 0);
+        }
+
+        constexpr int sizeX = 640;
+        constexpr int sizeY = 480;
+
+        int const offsetX = ((rcWorkArea.right - rcWorkArea.left) - sizeX) / 2;
+        int const offsetY = ((rcWorkArea.bottom - rcWorkArea.top) - sizeY) / 2;
+
+        int const positionX = rcWorkArea.left + offsetX;
+        int const positionY = rcWorkArea.top + offsetY;
 
         self->_window = CreateWindowExW(
             WS_EX_TOOLWINDOW,
@@ -190,8 +228,8 @@ namespace Anemone
             WS_POPUP,
             positionX,
             positionY,
-            width,
-            height,
+            sizeX,
+            sizeY,
             nullptr,
             nullptr,
             hInstance,
