@@ -133,7 +133,9 @@ namespace Anemone
 
         // Pool input devices.
         WindowsXInput::Get().Poll(*this->events);
-        WindowsGameInput::Get().Poll(*this->events);
+
+        // Disable for now.
+        //WindowsGameInput::Get().Poll(*this->events);
     }
 
     Reference<HostWindow> WindowsHostApplication::MakeWindow(WindowType windowType, WindowMode windowMode)
