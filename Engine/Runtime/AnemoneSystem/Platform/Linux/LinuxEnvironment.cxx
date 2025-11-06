@@ -70,6 +70,7 @@ namespace Anemone
 
         // System ID
         {
+            // TODO: Parsing `/etc/lsb-release`?
             Interop::string_buffer<char, 64> buffer{};
 
             std::optional<Uuid> parsed{};
@@ -183,8 +184,26 @@ namespace Anemone
 
         // UserDocumentsPath
         {
-            gLinuxEnvironment->documentsPath = gLinuxEnvironment->profilePath;
-            FilePath::PushFragment(gLinuxEnvironment->documentsPath, "Documents");
+            if (FILE* file = popen("xdg-user-dir DOCUMENTS", "r"))
+            {
+                std::array<char, PATH_MAX> path{};
+
+                if (fgets(path.data(), path.size(), file))
+                {
+                    std::string_view pathView{path.data()};
+                    pathView.remove_suffix(1);
+                    gLinuxEnvironment->documentsPath.assign(pathView);
+                    FilePath::AddDirectorySeparator(gLinuxEnvironment->documentsPath);
+                }
+
+                pclose(file);
+            }
+
+            if (gLinuxEnvironment->documentsPath.empty())
+            {
+                gLinuxEnvironment->documentsPath = gLinuxEnvironment->profilePath;
+                FilePath::PushFragment(gLinuxEnvironment->documentsPath, "Documents");
+            }
         }
 
         // UserDownloadsPath

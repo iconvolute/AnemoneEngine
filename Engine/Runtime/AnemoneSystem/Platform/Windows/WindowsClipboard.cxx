@@ -116,9 +116,14 @@ namespace Anemone
                     if (SetClipboardData(CF_UNICODETEXT, handle) != nullptr)
                     {
                         CloseClipboard();
+
+                        // handle is owned by the clipboard now.
                         return {};
                     }
                 }
+
+                // Failed to set clipboard data, free the allocated memory.
+                GlobalFree(handle);
             }
 
             CloseClipboard();
