@@ -7,5 +7,6 @@ add_subdirectory("NVTX")
 if (Vulkan_FOUND AND WIN32)
 
 add_subdirectory("volk")
+add_subdirectory("VulkanMemoryAllocator")
 
 endif()

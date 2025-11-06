@@ -8,6 +8,7 @@ target_link_libraries(AnemoneRenderVulkan
         AnemoneRuntime
         AnemoneRender
         SdkVolk
+        SdkVulkanMemoryAllocator
 )
 
 add_subdirectory("AnemoneRenderVulkan")

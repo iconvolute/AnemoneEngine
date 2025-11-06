@@ -13,3 +13,11 @@
 #endif
 
 #include <volk.h>
+#include <vk_mem_alloc.h>
+
+
+#if ANEMONE_BUILD_SHIPPING
+#define ANEMONE_VULKAN_VALIDATION false
+#else
+#define ANEMONE_VULKAN_VALIDATION true
+#endif

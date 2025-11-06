@@ -14,6 +14,8 @@
 #include "AnemoneInterop/Windows/Dwm.hxx"
 #include "AnemoneInterop/Windows/Registry.hxx"
 #endif
+#include "AnemoneDiagnostics/ConsoleTraceListener.hxx"
+
 #include "AnemoneNetwork/Tcp.hxx"
 #include "AnemoneThreading/CriticalSection.hxx"
 #include "AnemoneThreading/Lock.hxx"
@@ -600,32 +602,125 @@ anemone_noinline void test3()
 
 #include "AnemoneDiagnostics/FileTraceListener.hxx"
 #include "AnemoneTasks/Module.hxx"
+#include "AnemoneApplication/HostSplashScreen.hxx"
+
+namespace anemone
+{
+    template <size_t Size, size_t Alignment>
+    struct TypeErased
+    {
+        alignas(Alignment) std::byte buffer[Size];
+
+        template <typename T, typename... Args>
+        void Create(Args&&... args)
+        {
+            new (buffer) T(std::forward<Args>(args)...);
+        }
+
+        template<typename T>
+        void Destroy()
+        {
+            std::launder(reinterpret_cast<T*>(buffer))->~T();
+        }
+
+        template <typename T>
+        void Assign(T const& other)
+        {
+            (*this->Get<T>()) = other;
+        }
+
+        template <typename T>
+        void Assign(T&& other)
+        {
+            (*this->Get<T>()) = std::forward<T&&>(other);
+        }
+
+        template<typename T>
+        T* Get()
+        {
+            return std::launder(reinterpret_cast<T*>(buffer));
+        }
+
+        template <typename T>
+        T const* Get() const
+        {
+            return std::launder(reinterpret_cast<T const*>(buffer));
+        }
+    };
+}
+
+#include "AnemoneRenderVulkan/Module.hxx"
+#include "AnemoneDiagnostics/ConsoleTraceListener.hxx"
+#include "AnemoneRender/SwapChain.hxx"
 
 anemone_noinline int AnemoneMain(int argc, char** argv)
 {
     Anemone::ModuleInitializer<Anemone::Module_Application> moduleApplication{};
     Anemone::ModuleInitializer<Anemone::Module_Memory> moduleMemory{};
     Anemone::ModuleInitializer<Anemone::Module_Tasks> moduleTasks{};
+    Anemone::ModuleInitializer<Anemone::Module_RenderVulkan> moduleRenderVulkan{};
     Anemone::UninitializedObject<Anemone::FileTraceListener> fts{};
-
-    Anemone::Parallel::For(10000, 128, [](size_t first, size_t count)
-    {
-        AE_TRACE(Error, "First: {:016x}, Count: {:016x}", first, count);
-    });
+//
+//    Anemone::HostSplashScreen::Initialize();
+//#if ANEMONE_PLATFORM_WINDOWS
+//    SleepEx(3'000, FALSE);
+//#endif
+//
+//    constexpr size_t count = 1000;
+//    for (size_t i = 0; i < count;++i)
+//    {
+//        Anemone::HostSplashScreen::Get().SetProgress(static_cast<float>(i) / static_cast<float>(count));
+//        Anemone::HostSplashScreen::Get().SetText(fmt::format("{}/{}", i, count));
+//        SleepEx(15, FALSE);
+//
+//    }
+//
+//    Anemone::HostSplashScreen::Finalize();
+//
+//
+//    Anemone::Parallel::For(10000, 128, [](size_t first, size_t count)
+//    {
+//        AE_TRACE(Error, "First: {:016x}, Count: {:016x}", first, count);
+//    });
 
     if (auto fh = Anemone::FileSystem::GetPlatformFileSystem().CreateFileWriter("log.txt"))
     {
         fts.Create(Anemone::MakeReference<Anemone::FileOutputStream>(*fh));
         Anemone::Trace::Get().Register(*fts);
     }
+    Anemone::ConsoleTraceListener ctl{};
+    Anemone::Trace::Get().Register(ctl);
 
     {
         EH eh{};
         Anemone::HostApplication::Initialize(eh);
+        auto window1 = Anemone::HostApplication::Get().MakeWindow(Anemone::WindowType::Game, Anemone::WindowMode::Windowed);
+
+        if (window1)
+        {
+            window1->SetMinimumSize(Anemone::SizeF{640.0f, 480.0f});
+            window1->SetInputEnabled(true);
+
 #if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
-        auto rd = Anemone::CreateRenderDevice();
-        (void)rd;
+            auto rd = Anemone::CreateRenderDevice();
+            auto sq = rd->CreateSwapChain(window1);
+
 #endif
+
+            while (not window1->IsClosed())
+            {
+                Anemone::HostApplication::Get().ProcessMessages();
+                //Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
+                sq->Start();
+                sq->Present();
+            }
+
+#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
+            sq = {};
+            rd = {};
+#endif
+        }
+
         Anemone::HostApplication::Finalize();
     }
     if (fts)
@@ -633,6 +728,8 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
         Anemone::Trace::Get().Unregister(*fts);
         fts.Destroy();
     }
+
+    Anemone::Trace::Get().Unregister(ctl);
 
     if (auto sh = Anemone::SharedLibrary::Load("TestLibrary.dll"))
     {
@@ -952,14 +1049,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     }
 #endif
 
-    Anemone::SplashScreen::Show();
-
-#if ANEMONE_PLATFORM_WINDOWS
-    SleepEx(3'000, FALSE);
-#endif
-
-    Anemone::SplashScreen::Hide();
-
+    
     auto window = Anemone::Platform::Window::Create(Anemone::Platform::WindowType::Game);
     if (window)
     {
