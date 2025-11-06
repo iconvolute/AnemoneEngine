@@ -4,7 +4,7 @@
 
 namespace Anemone
 {
-    class ConsoleTraceListener final
+    class RUNTIME_API ConsoleTraceListener final
         : public TraceListener
     {
     private:

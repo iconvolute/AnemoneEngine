@@ -39,10 +39,11 @@ namespace Anemone
         (*out++) = ' ';
         out = fmt::vformat_to(out, format, args);
 
-        const char* message = buffer.data();
         size_t const size = buffer.size();
 
         (*out) = '\0';
+
+        const char* message = buffer.data();
 
         this->TraceEvent(level, message, size);
     }
