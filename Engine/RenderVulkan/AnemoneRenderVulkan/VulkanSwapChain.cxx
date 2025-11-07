@@ -1,5 +1,6 @@
 #include "AnemoneRenderVulkan/VulkanSwapChain.hxx"
 #include "AnemoneRenderVulkan/VulkanQueue.hxx"
+#include "AnemoneRenderVulkan/VulkanCpuAllocator.hxx"
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
 #include "AnemoneRenderVulkan/VulkanError.hxx"
 
@@ -9,7 +10,6 @@
 
 namespace Anemone
 {
-
     VulkanSwapChain::VulkanSwapChain(
         VulkanDevice* device,
         Reference<HostWindow> hostWindow)
@@ -74,6 +74,8 @@ namespace Anemone
 
     void VulkanSwapChain::Start()
     {
+        VkCommandBuffer currentCommandBuffer = this->m_commandBuffers[this->currentFrameIndex]->GetHandle();
+
         while (vkWaitForFences(
                    this->_device->_logicalDevice,
                    1,
@@ -94,8 +96,6 @@ namespace Anemone
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            AE_VK_CALL(vkDeviceWaitIdle(this->_device->_logicalDevice));
-
             this->DestroySwapChain();
             this->CreateSwapChain();
         }
@@ -109,7 +109,7 @@ namespace Anemone
             1,
             &this->_inFlightFences[this->currentFrameIndex]));
 
-        AE_VK_CALL(vkResetCommandBuffer(this->commandBuffers[this->currentFrameIndex], 0));
+        AE_VK_CALL(vkResetCommandBuffer(currentCommandBuffer, 0));
 
         VkCommandBufferBeginInfo commandBufferBeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
@@ -117,7 +117,7 @@ namespace Anemone
             .flags = 0,
             .pInheritanceInfo = nullptr,
         };
-        AE_VK_CALL(vkBeginCommandBuffer(this->commandBuffers[this->currentFrameIndex], &commandBufferBeginInfo));
+        AE_VK_CALL(vkBeginCommandBuffer(currentCommandBuffer, &commandBufferBeginInfo));
 
         TransitionImageLayout(
             this->_swapChainImages[this->currentImageIndex],
@@ -128,7 +128,7 @@ namespace Anemone
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_IMAGE_ASPECT_COLOR_BIT,
-            this->commandBuffers[this->currentFrameIndex]);
+            currentCommandBuffer);
 
 
         // THIS IS RENDERING NOW
@@ -165,12 +165,14 @@ namespace Anemone
             .pStencilAttachment = nullptr,
         };
 
-        vkCmdBeginRendering(this->commandBuffers[this->currentFrameIndex], &renderingInfo);
+        vkCmdBeginRendering(currentCommandBuffer, &renderingInfo);
     }
 
     void VulkanSwapChain::Present()
     {
-        vkCmdEndRendering(this->commandBuffers[this->currentFrameIndex]);
+        VkCommandBuffer currentCommandBuffer = this->m_commandBuffers[this->currentFrameIndex]->GetHandle();
+
+        vkCmdEndRendering(currentCommandBuffer);
         TransitionImageLayout(
             this->_swapChainImages[this->currentImageIndex],
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -180,9 +182,9 @@ namespace Anemone
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
             VK_IMAGE_ASPECT_COLOR_BIT,
-            this->commandBuffers[this->currentFrameIndex]);
+            currentCommandBuffer);
 
-        AE_VK_CALL(vkEndCommandBuffer(this->commandBuffers[this->currentFrameIndex]));
+        AE_VK_CALL(vkEndCommandBuffer(currentCommandBuffer));
 
         VkPipelineStageFlags waitDestinationStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -193,7 +195,7 @@ namespace Anemone
             .pWaitSemaphores = &this->_imageAvailableSemaphores[this->currentSemaphoreIndex],
             .pWaitDstStageMask = &waitDestinationStageMask,
             .commandBufferCount = 1,
-            .pCommandBuffers = &this->commandBuffers[currentFrameIndex],
+            .pCommandBuffers = &currentCommandBuffer,
             .signalSemaphoreCount = 1,
             .pSignalSemaphores = &this->_renderFinishedSemaphores[this->currentImageIndex],
         };
@@ -224,8 +226,6 @@ namespace Anemone
 
         if (result == VK_ERROR_OUT_OF_DATE_KHR)
         {
-            AE_VK_CALL(vkDeviceWaitIdle(this->_device->_logicalDevice));
-
             this->DestroySwapChain();
             this->CreateSwapChain();
         }
@@ -299,7 +299,7 @@ namespace Anemone
             .imageColorSpace = this->_swapChainImageFormat.colorSpace,
             .imageExtent = this->_swapChainExtent,
             .imageArrayLayers = 1,
-            .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT,
+            .imageUsage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_DST_BIT,
             .imageSharingMode = VK_SHARING_MODE_EXCLUSIVE,
             .queueFamilyIndexCount = 0,
             .pQueueFamilyIndices = nullptr,
@@ -310,11 +310,35 @@ namespace Anemone
             .oldSwapchain = nullptr,
         };
 
-        AE_VK_CALL(vkCreateSwapchainKHR(
+        VkSurfaceFullScreenExclusiveInfoEXT surfaceFullScreenExclusiveInfo;
+        if (this->_device->_deviceExtensions.HasEXTFullscreenExclusive)
+        {
+            surfaceFullScreenExclusiveInfo.sType = VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT;
+            surfaceFullScreenExclusiveInfo.pNext = const_cast<void*>(swapChainCreateInfo.pNext);
+            surfaceFullScreenExclusiveInfo.fullScreenExclusive = this->_fullscreen
+                ? VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT
+                : VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT;
+        }
+
+        VkResult result = vkCreateSwapchainKHR(
             this->_device->_logicalDevice,
             &swapChainCreateInfo,
             &VulkanCpuAllocator,
-            &this->_swapChainHandle));
+            &this->_swapChainHandle);
+
+        if ((this->_device->_deviceExtensions.HasEXTFullscreenExclusive) and (result == VK_ERROR_INITIALIZATION_FAILED))
+        {
+            // Failed to create swap chain with full screen info, try without it
+            swapChainCreateInfo.pNext = nullptr;
+
+            result = vkCreateSwapchainKHR(
+                this->_device->_logicalDevice,
+                &swapChainCreateInfo,
+                &VulkanCpuAllocator,
+                &this->_swapChainHandle);
+        }
+
+        AE_VK_CALL(result);
 
         uint32_t imagesCount = 0;
         AE_VK_CALL(vkGetSwapchainImagesKHR(this->_device->_logicalDevice, this->_swapChainHandle, &imagesCount, nullptr));
@@ -392,37 +416,45 @@ namespace Anemone
                 &this->_inFlightFences[i]));
         }
 
-        VkCommandPoolCreateInfo commandPoolCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-            .queueFamilyIndex = this->_device->_graphicsQueue->_familyIndex,
-        };
+        this->m_commandPool = MakeReference<VulkanCommandPool>(
+            this->_device,
+            this->_device->_graphicsQueue->_familyIndex);
+
+        //VkCommandPoolCreateInfo commandPoolCreateInfo{
+        //    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
+        //    .pNext = nullptr,
+        //    .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
+        //    .queueFamilyIndex = this->_device->_graphicsQueue->_familyIndex,
+        //};
 
         for (size_t i = 0; i < MaxFramesInFlight; ++i)
         {
-            AE_VK_CALL(vkCreateCommandPool(
-                this->_device->_logicalDevice,
-                &commandPoolCreateInfo,
-                &VulkanCpuAllocator, &this->commandPools[i]));
+            //AE_VK_CALL(vkCreateCommandPool(
+            //    this->_device->_logicalDevice,
+            //    &commandPoolCreateInfo,
+            //    &VulkanCpuAllocator, &this->commandPools[i]));
 
-            VkCommandBufferAllocateInfo commandBufferAllocateInfo{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                .pNext = nullptr,
-                .commandPool = this->commandPools[i],
-                .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-                .commandBufferCount = 1,
-            };
-
-            AE_VK_CALL(vkAllocateCommandBuffers(
-                this->_device->_logicalDevice,
-                &commandBufferAllocateInfo,
-                &this->commandBuffers[i]));
+            //VkCommandBufferAllocateInfo commandBufferAllocateInfo{
+            //    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            //    .pNext = nullptr,
+            //    .commandPool = this->commandPools[i],
+            //    .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
+            //    .commandBufferCount = 1,
+            //};
+            //
+            //AE_VK_CALL(vkAllocateCommandBuffers(
+            //    this->_device->_logicalDevice,
+            //    &commandBufferAllocateInfo,
+            //    &this->commandBuffers[i]));
+            this->m_commandBuffers[i] = this->m_commandPool->CreateCommandBuffer();
         }
     }
 
     void VulkanSwapChain::DestroySwapChain()
     {
+        // Before releasing resources, wait for all semaphores and fences to be signaled.
+        AE_VK_CALL(vkDeviceWaitIdle(this->_device->_logicalDevice));
+
         for (VkSemaphore const semaphore : this->_imageAvailableSemaphores)
         {
             vkDestroySemaphore(this->_device->_logicalDevice, semaphore, &VulkanCpuAllocator);
@@ -457,21 +489,25 @@ namespace Anemone
 
         for (size_t i = 0; i < MaxFramesInFlight; ++i)
         {
-            if (this->commandBuffers[i])
-            {
-                vkFreeCommandBuffers(this->_device->_logicalDevice, this->commandPools[i], 1, &this->commandBuffers[i]);
-                this->commandBuffers[i] = {};
-            }
+            this->m_commandBuffers[i] = {};
+            
+            //if (this->commandBuffers[i])
+            //{
+            //    vkFreeCommandBuffers(this->_device->_logicalDevice, this->commandPools[i], 1, &this->commandBuffers[i]);
+            //    this->commandBuffers[i] = {};
+            //}
         }
 
-        for (size_t i = 0; i < MaxFramesInFlight; ++i)
-        {
-            if (this->commandPools[i])
-            {
-                vkDestroyCommandPool(this->_device->_logicalDevice, this->commandPools[i], &VulkanCpuAllocator);
-                this->commandPools[i] = {};
-            }
-        }
+        this->m_commandPool = {};
+
+        //for (size_t i = 0; i < MaxFramesInFlight; ++i)
+        //{
+        //    if (this->commandPools[i])
+        //    {
+        //        vkDestroyCommandPool(this->_device->_logicalDevice, this->commandPools[i], &VulkanCpuAllocator);
+        //        this->commandPools[i] = {};
+        //    }
+        //}
 
         if (this->_swapChainHandle)
         {

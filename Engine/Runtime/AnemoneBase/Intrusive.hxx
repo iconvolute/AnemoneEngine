@@ -434,6 +434,25 @@ namespace Anemone
             return nullptr;
         }
 
+        constexpr bool Contains(T* item) const
+        {
+            Node* node = AsNode(item);
+
+            Node* it = this->Head.FLink;
+
+            while (it != &this->Head)
+            {
+                if (it == node)
+                {
+                    return true;
+                }
+
+                it = it->FLink;
+            }
+
+            return false;
+        }
+
         [[nodiscard]] constexpr bool IsEmpty() const
         {
             return this->Head.FLink == &this->Head;

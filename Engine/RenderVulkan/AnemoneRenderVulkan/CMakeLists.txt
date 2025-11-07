@@ -1,6 +1,8 @@
 target_sources(AnemoneRenderVulkan
     PRIVATE
         "Module.cxx"
+        "VulkanCommandBuffer.cxx"
+        "VulkanCpuAllocator.cxx"
         "VulkanDevice.cxx"
         "VulkanError.cxx"
         "VulkanHeaders.cxx"
@@ -8,6 +10,8 @@ target_sources(AnemoneRenderVulkan
         "VulkanSwapChain.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Module.hxx"
+        "VulkanCommandBuffer.hxx"
+        "VulkanCpuAllocator.hxx"
         "VulkanDevice.hxx"
         "VulkanError.hxx"
         "VulkanHeaders.hxx"

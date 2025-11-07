@@ -11,89 +11,6 @@
 
 namespace Anemone
 {
-    namespace
-    {
-        void* VKAPI_PTR FnVkAllocationFunction(
-            void* pUserData,
-            size_t size,
-            size_t alignment,
-            VkSystemAllocationScope allocationScope)
-        {
-            (void)pUserData;
-            (void)allocationScope;
-            void* result = _aligned_malloc(size, alignment);
-            // AE_TRACE(Error, "VK::Alloc size={}, alignment={}, scope={} => {}", size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
-            return result;
-        }
-
-        void VKAPI_PTR FnVkFreeFunction(
-            void* pUserData,
-            void* pMemory)
-        {
-            // AE_TRACE(Error, "VK::Free ptr={}", fmt::ptr(pMemory));
-
-            (void)pUserData;
-            _aligned_free(pMemory);
-        }
-
-        void VKAPI_PTR FnVkInternalAllocationNotification(
-            void* pUserData,
-            size_t size,
-            VkInternalAllocationType allocationType,
-            VkSystemAllocationScope allocationScope)
-        {
-            // AE_TRACE(Error, "VK::InternalAlloc size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
-            (void)pUserData;
-            (void)size;
-            (void)allocationType;
-            (void)allocationScope;
-        }
-
-        void VKAPI_PTR FnVkInternalFreeNotification(
-            void* pUserData,
-            size_t size,
-            VkInternalAllocationType allocationType,
-            VkSystemAllocationScope allocationScope)
-        {
-            // AE_TRACE(Error, "VK::InternalFree size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
-            (void)pUserData;
-            (void)size;
-            (void)allocationType;
-            (void)allocationScope;
-        }
-
-        void* VKAPI_PTR FnVkReallocationFunction(
-            void* pUserData,
-            void* pOriginal,
-            size_t size,
-            size_t alignment,
-            VkSystemAllocationScope allocationScope)
-        {
-            (void)pUserData;
-            (void)allocationScope;
-
-            if (size == 0)
-            {
-                // AE_TRACE(Error, "VM::Realloc ptr={}, size=0 => free", fmt::ptr(pOriginal));
-                _aligned_free(pOriginal);
-                return nullptr;
-            }
-
-            void* result = _aligned_realloc(pOriginal, size, alignment);
-            // AE_TRACE(Error, "VK::Realloc ptr={}, size={}, alignment={}, scope={} => {}", fmt::ptr(pOriginal), size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
-            return result;
-        }
-    }
-
-    VkAllocationCallbacks VulkanCpuAllocator{
-        .pUserData = nullptr,
-        .pfnAllocation = &FnVkAllocationFunction,
-        .pfnReallocation = &FnVkReallocationFunction,
-        .pfnFree = &FnVkFreeFunction,
-        .pfnInternalAllocation = &FnVkInternalAllocationNotification,
-        .pfnInternalFree = &FnVkInternalFreeNotification,
-    };
-
     VulkanDevice::VulkanDevice()
     {
         volkInitialize();
@@ -653,6 +570,11 @@ namespace Anemone
         outDeviceExtensions.HasEXTMeshShader = (meshShaderFeatures.meshShader != VK_FALSE) && (meshShaderFeatures.multiviewMeshShader != VK_FALSE);
         outDeviceExtensions.HasAccelerationStructure = accelerationStructureFeatures.accelerationStructure != VK_FALSE;
         outDeviceExtensions.HasRayTracingPipeline = rayTracingPipelineFeatures.rayTracingPipeline != VK_FALSE;
+        outDeviceExtensions.HasEXTFullscreenExclusive = std::any_of(deviceExtensions.begin(), deviceExtensions.end(),
+            [](VkExtensionProperties const& ext)
+        {
+            return std::strcmp(ext.extensionName, VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME) == 0;
+        });
 
         return true;
     }
@@ -835,14 +757,16 @@ namespace Anemone
         void* pUserData)
     {
         (void)pUserData;
-        // if ((severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) ||
-        //     (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
-        //{
+        if ((severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) ||
+            (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))
+        {
+            anemone_debugbreak();
+        }
+
         AE_TRACE(Error, "Vulkan Validation Layer: severity {} type {} msg: {}",
             std::to_underlying(severity),
             type,
             pCallbackData->pMessage);
-        //}
 
         return VK_FALSE;
     }
@@ -860,6 +784,11 @@ namespace Anemone
 
 #if ANEMONE_VULKAN_VALIDATION
         result.emplace_back("VK_LAYER_KHRONOS_validation");
+        result.emplace_back("VK_LAYER_KHRONOS_profiles");
+        //result.emplace_back("VK_LAYER_GOOGLE_threading");
+        //result.emplace_back("VK_LAYER_LUNARG_parameter_validation");
+        //result.emplace_back("VK_LAYER_LUNARG_object_tracker");
+        //result.emplace_back("VK_LAYER_LUNARG_core_validation");
 #endif
 
         return result;
@@ -877,12 +806,12 @@ namespace Anemone
 #endif
 
 #if ANEMONE_PLATFORM_WINDOWS
-        result.emplace_back("VK_KHR_win32_surface");
+        result.emplace_back(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);
 #endif
 
 #if ANEMONE_PLATFORM_LINUX
-        result.emplace_back("VK_KHR_xcb_surface");
-        result.emplace_back("VK_KHR_wayland_surface");
+        result.emplace_back(VK_KHR_XCB_SURFACE_EXTENSION_NAME);
+        result.emplace_back(VK_KHR_WAYLAND_SURFACE_EXTENSION_NAME);
 #endif
 
         return result;
@@ -903,6 +832,7 @@ namespace Anemone
         result.emplace_back(VK_KHR_IMAGE_FORMAT_LIST_EXTENSION_NAME);
         result.emplace_back(VK_KHR_SHADER_FLOAT_CONTROLS_EXTENSION_NAME);
         result.emplace_back(VK_KHR_DEFERRED_HOST_OPERATIONS_EXTENSION_NAME);
+        result.emplace_back(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME);
 
 #if ANEMONE_VULKAN_VALIDATION
         result.emplace_back(VK_EXT_TOOLING_INFO_EXTENSION_NAME);

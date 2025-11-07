@@ -1,6 +1,7 @@
 #pragma once
 #include "AnemoneRender/SwapChain.hxx"
 #include "AnemoneRenderVulkan/VulkanHeaders.hxx"
+#include "AnemoneRenderVulkan/VulkanCommandBuffer.hxx"
 #include "AnemoneApplication/HostWindow.hxx"
 
 namespace Anemone
@@ -43,12 +44,17 @@ namespace Anemone
         VkExtent2D _swapChainExtent{};
         VkSwapchainKHR _swapChainHandle{};
 
-        std::array<VkCommandPool, MaxFramesInFlight> commandPools{};
-        std::array<VkCommandBuffer, MaxFramesInFlight> commandBuffers{};
+        Reference<VulkanCommandPool> m_commandPool{};
+        std::array<Reference<VulkanCommandBuffer>, MaxFramesInFlight> m_commandBuffers{};
+
+        //std::array<VkCommandPool, MaxFramesInFlight> commandPools{};
+        //std::array<VkCommandBuffer, MaxFramesInFlight> commandBuffers{};
 
         size_t currentSemaphoreIndex = 0;
         size_t currentFrameIndex = 0;
         uint32_t currentImageIndex = 0;
+
+        bool _fullscreen = true;
 
     private:
         void CreateSwapChain();

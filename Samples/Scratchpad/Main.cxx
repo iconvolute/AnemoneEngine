@@ -709,10 +709,14 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
 
             while (not window1->IsClosed())
             {
+                if (window1->IsVisible())
+                {
+                    sq->Start();
+                    sq->Present();
+                }
+
                 Anemone::HostApplication::Get().ProcessMessages();
-                //Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
-                sq->Start();
-                sq->Present();
+                // Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
             }
 
 #if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")

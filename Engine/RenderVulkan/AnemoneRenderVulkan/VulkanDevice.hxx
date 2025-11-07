@@ -18,16 +18,15 @@ namespace Anemone
         bool HasEXTMeshShader : 1;
         bool HasAccelerationStructure : 1;
         bool HasRayTracingPipeline : 1;
+        bool HasEXTFullscreenExclusive : 1;
     };
-
-    extern VkAllocationCallbacks VulkanCpuAllocator;
 
     class VulkanDevice : public RenderDevice
     {
         friend class VulkanQueue;
         friend class VulkanSwapChain;
 
-    private:
+    public:
         VkInstance _instance{};
         VkDebugUtilsMessengerEXT _debugMessenger{};
         VkPhysicalDevice _physicalDevice{};

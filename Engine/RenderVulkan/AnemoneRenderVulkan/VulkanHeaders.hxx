@@ -7,9 +7,15 @@
 
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan.h>
+#include <vulkan/vulkan_beta.h>
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include <vulkan/vulkan_win32.h>
+#endif
+
+#if ANEMONE_PLATFORM_LINUX
+#include <vulkan/vulkan_xcb.h>
+#include <vulkan/vulkan_wayland.h>
 #endif
 
 #include <volk.h>
