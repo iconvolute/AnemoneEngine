@@ -299,8 +299,7 @@ namespace Anemone
 
         VkDeviceCreateInfo deviceCreateInfo{
             .sType = VK_STRUCTURE_TYPE_DEVICE_CREATE_INFO,
-            //.pNext = &physicalDeviceDescriptorIndexingFeatures,
-            .pNext = nullptr,
+            .pNext = &physicalDeviceDescriptorIndexingFeatures,
             .flags = 0,
             .queueCreateInfoCount = static_cast<uint32_t>(queueCreateInfos.size()),
             .pQueueCreateInfos = queueCreateInfos.data(),

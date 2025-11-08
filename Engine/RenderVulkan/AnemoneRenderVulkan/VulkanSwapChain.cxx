@@ -209,6 +209,8 @@ namespace Anemone
 
         AE_VK_CALL(vkCreateWin32SurfaceKHR(this->_device->_instance, &win32SurfaceCreateInfo, &VulkanCpuAllocator, &this->_surface));
 
+#elif ANEMONE_PLATFORM_LINUX
+        // nothing right now.
 #else
 #error "Not implemented"
 #endif
@@ -274,6 +276,7 @@ namespace Anemone
             .oldSwapchain = nullptr,
         };
 
+#if defined(VK_EXT_full_screen_exclusive)
         VkSurfaceFullScreenExclusiveInfoEXT surfaceFullScreenExclusiveInfo;
         if (this->_device->m_physicalDeviceExtensions.FullscreenExclusive)
         {
@@ -284,6 +287,7 @@ namespace Anemone
                 : VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT;
             swapChainCreateInfo.pNext = &surfaceFullScreenExclusiveInfo;
         }
+#endif
 
         VkResult result = vkCreateSwapchainKHR(
             this->_device->_logicalDevice,
@@ -348,12 +352,6 @@ namespace Anemone
             .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
             .pNext = nullptr,
             .flags = 0,
-        };
-
-        VkFenceCreateInfo const fenceCreateInfo{
-            .sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO,
-            .pNext = nullptr,
-            .flags = VK_FENCE_CREATE_SIGNALED_BIT,
         };
 
         this->_imageAvailableSemaphores.resize(imagesCount);

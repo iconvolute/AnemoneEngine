@@ -1,5 +1,7 @@
 #include "AnemoneRenderVulkan/VulkanCpuAllocator.hxx"
 
+#include <cstdlib>
+
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
 #endif
@@ -14,7 +16,11 @@ namespace Anemone
     {
         (void)pUserData;
         (void)allocationScope;
+#if defined(_MSC_VER)
         void* result = _aligned_malloc(size, alignment);
+#else
+        void* result = aligned_alloc(alignment, size);
+#endif
         // AE_TRACE(Error, "VK::Alloc size={}, alignment={}, scope={} => {}", size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
         return result;
     }
@@ -26,7 +32,11 @@ namespace Anemone
         // AE_TRACE(Error, "VK::Free ptr={}", fmt::ptr(pMemory));
 
         (void)pUserData;
+#if defined(_MSC_VER)
         _aligned_free(pMemory);
+#else
+        free(pMemory);
+#endif
     }
 
     void VKAPI_PTR FnVkInternalAllocationNotification(
@@ -68,11 +78,20 @@ namespace Anemone
         if (size == 0)
         {
             // AE_TRACE(Error, "VM::Realloc ptr={}, size=0 => free", fmt::ptr(pOriginal));
+#if defined(_MSC_VER)
             _aligned_free(pOriginal);
+#else
+            free(pOriginal);
+#endif
             return nullptr;
         }
 
+#if defined(_MSC_VER)
         void* result = _aligned_realloc(pOriginal, size, alignment);
+#else
+        free(pOriginal);
+        void* result = aligned_alloc(alignment, size);
+#endif
         // AE_TRACE(Error, "VK::Realloc ptr={}, size={}, alignment={}, scope={} => {}", fmt::ptr(pOriginal), size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
         return result;
     }

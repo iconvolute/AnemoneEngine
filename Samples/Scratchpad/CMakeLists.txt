@@ -14,7 +14,7 @@ target_link_libraries(Scratchpad
         AnemoneEntryPoint
 )
 
-if (Vulkan_FOUND AND WIN32)
+if (Vulkan_FOUND)
 
 target_link_libraries(Scratchpad
     PUBLIC

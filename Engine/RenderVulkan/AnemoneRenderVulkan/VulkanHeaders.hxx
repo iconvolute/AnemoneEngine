@@ -5,6 +5,12 @@
 #include "AnemoneInterop/Windows/Headers.hxx"
 #endif
 
+#if ANEMONE_PLATFORM_LINUX
+#include <X11/Xlib-xcb.h>
+#endif
+#undef None
+#undef Success
+
 #define VK_NO_PROTOTYPES
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
