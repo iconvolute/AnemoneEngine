@@ -352,10 +352,12 @@ namespace Anemone::VulkanGraphics
             outDeviceExtensions.*(extension.ptr) = validateExtension(extension.name);
         }
 
+#if defined(VK_EXT_full_screen_exclusive)
         if (outDeviceExtensions.SurfaceCapabilities2)
         {
             outDeviceExtensions.FullscreenExclusive = validateExtension(VK_EXT_FULL_SCREEN_EXCLUSIVE_EXTENSION_NAME);
         }
+#endif
 
         //
         // Query device features.
