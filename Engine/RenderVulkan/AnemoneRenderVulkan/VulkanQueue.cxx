@@ -17,7 +17,7 @@ namespace Anemone
             this->_queueIndex,
             &this->_queue);
 
-        const VkQueueFamilyProperties& properties = this->_device->_queueFamilyProperties[this->_familyIndex];
+        const VkQueueFamilyProperties& properties = this->_device->m_queueFamilyProperties[this->_familyIndex];
 
         this->_pipelineStageFlags =
             VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT |
@@ -59,13 +59,13 @@ namespace Anemone
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
                 VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 
-            if (this->_device->_deviceExtensions.HasGeometryShader)
+            if (this->_device->m_physicalDeviceExtensions.GeometryShader)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_GEOMETRY_SHADER_BIT;
             }
 
-            if (this->_device->_deviceExtensions.HasKHRFragmentShadingRate)
+            if (this->_device->m_physicalDeviceExtensions.FragmentShadingRate)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_FRAGMENT_SHADING_RATE_ATTACHMENT_BIT_KHR;
@@ -74,7 +74,7 @@ namespace Anemone
                     VK_ACCESS_FRAGMENT_SHADING_RATE_ATTACHMENT_READ_BIT_KHR;
             }
 
-            if (this->_device->_deviceExtensions.HasEXTFragmentDensityMap)
+            if (this->_device->m_physicalDeviceExtensions.FragmentDensityMap)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_FRAGMENT_DENSITY_PROCESS_BIT_EXT;
@@ -82,7 +82,7 @@ namespace Anemone
                 this->_accessFlags |=
                     VK_ACCESS_FRAGMENT_DENSITY_MAP_READ_BIT_EXT;
             }
-            if (this->_device->_deviceExtensions.HasEXTMeshShader)
+            if (this->_device->m_physicalDeviceExtensions.MeshShader)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_TASK_SHADER_BIT_EXT |
@@ -105,7 +105,7 @@ namespace Anemone
                 VK_ACCESS_SHADER_READ_BIT |
                 VK_ACCESS_SHADER_WRITE_BIT;
 
-            if (this->_device->_deviceExtensions.HasAccelerationStructure)
+            if (this->_device->m_physicalDeviceExtensions.AccelerationStructure)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_ACCELERATION_STRUCTURE_BUILD_BIT_KHR;
@@ -115,7 +115,7 @@ namespace Anemone
                     VK_ACCESS_ACCELERATION_STRUCTURE_WRITE_BIT_KHR;
             }
 
-            if (this->_device->_deviceExtensions.HasRayTracingPipeline)
+            if (this->_device->m_physicalDeviceExtensions.RayTracingPipeline)
             {
                 this->_pipelineStageFlags |=
                     VK_PIPELINE_STAGE_RAY_TRACING_SHADER_BIT_KHR;
@@ -131,5 +131,10 @@ namespace Anemone
 
     VulkanQueue::~VulkanQueue()
     {
+    }
+
+    void VulkanQueue::Submit(VulkanCommandBuffer& commandBuffer)
+    {
+        (void)commandBuffer;
     }
 }

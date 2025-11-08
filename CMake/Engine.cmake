@@ -62,6 +62,7 @@ function(_anemone_target_enable_warnings target_name)
                     /wd4711
                     ################
                     /wd4514
+                    /wd4371 # layout of class may have changed from a previous version of the compiler due to better packing of member
                     /wd4582
                     /wd4820
                     /wd4365

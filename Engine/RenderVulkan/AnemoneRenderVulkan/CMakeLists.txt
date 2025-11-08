@@ -8,6 +8,8 @@ target_sources(AnemoneRenderVulkan
         "VulkanHeaders.cxx"
         "VulkanQueue.cxx"
         "VulkanSwapChain.cxx"
+        "VulkanUtils.cxx"
+        "VulkanViewport.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Module.hxx"
         "VulkanCommandBuffer.hxx"
@@ -17,4 +19,6 @@ target_sources(AnemoneRenderVulkan
         "VulkanHeaders.hxx"
         "VulkanQueue.hxx"
         "VulkanSwapChain.hxx"
+        "VulkanUtils.hxx"
+        "VulkanViewport.hxx"
 )

@@ -1,5 +1,6 @@
 #pragma once
 #include "AnemoneRenderVulkan/VulkanHeaders.hxx"
+#include "AnemoneDiagnostics/Debug.hxx"
 
 namespace Anemone
 {

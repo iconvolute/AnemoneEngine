@@ -50,10 +50,10 @@ set(CMAKE_CXX_FLAGS_INIT "${TOOLCHAIN_COMMON_COMPILER_FLAGS} ${TOOLCHAIN_COMMON_
 set(CMAKE_C_FLAGS_INIT   "${TOOLCHAIN_COMMON_COMPILER_FLAGS} ${TOOLCHAIN_COMMON_C_FLAGS}")
 set(CMAKE_SHARED_LINKER_FLAGS_INIT "")
 
-set(TOOLCHAIN_COMPILER_DEBUG_FLAGS      "-RTC1     -Od -Ob0           -D_DEBUG -sdl             -JMC  -GS")
-set(TOOLCHAIN_COMPILER_DEVELOPER_FLAGS  "-RTC1 -Zo -O2 -Ob1           -DNDEBUG -sdl- -guard:cf- -JMC- -GS-     -Gy -Gw")
-set(TOOLCHAIN_COMPILER_PROFILING_FLAGS  "          -O2 -Ob3 -Oi -Qpar -DNDEBUG -sdl- -guard:cf- -JMC- -GS- -GL -Gy -Gw")
-set(TOOLCHAIN_COMPILER_SHIPPING_FLAGS   "          -O2 -Ob3 -Oi -Qpar -DNDEBUG -sdl- -guard:cf- -JMC- -GS- -GL -Gy -Gw")
+set(TOOLCHAIN_COMPILER_DEBUG_FLAGS      "-RTC1         -Od -Ob0           -D_DEBUG -sdl             -JMC  -GS")
+set(TOOLCHAIN_COMPILER_DEVELOPER_FLAGS  "      -Zo -ZI -O2 -Ob1           -DNDEBUG -sdl- -guard:cf- -JMC- -GS-     -Gy -Gw")
+set(TOOLCHAIN_COMPILER_PROFILING_FLAGS  "          -Zi -O2 -Ob3 -Oi -Qpar -DNDEBUG -sdl- -guard:cf- -JMC- -GS- -GL -Gy -Gw")
+set(TOOLCHAIN_COMPILER_SHIPPING_FLAGS   "          -Zi -O2 -Ob3 -Oi -Qpar -DNDEBUG -sdl- -guard:cf- -JMC- -GS- -GL -Gy -Gw")
 
 set(TOOLCHAIN_LINK_DEBUG_FLAGS          "-DEBUG -INCREMENTAL    -OPT:NOREF -OPT:NOICF")
 set(TOOLCHAIN_LINK_DEVELOPER_FLAGS      "-DEBUG -INCREMENTAL:NO -OPT:NOREF -OPT:NOICF -LTCG")

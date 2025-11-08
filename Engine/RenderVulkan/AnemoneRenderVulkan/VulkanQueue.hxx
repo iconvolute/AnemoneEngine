@@ -5,6 +5,7 @@
 namespace Anemone
 {
     class VulkanDevice;
+    class VulkanCommandBuffer;
 
     enum class VulkanQueueType
     {
@@ -27,5 +28,9 @@ namespace Anemone
         VulkanQueueType _queueType{};
         VkAccessFlags _accessFlags{};
         VkPipelineStageFlags _pipelineStageFlags{};
+
+    public:
+        void Submit(
+            VulkanCommandBuffer& commandBuffer);
     };
 }

@@ -38,7 +38,7 @@ namespace Anemone
         std::vector<VkImageView> _swapChainImageViews{};
         std::vector<VkSemaphore> _imageAvailableSemaphores{};
         std::vector<VkSemaphore> _renderFinishedSemaphores{};
-        std::vector<VkFence> _inFlightFences{};
+        //std::vector<VkFence> _inFlightFences{};
 
         VkSurfaceFormatKHR _swapChainImageFormat{};
         VkExtent2D _swapChainExtent{};

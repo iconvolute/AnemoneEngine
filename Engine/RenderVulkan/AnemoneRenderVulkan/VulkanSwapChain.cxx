@@ -24,62 +24,14 @@ namespace Anemone
         this->DestroySwapChain();
     }
 
-    static void TransitionImageLayout(
-        VkImage image,
-        VkImageLayout oldLayout,
-        VkImageLayout newLayout,
-        VkAccessFlags2 srcAccessMask,
-        VkAccessFlags2 dstAccessMask,
-        VkPipelineStageFlags2 srcStageMask,
-        VkPipelineStageFlags2 dstStageMask,
-        VkImageAspectFlags aspectMask,
-        VkCommandBuffer commandBuffer)
-    {
-
-        VkImageMemoryBarrier2 barrier = {
-            .sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER_2,
-            .pNext = nullptr,
-            .srcStageMask = srcStageMask,
-            .srcAccessMask = srcAccessMask,
-            .dstStageMask = dstStageMask,
-            .dstAccessMask = dstAccessMask,
-            .oldLayout = oldLayout,
-            .newLayout = newLayout,
-            .srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED,
-            .image = image,
-            .subresourceRange = VkImageSubresourceRange{
-                .aspectMask = aspectMask,
-                .baseMipLevel = 0,
-                .levelCount = 1,
-                .baseArrayLayer = 0,
-                .layerCount = 1,
-            },
-        };
-
-        VkDependencyInfo dependencyInfo{
-            .sType = VK_STRUCTURE_TYPE_DEPENDENCY_INFO,
-            .pNext = nullptr,
-            .dependencyFlags = {},
-            .memoryBarrierCount = 0,
-            .pMemoryBarriers = nullptr,
-            .bufferMemoryBarrierCount = 0,
-            .pBufferMemoryBarriers = nullptr,
-            .imageMemoryBarrierCount = 1,
-            .pImageMemoryBarriers = &barrier,
-        };
-
-        vkCmdPipelineBarrier2(commandBuffer, &dependencyInfo);
-    }
-
     void VulkanSwapChain::Start()
     {
-        VkCommandBuffer currentCommandBuffer = this->m_commandBuffers[this->currentFrameIndex]->GetHandle();
+        VkFence currentFence = this->m_commandBuffers[this->currentFrameIndex]->GetFence();
 
         while (vkWaitForFences(
                    this->_device->_logicalDevice,
                    1,
-                   &this->_inFlightFences[this->currentFrameIndex],
+                   &currentFence,
                    VK_TRUE,
                    UINT64_MAX) == VK_TIMEOUT)
         {
@@ -104,22 +56,25 @@ namespace Anemone
             AE_PANIC("Failed to acquire swap chain image");
         }
 
-        AE_VK_CALL(vkResetFences(
-            this->_device->_logicalDevice,
-            1,
-            &this->_inFlightFences[this->currentFrameIndex]));
+        this->m_commandBuffers[this->currentFrameIndex]->Reset();
+        this->m_commandBuffers[this->currentFrameIndex]->BeginRecording();
 
-        AE_VK_CALL(vkResetCommandBuffer(currentCommandBuffer, 0));
+        // AE_VK_CALL(vkResetFences(
+        //     this->_device->_logicalDevice,
+        //     1,
+        //     &currentFence));
+        //
+        // AE_VK_CALL(vkResetCommandBuffer(currentCommandBuffer, 0));
 
-        VkCommandBufferBeginInfo commandBufferBeginInfo{
+        /*VkCommandBufferBeginInfo commandBufferBeginInfo{
             .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
             .pNext = nullptr,
             .flags = 0,
             .pInheritanceInfo = nullptr,
         };
-        AE_VK_CALL(vkBeginCommandBuffer(currentCommandBuffer, &commandBufferBeginInfo));
+        AE_VK_CALL(vkBeginCommandBuffer(currentCommandBuffer, &commandBufferBeginInfo));*/
 
-        TransitionImageLayout(
+        this->m_commandBuffers[this->currentFrameIndex]->ImageTransition(
             this->_swapChainImages[this->currentImageIndex],
             VK_IMAGE_LAYOUT_UNDEFINED,
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
@@ -127,8 +82,7 @@ namespace Anemone
             VK_ACCESS_2_COLOR_ATTACHMENT_WRITE_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            currentCommandBuffer);
+            VK_IMAGE_ASPECT_COLOR_BIT);
 
 
         // THIS IS RENDERING NOW
@@ -165,15 +119,18 @@ namespace Anemone
             .pStencilAttachment = nullptr,
         };
 
-        vkCmdBeginRendering(currentCommandBuffer, &renderingInfo);
+        this->m_commandBuffers[this->currentFrameIndex]->BeginRendering(renderingInfo);
     }
 
     void VulkanSwapChain::Present()
     {
         VkCommandBuffer currentCommandBuffer = this->m_commandBuffers[this->currentFrameIndex]->GetHandle();
+        VkFence currentFence = this->m_commandBuffers[this->currentFrameIndex]->GetFence();
 
-        vkCmdEndRendering(currentCommandBuffer);
-        TransitionImageLayout(
+        this->m_commandBuffers[this->currentFrameIndex]->EndRendering();
+        // vkCmdEndRendering(currentCommandBuffer);
+
+        this->m_commandBuffers[this->currentFrameIndex]->ImageTransition(
             this->_swapChainImages[this->currentImageIndex],
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
             VK_IMAGE_LAYOUT_PRESENT_SRC_KHR,
@@ -181,10 +138,10 @@ namespace Anemone
             {},
             VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT,
             VK_PIPELINE_STAGE_2_BOTTOM_OF_PIPE_BIT,
-            VK_IMAGE_ASPECT_COLOR_BIT,
-            currentCommandBuffer);
+            VK_IMAGE_ASPECT_COLOR_BIT);
 
-        AE_VK_CALL(vkEndCommandBuffer(currentCommandBuffer));
+        this->m_commandBuffers[this->currentFrameIndex]->EndRecording();
+        // AE_VK_CALL(vkEndCommandBuffer(currentCommandBuffer));
 
         VkPipelineStageFlags waitDestinationStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 
@@ -204,7 +161,7 @@ namespace Anemone
             this->_device->_graphicsQueue->_queue,
             1,
             &submitInfo,
-            this->_inFlightFences[this->currentFrameIndex]));
+            currentFence));
 
         VkPresentInfoKHR presentInfo{
             .sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR,
@@ -257,24 +214,31 @@ namespace Anemone
 #endif
 
         std::vector<VkSurfaceFormatKHR> surfaceFormats{};
-        AE_VK_CALL(VulkanDevice::EnumeratePhysicalDeviceSurfaceFormats(
+        AE_VK_CALL(VulkanGraphics::EnumeratePhysicalDeviceSurfaceFormats(
             this->_device->_physicalDevice,
             this->_surface,
             surfaceFormats));
 
         std::vector<VkPresentModeKHR> presentModes{};
-        AE_VK_CALL(VulkanDevice::EnumerateSurfacePresentModes(
+        AE_VK_CALL(VulkanGraphics::EnumerateSurfacePresentModes(
             this->_device->_physicalDevice,
             this->_surface,
             presentModes));
 
-        if (VulkanDevice::SupportsPresent(this->_device->_physicalDevice, this->_surface, *this->_device->_graphicsQueue))
+        VkBool32 presentSupport = VK_FALSE;
+        AE_VK_CALL(vkGetPhysicalDeviceSurfaceSupportKHR(
+            this->_device->_physicalDevice,
+            this->_device->_graphicsQueue->_familyIndex,
+            this->_surface,
+            &presentSupport));
+
+        if (presentSupport != VK_FALSE)
         {
             this->_presentQueue = this->_device->_graphicsQueue;
         }
         else
         {
-            AE_PANIC("Cannot find a queue that supports present");
+            AE_PANIC("Default Graphics Queue doesn't support presenting to the surface");
         }
 
         VkSurfaceCapabilitiesKHR surfaceCapabilities{};
@@ -311,13 +275,14 @@ namespace Anemone
         };
 
         VkSurfaceFullScreenExclusiveInfoEXT surfaceFullScreenExclusiveInfo;
-        if (this->_device->_deviceExtensions.HasEXTFullscreenExclusive)
+        if (this->_device->m_physicalDeviceExtensions.FullscreenExclusive)
         {
             surfaceFullScreenExclusiveInfo.sType = VK_STRUCTURE_TYPE_SURFACE_FULL_SCREEN_EXCLUSIVE_INFO_EXT;
             surfaceFullScreenExclusiveInfo.pNext = const_cast<void*>(swapChainCreateInfo.pNext);
             surfaceFullScreenExclusiveInfo.fullScreenExclusive = this->_fullscreen
                 ? VK_FULL_SCREEN_EXCLUSIVE_ALLOWED_EXT
                 : VK_FULL_SCREEN_EXCLUSIVE_DISALLOWED_EXT;
+            swapChainCreateInfo.pNext = &surfaceFullScreenExclusiveInfo;
         }
 
         VkResult result = vkCreateSwapchainKHR(
@@ -326,7 +291,7 @@ namespace Anemone
             &VulkanCpuAllocator,
             &this->_swapChainHandle);
 
-        if ((this->_device->_deviceExtensions.HasEXTFullscreenExclusive) and (result == VK_ERROR_INITIALIZATION_FAILED))
+        if ((this->_device->m_physicalDeviceExtensions.FullscreenExclusive) and (result == VK_ERROR_INITIALIZATION_FAILED))
         {
             // Failed to create swap chain with full screen info, try without it
             swapChainCreateInfo.pNext = nullptr;
@@ -393,7 +358,6 @@ namespace Anemone
 
         this->_imageAvailableSemaphores.resize(imagesCount);
         this->_renderFinishedSemaphores.resize(imagesCount);
-        this->_inFlightFences.resize(imagesCount);
 
         for (uint32_t i = 0; i < imagesCount; ++i)
         {
@@ -408,44 +372,14 @@ namespace Anemone
                 &semaphoreCreateInfo,
                 &VulkanCpuAllocator,
                 &this->_renderFinishedSemaphores[i]));
-
-            AE_VK_CALL(vkCreateFence(
-                this->_device->_logicalDevice,
-                &fenceCreateInfo,
-                &VulkanCpuAllocator,
-                &this->_inFlightFences[i]));
         }
 
         this->m_commandPool = MakeReference<VulkanCommandPool>(
             this->_device,
             this->_device->_graphicsQueue->_familyIndex);
 
-        //VkCommandPoolCreateInfo commandPoolCreateInfo{
-        //    .sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO,
-        //    .pNext = nullptr,
-        //    .flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT,
-        //    .queueFamilyIndex = this->_device->_graphicsQueue->_familyIndex,
-        //};
-
         for (size_t i = 0; i < MaxFramesInFlight; ++i)
         {
-            //AE_VK_CALL(vkCreateCommandPool(
-            //    this->_device->_logicalDevice,
-            //    &commandPoolCreateInfo,
-            //    &VulkanCpuAllocator, &this->commandPools[i]));
-
-            //VkCommandBufferAllocateInfo commandBufferAllocateInfo{
-            //    .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-            //    .pNext = nullptr,
-            //    .commandPool = this->commandPools[i],
-            //    .level = VK_COMMAND_BUFFER_LEVEL_PRIMARY,
-            //    .commandBufferCount = 1,
-            //};
-            //
-            //AE_VK_CALL(vkAllocateCommandBuffers(
-            //    this->_device->_logicalDevice,
-            //    &commandBufferAllocateInfo,
-            //    &this->commandBuffers[i]));
             this->m_commandBuffers[i] = this->m_commandPool->CreateCommandBuffer();
         }
     }
@@ -469,15 +403,6 @@ namespace Anemone
 
         this->_renderFinishedSemaphores.clear();
 
-        for (VkFence& fence : this->_inFlightFences)
-        {
-            if (fence)
-            {
-                vkDestroyFence(this->_device->_logicalDevice, fence, &VulkanCpuAllocator);
-                fence = {};
-            }
-        }
-
         for (VkImageView const imageView : this->_swapChainImageViews)
         {
             vkDestroyImageView(this->_device->_logicalDevice, imageView, &VulkanCpuAllocator);
@@ -490,24 +415,9 @@ namespace Anemone
         for (size_t i = 0; i < MaxFramesInFlight; ++i)
         {
             this->m_commandBuffers[i] = {};
-            
-            //if (this->commandBuffers[i])
-            //{
-            //    vkFreeCommandBuffers(this->_device->_logicalDevice, this->commandPools[i], 1, &this->commandBuffers[i]);
-            //    this->commandBuffers[i] = {};
-            //}
         }
 
         this->m_commandPool = {};
-
-        //for (size_t i = 0; i < MaxFramesInFlight; ++i)
-        //{
-        //    if (this->commandPools[i])
-        //    {
-        //        vkDestroyCommandPool(this->_device->_logicalDevice, this->commandPools[i], &VulkanCpuAllocator);
-        //        this->commandPools[i] = {};
-        //    }
-        //}
 
         if (this->_swapChainHandle)
         {
