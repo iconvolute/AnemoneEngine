@@ -31,7 +31,7 @@ struct fmt::formatter<Anemone::Version>
         return context.begin();
     }
 
-    auto format(Anemone::Version const& version, auto& context)
+    auto format(Anemone::Version const& version, auto& context) const
     {
         return format_to(context.out(), "{}.{}.{}.{}", version.Major, version.Minor, version.Patch, version.Tweak);
     }

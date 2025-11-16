@@ -44,6 +44,18 @@ namespace Anemone
             nan, nan};
     }
 
+    inline Matrix3x2F Matrix3x2F::CreateTransform(float scaleX, float scaleY, float angle, float offsetX, float offsetY)
+    {
+        float const s = Sin(angle);
+        float const c = Cos(angle);
+
+        return Matrix3x2F{
+            c * scaleX, s * scaleY,
+            -s * scaleX, c * scaleY,
+            offsetX, offsetY
+        };
+    }
+
     inline Matrix3x2F Matrix3x2F::CreateTranslation(float positionX, float positionY)
     {
         return Matrix3x2F{
@@ -172,6 +184,14 @@ namespace Anemone
         return PointF{
             (point.X * matrix.M11) + (point.Y * matrix.M21) + matrix.M31,
             (point.X * matrix.M12) + (point.Y * matrix.M22) + matrix.M32};
+    }
+
+    // TODO: Use Vector2F when available
+    constexpr PointF TransformVector(Matrix3x2F matrix, PointF vector)
+    {
+        return PointF{
+            (vector.X * matrix.M11) + (vector.Y * matrix.M21),
+            (vector.X * matrix.M12) + (vector.Y * matrix.M22)};
     }
 
     constexpr Matrix3x2F Multiply(Matrix3x2F const& left, Matrix3x2F const& right)

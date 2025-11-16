@@ -18,12 +18,12 @@ namespace Anemone
         Fatal,
         None,
 
-#if ANEMONE_BUILD_SHIPPING
+#if ANEMONE_BUILD_SHIPPING || ANEMONE_BUILD_PROFILING
         Default = Error,
-#elif ANEMONE_CONFIG_DEBUG
-        Default = Debug,
+#elif ANEMONE_BUILD_DEVELOPER
+        Default = Information,
 #else
-        Default = Warning,
+        Default = Verbose,
 #endif
     };
 

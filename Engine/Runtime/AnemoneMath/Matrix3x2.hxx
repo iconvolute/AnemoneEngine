@@ -10,7 +10,7 @@ namespace Anemone
     {
         float M11, M12;
         float M21, M22;
-        float M31, M32;
+        float M31, M32; // OffsetX,Y
 
         [[nodiscard]] constexpr bool operator==(Matrix3x2F const& other) const = default;
         [[nodiscard]] constexpr bool operator!=(Matrix3x2F const& other) const = default;
@@ -19,6 +19,8 @@ namespace Anemone
 
         [[nodiscard]] static constexpr Matrix3x2F CreateIdentity();
         [[nodiscard]] static constexpr Matrix3x2F CreateNaN();
+
+        [[nodiscard]] static Matrix3x2F CreateTransform(float scaleX, float scaleY, float angle, float offsetX, float offsetY);
 
         [[nodiscard]] static Matrix3x2F CreateTranslation(float positionX, float positionY);
 
