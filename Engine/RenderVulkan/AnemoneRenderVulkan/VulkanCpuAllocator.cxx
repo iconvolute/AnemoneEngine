@@ -6,8 +6,11 @@
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
 #endif
 
+#if !ANEMONE_BUILD_SHIPPING
+
 namespace Anemone
 {
+
     void* VKAPI_PTR FnVkAllocationFunction(
         void* pUserData,
         size_t size,
@@ -16,21 +19,20 @@ namespace Anemone
     {
         (void)pUserData;
         (void)allocationScope;
+
 #if defined(_MSC_VER)
-        void* result = _aligned_malloc(size, alignment);
+        return _aligned_malloc(size, alignment);
 #else
-        void* result = aligned_alloc(alignment, size);
+        // aligned_alloc requires size % alignment == 0
+        size_t alignedSize = (size + alignment - 1) & ~(alignment - 1);
+        return aligned_alloc(alignment, alignedSize);
 #endif
-        // AE_TRACE(Error, "VK::Alloc size={}, alignment={}, scope={} => {}", size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
-        return result;
     }
 
     void VKAPI_PTR FnVkFreeFunction(
         void* pUserData,
         void* pMemory)
     {
-        // AE_TRACE(Error, "VK::Free ptr={}", fmt::ptr(pMemory));
-
         (void)pUserData;
 #if defined(_MSC_VER)
         _aligned_free(pMemory);
@@ -45,7 +47,6 @@ namespace Anemone
         VkInternalAllocationType allocationType,
         VkSystemAllocationScope allocationScope)
     {
-        // AE_TRACE(Error, "VK::InternalAlloc size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
         (void)pUserData;
         (void)size;
         (void)allocationType;
@@ -58,7 +59,6 @@ namespace Anemone
         VkInternalAllocationType allocationType,
         VkSystemAllocationScope allocationScope)
     {
-        // AE_TRACE(Error, "VK::InternalFree size={}, type={}, scope={}", size, std::to_underlying(allocationType), std::to_underlying(allocationScope));
         (void)pUserData;
         (void)size;
         (void)allocationType;
@@ -77,7 +77,6 @@ namespace Anemone
 
         if (size == 0)
         {
-            // AE_TRACE(Error, "VM::Realloc ptr={}, size=0 => free", fmt::ptr(pOriginal));
 #if defined(_MSC_VER)
             _aligned_free(pOriginal);
 #else
@@ -88,15 +87,34 @@ namespace Anemone
 
 #if defined(_MSC_VER)
         void* result = _aligned_realloc(pOriginal, size, alignment);
+        if (!result && size)
+        {
+            // Fallback: manually allocate + copy on failure
+            void* newMem = _aligned_malloc(size, alignment);
+            if (newMem && pOriginal)
+            {
+                // Copy old content (unknown old size, so copy min)
+                memcpy(newMem, pOriginal, size);
+            }
+            _aligned_free(pOriginal);
+            result = newMem;
+        }
 #else
-        free(pOriginal);
-        void* result = aligned_alloc(alignment, size);
+        // aligned_alloc requires size multiple of alignment
+        size_t alignedSize = (size + alignment - 1) & ~(alignment - 1);
+        void* newMem = aligned_alloc(alignment, alignedSize);
+        if (newMem && pOriginal)
+        {
+            // No reliable old size, assume smaller of new/old
+            memcpy(newMem, pOriginal, size);
+            free(pOriginal);
+        }
+        void* result = newMem;
 #endif
-        // AE_TRACE(Error, "VK::Realloc ptr={}, size={}, alignment={}, scope={} => {}", fmt::ptr(pOriginal), size, alignment, std::to_underlying(allocationScope), fmt::ptr(result));
         return result;
     }
 
-    VkAllocationCallbacks VulkanCpuAllocator{
+    VkAllocationCallbacks gVulkanCpuAllocator{
         .pUserData = nullptr,
         .pfnAllocation = &FnVkAllocationFunction,
         .pfnReallocation = &FnVkReallocationFunction,
@@ -104,4 +122,7 @@ namespace Anemone
         .pfnInternalAllocation = &FnVkInternalAllocationNotification,
         .pfnInternalFree = &FnVkInternalFreeNotification,
     };
+
+    VkAllocationCallbacks* VulkanCpuAllocator = &gVulkanCpuAllocator;
 }
+#endif

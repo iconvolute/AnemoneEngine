@@ -3,5 +3,9 @@
 
 namespace Anemone
 {
-    extern VkAllocationCallbacks VulkanCpuAllocator;
+#if ANEMONE_BUILD_SHIPPING
+    inline constexpr VkAllocationCallbacks* VulkanCpuAllocator = nullptr;
+#else
+    extern VkAllocationCallbacks* VulkanCpuAllocator;
+#endif
 }

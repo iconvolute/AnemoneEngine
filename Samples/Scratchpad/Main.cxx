@@ -326,8 +326,9 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
             window1->SetInputEnabled(true);
 
 #if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
-            auto rd = Anemone::CreateRenderDevice();
-            auto sq = rd->CreateSwapChain(window1);
+            auto rd = Anemone::CreateGpuDevice();
+            auto sq = rd->CreateViewport(window1);
+            auto ct = rd->GetImmediateContext();
 
 #endif
 
@@ -335,8 +336,15 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
             {
                 if (window1->IsVisible())
                 {
-                    sq->Start();
-                    sq->Present();
+                    ct->BeginFrame();
+                    ct->BeginDrawingViewport(*sq);
+                    ct->BeginRecording();
+                    ct->EndRecording();
+                    ct->EndDrawingViewport(*sq);
+                    ct->EndFrame();
+                    //(void)sq;
+                    //sq->Start();
+                    //sq->Present();
                 }
 
                 Anemone::HostApplication::Get().ProcessMessages();

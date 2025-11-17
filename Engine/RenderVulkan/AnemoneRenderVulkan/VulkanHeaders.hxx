@@ -11,7 +11,10 @@
 #undef None
 #undef Success
 
+
 #define VK_NO_PROTOTYPES
+#define VK_ENABLE_BETA_EXTENSIONS
+
 #include <vulkan/vulkan.h>
 #include <vulkan/vulkan_beta.h>
 
@@ -50,4 +53,8 @@
 
 #ifndef ANEMONE_VULKAN_FEATURE_CRASH_DIAGNOSTIC
 #define ANEMONE_VULKAN_FEATURE_CRASH_DIAGNOSTIC false
+#endif
+
+#if ANEMONE_VULKAN_VALIDATION
+#include <vulkan/vk_enum_string_helper.h>
 #endif

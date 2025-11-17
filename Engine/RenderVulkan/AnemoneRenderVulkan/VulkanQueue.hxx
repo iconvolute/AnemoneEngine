@@ -1,11 +1,17 @@
 #pragma once
 #include "AnemoneRender/Device.hxx"
 #include "AnemoneRenderVulkan/VulkanHeaders.hxx"
+#include "AnemoneRenderVulkan/VulkanSemaphore.hxx"
+#include "AnemoneThreading/CriticalSection.hxx"
+#include "AnemoneRenderVulkan/VulkanCommandBuffer.hxx"
+
+#include <span>
 
 namespace Anemone
 {
     class VulkanDevice;
     class VulkanCommandBuffer;
+    class VulkanCommandListTask;
 
     enum class VulkanQueueType
     {
@@ -17,20 +23,38 @@ namespace Anemone
     class VulkanQueue : public ReferenceCounted<VulkanQueue>
     {
     public:
-        VulkanQueue(VulkanDevice* device, uint32_t familyIndex, VulkanQueueType queueType);
+        VulkanQueue(
+            VulkanDevice& device,
+            VulkanQueueType queueType,
+            uint32_t familyIndex,
+            VkQueueFlags queueFlags);
+
         ~VulkanQueue();
 
     public:
-        VulkanDevice* _device{};
-        VkQueue _queue{};
-        uint32_t _familyIndex{};
-        uint32_t _queueIndex{};
-        VulkanQueueType _queueType{};
-        VkAccessFlags _accessFlags{};
-        VkPipelineStageFlags _pipelineStageFlags{};
+        VulkanDevice* m_device{};
+        VulkanQueueType m_queueType{};
+        VkQueue m_queue{};
+        uint32_t m_familyIndex{};
+        VkAccessFlags m_accessFlags{};
+        VkPipelineStageFlags m_pipelineStageFlags{};
+
+        CriticalSection m_commandBufferPoolLock{};
+        IntrusiveList<VulkanCommandBufferPool> m_commandBufferPools[2];
+
+        Reference<VulkanSemaphore> m_timelineSemaphore{};
+        uint64_t m_timelineNextValue{1};
 
     public:
-        void Submit(
-            VulkanCommandBuffer& commandBuffer);
+        VulkanCommandBufferPool* AcquireCommandBufferPool(
+            VulkanCommandBufferType commandBufferType);
+
+        void ReleaseCommandBufferPool(
+            VulkanCommandBufferPool* commandBufferPool);
+
+    public:
+        void Submit(VulkanCommandListTask& task);
+        void Submit(std::span<VkSubmitInfo2 const> submitInfo, VulkanFence* fence);
+        void Submit(VkSubmitInfo2 const& submitInfo, VulkanFence* fence);
     };
 }

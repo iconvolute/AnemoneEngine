@@ -12,18 +12,17 @@ namespace Anemone
 
 #if ANEMONE_BUILD_SHIPPING
 
-#define AE_VK_CALL(expression) (void)(expression)
+#define AE_VULKAN_ENSURE(expression) (void)(expression)
 
 #else
 
-#define AE_VK_CALL(expression) \
+#define AE_VULKAN_ENSURE(expression) \
     do \
     { \
-        VkResult const _ae_vk_result = (expression); \
-        if (_ae_vk_result != VK_SUCCESS) \
+        VkResult const aeVulkanEnsureResult = (expression); \
+        if (aeVulkanEnsureResult != VK_SUCCESS) \
         { \
-            Anemone::VulkanError::ReportError(_ae_vk_result); \
-            AE_PANIC("Vulkan call failed: {} at {}:{}", #expression, __FILE__, __LINE__); \
+            Anemone::VulkanError::ReportError(aeVulkanEnsureResult); \
         } \
     } while (false)
 

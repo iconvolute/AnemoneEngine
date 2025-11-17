@@ -76,8 +76,9 @@ namespace Anemone
 
             while (node)
             {
+                Node* link = node->Link;
                 std::forward<CallbackT>(callback)(*AsValue(node));
-                node = node->Link;
+                node = link;
             }
         }
 
@@ -208,8 +209,9 @@ namespace Anemone
 
             while (node)
             {
+                Node* link = node->Link;
                 std::forward<CallbackT>(callback)(*AsValue(node));
-                node = node->Link;
+                node = link;
             }
         }
 
@@ -402,8 +404,9 @@ namespace Anemone
             Node* node = this->Head.FLink;
             while (node != &this->Head)
             {
+                Node* flink = node->FLink;
                 std::forward<CallbackT>(callback)(*AsValue(node));
-                node = node->FLink;
+                node = flink;
             }
         }
 
@@ -413,8 +416,9 @@ namespace Anemone
             Node* node = this->Head.BLink;
             while (node != &this->Head)
             {
+                Node* blink = node->BLink;
                 std::forward<CallbackT>(callback)(*AsValue(node));
-                node = node->BLink;
+                node = blink;
             }
         }
 
