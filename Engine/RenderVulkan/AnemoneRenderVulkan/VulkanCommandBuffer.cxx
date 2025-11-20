@@ -84,23 +84,29 @@ namespace Anemone
         }
         else
         {
+#if ANEMONE_VULKAN_FEATURE_COMMAND_BUFFER_TIMEOUT_RETIRE
             Instant const currentTimestamp = Instant::Now();
 
             static constexpr Duration Timeout = Duration::FromSeconds(10);
+#endif
 
             this->m_acquiredCommandBufferList.ForEach([&](VulkanCommandBuffer& commandBuffer)
             {
                 if ((commandBuffer.m_commandBufferState == VulkanCommandBufferState::Ready) ||
                     (commandBuffer.m_commandBufferState == VulkanCommandBufferState::PendingReset))
                 {
+#if ANEMONE_VULKAN_FEATURE_COMMAND_BUFFER_TIMEOUT_RETIRE
                     Duration const timeout = currentTimestamp - commandBuffer.m_submittedTimestamp;
 
                     if (timeout > Timeout)
                     {
+#endif
                         commandBuffer.ReleaseResources();
                         this->m_acquiredCommandBufferList.Remove(&commandBuffer);
                         this->m_releasedCommandBufferList.PushBack(&commandBuffer);
+#if ANEMONE_VULKAN_FEATURE_COMMAND_BUFFER_TIMEOUT_RETIRE
                     }
+#endif
                 }
             });
         }

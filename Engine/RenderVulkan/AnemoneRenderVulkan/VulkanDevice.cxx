@@ -176,7 +176,7 @@ namespace Anemone
         this->m_instanceExtensions.KHR_surface = validateExtension(VK_KHR_SURFACE_EXTENSION_NAME);
         this->m_instanceExtensions.KHR_display = validateExtension(VK_KHR_DISPLAY_EXTENSION_NAME);
 
-        if (!this->m_instanceExtensions.KHR_surface || !this->m_instanceExtensions.KHR_display)
+        if (!this->m_instanceExtensions.KHR_surface)
         {
             AE_PANIC("Vulkan Instance is not capable of rendering to a surface");
         }
