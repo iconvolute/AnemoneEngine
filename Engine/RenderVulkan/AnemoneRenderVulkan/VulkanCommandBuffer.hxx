@@ -349,6 +349,7 @@ namespace Anemone
 
         void BeginSplitBarrier(VkEvent barrierEvent, VkDependencyInfo const& dependencyInfo);
         void EndSplitBarrier(VkEvent barrierEvent, VkDependencyInfo const& dependencyInfo);
+        void Submitted();
 
     public:
         static constexpr VkCommandBufferLevel ToCommandBufferLevel(VulkanCommandBufferType type)

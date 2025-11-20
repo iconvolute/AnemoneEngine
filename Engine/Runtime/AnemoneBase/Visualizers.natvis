@@ -49,4 +49,37 @@
     </Expand>
   </Type>
 
+  <!-- Duration Visualizer -->
+  <Type Name="Anemone::Duration">
+    <DisplayString>
+      {Seconds}s {Nanoseconds}ns
+    </DisplayString>
+
+    <Expand>
+      <Item Name="Hours">
+        (Seconds / 3600)
+      </Item>
+
+      <Item Name="Minutes">
+        ((Seconds % 3600) / 60)
+      </Item>
+
+      <Item Name="Seconds">
+        (Seconds % 60)
+      </Item>
+
+      <Item Name="Milliseconds">
+        (Nanoseconds / 1000000)
+      </Item>
+
+      <Item Name="Microseconds">
+        ((Nanoseconds / 1000) % 1000)
+      </Item>
+
+      <Item Name="Nanoseconds">
+        (Nanoseconds % 1000)
+      </Item>
+    </Expand>
+  </Type>
+
 </AutoVisualizer>
