@@ -24,11 +24,6 @@ namespace Anemone
 
         this->CreateVulkanInstance();
         this->CreateVulkanDevice();
-
-        {
-            auto bb = this->AcquireBarrierEvent();
-            this->ReleaseBarrierEvent(bb);
-        }
     }
 
     VulkanDevice::~VulkanDevice()
@@ -133,8 +128,8 @@ namespace Anemone
         this->m_instanceLayers.LUNARG_parameter_validation = validateLayer("VK_LAYER_LUNARG_parameter_validation");
         this->m_instanceLayers.LUNARG_object_tracker = validateLayer("VK_LAYER_LUNARG_object_tracker");
         this->m_instanceLayers.LUNARG_core_validation = validateLayer("VK_LAYER_LUNARG_core_validation");
-        this->m_instanceLayers.RENDERDOC_Capture = validateLayer("VK_LAYER_RENDERDOC_Capture");
-        this->m_instanceLayers.NV_nsight = validateLayer("VK_LAYER_NV_nsight");
+        //this->m_instanceLayers.RENDERDOC_Capture = validateLayer("VK_LAYER_RENDERDOC_Capture");
+        //this->m_instanceLayers.NV_nsight = validateLayer("VK_LAYER_NV_nsight");
 
 #if ANEMONE_VULKAN_FEATURE_API_DUMP
         this->m_instanceLayers.LUNARG_api_dump = validateLayer("VK_LAYER_LUNARG_api_dump");

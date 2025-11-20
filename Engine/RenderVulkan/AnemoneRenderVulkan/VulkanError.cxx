@@ -5,6 +5,10 @@ namespace Anemone
 {
     void VulkanError::ReportError([[maybe_unused]] VkResult result)
     {
-        AE_PANIC("Vulkan error: {} ({})", string_VkResult(result), static_cast<int>(result));
+#if ANEMONE_VULKAN_VALIDATION
+        AE_PANIC("Vulkan error: {} ({})", string_VkResult(result), std::to_underlying(result));
+#else
+        AE_PANIC("Vulkan error: {}", std::to_underlying(result));
+#endif
     }
 }

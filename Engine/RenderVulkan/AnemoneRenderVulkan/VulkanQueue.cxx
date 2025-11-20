@@ -2,6 +2,8 @@
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
 #include "AnemoneRenderVulkan/VulkanCommandList.hxx"
 
+#include <memory>
+
 namespace Anemone
 {
     VulkanQueue::VulkanQueue(
@@ -173,31 +175,92 @@ namespace Anemone
 
     void VulkanQueue::Submit(VulkanCommandListTask& task)
     {
-        task.m_timelineSemaphoreValue = this->m_timelineNextValue;
+        size_t const waitSemaphoresCount = task.m_waitSemaphores.size();
+        size_t const signalSemaphoresCount = task.m_signalSemaphores.size();
+        size_t const totalSemaphoresCount = waitSemaphoresCount + signalSemaphoresCount + 1uz; // +1 for timeline semaphore
+        size_t const totalCommandBuffersCount = task.m_commandBuffers.size();
+        
+        std::unique_ptr<VkSemaphoreSubmitInfo[]> semaphores = std::make_unique_for_overwrite<VkSemaphoreSubmitInfo[]>(totalSemaphoresCount);
 
-        VkSemaphoreSubmitInfo& timelineSemaphoreSubmitInfo = task.m_signalSemaphoreInfos.emplace_back();
-        timelineSemaphoreSubmitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        timelineSemaphoreSubmitInfo.pNext = nullptr;
-        timelineSemaphoreSubmitInfo.semaphore = this->m_timelineSemaphore.Get()->GetHandle();
-        timelineSemaphoreSubmitInfo.value = this->m_timelineNextValue;
-        timelineSemaphoreSubmitInfo.stageMask = VK_PIPELINE_STAGE_2_NONE;
-        timelineSemaphoreSubmitInfo.deviceIndex = 0;
+        VkSemaphoreSubmitInfo* semaphoreSubmitInfos = semaphores.get();
+
+        VkSemaphoreSubmitInfo* waitSemaphores = semaphoreSubmitInfos;
+        VkSemaphoreSubmitInfo* signalSemaphores = semaphoreSubmitInfos + waitSemaphoresCount;
+
+        for (size_t i = 0; i < waitSemaphoresCount; ++i)
+        {
+            VulkanCommandListTask::WaitSemaphoreInfo const& waitInfo = task.m_waitSemaphores[i];
+
+            (*semaphoreSubmitInfos++) = VkSemaphoreSubmitInfo{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+                .pNext = nullptr,
+                .semaphore = waitInfo.semaphore->GetHandle(),
+                .value = 0,
+                .stageMask = waitInfo.stageMask,
+                .deviceIndex = 0,
+            };
+        }
+
+        for (size_t i = 0; i < signalSemaphoresCount; ++i)
+        {
+            VulkanCommandListTask::SignalSemaphoreInfo const& signalInfo = task.m_signalSemaphores[i];
+
+            (*semaphoreSubmitInfos++) = VkSemaphoreSubmitInfo{
+                .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+                .pNext = nullptr,
+                .semaphore = signalInfo.semaphore->GetHandle(),
+                .value = 0,
+                .stageMask = VK_PIPELINE_STAGE_2_NONE,
+                .deviceIndex = 0,
+            };
+        }
+
+        (*semaphoreSubmitInfos) = VkSemaphoreSubmitInfo{
+            .sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO,
+            .pNext = nullptr,
+            .semaphore = this->m_timelineSemaphore.Get()->GetHandle(),
+            .value = this->m_timelineNextValue,
+            .stageMask = VK_PIPELINE_STAGE_2_NONE,
+            .deviceIndex = 0,
+        };
+
+        std::unique_ptr<VkCommandBufferSubmitInfo[]> commandBuffers = std::make_unique_for_overwrite<VkCommandBufferSubmitInfo[]>(task.m_commandBuffers.size());
+
+        for (size_t i = 0; i < totalCommandBuffersCount; ++i)
+        {
+            VulkanCommandBuffer* commandBufferInfo = task.m_commandBuffers[i].commandBuffer;
+
+            commandBuffers[i] = VkCommandBufferSubmitInfo{
+                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO,
+                .pNext = nullptr,
+                .commandBuffer = commandBufferInfo->m_commandBuffer,
+                .deviceMask = 0,
+            };
+
+            commandBufferInfo->Submitted();
+        }
+
+        // TODO: Submission should happen on single thread. Move that code to receive end of the queue.
+        // m_timelineNextValue is not thread safe currently.
+        task.m_timelineSemaphoreValue = this->m_timelineNextValue;
 
         VkSubmitInfo2 submitInfo2{
             .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO_2,
             .pNext = nullptr,
             .flags = 0,
-            .waitSemaphoreInfoCount = static_cast<uint32_t>(task.m_waitSemaphoreInfos.size()),
-            .pWaitSemaphoreInfos = task.m_waitSemaphoreInfos.data(),
-            .commandBufferInfoCount = static_cast<uint32_t>(task.m_commandBufferSubmitInfo.size()),
-            .pCommandBufferInfos = task.m_commandBufferSubmitInfo.data(),
-            .signalSemaphoreInfoCount = static_cast<uint32_t>(task.m_signalSemaphoreInfos.size()),
-            .pSignalSemaphoreInfos = task.m_signalSemaphoreInfos.data(),
+            .waitSemaphoreInfoCount = static_cast<uint32_t>(waitSemaphoresCount),
+            .pWaitSemaphoreInfos = waitSemaphores,
+            .commandBufferInfoCount = static_cast<uint32_t>(totalCommandBuffersCount),
+            .pCommandBufferInfos = commandBuffers.get(),
+            .signalSemaphoreInfoCount = static_cast<uint32_t>(signalSemaphoresCount + 1uz),
+            .pSignalSemaphoreInfos = signalSemaphores,
         };
 
         this->Submit(submitInfo2, nullptr);
 
         ++this->m_timelineNextValue;
+
+        //this->m_submittedTasks.PushBack(&task);
     }
 
     void VulkanQueue::Submit(std::span<VkSubmitInfo2 const> submitInfo, VulkanFence* fence)
@@ -210,5 +273,15 @@ namespace Anemone
     {
         VkFence fenceHandle = fence ? fence->GetHandle() : VK_NULL_HANDLE;
         AE_VULKAN_ENSURE(vkQueueSubmit2(this->m_queue, 1, &submitInfo, fenceHandle));
+    }
+
+    void VulkanQueue::FlushSubmittedTasks()
+    {
+        UniqueLock scope{this->m_commandBufferPoolLock};
+
+        //this->m_submittedTasks.ForEach([&](VulkanCommandListTask& task)
+        //{
+        //    task.m_commandBufferSubmitInfo
+        //});
     }
 }

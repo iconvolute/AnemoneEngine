@@ -58,7 +58,7 @@ namespace Anemone
 
         if (commandBuffer->m_commandBufferState == VulkanCommandBufferState::Disposed)
         {
-            // commandBuffer->AllocateMemory();
+            commandBuffer->AllocateResources();
         }
 
         this->m_acquiredCommandBufferList.PushBack(commandBuffer);
@@ -74,7 +74,7 @@ namespace Anemone
         this->m_releasedCommandBufferList.PushBack(commandBuffer);
     }
 
-    void VulkanCommandBufferPool::ReleaseUnused(bool trim)
+    void VulkanCommandBufferPool::CollectUnusedCommandBuffers(bool trim)
     {
         UniqueLock scope{this->m_lock};
 
@@ -93,9 +93,11 @@ namespace Anemone
                 if ((commandBuffer.m_commandBufferState == VulkanCommandBufferState::Ready) ||
                     (commandBuffer.m_commandBufferState == VulkanCommandBufferState::PendingReset))
                 {
-                    if ((currentTimestamp - commandBuffer.m_submittedTimestamp) > Timeout)
+                    Duration const timeout = currentTimestamp - commandBuffer.m_submittedTimestamp;
+
+                    if (timeout > Timeout)
                     {
-                        //commandBuffer->FreeMemory(); TODO: Implement allocation/deallocation of command buffer on-demand.
+                        commandBuffer.ReleaseResources();
                         this->m_acquiredCommandBufferList.Remove(&commandBuffer);
                         this->m_releasedCommandBufferList.PushBack(&commandBuffer);
                     }
@@ -107,6 +109,38 @@ namespace Anemone
 
 namespace Anemone
 {
+    void VulkanCommandBuffer::AllocateResources()
+    {
+        AE_ASSERT(this->m_commandBufferState == VulkanCommandBufferState::Disposed);
+
+        VkCommandBufferAllocateInfo commandBufferAllocateInfo{
+            .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
+            .pNext = nullptr,
+            .commandPool = this->m_commandBufferPool->m_commandPool,
+            .level = ToCommandBufferLevel(this->m_commandBufferPool->m_commandBufferType),
+            .commandBufferCount = 1,
+        };
+
+        AE_VULKAN_ENSURE(vkAllocateCommandBuffers(
+            this->m_commandBufferPool->m_device->m_device,
+            &commandBufferAllocateInfo,
+            &this->m_commandBuffer));
+
+        this->m_commandBufferState = VulkanCommandBufferState::Ready;
+    }
+
+    void VulkanCommandBuffer::ReleaseResources()
+    {
+        AE_ASSERT(this->m_commandBufferState != VulkanCommandBufferState::Disposed);
+
+        vkFreeCommandBuffers(
+            this->m_commandBufferPool->m_device->m_device,
+            this->m_commandBufferPool->m_commandPool,
+            1, &this->m_commandBuffer);
+
+        this->m_commandBufferState = VulkanCommandBufferState::Disposed;
+    }
+
     void VulkanCommandBuffer::Reset()
     {
         UniqueLock scope{this->m_lock};
@@ -348,5 +382,26 @@ namespace Anemone
     {
         vkCmdWaitEvents2(this->m_commandBuffer, 1, &barrierEvent, &dependencyInfo);
         this->m_barrierEvents.push_back(barrierEvent);
+    }
+
+    void VulkanCommandBuffer::Submitted()
+    {
+        UniqueLock scope{this->m_commandBufferPool->m_lock};
+        this->m_commandBufferState = VulkanCommandBufferState::Submitted;
+        this->m_submittedTimestamp = Instant::Now();
+    }
+
+    VulkanCommandBuffer::VulkanCommandBuffer(VulkanCommandBufferPool& commandBufferPool)
+        : m_commandBufferPool{&commandBufferPool}
+    {
+        this->AllocateResources();
+    }
+
+    VulkanCommandBuffer::~VulkanCommandBuffer()
+    {
+        if (this->m_commandBufferState != VulkanCommandBufferState::Disposed)
+        {
+            this->ReleaseResources();
+        }
     }
 }

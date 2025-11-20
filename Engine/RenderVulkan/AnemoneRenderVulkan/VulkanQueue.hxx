@@ -41,7 +41,7 @@ namespace Anemone
 
         CriticalSection m_commandBufferPoolLock{};
         IntrusiveList<VulkanCommandBufferPool> m_commandBufferPools[2];
-
+        IntrusiveList<VulkanCommandListTask> m_submittedTasks{};
         Reference<VulkanSemaphore> m_timelineSemaphore{};
         uint64_t m_timelineNextValue{1};
 
@@ -56,5 +56,6 @@ namespace Anemone
         void Submit(VulkanCommandListTask& task);
         void Submit(std::span<VkSubmitInfo2 const> submitInfo, VulkanFence* fence);
         void Submit(VkSubmitInfo2 const& submitInfo, VulkanFence* fence);
+        void FlushSubmittedTasks();
     };
 }

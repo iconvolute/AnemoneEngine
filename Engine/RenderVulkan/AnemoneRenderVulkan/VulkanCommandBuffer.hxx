@@ -56,7 +56,7 @@ namespace Anemone
         VulkanCommandBuffer* AllocateCommandBuffer();
         void ReleaseCommandBuffer(VulkanCommandBuffer* commandBuffer);
 
-        void ReleaseUnused(bool trim);
+        void CollectUnusedCommandBuffers(bool trim);
     };
 
     class VulkanCommandBuffer
@@ -65,14 +65,19 @@ namespace Anemone
         friend struct IntrusiveList<VulkanCommandBuffer>;
         friend class VulkanCommandBufferPool;
         friend class VulkanCommandListContext;
+        friend class VulkanQueue;
 
     private:
         VulkanCommandBufferPool* m_commandBufferPool{};
         VkCommandBuffer m_commandBuffer{};
         CriticalSection m_lock{};
-        VulkanCommandBufferState m_commandBufferState{VulkanCommandBufferState::Ready};
+        VulkanCommandBufferState m_commandBufferState{VulkanCommandBufferState::Disposed};
         std::vector<VkEvent> m_barrierEvents{};
         Instant m_submittedTimestamp{};
+
+    private:
+        void AllocateResources();
+        void ReleaseResources();
 
     public:
         constexpr VkCommandBuffer GetHandle() const
@@ -346,7 +351,7 @@ namespace Anemone
         void EndSplitBarrier(VkEvent barrierEvent, VkDependencyInfo const& dependencyInfo);
 
     public:
-        static VkCommandBufferLevel ToCommandBufferLevel(VulkanCommandBufferType type)
+        static constexpr VkCommandBufferLevel ToCommandBufferLevel(VulkanCommandBufferType type)
         {
             if (type == VulkanCommandBufferType::Primary)
             {
@@ -356,29 +361,8 @@ namespace Anemone
             return VK_COMMAND_BUFFER_LEVEL_SECONDARY;
         }
 
-        VulkanCommandBuffer(VulkanCommandBufferPool& commandBufferPool)
-            : m_commandBufferPool{&commandBufferPool}
-        {
-            VkCommandBufferAllocateInfo commandBufferAllocateInfo{
-                .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO,
-                .pNext = nullptr,
-                .commandPool = this->m_commandBufferPool->m_commandPool,
-                .level = ToCommandBufferLevel(this->m_commandBufferPool->m_commandBufferType),
-                .commandBufferCount = 1,
-            };
+        VulkanCommandBuffer(VulkanCommandBufferPool& commandBufferPool);
 
-            AE_VULKAN_ENSURE(vkAllocateCommandBuffers(
-                this->m_commandBufferPool->m_device->m_device,
-                &commandBufferAllocateInfo,
-                &this->m_commandBuffer));
-        }
-
-        ~VulkanCommandBuffer()
-        {        
-            vkFreeCommandBuffers(
-                this->m_commandBufferPool->m_device->m_device,
-                this->m_commandBufferPool->m_commandPool,
-                1, &this->m_commandBuffer);
-        }
+        ~VulkanCommandBuffer();
     };
 }

@@ -54,7 +54,7 @@ namespace Anemone
         void EndRecording() override;
 
     public:
-        void AddWaitSemaphore(VkPipelineStageFlags2 waitStage, VulkanSemaphore* semaphore);
+        void AddWaitSemaphore(VkPipelineStageFlags2 stageMask, VulkanSemaphore* semaphore);
         void AddSignalSemaphore(VulkanSemaphore* semaphore);
 
     private:
@@ -71,15 +71,32 @@ namespace Anemone
         friend struct IntrusiveList<VulkanCommandListTask>;
 
     private:
+        struct SignalSemaphoreInfo
+        {
+            VulkanSemaphore* semaphore;
+        };
+
+        struct WaitSemaphoreInfo
+        {
+            VulkanSemaphore* semaphore;
+            VkPipelineStageFlags2 stageMask;
+        };
+
+        struct CommandBufferInfo
+        {
+            VulkanCommandBuffer* commandBuffer;
+        };
+
         VulkanQueue* m_queue{};
-        std::vector<VkSemaphoreSubmitInfo> m_waitSemaphoreInfos{};
-        std::vector<VkSemaphoreSubmitInfo> m_signalSemaphoreInfos{};
-        std::vector<VkCommandBufferSubmitInfo> m_commandBufferSubmitInfo{};
+        std::vector<WaitSemaphoreInfo> m_waitSemaphores{};
+        std::vector<SignalSemaphoreInfo> m_signalSemaphores{};
+        std::vector<CommandBufferInfo> m_commandBuffers{};
         uint64_t m_timelineSemaphoreValue{};
 
     public:
         explicit VulkanCommandListTask(VulkanQueue& queue);
 
         ~VulkanCommandListTask();
+        void Completed();
     };
 }

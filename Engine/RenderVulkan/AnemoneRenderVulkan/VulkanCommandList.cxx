@@ -58,8 +58,11 @@ namespace Anemone
         // TODO: Move this to proper place
         while (VulkanCommandListTask* task = this->m_commandListTasks.PopFront())
         {
+            task->Completed();
             delete task;
         }
+
+        this->m_commandBufferPool->CollectUnusedCommandBuffers(false);
 
         vulkanViewport.Present();
 
@@ -76,12 +79,7 @@ namespace Anemone
         this->AddWaitSemaphore(VK_PIPELINE_STAGE_2_COLOR_ATTACHMENT_OUTPUT_BIT, this->m_currentViewport->m_imageAcquiredSemaphore[this->m_currentViewport->m_currentSemaphoreIndex].Get());
 
         VulkanCommandListTask* task = this->GetCommandListTask(VulkanCommandListContextPhase::Wait);
-
-        VkCommandBufferSubmitInfo& commandBufferSubmitInfo = task->m_commandBufferSubmitInfo.emplace_back();
-        commandBufferSubmitInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_SUBMIT_INFO;
-        commandBufferSubmitInfo.pNext = nullptr;
-        commandBufferSubmitInfo.commandBuffer = this->m_commandBuffer->m_commandBuffer;
-        commandBufferSubmitInfo.deviceMask = 0;
+        task->m_commandBuffers.emplace_back(this->m_commandBuffer);
 
         this->m_currentPhase = VulkanCommandListContextPhase::Execute;
 
@@ -147,28 +145,18 @@ namespace Anemone
         this->m_commandBuffer = nullptr;
     }
 
-    void VulkanCommandListContext::AddWaitSemaphore(VkPipelineStageFlags2 waitStage, VulkanSemaphore* semaphore)
+    void VulkanCommandListContext::AddWaitSemaphore(VkPipelineStageFlags2 stageMask, VulkanSemaphore* semaphore)
     {
         VulkanCommandListTask* task = this->GetCommandListTask(VulkanCommandListContextPhase::Wait);
-        VkSemaphoreSubmitInfo& submitInfo = task->m_waitSemaphoreInfos.emplace_back();
-        submitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        submitInfo.pNext = nullptr;
-        submitInfo.semaphore = semaphore->GetHandle();
-        submitInfo.value = 0;
-        submitInfo.stageMask = waitStage;
-        submitInfo.deviceIndex = 0;
+        AE_ASSERT(task->m_signalSemaphores.empty());
+        AE_ASSERT(task->m_commandBuffers.empty());
+        task->m_waitSemaphores.emplace_back(semaphore, stageMask);
     }
 
     void VulkanCommandListContext::AddSignalSemaphore(VulkanSemaphore* semaphore)
     {
         VulkanCommandListTask* task = this->GetCommandListTask(VulkanCommandListContextPhase::Signal);
-        VkSemaphoreSubmitInfo& submitInfo = task->m_signalSemaphoreInfos.emplace_back();
-        submitInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_SUBMIT_INFO;
-        submitInfo.pNext = nullptr;
-        submitInfo.semaphore = semaphore->GetHandle();
-        submitInfo.value = 0;
-        submitInfo.stageMask = VK_PIPELINE_STAGE_2_NONE;
-        submitInfo.deviceIndex = 0;
+        task->m_signalSemaphores.emplace_back(semaphore);
     }
 
     void VulkanCommandListContext::FinishCommandListTask()
@@ -219,5 +207,16 @@ namespace Anemone
     {
     }
 
-    VulkanCommandListTask::~VulkanCommandListTask() = default;
+    VulkanCommandListTask::~VulkanCommandListTask()
+    {
+    }
+
+    void VulkanCommandListTask::Completed()
+    {
+        // Reset command buffers.
+        for (auto& commandBuffer : this->m_commandBuffers)
+        {
+            commandBuffer.commandBuffer->Reset();
+        }
+    }
 }
