@@ -17,6 +17,7 @@ target_sources(AnemoneRenderVulkan
         #"VulkanSwapChain.cxx"
         #"VulkanTexture.cxx"
         "VulkanSemaphore.cxx"
+        "VulkanInstance.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "Module.hxx"
         "VulkanError.hxx"
@@ -35,4 +36,5 @@ target_sources(AnemoneRenderVulkan
         #"VulkanSwapChain.hxx"
         #"VulkanTexture.hxx"
         "VulkanSemaphore.hxx"
+        "VulkanInstance.hxx"
 )

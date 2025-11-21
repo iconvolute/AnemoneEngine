@@ -21,7 +21,8 @@ namespace Anemone
 
     VulkanCommandListContext::~VulkanCommandListContext()
     {
-        AE_ASSERT(this->m_currentViewport == nullptr, "Viewport must be null on destruction");
+        AE_ASSERT(this->m_commandBuffer == nullptr);
+        AE_ASSERT(this->m_currentViewport == nullptr);
         this->m_queue->ReleaseCommandBufferPool(this->m_commandBufferPool);
     }
 

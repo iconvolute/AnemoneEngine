@@ -3,6 +3,7 @@
 #include "AnemoneRenderVulkan/VulkanCommandList.hxx"
 #include "AnemoneRenderVulkan/VulkanCpuAllocator.hxx"
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
+#include "AnemoneRenderVulkan/VulkanInstance.hxx"
 
 #if ANEMONE_PLATFORM_WINDOWS
 #include "AnemoneApplication/Platform/Windows/WindowsHostWindow.hxx"
@@ -54,7 +55,7 @@ namespace Anemone
         };
 
         if (vkCreateWin32SurfaceKHR(
-                this->m_device->m_instance,
+                VulkanInstance::Get().m_instance,
                 &win32SurfaceCreateInfoKHR,
                 VulkanCpuAllocator,
                 &this->m_surface) != VK_SUCCESS)
@@ -259,7 +260,7 @@ namespace Anemone
         //
 
         vkDestroySurfaceKHR(
-            this->m_device->m_instance,
+            VulkanInstance::Get().m_instance,
             this->m_surface,
             VulkanCpuAllocator);
 

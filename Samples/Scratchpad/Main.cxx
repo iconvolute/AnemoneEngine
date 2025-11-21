@@ -350,11 +350,6 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
                 Anemone::HostApplication::Get().ProcessMessages();
                 Anemone::CurrentThread::Sleep(Anemone::Duration::FromMilliseconds(16));
             }
-
-#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
-            sq = {};
-            rd = {};
-#endif
         }
 
         Anemone::HostApplication::Finalize();
