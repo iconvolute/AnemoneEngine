@@ -571,7 +571,7 @@ namespace Anemone
 
     void Debug::ReportApplicationStop(std::string_view reason)
     {
-        Interop::string_buffer<wchar_t, 128> buffer{};
+        Interop::string_buffer<wchar_t, 512> buffer{};
         Interop::Windows::WidenString(buffer, reason);
 
         MessageBoxW(
@@ -579,7 +579,5 @@ namespace Anemone
             buffer,
             L"Application Stop",
             MB_OK | MB_ICONERROR);
-
-        ExitProcess(static_cast<UINT>(-1));
     }
 }

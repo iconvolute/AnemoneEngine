@@ -20,6 +20,7 @@ namespace Anemone
     { \
         if constexpr (::Anemone::TraceLevel::level >= ::Anemone::TraceLevel::Default) \
         { \
-            ::Anemone::Trace::Get().Trace##level(format __VA_OPT__(, ) __VA_ARGS__); \
+            using namespace std::string_view_literals; \
+            ::Anemone::Trace::Get().Trace##level(format##sv __VA_OPT__(, ) __VA_ARGS__); \
         } \
     } while (false)

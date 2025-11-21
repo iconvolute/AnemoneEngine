@@ -54,37 +54,37 @@ namespace Anemone
 
 
         template <typename... Args>
-        void TraceVerbose(const char* format, Args const&... args)
+        void TraceVerbose(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Verbose, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void TraceDebug(const char* format, Args const&... args)
+        void TraceDebug(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Debug, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void TraceInformation(const char* format, Args const&... args)
+        void TraceInformation(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Information, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void TraceWarning(const char* format, Args const&... args)
+        void TraceWarning(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Warning, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void TraceError(const char* format, Args const&... args)
+        void TraceError(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Error, format, fmt::make_format_args(args...));
         }
 
         template <typename... Args>
-        void TraceFatal(const char* format, Args const&... args)
+        void TraceFatal(std::string_view format, Args const&... args)
         {
             this->TraceFormatted(TraceLevel::Fatal, format, fmt::make_format_args(args...));
         }

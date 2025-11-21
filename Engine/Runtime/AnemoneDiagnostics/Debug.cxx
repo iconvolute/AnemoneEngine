@@ -87,12 +87,13 @@ namespace Anemone
 
         TraceDispatcher& dispatcher = Trace::Get();
 
-        fmt::memory_buffer message{};
-        fmt::vformat_to(std::back_inserter(message), format, args);
+        fmt::memory_buffer buffer{};
+        fmt::vformat_to(std::back_inserter(buffer), format, args);
+        std::string_view message{buffer.data(), buffer.size()};
 
         dispatcher.TraceFatal("=== panic ===");
         dispatcher.TraceFatal("location: {}:{}", location.file_name(), location.line());
-        dispatcher.TraceFatal("message: {}", std::string_view{message.data(), message.size()});
+        dispatcher.TraceFatal("message: {}", message);
 
         GetCurrentStackTrace([&](void* address, std::string_view name)
         {
@@ -101,9 +102,6 @@ namespace Anemone
 
         dispatcher.Flush();
 
-        // TODO: Re-enable once we will be sure that it also works on linux
-#if false
-        Debugger::Attach();
-#endif
+        ReportApplicationStop(message);
     }
 }
