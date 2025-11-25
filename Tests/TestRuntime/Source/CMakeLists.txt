@@ -17,6 +17,7 @@ target_sources(TestRuntime
         "String.cxx"
         "Unicode.cxx"
         "Uuid.cxx"
+        "XXHash64.cxx"
 )
 
 add_subdirectory("Interop")

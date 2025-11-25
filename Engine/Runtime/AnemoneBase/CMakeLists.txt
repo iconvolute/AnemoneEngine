@@ -19,6 +19,7 @@ target_sources(AnemoneRuntime
         "Unicode.cxx"
         "Uuid.cxx"
         "Version.cxx"
+        "XXHash64.cxx"
     PUBLIC FILE_SET HEADERS FILES
         "AdaptiveTimer.hxx"
         "Bitwise.hxx"
@@ -49,6 +50,7 @@ target_sources(AnemoneRuntime
         "UninitializedObject.hxx"
         "Uuid.hxx"
         "Version.hxx"
+        "XXHash64.hxx"
 )
 
 add_subdirectory("Memory")
