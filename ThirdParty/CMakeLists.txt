@@ -8,5 +8,6 @@ if (Vulkan_FOUND)
 
 add_subdirectory("volk")
 add_subdirectory("VulkanMemoryAllocator")
+add_subdirectory("SPIRV-Reflect")
 
 endif()

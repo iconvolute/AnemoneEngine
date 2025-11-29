@@ -29,7 +29,7 @@ enable_language(C CXX)
 
 # Find external dependencies.
 include("CMake/Modules/FindITT.cmake")
-find_package(Vulkan)
+find_package(Vulkan COMPONENTS glslc shaderc_combined dxc SPIRV-Tools)
 
 # Configure build options and generate files.
 include("CMake/Options.cmake")
