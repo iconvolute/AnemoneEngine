@@ -516,4 +516,10 @@ namespace Anemone
     public:
         ~GpuTaskShader() override = default;
     };
+
+    class GpuComputeShader : public GpuShader
+    {
+    public:
+        ~GpuComputeShader() override = default;
+    };
 }

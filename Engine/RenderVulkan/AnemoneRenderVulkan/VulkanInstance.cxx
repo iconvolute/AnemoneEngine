@@ -428,11 +428,9 @@ namespace Anemone
     {
         VulkanDevice* self = static_cast<VulkanDevice*>(pUserData);
         (void)self;
+        (void)type;
 
-        AE_TRACE(Error, "VulkanDebug: severity {} type {} msg: {}",
-            string_VkDebugUtilsMessageSeverityFlagsEXT(severity),
-            string_VkDebugUtilsMessageTypeFlagsEXT(type),
-            pCallbackData->pMessage);
+        AE_TRACE(Error, "vk-log: {}", pCallbackData->pMessage);
 
         if ((severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT) ||
             (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT))

@@ -190,6 +190,7 @@ namespace Anemone
     class VulkanFragmentShader;
     class VulkanMeshShader;
     class VulkanTaskShader;
+    class VulkanComputeShader;
 
     class VulkanDevice : public GpuDevice
     {
@@ -211,6 +212,7 @@ namespace Anemone
         friend class VulkanFragmentShader;
         friend class VulkanMeshShader;
         friend class VulkanTaskShader;
+        friend class VulkanComputeShader;
 
     public:
         VulkanDevice();

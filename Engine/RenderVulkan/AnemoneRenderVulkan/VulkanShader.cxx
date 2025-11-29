@@ -66,4 +66,13 @@ namespace Anemone
             this->m_handle,
             VulkanCpuAllocator);
     }
+
+    VulkanComputeShader::~VulkanComputeShader()
+    {
+        // TODO: Defer to deletion queues
+        vkDestroyShaderModule(
+            this->m_device->m_device,
+            this->m_handle,
+            VulkanCpuAllocator);
+    }
 }

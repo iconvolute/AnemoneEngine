@@ -1,7 +1,5 @@
 #include "AnemoneRenderVulkan/VulkanPipeline.hxx"
-
-#include "VulkanShader.hxx"
-
+#include "AnemoneRenderVulkan/VulkanShader.hxx"
 #include "AnemoneRenderVulkan/VulkanCpuAllocator.hxx"
 #include "AnemoneRenderVulkan/VulkanError.hxx"
 #include "AnemoneRenderVulkan/VulkanDevice.hxx"
@@ -462,7 +460,7 @@ namespace Anemone
     {
         VulkanVertexDeclaration const* vertexDeclaration = static_cast<VulkanVertexDeclaration const*>(initializer.vertexDeclaration);
 
-        Reference<VulkanGraphicsPipeline> pipeline = MakeReference<VulkanGraphicsPipeline>(*this);
+        Reference<VulkanGraphicsPipeline> result = MakeReference<VulkanGraphicsPipeline>(*this);
 
         VkPipelineVertexInputStateCreateInfo pipelineVertexInputStateCreateInfo{
             .sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO,
@@ -701,6 +699,26 @@ namespace Anemone
             .pDynamicStates = dynamicStates,
         };
 
+        uint32_t pipelineDescriptorSetLayoutCount = 0;
+        VkDescriptorSetLayout pipelineDescriptorSetLayouts[VulkanMaxPipelineLayoutDescriptorSetLayouts];
+        // TODO: populate descriptor set layouts from initializer.
+
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .setLayoutCount = pipelineDescriptorSetLayoutCount,
+            .pSetLayouts = pipelineDescriptorSetLayouts,
+            .pushConstantRangeCount = 0,
+            .pPushConstantRanges = nullptr,
+        };
+
+        AE_VULKAN_ENSURE(vkCreatePipelineLayout(
+            this->m_device,
+            &pipelineLayoutCreateInfo,
+            VulkanCpuAllocator,
+            &result->m_pipelineLayout));
+
         VkGraphicsPipelineCreateInfo graphicsPipelineCreateInfo{
             .sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO,
             .pNext = nullptr,
@@ -714,33 +732,80 @@ namespace Anemone
             .pRasterizationState = &pipelineRasterizationStateCreateInfo,
             .pMultisampleState = &pipelineMultisampleStateCreateInfo,
             .pDepthStencilState = &pipelineDepthStencilStateCreateInfo,
-            //.pColorBlendState =,
+            .pColorBlendState = &pipelineColorBlendStateCreateInfo,
             .pDynamicState = &pipelineDynamicStateCreateInfo,
-            //.layout =,
-            //.renderPass =,
-            //.subpass =,
-            //.basePipelineHandle =,
-            //.basePipelineIndex =,
+            .layout = result->m_pipelineLayout,
+            .renderPass = VK_NULL_HANDLE,
+            .subpass = 0,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = 0,
         };
 
-        return pipeline;
+        AE_VULKAN_ENSURE(vkCreateGraphicsPipelines(
+            this->m_device,
+            VK_NULL_HANDLE,
+            1,
+            &graphicsPipelineCreateInfo,
+            VulkanCpuAllocator,
+            &result->m_pipeline));
+
+        return result;
     }
 
     GpuComputePipelineRef VulkanDevice::CreateComputePipeline(GpuComputePipelineInitializer const& initializer)
     {
-        (void)initializer;
-        Reference<VulkanComputePipeline> pipeline = MakeReference<VulkanComputePipeline>(*this);
+        AE_ASSERT(initializer.computeShader != nullptr);
+
+        VulkanComputeShader const* vulkanComputeShader = static_cast<VulkanComputeShader const*>(initializer.computeShader);
+
+        uint32_t pipelineDescriptorSetLayoutCount = 0;
+        VkDescriptorSetLayout pipelineDescriptorSetLayouts[VulkanMaxPipelineLayoutDescriptorSetLayouts];
+        // TODO: populate descriptor set layouts from initializer.
+
+        VkPipelineLayoutCreateInfo pipelineLayoutCreateInfo{
+            .sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO,
+            .pNext = nullptr,
+            .flags = 0,
+            .setLayoutCount = pipelineDescriptorSetLayoutCount,
+            .pSetLayouts = pipelineDescriptorSetLayouts,
+            .pushConstantRangeCount = 0,
+            .pPushConstantRanges = nullptr,
+        };
+
+        Reference<VulkanComputePipeline> result = MakeReference<VulkanComputePipeline>(*this);
+
+        AE_VULKAN_ENSURE(vkCreatePipelineLayout(
+            this->m_device,
+            &pipelineLayoutCreateInfo,
+            VulkanCpuAllocator,
+            &result->m_pipelineLayout));
 
         VkComputePipelineCreateInfo computePipelineCreateInfo{
             .sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO,
             .pNext = nullptr,
-            //.flags = ,
-            //.stage = ,
-            //.layout = ,
-            //.basePipelineHandle = ,
-            //.basePipelineIndex =
+            .flags = 0,
+            .stage = VkPipelineShaderStageCreateInfo{
+                .sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO,
+                .pNext = nullptr,
+                .flags = 0,
+                .stage = VK_SHADER_STAGE_COMPUTE_BIT,
+                .module = vulkanComputeShader->m_handle,
+                .pName = "main",
+                .pSpecializationInfo = nullptr,
+            },
+            .layout = result->m_pipelineLayout,
+            .basePipelineHandle = VK_NULL_HANDLE,
+            .basePipelineIndex = 0,
         };
 
-        return pipeline;
+        AE_VULKAN_ENSURE(vkCreateComputePipelines(
+            this->m_device,
+            VK_NULL_HANDLE,
+            1,
+            &computePipelineCreateInfo,
+            VulkanCpuAllocator,
+            &result->m_pipeline));
+
+        return result;
     }
 }

@@ -6,6 +6,9 @@
 
 namespace Anemone
 {
+    // Maximum number of descriptor set layouts in a pipeline layout.
+    inline constexpr size_t VulkanMaxPipelineLayoutDescriptorSetLayouts = 8uz;
+
     class VulkanDevice;
 
     class VulkanGraphicsPipeline : public GpuGraphicsPipeline
@@ -13,6 +16,9 @@ namespace Anemone
     public:
         VulkanDevice* m_device{};
         VkPipeline m_pipeline{};
+
+        // TODO: Cache layout based on used descriptor sets and push constants.
+        VkPipelineLayout m_pipelineLayout{};
 
     public:
         VulkanGraphicsPipeline(VulkanDevice& device);
@@ -23,6 +29,9 @@ namespace Anemone
     public:
         VulkanDevice* m_device{};
         VkPipeline m_pipeline{};
+
+        // TODO: Cache layout based on used descriptor sets and push constants.
+        VkPipelineLayout m_pipelineLayout{};
 
     public:
         VulkanComputePipeline(VulkanDevice& device);

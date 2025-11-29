@@ -118,4 +118,20 @@ namespace Anemone
 
         ~VulkanTaskShader() override;
     };
+
+    class VulkanComputeShader final : public GpuComputeShader
+    {
+    public:
+        static constexpr GpuShaderStage ShaderStage = GpuShaderStage::Compute;
+
+        VkShaderModule m_handle{};
+        VulkanDevice* m_device{};
+
+        explicit VulkanComputeShader(VulkanDevice& device)
+            : m_device{&device}
+        {
+        }
+
+        ~VulkanComputeShader() override;
+    };
 }

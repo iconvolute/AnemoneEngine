@@ -8,6 +8,7 @@
 #include "AnemoneRenderVulkan/VulkanBuffer.hxx"
 #include "AnemoneRenderVulkan/VulkanCommandList.hxx"
 #include "AnemoneRenderVulkan/VulkanInstance.hxx"
+#include "AnemoneRenderVulkan/VulkanVertexDeclaration.hxx"
 
 #include "AnemoneBase/Uuid.hxx"
 
@@ -682,6 +683,14 @@ namespace Anemone
 
     void VulkanDevice::DestroyVulkanDevice()
     {
+        // Release cached objects
+        this->m_vertexDeclarations.ForEach([](VulkanVertexDeclaration const& declaration)
+        {
+            declaration.ReleaseReference();
+        });
+
+        this->m_vertexDeclarations.Clear();
+
         for (VkEvent event : this->m_barrierEvents)
         {
             vkDestroyEvent(
