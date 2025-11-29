@@ -34,6 +34,7 @@ namespace Anemone
         bool EXT_debug_report;
         bool KHR_win32_surface;
         bool KHR_get_surface_capabilities2;
+        bool KHR_surface_maintenance1;
     };
 
     class VulkanInstance final

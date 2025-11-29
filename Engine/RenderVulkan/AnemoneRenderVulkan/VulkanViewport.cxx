@@ -477,12 +477,12 @@ namespace Anemone
 
 namespace Anemone
 {
-    Reference<GpuViewport> VulkanDevice::CreateViewport(Reference<HostWindow> window)
+    GpuViewportRef VulkanDevice::CreateViewport(Reference<HostWindow> window)
     {
         return MakeReference<VulkanViewport>(*this, std::move(window));
     }
 
-    Reference<GpuCommandListContext> VulkanDevice::GetImmediateContext()
+    GpuCommandListContextRef VulkanDevice::GetImmediateContext()
     {
         return this->m_immediateContext;
     }

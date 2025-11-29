@@ -187,6 +187,7 @@ namespace Anemone
         this->m_physicalDeviceExtensions.KHR_fragment_shading_rate = hasExtension(VK_KHR_FRAGMENT_SHADING_RATE_EXTENSION_NAME, UINT32_MAX);
         //this->m_physicalDeviceExtensions.KHR_portability_subset = hasExtension(VK_KHR_PORTABILITY_SUBSET_EXTENSION_NAME, UINT32_MAX);
         this->m_physicalDeviceExtensions.KHR_external_memory_win32 = hasExtension(VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME, UINT32_MAX);
+        this->m_physicalDeviceExtensions.EXT_shader_object = hasExtension(VK_EXT_SHADER_OBJECT_EXTENSION_NAME, UINT32_MAX);
 
         if (VulkanInstance::Get().m_instanceExtensions.KHR_get_surface_capabilities2)
         {
@@ -348,6 +349,12 @@ namespace Anemone
         if (this->m_physicalDeviceExtensions.KHR_acceleration_structure)
         {
             RHIVulkanPushStruct(physicalDeviceFeatures2, physicalDeviceAccelerationStructureFeaturesKHR);
+        }
+
+        VkPhysicalDeviceSwapchainMaintenance1FeaturesKHR physicalDeviceSwapchainMaintenance1FeaturesKHR{VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SWAPCHAIN_MAINTENANCE_1_FEATURES_KHR};
+        if (VulkanInstance::Get().m_instanceExtensions.KHR_surface_maintenance1)
+        {
+            RHIVulkanPushStruct(physicalDeviceFeatures2, physicalDeviceSwapchainMaintenance1FeaturesKHR);
         }
 
         vkGetPhysicalDeviceFeatures2(this->m_physicalDevice, &physicalDeviceFeatures2);

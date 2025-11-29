@@ -139,6 +139,7 @@ namespace Anemone
         //
 
         this->m_instanceExtensions.KHR_get_surface_capabilities2 = validateExtension(VK_KHR_GET_SURFACE_CAPABILITIES_2_EXTENSION_NAME);
+        this->m_instanceExtensions.KHR_surface_maintenance1 = validateExtension(VK_KHR_SURFACE_MAINTENANCE_1_EXTENSION_NAME);
 
 #if ANEMONE_PLATFORM_WINDOWS
         this->m_instanceExtensions.KHR_win32_surface = validateExtension(VK_KHR_WIN32_SURFACE_EXTENSION_NAME);

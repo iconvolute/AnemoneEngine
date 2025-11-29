@@ -46,6 +46,7 @@ namespace Anemone
         bool EXT_device_address_binding_report;
         bool KHR_external_memory_win32;
         bool EXT_full_screen_exclusive;
+        bool EXT_shader_object;
 
         bool KHR_acceleration_structure;
         bool KHR_ray_query;
@@ -177,6 +178,18 @@ namespace Anemone
     class VulkanCommandBuffer;
     class VulkanCommandBufferPool;
     class VulkanCommandListContext;
+    class VulkanDescriptorPool;
+    class VulkanGraphicsPipeline;
+    class VulkanComputePipeline;
+    class VulkanPipelineCache;
+    class VulkanVertexDeclaration;
+    class VulkanVertexShader;
+    class VulkanTessellationControlShader;
+    class VulkanTessellationEvaluationShader;
+    class VulkanGeometryShader;
+    class VulkanFragmentShader;
+    class VulkanMeshShader;
+    class VulkanTaskShader;
 
     class VulkanDevice : public GpuDevice
     {
@@ -186,13 +199,28 @@ namespace Anemone
         friend class VulkanQueue;
         friend class VulkanCommandBuffer;
         friend class VulkanCommandBufferPool;
+        friend class VulkanDescriptorPool;
+        friend class VulkanGraphicsPipeline;
+        friend class VulkanComputePipeline;
+        friend class VulkanPipelineCache;
+        friend class VulkanVertexDeclaration;
+        friend class VulkanVertexShader;
+        friend class VulkanTessellationControlShader;
+        friend class VulkanTessellationEvaluationShader;
+        friend class VulkanGeometryShader;
+        friend class VulkanFragmentShader;
+        friend class VulkanMeshShader;
+        friend class VulkanTaskShader;
 
     public:
         VulkanDevice();
         ~VulkanDevice() override;
 
-        Reference<GpuViewport> CreateViewport(Reference<HostWindow> window) override;
-        Reference<GpuCommandListContext> GetImmediateContext() override;
+        GpuViewportRef CreateViewport(Reference<HostWindow> window) override;
+        GpuVertexDeclarationRef CreateVertexDeclaration(GpuVertexDeclarationInitializer const& initializer) override;
+        GpuGraphicsPipelineRef CreateGraphicsPipeline(GpuGraphicsPipelineInitializer const& initializer) override;
+        GpuComputePipelineRef CreateComputePipeline(GpuComputePipelineInitializer const& initializer) override;
+        GpuCommandListContextRef GetImmediateContext() override;
 
     private:
         VkPhysicalDevice m_physicalDevice{};
@@ -220,6 +248,8 @@ namespace Anemone
         CriticalSection m_barrierEventsLock{};
         std::vector<VkEvent> m_barrierEvents{};
 
+        IntrusiveList<VulkanVertexDeclaration> m_vertexDeclarations{};
+
     public:
         VkEvent AcquireBarrierEvent();
         void ReleaseBarrierEvent(VkEvent event);
@@ -228,10 +258,6 @@ namespace Anemone
     private:
         void CreateVulkanDevice();
         void DestroyVulkanDevice();
-
-        static VkResult QueryPhysicalDevices(
-            VkInstance instance,
-            std::vector<VkPhysicalDevice>& outPhysicalDevices);
 
         static VkResult QueryPhysicalDeviceExtensionProperties(
             VkPhysicalDevice device,
