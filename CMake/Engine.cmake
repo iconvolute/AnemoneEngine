@@ -158,7 +158,8 @@ function(_anemone_target_add_includes target_name)
 endfunction()
 
 function(_anemone_target_install target_name)
-    install(TARGETS ${target_name} DESTINATION bin)
+    install(TARGETS ${target_name}
+        RUNTIME DESTINATION bin)
 
     if(WIN32)
         install(FILES $<TARGET_PDB_FILE:${target_name}> DESTINATION bin OPTIONAL)
