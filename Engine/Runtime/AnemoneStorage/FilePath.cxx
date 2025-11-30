@@ -43,6 +43,15 @@ namespace Anemone
 #endif
     }
 
+    constexpr std::string_view::size_type FindNextDirectorySeparator(std::string_view path, std::string_view::size_type pos)
+    {
+#if ANEMONE_PLATFORM_WINDOWS
+        return path.find_first_of(AllDirectorySeparatorsString, pos);
+#else
+        return path.find_first_of(DirectorySeparatorChar, pos);
+#endif
+    }
+
     constexpr std::string_view::size_type FindExtensionSeparator(std::string_view path)
     {
         std::string_view::size_type const length = path.length();
@@ -113,67 +122,63 @@ namespace Anemone
 
     void FilePath::Normalize(std::string& path)
     {
-        FilePath::NormalizeDirectorySeparators(path);
+        // Replace '//' with '/'
 
-        static constexpr std::string_view parent{"/.."};
+        size_t pos = 0;
 
         while (true)
         {
-            if (path.empty())
+            pos = path.find("//", pos);
+
+            if (pos == std::string::npos)
             {
                 break;
             }
 
-            // if ((path.compare(0, 2, "..") == 0) or (path.compare(0, parent.length(), parent) == 0))
-            //{
-            //     return;
-            // }
-
-            std::string::size_type const index = path.find(parent);
-
-            if (index == std::string::npos)
-            {
-                break;
-            }
-
-            std::string::size_type previous = index;
-
-            while (true)
-            {
-                previous = path.rfind(DirectorySeparatorChar, previous - 1);
-
-                if ((previous == 0) or (previous == std::string::npos))
-                {
-                    break;
-                }
-
-                if (((index - previous) > 1) and ((path[previous + 1] != '.') or (path[previous + 2] != DirectorySeparatorChar)))
-                {
-                    break;
-                }
-            }
-
-            std::string::size_type const colon = path.find(VolumeSeparatorChar, previous);
-
-            if ((colon != 0) and (colon < index))
-            {
-                break;
-            }
-
-            path.erase(previous, index - previous + parent.length());
+            path.erase(pos, 1);
         }
 
-        // remove single dots
+        // Replace '/./' with '/'
+        pos = 0;
+
         while (true)
         {
-            std::string::size_type const index = path.find("/.");
+            pos = path.find("/./", pos);
 
-            if (index == std::string::npos)
+            if (pos == std::string::npos)
             {
                 break;
             }
 
-            path.erase(index, 2);
+            path.erase(pos, 2);
+        }
+
+        // Replace '/<fragment>/../' with '/'
+        while (true)
+        {
+            pos = path.find("/../");
+
+            if (pos == std::string::npos)
+            {
+                // No more parent directory references
+                break;
+            }
+
+            // Find previous path fragment.
+            size_t const prev = path.rfind('/', pos - 1);
+
+            if (prev == std::string::npos)
+            {
+                // No previous fragment found
+                break;
+            }
+
+            path.erase(prev + 1, pos - prev + 3);
+        }
+
+        if (path.ends_with("/."))
+        {
+            path.resize(path.size() - 2uz);
         }
     }
 
@@ -374,5 +379,75 @@ namespace Anemone
                 break;
             }
         }
+    }
+
+    bool FilePath::Relative(std::string& outRelativePath, std::string_view fromPath, std::string_view toPath)
+    {
+        // Normalize paths.
+        std::string normalizedFromPath{fromPath};
+        std::string normalizedToPath{toPath};
+
+        Normalize(normalizedFromPath);
+        Normalize(normalizedToPath);
+
+        // Check if both paths are absolute or relative.
+        bool const absoluteFromPath = !normalizedFromPath.empty() && IsDirectorySeparator(normalizedFromPath[0]);
+        bool const absoluteToPath = !normalizedToPath.empty() && IsDirectorySeparator(normalizedToPath[0]);
+
+        if (absoluteFromPath != absoluteToPath)
+        {
+            outRelativePath = normalizedToPath;
+            return true;
+        }
+
+        std::string_view viewFromPath{normalizedFromPath};
+        std::string_view viewToPath{normalizedToPath};
+
+        while (true)
+        {
+            size_t nextFrom = FindNextDirectorySeparator(viewFromPath, 0);
+            size_t nextTo = FindNextDirectorySeparator(viewToPath, 0);
+
+            if ((nextFrom == std::string_view::npos) || (nextTo == std::string_view::npos))
+            {
+                // Reached the end of one of the paths.
+                break;
+            }
+
+            std::string_view partFrom = viewFromPath.substr(0, nextFrom);
+            std::string_view partTo = viewToPath.substr(0, nextTo);
+
+            if (partFrom != partTo)
+            {
+                // Found a differing directory component.
+                break;
+            }
+
+            viewFromPath.remove_prefix(nextFrom + 1);
+            viewToPath.remove_prefix(nextTo + 1);
+        }
+
+        // Count path fragments remaining in 'fromPath'.
+
+        size_t commonParts = 0;
+
+        while (FindNextDirectorySeparator(viewFromPath, 0) != std::string_view::npos)
+        {
+            ++commonParts;
+            viewFromPath.remove_prefix(FindNextDirectorySeparator(viewFromPath, 0) + 1);
+        }
+
+        // Prepare final path.
+        outRelativePath.clear();
+
+        // First, move up from 'fromPath' to common prefix
+        for (size_t i = 0; i < commonParts; ++i)
+        {
+            outRelativePath += "../";
+        }
+
+        // Move into 'toPath' from common prefix
+        outRelativePath += viewToPath;
+        return true;
     }
 }

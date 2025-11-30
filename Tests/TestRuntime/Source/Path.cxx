@@ -430,3 +430,118 @@ TEST_CASE("Path - SetBaseName")
         REQUIRE(path == "path/to/dir/changed.ext");
     }
 }
+
+TEST_CASE("Path - Normalize")
+{
+    using namespace Anemone;
+
+    SECTION("Empty path")
+    {
+        std::string path{};
+        FilePath::Normalize(path);
+        REQUIRE(path.empty());
+    }
+
+    SECTION("Path with single dot")
+    {
+        std::string path = "path/to/dir/.";
+        FilePath::Normalize(path);
+        REQUIRE(path == "path/to/dir");
+    }
+
+    SECTION("Path with double dot")
+    {
+        std::string path = "path/to/dir/../file.txt";
+        FilePath::Normalize(path);
+        REQUIRE(path == "path/to/file.txt");
+    }
+
+    SECTION("Path with multiple dots")
+    {
+        std::string path = "./path/./to/dir/../file.txt";
+        FilePath::Normalize(path);
+        REQUIRE(path == "./path/to/file.txt");
+    }
+
+    SECTION("Path with leading double dots")
+    {
+        std::string path = "../../path/to/file.txt";
+        FilePath::Normalize(path);
+        REQUIRE(path == "../../path/to/file.txt");
+    }
+
+    SECTION("Path with consecutive separators")
+    {
+        std::string path = "path//to///file.txt";
+        FilePath::Normalize(path);
+        REQUIRE(path == "path/to/file.txt");
+    }
+
+    SECTION("Complex path")
+    {
+        std::string path = "/a/b/./c/../d//e/../f/./g/../../h.txt";
+        FilePath::Normalize(path);
+        REQUIRE(path == "/a/b/d/h.txt");
+    }
+}
+
+TEST_CASE("Path - Relative")
+{
+    using namespace Anemone;
+
+    SECTION("Same path")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/c/", "/a/b/c"));
+        REQUIRE(result == "../c");
+    }
+
+    SECTION("Same path")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/c", "/a/b/c"));
+        REQUIRE(result == "c");
+    }
+
+    SECTION("Direct subpath")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/", "/a/b/c/d.txt"));
+        REQUIRE(result == "c/d.txt");
+    }
+
+    SECTION("Different branches")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/c/", "/a/d/e.txt"));
+        REQUIRE(result == "../../d/e.txt");
+    }
+
+    SECTION("No common path")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/c/", "/d/e/f.txt"));
+        REQUIRE(result == "../../../d/e/f.txt");
+    }
+
+    SECTION("From relative to absolute path")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "a/b/c/", "/a/b/c/d/e.txt"));
+        REQUIRE(result == "/a/b/c/d/e.txt");
+    }
+
+    SECTION("To relative path")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "/a/b/c/d/", "e/f.txt"));
+        REQUIRE(result == "e/f.txt");
+    }
+
+    SECTION("Both relative paths")
+    {
+        std::string result{};
+        REQUIRE(FilePath::Relative(result, "a/b/c/", "a/d/e.txt"));
+        REQUIRE(result == "../../d/e.txt");
+    }
+}

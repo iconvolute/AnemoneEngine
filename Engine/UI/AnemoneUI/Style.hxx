@@ -152,9 +152,9 @@ namespace Anemone::UI
         ThicknessF Padding;
     };
 
-    class ITesselationFeedback
+    class ITessellationFeedback
     {
-        virtual ~ITesselationFeedback() = default;
+        virtual ~ITessellationFeedback() = default;
 
         virtual void AddTriangles(
             Packed::Vector3F p0,

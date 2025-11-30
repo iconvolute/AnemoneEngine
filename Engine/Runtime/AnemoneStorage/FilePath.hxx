@@ -36,5 +36,7 @@ namespace Anemone
         RUNTIME_API static void SetExtension(std::string& path, std::string_view extension);
 
         RUNTIME_API static void MakeFileNameSafe(std::string& path);
+
+        RUNTIME_API static bool Relative(std::string& outRelativePath, std::string_view fromPath, std::string_view toPath);
     };
 }
