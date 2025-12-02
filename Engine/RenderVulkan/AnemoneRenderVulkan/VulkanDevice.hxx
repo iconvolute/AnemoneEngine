@@ -8,6 +8,34 @@
 
 namespace Anemone
 {
+    struct VulkanInstanceLayers final
+    {
+        bool KHRONOS_validation;
+        bool KHRONOS_profiles;
+        bool GOOGLE_unique_objects;
+        bool GOOGLE_threading;
+        bool LUNARG_parameter_validation;
+        bool LUNARG_object_tracker;
+        bool LUNARG_core_validation;
+        bool LUNARG_api_dump;
+        bool LUNARG_gfxreconstruct;
+        bool LUNARG_vktrace;
+        bool LUNARG_crash_diagnostic;
+        bool RENDERDOC_Capture;
+        bool NV_nsight;
+    };
+
+    struct VulkanInstanceExtensions final
+    {
+        bool KHR_surface;
+        bool KHR_display;
+        bool EXT_debug_utils;
+        bool EXT_debug_report;
+        bool KHR_win32_surface;
+        bool KHR_get_surface_capabilities2;
+        bool KHR_surface_maintenance1;
+    };
+
     // Verify https://docs.vulkan.org/spec/latest/appendices/versions.html for extensions
     // promoted to given Vulkan version.
     //
@@ -225,6 +253,10 @@ namespace Anemone
         GpuCommandListContextRef GetImmediateContext() override;
 
     private:
+        VkInstance m_instance{};
+        VulkanInstanceLayers m_instanceLayers{};
+        VulkanInstanceExtensions m_instanceExtensions{};
+
         VkPhysicalDevice m_physicalDevice{};
         VkDevice m_device{};
         VmaAllocator m_allocator{};
@@ -258,6 +290,9 @@ namespace Anemone
         void ReleaseBarrierEvents(std::span<VkEvent const> events);
 
     private:
+        void CreateInstance();
+        void DestroyInstance();
+
         void CreateVulkanDevice();
         void DestroyVulkanDevice();
 
@@ -274,6 +309,41 @@ namespace Anemone
             VkPhysicalDevice physicalDevice,
             std::vector<VkQueueFamilyProperties>& outQueueFamilyProperties);
 
+        static VkResult QueryInstanceLayerProperties(
+            std::vector<VkLayerProperties>& outLayerProperties);
+
+        static VkResult QueryInstanceExtensionProperties(
+            std::vector<VkExtensionProperties>& outExtensionProperties,
+            const char* layerName = nullptr);
+
+        static VkResult QueryPhysicalDevices(
+            VkInstance instance,
+            std::vector<VkPhysicalDevice>& outPhysicalDevices);
+
+        VkPhysicalDevice SelectPhysicalDevice(GpuVendor preferredVendor) const;
+
+#if ANEMONE_VULKAN_VALIDATION
+    private:
+        VkDebugUtilsMessengerEXT m_debugUtilsMessenger{};
+        VkDebugReportCallbackEXT m_debugReportCallback{};
+
+    private:
+        static VKAPI_ATTR VkBool32 VKAPI_CALL DebugUtilsMessengerCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT severity,
+            VkDebugUtilsMessageTypeFlagsEXT type,
+            const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData,
+            void* pUserData);
+
+        static VKAPI_ATTR VkBool32 VKAPI_CALL DebugReportCallback(
+            VkDebugReportFlagsEXT flags,
+            VkDebugReportObjectTypeEXT objectType,
+            uint64_t object,
+            size_t location,
+            int32_t messageCode,
+            const char* pLayerPrefix,
+            const char* pMessage,
+            void* pUserData);
+#endif
     };
 }
 
