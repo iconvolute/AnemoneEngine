@@ -1,11 +1,14 @@
-anemone_add_module(AnemoneApplication
-    ALIAS   Anemone::Application
-    EXPORT  "APPLICATION_API"
-)
-
-target_link_libraries(AnemoneApplication
-    PUBLIC
-        AnemoneRuntime
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneApplication
+    ALIAS
+        Anemone::Application
+    EXPORT
+        "APPLICATION_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
 )
 
 if (WIN32)

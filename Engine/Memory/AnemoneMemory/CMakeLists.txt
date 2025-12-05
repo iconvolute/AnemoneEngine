@@ -6,6 +6,5 @@ target_sources(AnemoneMemory
 
     PUBLIC FILE_SET HEADERS FILES
         "MemoryArena.hxx"
-        "Module.hxx"
         "RawMemoryArena.hxx"
 )

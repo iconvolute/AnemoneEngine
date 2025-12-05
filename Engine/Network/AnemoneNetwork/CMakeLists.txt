@@ -1,5 +1,6 @@
 target_sources(AnemoneNetwork
     PRIVATE
+        "Module.cxx"
         "IpAddress.cxx"
         "IpEndPoint.cxx"
         "Local.cxx"

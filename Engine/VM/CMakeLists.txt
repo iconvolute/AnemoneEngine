@@ -1,13 +1,14 @@
-anemone_add_module(AnemoneVM
-    EXPORT
-        "VM_API"
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneVM
     ALIAS
         Anemone::VM
-)
-
-target_link_libraries(AnemoneVM
-    PUBLIC
-        AnemoneRuntime
+    EXPORT
+        "VM_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
 )
 
 add_subdirectory("AnemoneVM")

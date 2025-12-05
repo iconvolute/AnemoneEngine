@@ -9,6 +9,5 @@ target_sources(AnemoneGraphics
         "DxgiFormat.hxx"
         "Histogram.hxx"
         "Image.hxx"
-        "Module.hxx"
         "PixelFormat.hxx"
 )

@@ -42,7 +42,6 @@ target_sources(AnemoneRuntime
         "LockfreeIntrusive.hxx"
         "Memory.hxx"
         "MemoryBuffer.hxx"
-        "Module.hxx"
         "Reference.hxx"
         "Reflection.hxx"
         "String.hxx"

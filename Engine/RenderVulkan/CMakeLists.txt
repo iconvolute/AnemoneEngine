@@ -1,12 +1,16 @@
-anemone_add_module(AnemoneRenderVulkan
+anemone_add_target(
+    MODULE
+    NAME AnemoneRenderVulkan
     ALIAS Anemone::RenderVulkan
     EXPORT "RENDER_VULKAN_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
+            AnemoneRender
 )
 
 target_link_libraries(AnemoneRenderVulkan
     PUBLIC
-        AnemoneRuntime
-        AnemoneRender
         SdkVolk
         SdkVulkanMemoryAllocator
 )

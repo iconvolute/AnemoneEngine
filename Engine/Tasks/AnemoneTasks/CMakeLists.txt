@@ -11,7 +11,6 @@ target_sources(AnemoneTasks
     PUBLIC FILE_SET HEADERS FILES
         "DefaultTaskScheduler.hxx"
         "DefaultTaskWorker.hxx"
-        "Module.hxx"
         "Parallel.hxx"
         "Task.hxx"
         "TaskAwaiter.hxx"

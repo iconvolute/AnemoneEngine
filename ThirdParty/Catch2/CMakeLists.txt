@@ -1,5 +1,9 @@
 # https://github.com/catchorg/Catch2/releases/tag/v3.10.0
-anemone_add_sdk(SdkCatch2 STATIC)
+anemone_add_target(
+    STATIC SDK
+    NAME
+        SdkCatch2
+)
 
 if(MSVC)
 # TODO: Remove this once Catch2 is fixed

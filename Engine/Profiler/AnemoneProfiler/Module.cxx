@@ -1,19 +1,15 @@
-#include "AnemoneProfiler/Module.hxx"
 #include "AnemoneProfiler/Profiler.hxx"
 
-namespace Anemone
+PROFILER_API void AnemoneProfiler_ModuleInitialize()
 {
-    void Module_Profiler::Initialize()
-    {
 #if ANEMONE_BUILD_PROFILING
-        Profiler::Initialize();
+    Anemone::Profiler::Initialize();
 #endif
-    }
+}
 
-    void Module_Profiler::Finalize()
-    {
+PROFILER_API void AnemoneProfiler_ModuleFinalize()
+{
 #if ANEMONE_BUILD_PROFILING
-        Profiler::Finalize();
+    Anemone::Profiler::Finalize();
 #endif
-    }
 }

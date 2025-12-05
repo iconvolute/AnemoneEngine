@@ -13,7 +13,6 @@ target_sources(AnemoneApplication
         "HostDialogs.hxx"
         "HostSplashScreen.hxx"
         "HostWindow.hxx"
-        "Module.hxx"
 )
 
 add_subdirectory("Platform")

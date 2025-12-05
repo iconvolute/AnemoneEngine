@@ -22,7 +22,6 @@ target_sources(AnemoneRenderVulkan
         "VulkanPipeline.cxx"
         "VulkanVertexDeclaration.cxx"
     PUBLIC FILE_SET HEADERS FILES
-        "Module.hxx"
         "VulkanError.hxx"
         "VulkanDevice.hxx"
         "VulkanHeaders.hxx"

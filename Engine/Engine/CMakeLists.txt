@@ -1,13 +1,14 @@
-anemone_add_module(AnemoneEngine
-    EXPORT
-        "ENGINE_API"
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneEngine
     ALIAS
         Anemone::Engine
-)
-
-target_link_libraries(AnemoneEngine
-    PUBLIC
-        AnemoneRuntime
+    EXPORT
+        "ENGINE_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
 )
 
 add_subdirectory("AnemoneEngine")

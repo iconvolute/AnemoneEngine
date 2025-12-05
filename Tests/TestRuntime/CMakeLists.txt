@@ -1,11 +1,13 @@
-anemone_add_test(TestRuntime)
-
-target_link_libraries(TestRuntime
-    PRIVATE
-        AnemoneRuntime
-        AnemoneTasks
-        AnemoneNetwork
-        AnemoneEntryPoint
+anemone_add_target(
+    TEST
+    NAME
+        TestRuntime
+    BUILD_DEPENDENCIES
+        PRIVATE
+            AnemoneRuntime
+            AnemoneTasks
+            AnemoneNetwork
+            AnemoneEntryPoint
 )
 
 add_subdirectory("Source")

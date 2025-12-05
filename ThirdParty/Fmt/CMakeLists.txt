@@ -1,5 +1,9 @@
 # https://github.com/fmtlib/fmt/releases/tag/12.0.0
-anemone_add_sdk(SdkFmt ${ANEMONE_MODULE_KIND})
+anemone_add_target(
+    MODULE SDK
+    NAME
+        SdkFmt
+)
 
 target_compile_definitions(SdkFmt
     PUBLIC

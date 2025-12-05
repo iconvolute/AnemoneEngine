@@ -1,10 +1,13 @@
 # C:\VulkanSDK\1.4.328.1\Source\SPIRV-Reflect
-anemone_add_sdk(SdkSpirvReflect STATIC)
+anemone_add_target(
+    STATIC SDK
+    NAME
+        SdkSpirvReflect
+)
 
 target_include_directories(SdkSpirvReflect
     PUBLIC
         ${Vulkan_INCLUDE_DIRS}
-
 )
 
 target_compile_definitions(SdkSpirvReflect

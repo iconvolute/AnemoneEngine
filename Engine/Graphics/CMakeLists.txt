@@ -1,13 +1,14 @@
-anemone_add_module(AnemoneGraphics
-    EXPORT
-        "GRAPHICS_API"
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneGraphics
     ALIAS
         Anemone::Graphics
-)
-
-target_link_libraries(AnemoneGraphics
-    PUBLIC
-        AnemoneRuntime
+    EXPORT
+        "GRAPHICS_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
 )
 
 add_subdirectory("AnemoneGraphics")

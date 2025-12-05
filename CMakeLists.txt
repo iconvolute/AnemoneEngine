@@ -43,3 +43,6 @@ add_subdirectory("Samples")
 add_subdirectory("Tests")
 add_subdirectory("ThirdParty")
 add_subdirectory("Tools")
+
+# Generate code after all targets have been defined.
+anemone_generate_code()

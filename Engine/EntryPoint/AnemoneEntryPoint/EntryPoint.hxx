@@ -1,6 +1,5 @@
 #pragma once
 #include "AnemoneInterop/Headers.hxx"
-#include "AnemoneBase/Module.hxx"
 
 // GPU power management markers.
 extern "C"
@@ -36,6 +35,10 @@ extern "C"
 
 int AnemoneMain(int argc, char** argv);
 
+
+extern void Anemone_InitializeExecutable();
+extern void Anemone_FinalizeExecutable();
+
 #if ANEMONE_PLATFORM_WINDOWS && defined(ANEMONE_APPLICATION_UI)
 
 #include "AnemoneInterop/Windows/Headers.hxx"
@@ -50,11 +53,11 @@ int WINAPI WinMain(
     int argc = __argc;
     char** argv = __argv;
 
-    Anemone::Module_Runtime::Initialize();
+    Anemone_InitializeExecutable();
 
     int const result = AnemoneMain(argc, argv);
 
-    Anemone::Module_Runtime::Finalize();
+    Anemone_FinalizeExecutable();
 
     return result;
 }
@@ -63,11 +66,11 @@ int WINAPI WinMain(
 
 int main(int argc, char** argv)
 {
-    Anemone::Module_Runtime::Initialize();
+    Anemone_InitializeExecutable();
 
     int const result = AnemoneMain(argc, argv);
 
-    Anemone::Module_Runtime::Finalize();
+    Anemone_FinalizeExecutable();
 
     return result;
 }

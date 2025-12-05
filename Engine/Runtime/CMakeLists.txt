@@ -1,6 +1,11 @@
-anemone_add_module(AnemoneRuntime
-    ALIAS   Anemone::Runtime
-    EXPORT  "RUNTIME_API"
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneRuntime
+    ALIAS
+        Anemone::Runtime
+    EXPORT
+        "RUNTIME_API"
 )
 
 target_link_libraries(AnemoneRuntime

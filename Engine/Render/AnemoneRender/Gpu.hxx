@@ -83,6 +83,36 @@ namespace Anemone
         // RayCallable,
     };
 
+    inline constexpr std::string_view GetGpuShaderStageName(GpuShaderStage stage)
+    {
+        switch (stage)
+        {
+        case GpuShaderStage::Vertex:
+            return "vert";
+
+        case GpuShaderStage::TessellationControl:
+            return "tesc";
+
+        case GpuShaderStage::TessellationEvaluation:
+            return "tese";
+
+        case GpuShaderStage::Geometry:
+            return "geom";
+
+        case GpuShaderStage::Fragment:
+            return "frag";
+
+        case GpuShaderStage::Task:
+            return "task";
+
+        case GpuShaderStage::Mesh:
+            return "mesh";
+
+        case GpuShaderStage::Compute:
+            return "comp";
+        }
+    }
+
     enum class GpuVendor : uint32_t
     {
         Unknown = 0xFFFFFFFFu,

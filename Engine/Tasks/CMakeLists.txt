@@ -1,12 +1,15 @@
-anemone_add_module(AnemoneTasks
-    ALIAS   Anemone::Tasks
-    EXPORT  "TASKS_API"
-)
-
-target_link_libraries(AnemoneTasks
-    PUBLIC
-        AnemoneRuntime
-        AnemoneProfiler
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneTasks
+    ALIAS
+        Anemone::Tasks
+    EXPORT
+        "TASKS_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
+            AnemoneProfiler
 )
 
 add_subdirectory("AnemoneTasks")

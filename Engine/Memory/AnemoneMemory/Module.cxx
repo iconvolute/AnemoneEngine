@@ -1,12 +1,9 @@
-#include "AnemoneMemory/Module.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone
+MEMORY_API void AnemoneMemory_ModuleInitialize()
 {
-    void Module_Memory::Initialize()
-    {
-    }
+}
 
-    void Module_Memory::Finalize()
-    {
-    }
+MEMORY_API void AnemoneMemory_ModuleFinalize()
+{
 }

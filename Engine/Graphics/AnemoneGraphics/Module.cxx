@@ -1,12 +1,9 @@
-#include "AnemoneGraphics/Module.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone
+GRAPHICS_API void AnemoneGraphics_ModuleInitialize()
 {
-    void Module_Graphics::Initialize()
-    {
-    }
+}
 
-    void Module_Graphics::Finalize()
-    {
-    }
+GRAPHICS_API void AnemoneGraphics_ModuleFinalize()
+{
 }

@@ -4,7 +4,6 @@ target_sources(AnemoneProfiler
         "NvidiaProfilerBackend.cxx"
         "Profiler.cxx"
     PUBLIC FILE_SET HEADERS FILES
-        "Module.hxx"
         "NvidiaProfilerBackend.hxx"
         "Profiler.hxx"
 )

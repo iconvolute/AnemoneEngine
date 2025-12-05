@@ -1,12 +1,9 @@
-#include "AnemoneRender/Module.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone
+RENDER_API void AnemoneRender_ModuleInitialize()
 {
-    void Module_Render::Initialize()
-    {
-    }
+}
 
-    void Module_Render::Finalize()
-    {
-    }
+RENDER_API void AnemoneRender_ModuleFinalize()
+{
 }

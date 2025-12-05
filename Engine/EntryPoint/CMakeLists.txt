@@ -1,11 +1,12 @@
-anemone_add_module(AnemoneEntryPoint
-    ALIAS   Anemone::EntryPoint
+anemone_add_target(
     HEADER
-)
-
-target_link_libraries(AnemoneEntryPoint
-    INTERFACE
-        AnemoneRuntime
+    NAME
+        AnemoneEntryPoint
+    ALIAS
+        Anemone::EntryPoint
+    BUILD_DEPENDENCIES
+        INTERFACE
+            AnemoneRuntime
 )
 
 add_subdirectory("AnemoneEntryPoint")

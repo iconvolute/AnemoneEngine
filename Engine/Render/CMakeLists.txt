@@ -1,12 +1,15 @@
-anemone_add_module(AnemoneRender
-    ALIAS Anemone::Render
-    EXPORT "RENDER_API"
-)
-
-target_link_libraries(AnemoneRender
-    PUBLIC
-        AnemoneRuntime
-        AnemoneApplication
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneRender
+    ALIAS
+        Anemone::Render
+    EXPORT
+        "RENDER_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
+            AnemoneApplication
 )
 
 add_subdirectory("AnemoneRender")

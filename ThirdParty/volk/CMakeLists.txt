@@ -1,5 +1,9 @@
 # C:\VulkanSDK\1.4.328.1\Include\Volk
-anemone_add_sdk(SdkVolk STATIC)
+anemone_add_target(
+    STATIC SDK
+    NAME
+        SdkVolk
+)
 
 target_include_directories(SdkVolk
     PUBLIC

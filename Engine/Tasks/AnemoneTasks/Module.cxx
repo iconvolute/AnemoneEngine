@@ -1,15 +1,11 @@
-#include "AnemoneTasks/Module.hxx"
 #include "AnemoneTasks/TaskScheduler.hxx"
 
-namespace Anemone
+TASKS_API void AnemoneTasks_ModuleInitialize()
 {
-    void Module_Tasks::Initialize()
-    {
-        TaskScheduler::Initialize();
-    }
+    Anemone::TaskScheduler::Initialize();
+}
 
-    void Module_Tasks::Finalize()
-    {
-        TaskScheduler::Finalize();
-    }
+TASKS_API void AnemoneTasks_ModuleFinalize()
+{
+    Anemone::TaskScheduler::Finalize();
 }

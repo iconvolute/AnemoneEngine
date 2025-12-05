@@ -1,4 +1,6 @@
-anemone_add_console_executable(DevDebugger)
+add_executable(
+    DevDebugger
+)
 
 target_sources(DevDebugger
     PRIVATE

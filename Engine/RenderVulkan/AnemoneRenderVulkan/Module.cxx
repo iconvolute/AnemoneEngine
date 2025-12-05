@@ -1,12 +1,9 @@
-#include "AnemoneRenderVulkan/Module.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone
+RENDER_VULKAN_API void AnemoneRenderVulkan_ModuleInitialize()
 {
-    void Module_RenderVulkan::Initialize()
-    {
-    }
+}
 
-    void Module_RenderVulkan::Finalize()
-    {
-    }
+RENDER_VULKAN_API void AnemoneRenderVulkan_ModuleFinalize()
+{
 }

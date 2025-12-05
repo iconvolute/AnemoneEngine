@@ -1,12 +1,9 @@
-#include "AnemoneApplication/Module.hxx"
+#include "AnemoneInterop/Headers.hxx"
 
-namespace Anemone
+APPLICATION_API void AnemoneApplication_ModuleInitialize()
 {
-    void Module_Application::Initialize()
-    {
-    }
+}
 
-    void Module_Application::Finalize()
-    {
-    }
+APPLICATION_API void AnemoneApplication_ModuleFinalize()
+{
 }

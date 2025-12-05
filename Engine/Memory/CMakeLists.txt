@@ -1,11 +1,14 @@
-anemone_add_module(AnemoneMemory
-    ALIAS   Anemone::Memory
-    EXPORT  "MEMORY_API"
-)
-
-target_link_libraries(AnemoneMemory
-    PUBLIC
-        AnemoneRuntime
+anemone_add_target(
+    MODULE
+    NAME
+        AnemoneMemory
+    ALIAS
+        Anemone::Memory
+    EXPORT
+        "MEMORY_API"
+    BUILD_DEPENDENCIES
+        PUBLIC
+            AnemoneRuntime
 )
 
 add_subdirectory("AnemoneMemory")

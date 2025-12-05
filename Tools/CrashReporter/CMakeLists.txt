@@ -1,4 +1,6 @@
-anemone_add_console_executable(AnemoneCrashReporter)
+add_executable(
+    AnemoneCrashReporter
+)
 
 target_sources(AnemoneCrashReporter
     PRIVATE

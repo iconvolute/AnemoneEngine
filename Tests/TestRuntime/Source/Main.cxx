@@ -1,10 +1,11 @@
 #include "AnemoneEntryPoint/EntryPoint.hxx"
-#include "AnemoneTasks/Module.hxx"
 
 #include <catch_amalgamated.hpp>
 
+void TestRuntime_ModuleInitialize() { }
+void TestRuntime_ModuleFinalize() { }
+
 int AnemoneMain(int argc, char* argv[])
 {
-    Anemone::ModuleInitializer<Anemone::Module_Tasks> moduleTasks{};
     return Catch::Session().run(argc, argv);
 }
