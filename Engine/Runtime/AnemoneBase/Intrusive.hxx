@@ -70,20 +70,20 @@ namespace Anemone
         }
 
         template <typename CallbackT = void(T&)>
-        constexpr void ForEach(CallbackT&& callback) const
+        constexpr void ForEach(CallbackT callback) const
         {
             Node* node = this->Head;
 
             while (node)
             {
                 Node* link = node->Link;
-                std::forward<CallbackT>(callback)(*AsValue(node));
+                callback(*AsValue(node));
                 node = link;
             }
         }
 
         template <typename CallbackT = bool(T&)>
-        constexpr T* Find(CallbackT&& callback) const
+        constexpr T* Find(CallbackT callback) const
         {
             Node* node = this->Head;
 
@@ -91,7 +91,7 @@ namespace Anemone
             {
                 T* value = AsValue(node);
 
-                if (std::forward<CallbackT>(callback)(*value))
+                if (callback(*value))
                 {
                     return value;
                 }
@@ -203,20 +203,20 @@ namespace Anemone
         }
 
         template <typename CallbackT = void(T&)>
-        constexpr void ForEach(CallbackT&& callback) const
+        constexpr void ForEach(CallbackT callback) const
         {
             Node* node = this->Head;
 
             while (node)
             {
                 Node* link = node->Link;
-                std::forward<CallbackT>(callback)(*AsValue(node));
+                callback(*AsValue(node));
                 node = link;
             }
         }
 
         template <typename CallbackT = bool(T&)>
-        constexpr T* Find(CallbackT&& callback) const
+        constexpr T* Find(CallbackT callback) const
         {
             Node* node = this->Head;
 
@@ -224,7 +224,7 @@ namespace Anemone
             {
                 T* value = AsValue(node);
 
-                if (std::forward<CallbackT>(callback)(*value))
+                if (callback(*value))
                 {
                     return value;
                 }
@@ -399,37 +399,37 @@ namespace Anemone
         }
 
         template <typename CallbackT = void(T&)>
-        constexpr void ForEach(CallbackT&& callback) const
+        constexpr void ForEach(CallbackT callback) const
         {
             Node* node = this->Head.FLink;
             while (node != &this->Head)
             {
                 Node* flink = node->FLink;
-                std::forward<CallbackT>(callback)(*AsValue(node));
+                callback(*AsValue(node));
                 node = flink;
             }
         }
 
         template <typename CallbackT = void(T&)>
-        constexpr void ForEachReverse(CallbackT&& callback) const
+        constexpr void ForEachReverse(CallbackT callback) const
         {
             Node* node = this->Head.BLink;
             while (node != &this->Head)
             {
                 Node* blink = node->BLink;
-                std::forward<CallbackT>(callback)(*AsValue(node));
+                callback(*AsValue(node));
                 node = blink;
             }
         }
 
         template <typename CallbackT = bool(T&)>
-        constexpr T* Find(CallbackT&& callback) const
+        constexpr T* Find(CallbackT callback) const
         {
             Node* node = this->Head.FLink;
             while (node != &this->Head)
             {
                 T* value = AsValue(node);
-                if (std::forward<CallbackT>(callback)(*value))
+                if (callback(*value))
                 {
                     return value;
                 }
