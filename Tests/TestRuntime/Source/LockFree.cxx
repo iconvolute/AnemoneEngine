@@ -1,5 +1,5 @@
-#include "AnemoneBase/LockfreeIntrusive.hxx"
-#include "AnemoneTasks/Parallel.hxx"
+#include "AnemoneRuntime.Base/LockfreeIntrusive.hxx"
+#include "AnemoneRuntime.Tasks/Parallel.hxx"
 
 #include <catch_amalgamated.hpp>
 

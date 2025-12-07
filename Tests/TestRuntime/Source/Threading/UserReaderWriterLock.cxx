@@ -1,6 +1,6 @@
-#include "AnemoneThreading/Thread.hxx"
-#include "AnemoneThreading/UserReaderWriterLock.hxx"
-#include "AnemoneThreading/CurrentThread.hxx"
+#include "AnemoneRuntime.Threading/Thread.hxx"
+#include "AnemoneRuntime.Threading/UserReaderWriterLock.hxx"
+#include "AnemoneRuntime.Threading/CurrentThread.hxx"
 
 #include <catch_amalgamated.hpp>
 #include <atomic>

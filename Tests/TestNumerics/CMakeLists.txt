@@ -4,8 +4,8 @@ anemone_add_target(
         TestNumerics
     BUILD_DEPENDENCIES
         PRIVATE
-            AnemoneRuntime
-            AnemoneEntryPoint
+            AnemoneRuntime.Base
+            AnemoneRuntime.EntryPoint
 )
 
 add_subdirectory("Source")

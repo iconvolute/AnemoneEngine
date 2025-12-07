@@ -1,5 +1,5 @@
-#include "AnemoneNetwork/IpEndPoint.hxx"
-#include "AnemoneNetwork/IpAddress.hxx"
+#include "AnemoneRuntime.Network/IpEndPoint.hxx"
+#include "AnemoneRuntime.Network/IpAddress.hxx"
 
 #include <catch_amalgamated.hpp>
 #if false

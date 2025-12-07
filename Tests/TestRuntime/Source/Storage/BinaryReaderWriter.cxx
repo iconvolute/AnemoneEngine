@@ -1,8 +1,8 @@
-#include "AnemoneStorage/BinaryReader.hxx"
-#include "AnemoneStorage/BinaryWriter.hxx"
-#include "AnemoneBase/MemoryBuffer.hxx"
-#include "AnemoneStorage/MemoryInputStream.hxx"
-#include "AnemoneStorage/MemoryOutputStream.hxx"
+#include "AnemoneRuntime.Storage/BinaryReader.hxx"
+#include "AnemoneRuntime.Storage/BinaryWriter.hxx"
+#include "AnemoneRuntime.Base/MemoryBuffer.hxx"
+#include "AnemoneRuntime.Storage/MemoryInputStream.hxx"
+#include "AnemoneRuntime.Storage/MemoryOutputStream.hxx"
 
 #include <catch_amalgamated.hpp>
 

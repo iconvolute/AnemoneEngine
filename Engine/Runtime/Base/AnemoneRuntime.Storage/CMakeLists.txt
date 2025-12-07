@@ -1,0 +1,38 @@
+target_sources(AnemoneRuntime.Base
+    PRIVATE
+        "BinaryReader.cxx"
+        "BinaryWriter.cxx"
+        "FileHandle.cxx"
+        "FileInputStream.cxx"
+        "FileOutputStream.cxx"
+        "FilePath.cxx"
+        "FileSystem.cxx"
+        "InputStream.cxx"
+        "MemoryInputStream.cxx"
+        "MemoryMappedFile.cxx"
+        "MemoryOutputStream.cxx"
+        "OutputStream.cxx"
+        "StreamReader.cxx"
+        "StreamWriter.cxx"
+        "TextReader.cxx"
+        "TextWriter.cxx"
+    PUBLIC FILE_SET HEADERS FILES
+        "BinaryReader.hxx"
+        "BinaryWriter.hxx"
+        "FileHandle.hxx"
+        "FileInputStream.hxx"
+        "FileOutputStream.hxx"
+        "FilePath.hxx"
+        "FileSystem.hxx"
+        "InputStream.hxx"
+        "MemoryInputStream.hxx"
+        "MemoryMappedFile.hxx"
+        "MemoryOutputStream.hxx"
+        "OutputStream.hxx"
+        "StreamReader.hxx"
+        "StreamWriter.hxx"
+        "TextReader.hxx"
+        "TextWriter.hxx"
+)
+
+add_subdirectory("Platform")

@@ -4,10 +4,8 @@ anemone_add_target(
         TestRuntime
     BUILD_DEPENDENCIES
         PRIVATE
-            AnemoneRuntime
-            AnemoneTasks
-            AnemoneNetwork
-            AnemoneEntryPoint
+            AnemoneRuntime.Base
+            AnemoneRuntime.EntryPoint
 )
 
 add_subdirectory("Source")

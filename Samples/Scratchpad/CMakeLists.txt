@@ -4,12 +4,8 @@ anemone_add_target(
         Scratchpad
     BUILD_DEPENDENCIES
         PUBLIC
-            AnemoneApplication
-            AnemoneMemory
-            AnemoneTasks
-            AnemoneNetwork
-            AnemoneEntryPoint
-            AnemoneRuntime
+            AnemoneRuntime.EntryPoint
+            AnemoneRuntime.Base
 )
 
 target_sources(Scratchpad
@@ -21,7 +17,7 @@ if (Vulkan_FOUND)
 
 target_link_libraries(Scratchpad
     PUBLIC
-        AnemoneRenderVulkan
+        AnemoneRuntime.RenderVulkan
         Vulkan::shaderc_combined
         SdkSpirvReflect
 )

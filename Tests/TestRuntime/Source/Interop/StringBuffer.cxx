@@ -1,4 +1,4 @@
-#include "AnemoneInterop/StringBuffer.hxx"
+#include "AnemoneRuntime.Interop/StringBuffer.hxx"
 
 #include <catch_amalgamated.hpp>
 using namespace Anemone::Interop;

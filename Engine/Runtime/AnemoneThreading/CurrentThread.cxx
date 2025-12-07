@@ -1,1 +1,0 @@
-#include "AnemoneThreading/CurrentThread.hxx"

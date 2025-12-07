@@ -1,8 +1,8 @@
-#include "AnemoneThreading/Thread.hxx"
-#include "AnemoneThreading/UserManualResetEvent.hxx"
-#include "AnemoneThreading/ManualResetEvent.hxx"
-#include "AnemoneThreading/CurrentThread.hxx"
-#include "AnemoneBase/Duration.hxx"
+#include "AnemoneRuntime.Threading/Thread.hxx"
+#include "AnemoneRuntime.Threading/UserManualResetEvent.hxx"
+#include "AnemoneRuntime.Threading/ManualResetEvent.hxx"
+#include "AnemoneRuntime.Threading/CurrentThread.hxx"
+#include "AnemoneRuntime.Base/Duration.hxx"
 
 #include <catch_amalgamated.hpp>
 

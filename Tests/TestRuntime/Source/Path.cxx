@@ -1,5 +1,5 @@
-#include "AnemoneInterop/Headers.hxx"
-#include "AnemoneStorage/FilePath.hxx"
+#include "AnemoneRuntime.Interop/Headers.hxx"
+#include "AnemoneRuntime.Storage/FilePath.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

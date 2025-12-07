@@ -1,4 +1,4 @@
-#include "AnemoneInterop/RingBuffer.hxx"
+#include "AnemoneRuntime.Interop/RingBuffer.hxx"
 
 #include <catch_amalgamated.hpp>
 

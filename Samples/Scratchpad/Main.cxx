@@ -1,29 +1,29 @@
-#include "AnemoneEntryPoint/EntryPoint.hxx"
-#include "AnemoneSystem/Environment.hxx"
+#include "AnemoneRuntime.EntryPoint/EntryPoint.hxx"
+#include "AnemoneRuntime.System/Environment.hxx"
 
 
 #include <string>
 #include <string_view>
 
-#include "AnemoneDiagnostics/Error.hxx"
-#include "AnemoneBase/UninitializedObject.hxx"
+#include "AnemoneRuntime.Diagnostics/Error.hxx"
+#include "AnemoneRuntime.Base/UninitializedObject.hxx"
 
 #include <expected>
 
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneInterop/Windows/Dwm.hxx"
-#include "AnemoneInterop/Windows/Registry.hxx"
+#include "AnemoneRuntime.Interop/Windows/Dwm.hxx"
+#include "AnemoneRuntime.Interop/Windows/Registry.hxx"
 #endif
-#include "AnemoneDiagnostics/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime.Diagnostics/ConsoleTraceListener.hxx"
 
-#include "AnemoneNetwork/Tcp.hxx"
-#include "AnemoneThreading/CriticalSection.hxx"
-#include "AnemoneThreading/Lock.hxx"
+#include "AnemoneRuntime.Network/Tcp.hxx"
+#include "AnemoneRuntime.Threading/CriticalSection.hxx"
+#include "AnemoneRuntime.Threading/Lock.hxx"
 
-#include "AnemoneStorage/FileSystem.hxx"
-#include "AnemoneSystem/ProcessorProperties.hxx"
+#include "AnemoneRuntime.Storage/FileSystem.hxx"
+#include "AnemoneRuntime.System/ProcessorProperties.hxx"
 
-#include "AnemoneBase/Uuid.hxx"
+#include "AnemoneRuntime.Base/Uuid.hxx"
 /*
 namespace Anemone::inline FileSystemX
 {
@@ -42,14 +42,13 @@ namespace Anemone::inline FileSystemX
     };
 }*/
 
-#include "AnemoneApplication/HostApplication.hxx"
-#include "AnemoneApplication/HostApplicationEvents.hxx"
-#include "AnemoneApplication/HostDialogs.hxx"
-#include "AnemoneDiagnostics/Debug.hxx"
-#include "AnemoneSystem/Clipboard.hxx"
-
-#include "AnemoneSystem/CommandLine.hxx"
-#include "AnemoneDiagnostics/Trace.hxx"
+#include "AnemoneRuntime.HostApplication/HostApplication.hxx"
+#include "AnemoneRuntime.HostApplication/HostApplicationEvents.hxx"
+#include "AnemoneRuntime.HostApplication/HostDialogs.hxx"
+#include "AnemoneRuntime.Diagnostics/Debug.hxx"
+#include "AnemoneRuntime.System/Clipboard.hxx"
+#include "AnemoneRuntime.System/CommandLine.hxx"
+#include "AnemoneRuntime.Diagnostics/Trace.hxx"
 
 class EH final : public Anemone::HostApplicationEvents
 {
@@ -199,29 +198,29 @@ public:
         (void)args;
     }
 };
-#include "AnemoneSystem/Environment.hxx"
+#include "AnemoneRuntime.System/Environment.hxx"
 
-#include "AnemoneBase/FNV.hxx"
-#include "AnemoneSystem/Process.hxx"
-#include "AnemoneTasks/TaskScheduler.hxx"
-#include "AnemoneMath/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime.Base/FNV.hxx"
+#include "AnemoneRuntime.System/Process.hxx"
+#include "AnemoneRuntime.Tasks/TaskScheduler.hxx"
+#include "AnemoneRuntime.Math/Detail/SimdFloat.hxx"
 #if ANEMONE_PLATFORM_WINDOWS
-#include "AnemoneDiagnostics/Platform/Windows/WindowsDebug.hxx"
-#include "AnemoneInterop/Windows/Environment.hxx"
-#include "AnemoneInterop/Windows/Text.hxx"
+#include "AnemoneRuntime.Diagnostics/Platform/Windows/WindowsDebug.hxx"
+#include "AnemoneRuntime.Interop/Windows/Environment.hxx"
+#include "AnemoneRuntime.Interop/Windows/Text.hxx"
 #endif
 
-#include "AnemoneMath/PidController.hxx"
-#include "AnemoneRandom/Generator.hxx"
-#include "AnemoneRandom/Distribution.hxx"
+#include "AnemoneRuntime.Math/PidController.hxx"
+#include "AnemoneRuntime.Random/Generator.hxx"
+#include "AnemoneRuntime.Random/Distribution.hxx"
 
 
-#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
-#include "AnemoneRenderVulkan/VulkanDevice.hxx"
+#if __has_include("AnemoneRuntime.RenderVulkan/VulkanDevice.hxx")
+#include "AnemoneRuntime.RenderVulkan/VulkanDevice.hxx"
 #endif
 
-#include "AnemoneDiagnostics/FileTraceListener.hxx"
-#include "AnemoneApplication/HostSplashScreen.hxx"
+#include "AnemoneRuntime.Diagnostics/FileTraceListener.hxx"
+#include "AnemoneRuntime.HostApplication/HostSplashScreen.hxx"
 
 namespace anemone
 {
@@ -268,9 +267,138 @@ namespace anemone
     };
 }
 
-#include "AnemoneRenderVulkan/Module.hxx"
-#include "AnemoneDiagnostics/ConsoleTraceListener.hxx"
-#include "AnemoneRender/SwapChain.hxx"
+#include "AnemoneRuntime.Diagnostics/ConsoleTraceListener.hxx"
+#include "AnemoneRuntime.Render/SwapChain.hxx"
+#include "AnemoneRuntime.Base/XXHash64.hxx"
+#include "AnemoneRuntime.Storage/FilePath.hxx"
+
+anemone_noinline uint64_t hashx64(std::string_view data)
+{
+    return Anemone::XXHash64::FromString(data);
+}
+
+#include <spirv-tools/libspirv.h>
+#include <spirv-tools/libspirv.hpp>
+#include <spirv_cross/spirv_reflect.hpp>
+#include <shaderc/shaderc.h>
+#include <vulkan/vulkan.h>
+
+#define SPIRV_REFLECT_DISABLE_CPP_BINDINGS
+#include <spirv_reflect.h>
+
+
+struct ShaderCIncludeData
+{
+    std::string content{};
+    std::string path{};
+};
+
+namespace anemone
+{
+    class SpirvBindings
+    {
+    private:
+        std::vector<SpvReflectDescriptorBinding*> m_samplers{};
+        std::vector<SpvReflectDescriptorBinding*> m_uniformBuffers{};
+        std::vector<SpvReflectDescriptorBinding*> m_combinedSamplers{};
+        std::vector<SpvReflectDescriptorBinding*> m_textureSRV{};
+        std::vector<SpvReflectDescriptorBinding*> m_tbufferSRV{};
+        std::vector<SpvReflectDescriptorBinding*> m_sbufferSRV{};
+        std::vector<SpvReflectDescriptorBinding*> m_accelerationStructure{};
+
+    public:
+        void AddBinding(SpvReflectDescriptorBinding* binding)
+        {
+            switch (binding->resource_type)
+            {
+            case SPV_REFLECT_RESOURCE_FLAG_UNDEFINED:
+                {
+                    break;
+                }
+
+            case SPV_REFLECT_RESOURCE_FLAG_SAMPLER:
+                {
+                    AE_ASSERT(binding->descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER);
+
+                    if (binding->accessed)
+                    {
+                        this->m_samplers.emplace_back(binding);
+                    }
+                    break;
+                }
+
+            case SPV_REFLECT_RESOURCE_FLAG_CBV:
+                {
+                    AE_ASSERT((binding->descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER) || (binding->descriptor_type == SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC));
+
+                    if (binding->accessed)
+                    {
+                        this->m_uniformBuffers.emplace_back(binding);
+                    }
+
+                    break;
+                }
+
+            case SPV_REFLECT_RESOURCE_FLAG_SRV:
+                {
+                    switch (binding->descriptor_type)
+                    {
+                    case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER:
+                        {
+                            if (binding->accessed)
+                            {
+                                this->m_combinedSamplers.emplace_back(binding);
+                            }
+                            break;
+                        }
+
+                    case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE:
+                        {
+                            if (binding->accessed)
+                            {
+                                this->m_textureSRV.emplace_back(binding);
+                            }
+                            break;
+                        }
+
+                    case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER:
+                        {
+                            if (binding->accessed)
+                            {
+                                this->m_tbufferSRV.emplace_back(binding);
+                            }
+                            break;
+                        }
+                    case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER:
+                        {
+                            if (binding->accessed)
+                            {
+                                this->m_sbufferSRV.emplace_back(binding);
+                            }
+                            break;
+                        }
+                    case SPV_REFLECT_DESCRIPTOR_TYPE_ACCELERATION_STRUCTURE_KHR:
+                        {
+                            if (binding->accessed)
+                            {
+                                this->m_accelerationStructure.emplace_back(binding);
+                            }
+                            break;
+                        }
+                    default:
+                        break;
+                    }
+                    break;
+                }
+
+            case SPV_REFLECT_RESOURCE_FLAG_UAV:
+                {
+                    break;
+                }
+            }
+        }
+    };
+}
 
 void Scratchpad_ModuleInitialize() { }
 void Scratchpad_ModuleFinalize() { }
@@ -280,28 +408,242 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     (void)argc;
     (void)argv;
     Anemone::UninitializedObject<Anemone::FileTraceListener> fts{};
-//
-//    Anemone::HostSplashScreen::Initialize();
-//#if ANEMONE_PLATFORM_WINDOWS
-//    SleepEx(3'000, FALSE);
-//#endif
-//
-//    constexpr size_t count = 1000;
-//    for (size_t i = 0; i < count;++i)
-//    {
-//        Anemone::HostSplashScreen::Get().SetProgress(static_cast<float>(i) / static_cast<float>(count));
-//        Anemone::HostSplashScreen::Get().SetText(fmt::format("{}/{}", i, count));
-//        SleepEx(15, FALSE);
-//
-//    }
-//
-//    Anemone::HostSplashScreen::Finalize();
-//
-//
-//    Anemone::Parallel::For(10000, 128, [](size_t first, size_t count)
-//    {
-//        AE_TRACE(Error, "First: {:016x}, Count: {:016x}", first, count);
-//    });
+
+    {
+        shaderc_compiler_t c = shaderc_compiler_initialize();
+
+        shaderc_compile_options_t o = shaderc_compile_options_initialize();
+        shaderc_compile_options_set_target_env(o, shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_3);
+        shaderc_compile_options_set_optimization_level(o, shaderc_optimization_level_performance);
+        shaderc_compile_options_set_generate_debug_info(o);
+        // shaderc_compile_options_set_preserve_bindings()
+        shaderc_compile_options_set_include_callbacks(
+            o,
+            [](void* user_data, const char* requested_source, int type, const char* requesting_source, size_t include_depth)
+        {
+            // TODO: Implement path-relative resolving functionality first.
+            (void)requesting_source;
+            (void)type;
+            (void)user_data;
+            (void)include_depth;
+            ShaderCIncludeData* data = new ShaderCIncludeData{};
+
+            if (type == shaderc_include_type_standard)
+            {
+                data->path = requested_source;
+            }
+            else
+            {
+                data->path = requesting_source;
+                Anemone::FilePath::PopFragment(data->path);
+                Anemone::FilePath::PushFragment(data->path, requested_source);
+                Anemone::FilePath::Normalize(data->path);
+            }
+
+            data->content = Anemone::FileSystem::GetPlatformFileSystem().ReadTextFile(data->path).value_or<std::string>("#error \"Failed to read included file\"");
+
+            shaderc_include_result* result = new shaderc_include_result{};
+            result->user_data = data;
+            result->source_name = data->path.c_str();
+            result->source_name_length = data->path.length();
+            result->content = data->content.c_str();
+            result->content_length = data->content.length();
+            return result;
+        }, [](void* user_data, shaderc_include_result* include_result)
+        {
+            (void)user_data;
+            delete static_cast<ShaderCIncludeData*>(include_result->user_data);
+            delete include_result;
+        }, nullptr);
+
+        auto source = Anemone::FileSystem::GetPlatformFileSystem().ReadTextFile("../../../Shaders/test.vert.glsl").value_or<std::string>("#error \"Failed to read file\"");
+
+        shaderc_compilation_result_t r = shaderc_compile_into_spv(c, source.c_str(), source.size(), shaderc_vertex_shader, "../../../Shaders/test.vert.glsl", "main", o);
+
+        auto error = shaderc_result_get_error_message(r);
+        auto status = shaderc_result_get_compilation_status(r);
+        auto bytes = shaderc_result_get_bytes(r);
+        auto length = shaderc_result_get_length(r);
+
+        //
+        SpvReflectShaderModule rmodule{};
+        if (spvReflectCreateShaderModule2(SPV_REFLECT_MODULE_FLAG_NO_COPY, length, bytes, &rmodule) == SPV_REFLECT_RESULT_SUCCESS)
+        {
+            uint32_t descriptorSetsCount{};
+            std::vector<SpvReflectDescriptorSet*> descriptorSets{};
+            spvReflectEnumerateEntryPointDescriptorSets(&rmodule, "main", &descriptorSetsCount, nullptr);
+            descriptorSets.resize(descriptorSetsCount);
+            spvReflectEnumerateEntryPointDescriptorSets(&rmodule, "main", &descriptorSetsCount, descriptorSets.data());
+
+            for (size_t i = 0; i < descriptorSets.size(); ++i)
+            {
+                auto const& set = *descriptorSets[i];
+                AE_TRACE(Error, "Descriptor Set {}: {} bindings", set.set, set.binding_count);
+
+                for (size_t j = 0; j < set.binding_count; ++j)
+                {
+                    auto const& binding = set.bindings[j];
+                    AE_TRACE(Error, "  location(set = {}, binding = {}): Type: {}", set.set, binding->binding, static_cast<uint32_t>(binding->descriptor_type));
+                }
+            }
+
+            uint32_t descriptorBindingsCount{};
+            spvReflectEnumerateEntryPointDescriptorBindings(&rmodule, "main", &descriptorBindingsCount, nullptr);
+            std::vector<SpvReflectDescriptorBinding*> descriptorBindings{};
+            descriptorBindings.resize(descriptorBindingsCount);
+            spvReflectEnumerateEntryPointDescriptorBindings(&rmodule, "main", &descriptorBindingsCount, descriptorBindings.data());
+
+            for (size_t i = 0; i < descriptorBindingsCount; ++i)
+            {
+                auto const& binding = *descriptorBindings[i];
+                AE_TRACE(Error, "location(set = {}, binding = {})", binding.set, binding.binding);
+            }
+
+            uint32_t interfaceVariablesCount{};
+            spvReflectEnumerateEntryPointInterfaceVariables(&rmodule, "main", &interfaceVariablesCount, nullptr);
+            std::vector<SpvReflectInterfaceVariable*> interfaceVariables{};
+            interfaceVariables.resize(interfaceVariablesCount);
+            spvReflectEnumerateEntryPointInterfaceVariables(&rmodule, "main", &interfaceVariablesCount, interfaceVariables.data());
+
+            for (size_t i = 0; i < interfaceVariablesCount; ++i)
+            {
+                auto const& var = *interfaceVariables[i];
+                AE_TRACE(Error, "Interface Variable: {}", var.name);
+            }
+
+            uint32_t inputVariablesCount{};
+            spvReflectEnumerateEntryPointInputVariables(&rmodule, "main", &inputVariablesCount, nullptr);
+            std::vector<SpvReflectInterfaceVariable*> inputVariables{};
+            inputVariables.resize(inputVariablesCount);
+            spvReflectEnumerateEntryPointInputVariables(&rmodule, "main", &inputVariablesCount, inputVariables.data());
+
+            for (size_t i = 0; i < inputVariablesCount; ++i)
+            {
+                auto const& var = *inputVariables[i];
+                AE_TRACE(Error, "Input Variable: {}", var.name);
+            }
+
+            uint32_t outputVariablesCount{};
+            spvReflectEnumerateEntryPointOutputVariables(&rmodule, "main", &outputVariablesCount, nullptr);
+            std::vector<SpvReflectInterfaceVariable*> outputVariables{};
+            outputVariables.resize(outputVariablesCount);
+            spvReflectEnumerateEntryPointOutputVariables(&rmodule, "main", &outputVariablesCount, outputVariables.data());
+
+            for (size_t i = 0; i < outputVariablesCount; ++i)
+            {
+                auto const& var = *outputVariables[i];
+                AE_TRACE(Error, "Output Variable: {}", var.name);
+            }
+
+            spvReflectDestroyShaderModule(&rmodule);
+        }
+
+        (void)error;
+        (void)status;
+        (void)bytes;
+        (void)length;
+
+        shaderc_compile_options_release(o);
+
+        shaderc_compiler_release(c);
+    }
+
+    auto handle = Anemone::Process::Start(
+        Anemone::ProcessStartInfo{
+            .FileName = "glslc",
+            .StartupDirectory = std::string{Anemone::Environment::GetStartupPath()},
+            .Parameters = {
+                "--target-env=vulkan1.3",
+                "-fshader-stage=vert",
+                "-O",
+                "-S",
+                //"-c",
+                "../../../Shaders/test.vert.glsl",
+                "-o",
+                "-",
+                //"-",
+            },
+            .RedirectStandardOutput = true,
+            .RedirectStandardError = true,
+        });
+
+    if (handle)
+    {
+        auto stdoutReader = handle->GetStandardOutputReader();
+
+        while (auto line = stdoutReader->ReadLine())
+        {
+            AE_TRACE(Error, "OUT: {}", *line);
+        }
+
+        auto stderrReader = handle->GetStandardErrorReader();
+
+        while (auto line = stderrReader->ReadLine())
+        {
+            AE_TRACE(Error, "ERR: {}", *line);
+        }
+
+
+        if (handle->Wait())
+        {
+            // if (auto binary = Anemone::FileSystem::GetPlatformFileSystem().ReadBinaryFile("../../../Shaders/test2.vert.spv"))
+            //{
+            //     auto view = (*binary)->GetView();
+
+            //    const uint32_t* words = reinterpret_cast<const uint32_t*>(view.data());
+            //    size_t wordCount = view.size() / sizeof(uint32_t);
+
+            //    spirv_cross::CompilerReflection reflection{std::vector<uint32_t>{words, words + wordCount}};
+            //    auto resources = reflection.get_shader_resources();
+
+            //    for (auto const& uniformBuffer : resources.uniform_buffers)
+            //    {
+            //        AE_TRACE(Error, "layout(set = {}, binding = {})", reflection.get_decoration(uniformBuffer.id, spv::DecorationDescriptorSet), reflection.get_decoration(uniformBuffer.id, spv::DecorationBinding));
+            //        AE_TRACE(Error, "Uniform Buffer: {} (ID: {})", reflection.get_name(uniformBuffer.id), static_cast<uint32_t>(uniformBuffer.id));
+            //        auto type = reflection.get_type(uniformBuffer.type_id);
+
+            //        // AE_TRACE(Error, "  Size: {}", type.bytesize);
+            //        // for (size_t i = 0; i < type.member_types.size(); ++i)
+            //        {
+            //            // auto memberType = reflection.get_type(type.member_types[i]);
+            //            // AE_TRACE(Error, "    Member {}: Size: {}", i, memberType.bytesize);
+            //        }
+            //    }
+            //    // resources.
+
+            //    /*spv_context context = spvContextCreate(SPV_ENV_VULKAN_1_3);
+            //    spv_text spvText{};
+            //    spv_diagnostic spvDiagnostic{};
+            //    spvBinaryToText(context, words, wordCount, SPV_BINARY_TO_TEXT_OPTION_PRINT | SPV_BINARY_TO_TEXT_OPTION_COMMENT | SPV_BINARY_TO_TEXT_OPTION_FRIENDLY_NAMES | SPV_BINARY_TO_TEXT_OPTION_NESTED_INDENT | SPV_BINARY_TO_TEXT_OPTION_REORDER_BLOCKS, &spvText, &spvDiagnostic);
+            //    spvTextDestroy(spvText);
+
+            //    spvContextDestroy(context);*/
+            //}
+        }
+    }
+
+    //
+    //    Anemone::HostSplashScreen::Initialize();
+    // #if ANEMONE_PLATFORM_WINDOWS
+    //    SleepEx(3'000, FALSE);
+    // #endif
+    //
+    //    constexpr size_t count = 1000;
+    //    for (size_t i = 0; i < count;++i)
+    //    {
+    //        Anemone::HostSplashScreen::Get().SetProgress(static_cast<float>(i) / static_cast<float>(count));
+    //        Anemone::HostSplashScreen::Get().SetText(fmt::format("{}/{}", i, count));
+    //        SleepEx(15, FALSE);
+    //
+    //    }
+    //
+    //    Anemone::HostSplashScreen::Finalize();
+    //
+    //
+    //    Anemone::Parallel::For(10000, 128, [](size_t first, size_t count)
+    //    {
+    //        AE_TRACE(Error, "First: {:016x}, Count: {:016x}", first, count);
+    //    });
 
     if (auto fh = Anemone::FileSystem::GetPlatformFileSystem().CreateFileWriter("log.txt"))
     {
@@ -311,6 +653,7 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
     Anemone::ConsoleTraceListener ctl{};
     Anemone::Trace::Get().Register(ctl);
 
+    AE_TRACE(Error, "H: {:016x}", hashx64("Hello World!"));
     {
         EH eh{};
         Anemone::HostApplication::Initialize(eh);
@@ -321,8 +664,47 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
             window1->SetMinimumSize(Anemone::SizeF{640.0f, 480.0f});
             window1->SetInputEnabled(true);
 
-#if __has_include("AnemoneRenderVulkan/VulkanDevice.hxx")
+#if __has_include("AnemoneRuntime.RenderVulkan/VulkanDevice.hxx")
             auto rd = Anemone::CreateGpuDevice();
+            Anemone::GpuVertexDeclarationInitializer vinit{
+                {
+                    Anemone::GpuVertexAttribute{
+                        .binding = 2,
+                        .attribute = 2,
+                        .offset = 0,
+                        .format = Anemone::GpuVertexElementFormat::Float3,
+                        .frequency = Anemone::GpuVertexElementFrequency::PerVertex,
+                        .stride = 3 * sizeof(float),
+                    },
+                    Anemone::GpuVertexAttribute{
+                        .binding = 0,
+                        .attribute = 1,
+                        .offset = 0,
+                        .format = Anemone::GpuVertexElementFormat::Float3,
+                        .frequency = Anemone::GpuVertexElementFrequency::PerVertex,
+                        .stride = 7 * sizeof(float),
+                    },
+                    Anemone::GpuVertexAttribute{
+                        .binding = 0,
+                        .attribute = 0,
+                        .offset = 24,
+                        .format = Anemone::GpuVertexElementFormat::Float1,
+                        .frequency = Anemone::GpuVertexElementFrequency::PerVertex,
+                        .stride = 7 * sizeof(float),
+                    },
+                    Anemone::GpuVertexAttribute{
+                        .binding = 0,
+                        .attribute = 3,
+                        .offset = 12,
+                        .format = Anemone::GpuVertexElementFormat::Float3,
+                        .frequency = Anemone::GpuVertexElementFrequency::PerVertex,
+                        .stride = 7 * sizeof(float),
+                    },
+                }};
+            auto vf1 = rd->CreateVertexDeclaration(vinit);
+            auto vf2 = rd->CreateVertexDeclaration(vinit);
+            auto vf3 = rd->CreateVertexDeclaration(vinit);
+
             auto sq = rd->CreateViewport(window1);
             auto ct = rd->GetImmediateContext();
 
@@ -339,8 +721,8 @@ anemone_noinline int AnemoneMain(int argc, char** argv)
                     ct->EndDrawingViewport(*sq);
                     ct->EndFrame();
                     //(void)sq;
-                    //sq->Start();
-                    //sq->Present();
+                    // sq->Start();
+                    // sq->Present();
                 }
 
                 Anemone::HostApplication::Get().ProcessMessages();
@@ -398,8 +780,6 @@ anemone_noinline Anemone::Math::Matrix3x2F Too(Anemone::Math::Transform2F const&
 {
     return ToMatrix3x2(xform);
 }
-
-void TestTasking();
 
 namespace Anemone::System // platform specific primitives
 {

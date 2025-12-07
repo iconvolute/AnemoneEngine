@@ -99,9 +99,11 @@ function(_anemone_executable_bootstrap target_name)
         endif()
     endforeach()
 
-    file(WRITE "${target_binary_dir}/GeneratedInitializer.cxx"
+    set(source_generated "${target_binary_dir}/Generated/ModuleInitializer.cxx")
+
+    file(WRITE ${source_generated}
 "// This file is auto-generated. Do not edit directly.
-#include \"AnemoneInterop/Headers.hxx\"
+#include \"AnemoneRuntime.Interop/Headers.hxx\"
 
 extern void Anemone_InitializeExecutable()
 {
@@ -116,7 +118,7 @@ ${source_finalize}
 
     target_sources(${target_name}
         PRIVATE
-            "${target_binary_dir}/GeneratedInitializer.cxx"
+            ${source_generated}
     )
 
 endfunction()
@@ -216,7 +218,7 @@ function(anemone_add_target)
         endif()
     else()    
         # Add include directory
-        target_sources(${anemone_add_target_NAME} PUBLIC FILE_SET HEADERS BASE_DIRS .)    
+        target_sources(${anemone_add_target_NAME} PUBLIC FILE_SET HEADERS BASE_DIRS .)
     endif()
 
     if (anemone_add_target_INSTALL)
@@ -256,11 +258,18 @@ function(anemone_add_target)
         set_property(GLOBAL APPEND PROPERTY ANEMONE_ALL_EXECUTABLES ${anemone_add_target_NAME})
     endif()
 
+
+    # Make C++ symbol safe name of the module.
+    string(REGEX REPLACE "[.+-]" "_" anemone_add_target_NAME_SYMBOL "${anemone_add_target_NAME}")
+    set_target_properties(${anemone_add_target_NAME} PROPERTIES
+        ANEMONE_TARGET_NAME_SYMBOL "${anemone_add_target_NAME_SYMBOL}"
+    )
+
     # Anemone Modules provide initialize/finalize functions and generated metadata.
     if (NOT (anemone_add_target_SDK OR anemone_add_target_HEADER))
         set_target_properties(${anemone_add_target_NAME} PROPERTIES
-            ANEMONE_MODULE_INITIALIZER "${anemone_add_target_NAME}_ModuleInitialize"
-            ANEMONE_MODULE_FINALIZER "${anemone_add_target_NAME}_ModuleFinalize"
+            ANEMONE_MODULE_INITIALIZER "${anemone_add_target_NAME_SYMBOL}_ModuleInitialize"
+            ANEMONE_MODULE_FINALIZER "${anemone_add_target_NAME_SYMBOL}_ModuleFinalize"
         )
     endif()
 

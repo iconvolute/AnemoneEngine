@@ -1,1 +1,0 @@
-#include <AnemoneVM/Label.hxx>

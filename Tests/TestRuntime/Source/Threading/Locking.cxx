@@ -1,11 +1,11 @@
-#include "AnemoneTasks/Parallel.hxx"
-#include "AnemoneThreading/CriticalSection.hxx"
-#include "AnemoneThreading/ReaderWriterLock.hxx"
-#include "AnemoneThreading/Semaphore.hxx"
-#include "AnemoneThreading/Spinlock.hxx"
-#include "AnemoneThreading/UserCriticalSection.hxx"
-#include "AnemoneThreading/UserReaderWriterLock.hxx"
-#include "AnemoneThreading/UserSemaphore.hxx"
+#include "AnemoneRuntime.Tasks/Parallel.hxx"
+#include "AnemoneRuntime.Threading/CriticalSection.hxx"
+#include "AnemoneRuntime.Threading/ReaderWriterLock.hxx"
+#include "AnemoneRuntime.Threading/Semaphore.hxx"
+#include "AnemoneRuntime.Threading/Spinlock.hxx"
+#include "AnemoneRuntime.Threading/UserCriticalSection.hxx"
+#include "AnemoneRuntime.Threading/UserReaderWriterLock.hxx"
+#include "AnemoneRuntime.Threading/UserSemaphore.hxx"
 
 #include <catch_amalgamated.hpp>
 

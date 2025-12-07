@@ -1,7 +1,7 @@
-#include "AnemoneMath/Detail/SimdFloat.hxx"
-#include "AnemoneMath/Aligned.hxx"
-#include "AnemoneRandom/Generator.hxx"
-#include "AnemoneRandom/Distribution.hxx"
+#include "AnemoneRuntime.Math/Detail/SimdFloat.hxx"
+#include "AnemoneRuntime.Math/Aligned.hxx"
+#include "AnemoneRuntime.Random/Generator.hxx"
+#include "AnemoneRuntime.Random/Distribution.hxx"
 
 ANEMONE_EXTERNAL_HEADERS_BEGIN
 

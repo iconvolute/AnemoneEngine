@@ -1,1 +1,0 @@
-#include "AnemoneRenderVulkan/VulkanHeaders.hxx"

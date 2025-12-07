@@ -1,1 +1,0 @@
-#include "AnemoneThreading/UserReaderWriterLock.hxx"

@@ -1,1 +1,0 @@
-#include "AnemoneThreading/UserAutoResetEvent.hxx"

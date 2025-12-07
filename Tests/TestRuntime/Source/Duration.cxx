@@ -1,6 +1,6 @@
 #include <catch_amalgamated.hpp>
 
-#include "AnemoneBase/Duration.hxx"
+#include "AnemoneRuntime.Base/Duration.hxx"
 
 TEST_CASE("Duration - Construction")
 {
