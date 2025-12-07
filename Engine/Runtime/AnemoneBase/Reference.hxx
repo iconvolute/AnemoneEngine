@@ -44,19 +44,23 @@ namespace Anemone
             return this->m_ReferenceCount;
         }
 
-        constexpr void AcquireReference() const
+        constexpr int32_t AcquireReference() const
         {
-            ++this->m_ReferenceCount;
+            return ++this->m_ReferenceCount;
         }
 
-        constexpr void ReleaseReference() const
+        constexpr int32_t ReleaseReference() const
         {
-            AE_ASSERT(this->m_ReferenceCount > 0);
+            int32_t const expected = --this->m_ReferenceCount;
 
-            if (--this->m_ReferenceCount == 0)
+            AE_ASSERT(expected >= 0);
+
+            if (expected == 0)
             {
                 delete static_cast<Derived const*>(this);
             }
+
+            return expected;
         }
     };
 
@@ -92,12 +96,12 @@ namespace Anemone
             return this->m_ReferenceCount.load(std::memory_order::relaxed);
         }
 
-        constexpr void AcquireReference() const
+        constexpr int32_t AcquireReference() const
         {
-            this->m_ReferenceCount.fetch_add(1, std::memory_order::relaxed);
+            return this->m_ReferenceCount.fetch_add(1, std::memory_order::relaxed) + 1;
         }
 
-        constexpr void ReleaseReference() const
+        constexpr int32_t ReleaseReference() const
         {
             int32_t const expected = this->m_ReferenceCount.fetch_sub(1, std::memory_order::acq_rel) - 1;
 
@@ -107,6 +111,8 @@ namespace Anemone
             {
                 delete static_cast<Derived const*>(this);
             }
+
+            return expected;
         }
     };
 }
