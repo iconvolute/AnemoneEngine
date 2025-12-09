@@ -2,6 +2,8 @@
 #include "AnemoneRuntime.Interop/Windows/SafeHandle.hxx"
 #include "AnemoneRuntime.Threading/Thread.hxx"
 
+#define ANEMONE_WINDOWS_USE_BEGINTHREADEX false
+
 namespace Anemone
 {
     class WindowsThread final : public Thread
@@ -18,7 +20,11 @@ namespace Anemone
         };
 
     private:
+#if ANEMONE_WINDOWS_USE_BEGINTHREADEX
+        static unsigned __stdcall EntryPoint(void* lpThreadParameter);
+#else
         static DWORD WINAPI EntryPoint(LPVOID lpThreadParameter);
+#endif
 
     public:
         WindowsThread() = default;

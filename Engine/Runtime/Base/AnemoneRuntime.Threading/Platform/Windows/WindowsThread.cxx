@@ -6,6 +6,10 @@
 #include "AnemoneRuntime.Interop/Windows/Environment.hxx"
 #include "AnemoneRuntime.Threading/SpinWait.hxx"
 
+#if ANEMONE_WINDOWS_USE_BEGINTHREADEX
+#include <process.h>
+#endif
+
 namespace Anemone
 {
     namespace
@@ -34,7 +38,11 @@ namespace Anemone
         }
     }
 
+#if ANEMONE_WINDOWS_USE_BEGINTHREADEX
+    unsigned __stdcall WindowsThread::EntryPoint(void* lpThreadParameter)
+#else
     DWORD WINAPI WindowsThread::EntryPoint(LPVOID lpThreadParameter)
+#endif
     {
         CoInitializeEx(nullptr, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         {
@@ -52,6 +60,9 @@ namespace Anemone
         }
         CoUninitialize();
 
+#if ANEMONE_WINDOWS_USE_BEGINTHREADEX
+        _endthreadex(0);
+#endif
         return 0;
     }
 
@@ -126,6 +137,17 @@ namespace Anemone
                 dwCreationFlags |= STACK_SIZE_PARAM_IS_A_RESERVATION;
             }
 
+#if ANEMONE_WINDOWS_USE_BEGINTHREADEX
+            unsigned dwThreadId{};
+            uintptr_t handle = _beginthreadex(
+                nullptr,
+                static_cast<unsigned>(stackSize),
+                &EntryPoint,
+                &context,
+                dwCreationFlags,
+                &dwThreadId);
+            result->_handle.Attach(std::bit_cast<HANDLE>(handle));
+#else
             DWORD dwThreadId{};
             result->_handle.Attach(
                 CreateThread(
@@ -135,6 +157,7 @@ namespace Anemone
                     &context,
                     dwCreationFlags,
                     &dwThreadId));
+#endif
 
             result->_id = ThreadId{dwThreadId};
 
